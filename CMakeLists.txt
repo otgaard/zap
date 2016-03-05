@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.3)
+project(zap)
+
+include_directories(${CMAKE_SOURCE_DIR}/third_party/include)
+link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/bin)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
+set(ZAP_EXAMPLE_FILES
+        zap_example.cpp
+        tools/log.hpp
+        tools/logger.hpp)
+
+if(APPLE)
+    find_library(COCOA Cocoa)
+    find_library(IOKIT IOKit)
+    find_library(CARBON Carbon)
+    find_library(COREVIDEO CoreVideo)
+    find_library(QUARTZ QuartzCore)
+    find_library(OPENGL OpenGL)
+endif(APPLE)
+
+add_executable(zap_example ${ZAP_EXAMPLE_FILES})
+target_link_libraries(zap_example glfw3 ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL})
