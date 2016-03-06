@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(ZAP_EXAMPLE_FILES
         zap_example.cpp
         tools/log.hpp
-        tools/logger.hpp)
+        tools/logger.hpp maths/vec.hpp maths/vec3.hpp maths/maths.hpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
