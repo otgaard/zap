@@ -35,29 +35,6 @@ int main(int argc, char* argv[]) {
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glfwSwapInterval(0);
 
-    constexpr vec3<float> val1 = {1.0f, 2.0f, 3.0f};
-    constexpr vec3<float> val2 = {10.f, 20.f, 30.f};
-    constexpr vec3<float> r1 = val1 + val2 * val1 - val2;
-    static_assert(r1.x == 1 && r1.y == 22 && r1.z == 63, "Something went very, very wrong");
-    constexpr vec3<float> r2 = 10.0f*r1;
-    static_assert(r2.x == 10 && r2.y == 220 && r2.z == 630, "Something went very, very wrong");
-
-    constexpr vec3<float> foo = (10.0f*vec3<float>({{1.0f, 2.0f, 3.0f}}))/2.0f + 1.0f/vec3<float>({{20.0f, 100.0f, 200.0f}});
-    static_assert(foo.x == 5.05f, "This is amazing");
-
-    constexpr float bar = dot(foo, foo);
-    std::cerr << "DOT PRODUCT:" << bar << std::endl;
-    static_assert(bar < 350.855f, "More static here");
-
-    std::cerr << foo.x << ":" << foo.y << ":" << foo.z << std::endl;
-
-    std::cerr << r1.x << " " << r1.y << " " << r1.z << " " << std::endl;
-    std::cerr << r2.x << " " << r2.y << " " << r2.z << " " << std::endl;
-
-    for(const auto& r : val1) {
-        std::cerr << "Here:" << r << std::endl;
-    }
-
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 

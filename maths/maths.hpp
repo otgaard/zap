@@ -14,7 +14,7 @@
 template <typename T, size_t N>
 struct static_list : std::array<T, N> {
     template <typename... Args>
-    constexpr static_list(Args... args) : std::array<T, N>( { args... } ) {
+    constexpr static_list(Args... args) : std::array<T, N>( {{ args... }} ) {
         static_assert(sizeof...(args) == N, ZERR_ARG_COUNT_INVALID);
     }
 };
