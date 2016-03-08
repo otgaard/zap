@@ -8,7 +8,7 @@
 #include <sstream>
 
 namespace zap { namespace tools {
-    enum class log_level : char {
+    enum class log_level : uint8_t {
         DEBUG,
         WARNING,
         ERROR

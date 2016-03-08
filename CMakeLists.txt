@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3e)
 project(zap)
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
@@ -10,11 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/bin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-#add_definitions(-Wall -Werror)
-
-if(UNIX)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/glfw)
-endif(UNIX)
+add_definitions(-Wall -Werror)
 
 set(ZAP_EXAMPLE_FILES
         zap_example.cpp
@@ -35,11 +31,6 @@ if(APPLE)
     find_library(QUARTZ QuartzCore)
     find_library(OPENGL OpenGL)
 endif(APPLE)
-
-if(UNIX)
-
-endif(UNIX)
-
 
 if(APPLE)
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
