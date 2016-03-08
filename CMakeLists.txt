@@ -19,10 +19,10 @@ add_definitions(-Wall -Werror)
 set(ZAP_EXAMPLE_FILES
         zap_example.cpp
         tools/log.hpp
-        tools/logger.hpp
         maths/vec.hpp
         maths/vec3.hpp
-        maths/maths.hpp)
+        maths/maths.hpp
+        core/core.hpp)
 
 set(ZAP_TESTS_MATHS_FILES
         tests/maths/vec3_tests.cpp)

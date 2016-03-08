@@ -5,6 +5,8 @@
 #include "maths/vec.hpp"
 #include "maths/vec3.hpp"
 
+#include <tools/log.hpp>
+
 using namespace zap::maths;
 
 static void on_error(int error, const char* description) {
@@ -13,6 +15,8 @@ static void on_error(int error, const char* description) {
 
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
+
+    LOG("Does this work?", 123);
 
     if(!glfwInit()) return -1;
 
