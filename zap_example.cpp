@@ -1,22 +1,18 @@
 /* Created by Darren Otgaar on 2016/03/05. http://www.github.com/otgaard/zap */
-#include <iostream>
 #include <GLFW/glfw3.h>
 
-#include "maths/vec.hpp"
-#include "maths/vec3.hpp"
-
 #include <tools/log.hpp>
+#include <maths/vec.hpp>
+#include <maths/vec3.hpp>
 
 using namespace zap::maths;
 
 static void on_error(int error, const char* description) {
-    std::cerr << "Error code: " << error << "desc:" << description << std::endl;
+    LOG_ERR("GLFW Error:", error, "Description:", description);
 }
 
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
-
-    LOG("Does this work?", 123);
 
     if(!glfwInit()) return -1;
 
@@ -29,7 +25,7 @@ int main(int argc, char* argv[]) {
 
     auto window = glfwCreateWindow(1280, 768, "zap_example", nullptr, nullptr);
     if(!window) {
-        std::cerr << "Error creating window - terminating" << std::endl;
+        LOG_ERR("Error creating window - terminating");
         glfwTerminate();
         return -1;
     }
