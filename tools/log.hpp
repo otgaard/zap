@@ -4,8 +4,8 @@
 
 #include <mutex>
 #include <memory>
-#include <iosfwd>
 #include <sstream>
+#include <iostream>
 
 #include <core/core.hpp>
 

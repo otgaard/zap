@@ -22,7 +22,7 @@ set(ZAP_EXAMPLE_FILES
         maths/vec.hpp
         maths/vec3.hpp
         maths/maths.hpp
-        core/core.hpp)
+        core/core.hpp maths/vec2.hpp maths/vec4.hpp maths/mat2.hpp maths/mat3.hpp maths/mat4.hpp)
 
 set(ZAP_TESTS_MATHS_FILES
         tests/maths/vec3_tests.cpp)
