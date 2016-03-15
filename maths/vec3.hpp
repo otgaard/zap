@@ -9,16 +9,20 @@
 #endif
 
 namespace zap { namespace maths {
+    template <typename T> constexpr inline T dot(const vec3<T>& lhs, const vec3<T>& rhs);
+
     template <typename T>
     class vec3 {
     public:
-        constexpr inline size_t size() const { return 3; }
-        constexpr inline size_t memsize() const { return sizeof(vec3); }
+        constexpr static inline size_t size() { return 3; }
+        constexpr static inline size_t memsize() { return sizeof(vec3<T>); }
 
         constexpr inline vec3() { };
         constexpr inline vec3(const static_list<T, 3>& lst) : x(lst[0]), y(lst[1]), z(lst[2]) { }
         constexpr inline vec3(T x, T y, T z) : x(x), y(y), z(z) { }
+        constexpr inline vec3(const vec2<T>& rhs, T z=T(0)) : x(rhs.x), y(rhs.y), z(z) { }
         constexpr inline vec3(const vec3<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
+        constexpr inline vec3(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
 
         inline vec3<T>& operator=(const vec3<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; }
@@ -83,12 +87,12 @@ namespace zap { namespace maths {
         }
 
         inline bool eq(const vec3<T>& rhs, T epsilon) const {
-            for(size_t i = 0; i != size(); ++i) if(!eq(arr[i], rhs.arr[i], epsilon)) return false;
+            for(size_t i = 0; i != size(); ++i) if(!maths::eq(arr[i], rhs.arr[i], epsilon)) return false;
             return true;
         }
 
         inline bool is_zero() const {
-            for(size_t i = 0; i != size(); ++i) if(!is_zero(arr[i])) return false;
+            for(size_t i = 0; i != size(); ++i) if(!maths::is_zero(arr[i])) return false;
             return true;
         }
 
@@ -99,7 +103,7 @@ namespace zap { namespace maths {
             struct {
                 T x, y, z;
             };
-            T arr[4];
+            T arr[size()];
 #ifdef ZAP_MATHS_SSE2
             __m128 xmm;
 #endif
@@ -156,7 +160,7 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
-    inline vec3<T> inverse(const vec3<T>& v) {
+    constexpr inline vec3<T> inverse(const vec3<T>& v) {
         return T(1)/v;
     }
 

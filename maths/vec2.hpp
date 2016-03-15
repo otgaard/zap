@@ -11,13 +11,15 @@ namespace zap { namespace maths {
     template <typename T>
     class vec2 {
     public:
-        constexpr inline size_t size() const { return 2; }
-        constexpr inline size_t memsize() const { return sizeof(vec2); }
+        constexpr static inline size_t size() { return 2; }
+        constexpr static inline size_t memsize() { return sizeof(vec2); }
 
-        constexpr inline vec2() { };
+        constexpr inline vec2() { }
         constexpr inline vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
         constexpr inline vec2(T x, T y) : x(x), y(y) { }
         constexpr inline vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        constexpr inline vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        constexpr inline vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
 
         inline vec2<T>& operator=(const vec2<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; }
