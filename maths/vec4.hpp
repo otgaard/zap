@@ -15,15 +15,15 @@ namespace zap { namespace maths {
     template <typename T>
     class vec4 {
     public:
-        constexpr inline size_t size() const { return 4; }
-        constexpr inline size_t memsize() const { return sizeof(vec4); }
+        constexpr size_t size() const { return 4; }
+        constexpr size_t memsize() const { return sizeof(vec4); }
 
-        constexpr inline vec4() { };
-        constexpr inline vec4(const static_list<T, 4>& lst) : x(lst[0]), y(lst[1]), z(lst[2]), w(lst[3]) { }
-        constexpr inline vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) { }
-        constexpr inline vec4(const vec2<T>& rhs, T z, T w) : x(rhs.x), y(rhs.y), z(z), w(w) { }
-        constexpr inline vec4(const vec3<T>& rhs, T w) : x(rhs.x), y(rhs.y), z(rhs.z), w(w) { }
-        constexpr inline vec4(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) { }
+        constexpr vec4() { };
+        constexpr vec4(const static_list<T, 4>& lst) : x(lst[0]), y(lst[1]), z(lst[2]), w(lst[3]) { }
+        constexpr vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) { }
+        constexpr vec4(const vec2<T>& rhs, T z, T w) : x(rhs.x), y(rhs.y), z(z), w(w) { }
+        constexpr vec4(const vec3<T>& rhs, T w) : x(rhs.x), y(rhs.y), z(rhs.z), w(w) { }
+        constexpr vec4(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) { }
 
         inline vec4<T>& operator=(const vec4<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; }

@@ -8,8 +8,8 @@ namespace zap { namespace maths {
     template <typename T, size_t N>
     class vec {
     public:
-        static inline constexpr size_t size() { return N; }
-        static inline constexpr size_t bufsize() { return sizeof(T)*N; }
+        constexpr static size_t size() { return N; }
+        constexpr static size_t memsize() { return sizeof(T)*N; }
 
         inline vec() { }
         inline explicit vec(T v) { for(auto& i : v_) i = v; }

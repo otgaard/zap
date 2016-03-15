@@ -13,15 +13,15 @@
 #define ZERR_TYPE_INVALID "Invalid type used for template instantiation"
 
 namespace zap { namespace maths {
-    template <typename T> static inline bool eq(T a, T b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
-    template <typename T> static inline bool eq(T a, T b, T epsilon) { return std::abs(a - b) < epsilon; }
-    template <typename T> static inline bool leq(T a, T b) { return a < b + std::numeric_limits<T>::epsilon(); }
-    template <typename T> static inline bool is_zero(T a) { return std::abs(T(0) - a) < std::numeric_limits<T>::epsilon(); }
-    template <typename T> constexpr static inline T sign(T s) { return s > T(0) ? T(1) : s < T(0) ? T(-1) : T(0); }
-    template <typename T> constexpr static inline T abs(T s) { return sign(s)*s; }
-    template <typename T> static inline T sgn(T s) { return is_zero(s) ? T(0) : sign(s); }
-    template <typename T> constexpr static inline T clamp(T v, T min, T max) { return v < min ? min : v > max ? max : v; }
-    template <typename T> constexpr static inline T clamp(T v) { return clamp(v, T(0), T(1)); }
+    template <typename T> inline bool eq(T a, T b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
+    template <typename T> inline bool eq(T a, T b, T epsilon) { return std::abs(a - b) < epsilon; }
+    template <typename T> inline bool leq(T a, T b) { return a < b + std::numeric_limits<T>::epsilon(); }
+    template <typename T> inline bool is_zero(T a) { return std::abs(T(0) - a) < std::numeric_limits<T>::epsilon(); }
+    template <typename T> constexpr T sign(T s) { return s > T(0) ? T(1) : s < T(0) ? T(-1) : T(0); }
+    template <typename T> constexpr T abs(T s) { return sign(s)*s; }
+    template <typename T> inline T sgn(T s) { return is_zero(s) ? T(0) : sign(s); }
+    template <typename T> constexpr static T clamp(T v, T min, T max) { return v < min ? min : v > max ? max : v; }
+    template <typename T> constexpr static T clamp(T v) { return clamp(v, T(0), T(1)); }
 
     // Type and size safe static initialiser
     template <typename T, size_t N>

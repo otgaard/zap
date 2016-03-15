@@ -11,15 +11,15 @@ namespace zap { namespace maths {
     template <typename T>
     class vec2 {
     public:
-        constexpr static inline size_t size() { return 2; }
-        constexpr static inline size_t memsize() { return sizeof(vec2); }
+        constexpr static size_t size() { return 2; }
+        constexpr static size_t memsize() { return sizeof(vec2); }
 
-        constexpr inline vec2() { }
-        constexpr inline vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
-        constexpr inline vec2(T x, T y) : x(x), y(y) { }
-        constexpr inline vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
-        constexpr inline vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
-        constexpr inline vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        constexpr vec2() { }
+        constexpr vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
+        constexpr vec2(T x, T y) : x(x), y(y) { }
+        constexpr vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        constexpr vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        constexpr vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
 
         inline vec2<T>& operator=(const vec2<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; }
@@ -47,12 +47,12 @@ namespace zap { namespace maths {
     } __attribute__((aligned(8)));
 
     template <typename T>
-    constexpr inline vec2<T> operator+(const vec2<T>& lhs, const vec2<T>& rhs) {
+    constexpr vec2<T> operator+(const vec2<T>& lhs, const vec2<T>& rhs) {
         return vec2<T>(lhs.x + rhs.x, lhs.y + rhs.y);
     }
 
     template <typename T>
-    constexpr inline vec2<T>operator-(const vec2<T>& lhs, const vec2<T>& rhs) {
+    constexpr vec2<T>operator-(const vec2<T>& lhs, const vec2<T>& rhs) {
         return vec2<T>(lhs.x - rhs.x, lhs.y - rhs.y);
     }
 }}

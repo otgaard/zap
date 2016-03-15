@@ -23,5 +23,5 @@ TEST(MatrixMathsTests, ColumnMajorStorage) {
     EXPECT_EQ(M2(0,1), M3(0,1));
     EXPECT_EQ(M2(1,1), M3(1,1));
 
-    
+
 }
