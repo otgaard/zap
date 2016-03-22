@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(zap)
 
+set(CMAKE_BUILD_TYPE "Release")
+
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
 link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
 
@@ -19,7 +21,6 @@ add_definitions(-Wall -Werror)
 set(ZAP_EXAMPLE_FILES
         zap_example.cpp
         tools/log.hpp
-        maths/vec.hpp
         maths/vec3.hpp
         maths/maths.hpp
         core/core.hpp
@@ -27,11 +28,15 @@ set(ZAP_EXAMPLE_FILES
         maths/vec4.hpp
         maths/mat2.hpp
         maths/mat3.hpp
-        maths/mat4.hpp)
+        maths/mat4.hpp engine/vertex_buffer.hpp engine/shader.hpp engine/engine.hpp)
+
+set(ZAP_COMMAND_LINE
+        zap_command.cpp)
 
 set(ZAP_TESTS_MATHS_FILES
-        tests/maths/vec3_tests.cpp
-        tests/maths/maths_tests.cpp tests/maths/mat_tests.cpp)
+        tests/maths/vector_tests.cpp
+        tests/maths/maths_tests.cpp
+        tests/maths/matrix_tests.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
@@ -59,6 +64,9 @@ endif(APPLE)
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
 target_link_libraries(zap_example glfw3 ${GLFW_LIBS})
+
+add_executable(zap_cmd ${ZAP_COMMAND_LINE})
+#target_link_libraries(zap_cmd)
 
 add_executable(zap_maths_tests ${ZAP_TESTS_MATHS_FILES})
 target_link_libraries(zap_maths_tests gtest ${GTEST_LIBS})

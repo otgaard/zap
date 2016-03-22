@@ -4,10 +4,6 @@
 
 #include "maths.hpp"
 
-#ifdef ZAP_MATHS_SSE2
-#include <xmmintrin.h>
-#endif
-
 namespace zap { namespace maths {
     template <typename T> constexpr T dot(const vec3<T>& lhs, const vec3<T>& rhs);
 
@@ -17,9 +13,11 @@ namespace zap { namespace maths {
         constexpr static size_t size() { return 3; }
         constexpr static size_t memsize() { return sizeof(vec3<T>); }
 
-        constexpr vec3() { };
-        constexpr vec3(const static_list<T, 3>& lst) : x(lst[0]), y(lst[1]), z(lst[2]) { }
+        constexpr vec3() { }
+        constexpr explicit vec3(T init) : x(init), y(init), z(init) { }
+        constexpr explicit vec3(const T* ptr) : x(ptr[0]), y(ptr[1]), z(ptr[2]) { }
         constexpr vec3(T x, T y, T z) : x(x), y(y), z(z) { }
+        constexpr vec3(const static_list<T, 3>& lst) : x(lst[0]), y(lst[1]), z(lst[2]) { }
         constexpr vec3(const vec2<T>& rhs, T z=T(0)) : x(rhs.x), y(rhs.y), z(z) { }
         constexpr vec3(const vec3<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
         constexpr vec3(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
@@ -40,12 +38,36 @@ namespace zap { namespace maths {
         inline const T& operator[](size_t idx) const { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
 
         constexpr vec3<T> operator-() const { return vec3<T>(-x, -y, -z); }
-        inline vec3<T>& operator+=(const vec3<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i]; }
-        inline vec3<T>& operator-=(const vec3<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] -= rhs.arr[i]; }
-        inline vec3<T>& operator*=(const vec3<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] *= rhs.arr[i]; }
-        inline vec3<T>& operator*=(T scalar) { for(size_t i = 0; i != size(); ++i) arr[i] *= scalar; }
-        inline vec3<T>& operator/=(const vec3<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] /= rhs.arr[i]; }
-        inline vec3<T>& operator/=(T scalar) { for(size_t i = 0; i != size(); ++i) arr[i] /= scalar; }
+
+        inline vec3<T>& operator+=(const vec3<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i];
+            return *this;
+        }
+
+        inline vec3<T>& operator-=(const vec3<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] -= rhs.arr[i];
+            return *this;
+        }
+
+        inline vec3<T>& operator*=(const vec3<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] *= rhs.arr[i];
+            return *this;
+        }
+
+        inline vec3<T>& operator*=(T scalar) {
+            for(size_t i = 0; i != size(); ++i) arr[i] *= scalar;
+            return *this;
+        }
+
+        inline vec3<T>& operator/=(const vec3<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] /= rhs.arr[i];
+            return *this;
+        }
+
+        inline vec3<T>& operator/=(T scalar) {
+            for(size_t i = 0; i != size(); ++i) arr[i] /= scalar;
+            return *this;
+        }
 
         constexpr T length_sqr() const { return dot(*this, *this); }
         inline T length() const { return std::sqrt(length_sqr()); }
@@ -104,11 +126,8 @@ namespace zap { namespace maths {
                 T x, y, z;
             };
             T arr[size()];
-#ifdef ZAP_MATHS_SSE2
-            __m128 xmm;
-#endif
         };
-    } __attribute__((aligned(16)));
+    };
 
     template <typename T>
     constexpr vec3<T> operator+(const vec3<T>& lhs, const vec3<T>& rhs) {

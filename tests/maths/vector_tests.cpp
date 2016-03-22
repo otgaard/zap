@@ -1,11 +1,14 @@
 /* Created by Darren Otgaar on 2016/03/07. http://www.github.com/otgaard/zap */
 #include <gtest/gtest.h>
+#include <maths/vec2.hpp>
 #include <maths/vec3.hpp>
 
 using namespace zap::maths;
+
+using vec2f = vec2<float>;
 using vec3f = vec3<float>;
 
-TEST(ZapMathsTestsVec3, ConstexprTest) {
+TEST(VectorMathsTests, ConstexprTest) {
     constexpr vec3f u = {10.f, 20.f, 30.f};
     constexpr vec3f v = {1.f, 2.f, 3.f};
     constexpr vec3f expr = 2.f*u + v;
@@ -28,7 +31,7 @@ TEST(ZapMathsTestsVec3, ConstexprTest) {
     EXPECT_EQ(expr.z, 63.f);
 }
 
-TEST(ZapMathsTestsVec3, AlgebraicTest) {
+TEST(VectorMathsTests, AlgebraicTest) {
     vec3f u = {10.f, 20.f, 30.f};
     vec3f v = {1.f, 2.f, 3.f};
     vec3f w = {-5.f, -10.f, -15.f};
@@ -40,6 +43,13 @@ TEST(ZapMathsTestsVec3, AlgebraicTest) {
 
     float r2 = dot(u,u);
     EXPECT_EQ(r2, u.x*u.x + u.y*u.y + u.z*u.z);
+}
+
+TEST(VectorMathsTests, Vector2) {
+    vec2f u = {10.f, 20.f};
+    vec2f v = {-1.f, -2.f};
+
+    for(const auto& f : u) std::cout << f << std::endl;
 }
 
 int main(int argc, char* argv[]) {

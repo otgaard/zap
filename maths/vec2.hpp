@@ -12,11 +12,13 @@ namespace zap { namespace maths {
     class vec2 {
     public:
         constexpr static size_t size() { return 2; }
-        constexpr static size_t memsize() { return sizeof(vec2); }
+        constexpr static size_t memsize() { return sizeof(vec2<T>); }
 
         constexpr vec2() { }
-        constexpr vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
+        constexpr explicit vec2(T init) : x(init), y(init) { }
+        constexpr explicit vec2(const T* ptr) : x(ptr[0]), y(ptr[1]) { }
         constexpr vec2(T x, T y) : x(x), y(y) { }
+        constexpr vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
         constexpr vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
         constexpr vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
         constexpr vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
@@ -33,10 +35,11 @@ namespace zap { namespace maths {
         inline const T* data() const { return arr; }
         inline T* data() { return arr; }
 
-        inline T& operator[](size_t idx) {
-            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
-            return arr[idx];
-        }
+        inline T& operator[](size_t idx) { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
+        inline const T& operator[](size_t idx) const { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
+
+        constexpr vec2<T> operator-() const { return vec2<T>(-x, -y); }
+        inline vec2<T>& operator+=(const vec2<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i]; }
 
         union {
             struct {

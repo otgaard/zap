@@ -11,6 +11,7 @@
 #define ZERR_IDX_OUT_OF_RANGE "Index out of range"
 #define ZERR_ARG_COUNT_INVALID "Incorrect number of values provided"
 #define ZERR_TYPE_INVALID "Invalid type used for template instantiation"
+#define ZERR_TYPE_FLOATING "Requires floating-point type"
 
 namespace zap { namespace maths {
     template <typename T> inline bool eq(T a, T b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
@@ -49,8 +50,6 @@ namespace zap { namespace maths {
     template <typename T> class vec2;
     template <typename T> class vec3;
     template <typename T> class vec4;
-
-
 }}
 
 #endif //ZAP_MATHS_HPP

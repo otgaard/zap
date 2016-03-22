@@ -42,6 +42,11 @@ namespace zap { namespace maths {
             return arr[idx];
         }
 
+        inline const T& operator[](size_t idx) const {
+            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
+            return arr[idx];
+        }
+
         union {
             struct {
                 T x, y, z, w;
