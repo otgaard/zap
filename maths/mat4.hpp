@@ -80,6 +80,9 @@ namespace zap { namespace maths {
             return arr[idx(row,col)];
         }
 
+        inline const T* data() const { return arr; }
+        inline T* data() { return arr; }
+
         union {
             struct {
                 T m00, m10, m20, m30,     // Column 0

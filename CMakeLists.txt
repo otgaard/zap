@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(zap)
 
-set(CMAKE_BUILD_TYPE "Release")
+#set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
 link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
@@ -28,7 +29,15 @@ set(ZAP_EXAMPLE_FILES
         maths/vec4.hpp
         maths/mat2.hpp
         maths/mat3.hpp
-        maths/mat4.hpp engine/vertex_buffer.hpp engine/shader.hpp engine/engine.hpp)
+        maths/mat4.hpp
+        engine/vertex_buffer.hpp
+        engine/shader.hpp
+        engine/engine.hpp
+        engine/program.hpp
+        engine/shader.cpp
+        engine/gl_api.cpp
+        engine/gl_api.hpp
+        engine/program.cpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)
