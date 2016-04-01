@@ -7,6 +7,7 @@
 #include <vector>
 #include <engine/program.hpp>
 #include <maths/mat4.hpp>
+#include <maths/vec3.hpp>
 
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
@@ -66,9 +67,9 @@ int main(int argc, char* argv[]) {
     prog->link(true);
 
     float tri[3][3] = {
-            { -1.f, -0.5f, 0.5f },
-            { -1.f, +0.5f, 0.5f },
-            { +1.f,   0.f, 0.5f }
+        { -1.f, -0.5f, 0.5f },
+        { -1.f, +0.5f, 0.5f },
+        { +1.f,   0.f, 0.5f }
     };
 
     GLuint vao;
@@ -76,7 +77,7 @@ int main(int argc, char* argv[]) {
     if(vao == INVALID_RESOURCE) LOG_ERR("Could not allocate vertex array");
     glBindVertexArray(vao);
 
-    gl_error_log();
+    gl_error_check();
 
     GLuint buf;
     glGenBuffers(1, &buf);
@@ -87,11 +88,9 @@ int main(int argc, char* argv[]) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glBindVertexArray(0);
 
-    gl_error_log();
-
     zap::maths::mat4<float> proj_matrix = {
-        20/1280.f,      0.f, 0.f, 0.f,
-        0.f,       20/768.f, 0.f, 0.f,
+        80/1280.f,      0.f, 0.f, 0.f,
+        0.f,       80/768.f, 0.f, 0.f,
         0.f,            0.f, 2.f, 0.f,
         0.f,            0.f, 0.f, 1.f
     };
@@ -100,7 +99,7 @@ int main(int argc, char* argv[]) {
     auto loc = prog->uniform_location("proj_matrix");
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     prog->release();
-    gl_error_log();
+    gl_error_check();
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

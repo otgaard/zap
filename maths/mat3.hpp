@@ -29,6 +29,8 @@ namespace zap { namespace maths {
     template <typename T>
     class mat3 {
     public:
+        static_assert(std::is_floating_point<T>() || std::is_integral<T>(), "mat3<T>: T must be an algebraic type");
+
         using row_t = vec3<T>;
         using col_t = vec3<T>;
 

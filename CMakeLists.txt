@@ -30,14 +30,15 @@ set(ZAP_EXAMPLE_FILES
         maths/mat2.hpp
         maths/mat3.hpp
         maths/mat4.hpp
-        engine/vertex_buffer.hpp
         engine/shader.hpp
         engine/engine.hpp
         engine/program.hpp
         engine/shader.cpp
         engine/gl_api.cpp
         engine/gl_api.hpp
-        engine/program.cpp)
+        engine/program.cpp
+        engine/buffer.cpp
+        engine/buffer.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)

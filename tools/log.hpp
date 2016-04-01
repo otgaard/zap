@@ -58,8 +58,14 @@ namespace zap { namespace tools {
 
 static zap::tools::logger default_log(&std::cout);
 
+#ifdef LOGGING_ENABLED
 #define LOG default_log.print<zap::tools::log_level::DEBUG>
 #define LOG_ERR default_log.print<zap::tools::log_level::ERROR>
 #define LOG_WARN default_log.print<zap::tools::log_level::WARNING>
+#else //LOGGING_ENABLED
+#define LOG(...)
+#define LOG_ERR(...)
+#define LOG_WARN(...)
+#endif //LOGGING_ENABLED
 
 #endif //ZAP_LOG_HPP

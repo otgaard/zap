@@ -3,7 +3,7 @@
 
 using namespace zap::engine;
 
-void zap::engine::_gl_error_log(const char* file, int line) {
+bool zap::engine::_gl_error_log(const char* file, int line) {
     using namespace gl;
 
     GLenum err = glGetError();
@@ -17,5 +17,11 @@ void zap::engine::_gl_error_log(const char* file, int line) {
             case GL_INVALID_FRAMEBUFFER_OPERATION: error = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
         }
         LOG_ERR("OpenGL Error:", error, "in", file, "@", line);
+        return true;
     }
+    return false;
+}
+
+bool zap::engine::_gl_error_check() {
+    return gl::glGetError() != GL_NO_ERROR;
 }

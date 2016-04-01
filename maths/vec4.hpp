@@ -15,6 +15,7 @@ namespace zap { namespace maths {
     template <typename T>
     class vec4 {
     public:
+        static_assert(std::is_floating_point<T>() || std::is_integral<T>(), "vec4<T>: T must be an algebraic type");
         constexpr size_t size() const { return 4; }
         constexpr size_t memsize() const { return sizeof(vec4); }
 
