@@ -2,11 +2,13 @@
 // Created by Darren Otgaar on 2016/03/20.
 //
 
-#include <tools/log.hpp>
 #include <maths/vec3.hpp>
 #include <chrono>
 #include <vector>
 #include <array>
+
+#define LOGGING_ENABLED
+#include <tools/log.hpp>
 
 volatile int sink = 0;
 using zap_clock = std::chrono::high_resolution_clock;
@@ -52,6 +54,24 @@ void test() {
     LOG(adder(10, 20, 30, 40, 50));
 }
 
+template <size_t k, typename T, typename... P>
+struct offset_table;
+
+template <typename... P>
+struct offset_table<0, P...> {
+    constexpr static size_t offset = 0;
+};
+
+template <size_t k, typename T, typename... P>
+struct offset_table {
+    constexpr static size_t offset = sizeof(T) + offset_table<k-1,P...>::offset;
+};
+
+void test_offset() {
+    LOG("value=", offset_table<3, int, float, char, double>::offset);
+}
+
 int main(int argc, char* argv[]) {
+    test_offset();
     return 0;
 }

@@ -38,7 +38,7 @@ set(ZAP_EXAMPLE_FILES
         engine/gl_api.hpp
         engine/program.cpp
         engine/buffer.cpp
-        engine/buffer.hpp)
+        engine/buffer.hpp engine/buffer_format.cpp engine/buffer_format.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)

@@ -25,9 +25,8 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    class mat4 {
-    public:
-        static_assert(std::is_floating_point<T>() || std::is_integral<T>(), "mat4<T>: T must be an algebraic type");
+    struct mat4 {
+        static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "mat4<T>: T must be an algebraic type");
 
         using row_t = vec4<T>;
         using col_t = vec4<T>;

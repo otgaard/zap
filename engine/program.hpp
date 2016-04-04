@@ -40,6 +40,10 @@ namespace zap { namespace engine {
         resource_t id_;
         bool linked_;
         std::vector<shader_ptr> shaders_;
+
+    private:
+        program(const program&);
+        program& operator=(const program&);
     };
 
     using program_ptr = std::shared_ptr<program>;
@@ -48,7 +52,7 @@ namespace zap { namespace engine {
     inline program::program(const std::vector<shader_ptr>& shaders) : id_(INVALID_RESOURCE), linked_(false),
                                                                       shaders_(std::move(shaders)) { }
     inline program::program(std::vector<shader_ptr>&& shaders) : id_(INVALID_RESOURCE), linked_(false),
-                                                             shaders_(std::move(shaders)) { }
+                                                                 shaders_(std::move(shaders)) { }
     inline program::program(program&& rhs) : id_(rhs.id_), linked_(rhs.linked_), shaders_(std::move(rhs.shaders_)) {
         rhs.id_ = INVALID_RESOURCE; rhs.linked_ = false;
     }

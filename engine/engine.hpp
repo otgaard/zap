@@ -5,19 +5,14 @@
 #ifndef ZAP_ENGINE_HPP
 #define ZAP_ENGINE_HPP
 
+#include <core/core.hpp>
+
 #include <memory>
 #include <cassert>
 #include <cstdint>
 
 #define LOGGING_ENABLED
-
 #include "tools/log.hpp"
-// Load OpenGL Definitions in into gl namespace
-/*
-namespace zap { namespace engine { namespace gl {
-#include <OpenGL/gl3.h>
-}}}
-*/
 
 namespace zap { namespace engine {
     using uchar = unsigned char;
@@ -62,13 +57,29 @@ namespace zap { namespace engine {
         BU_SIZE
     };
 
-    enum class buffer_access : std::uint8_t {
+    enum buffer_access : std::uint32_t {
         BA_READ = 1 << 0,
         BA_WRITE = 1 << 1,
         BA_INVALIDATE_RANGE = 1 << 2,
         BA_INVALIDATE_BUFFER = 1 << 3,
         BA_FLUSH_EXPLICIT = 1 << 4,
-        BA_UNSYNCHRONISED = 1 << 5
+        BA_UNSYNCHRONISED = 1 << 5,
+        BA_SIZE = 1 << 6
+    };
+
+    enum class data_type : std::uint8_t {
+        DT_VOID = 0,
+        DT_UCHAR = 1,
+        Dt_CHAR = 2,
+        DT_USHORT = 3,
+        DT_SHORT = 4,
+        DT_UINT = 5,
+        DT_INT = 6,
+        DT_ULONG = 7,
+        DT_LONG = 8,
+        DT_FLOAT = 9,
+        DT_DOUBLE = 10,
+        DT_SIZE = 11
     };
 
     bool _gl_error_log(const char* file, int line);

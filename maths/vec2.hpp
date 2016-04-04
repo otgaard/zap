@@ -9,9 +9,9 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    class vec2 {
+    struct vec2 {
     public:
-        static_assert(std::is_floating_point<T>() || std::is_integral<T>(), "vec2<T>: T must be an algebraic type");
+        static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec2<T>: T must be an algebraic type");
         constexpr static size_t size() { return 2; }
         constexpr static size_t memsize() { return sizeof(vec2<T>); }
 
@@ -59,6 +59,12 @@ namespace zap { namespace maths {
     constexpr vec2<T>operator-(const vec2<T>& lhs, const vec2<T>& rhs) {
         return vec2<T>(lhs.x - rhs.x, lhs.y - rhs.y);
     }
+
+    using vec2b = vec2<uint8_t>;
+    using vec2i = vec2<int>;
+    using vec2f = vec2<float>;
+    using vec2d = vec2<double>;
+
 }}
 
 #endif //ZAP_VEC2_HPP

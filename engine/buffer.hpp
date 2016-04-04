@@ -7,15 +7,12 @@
 #include "engine.hpp"
 
 namespace zap { namespace engine {
-        static const char* const ZERR_UNALLOCATED_BUFFER = "buffer is not allocated";
+    static const char* const ZERR_UNALLOCATED_BUFFER = "buffer is not allocated";
 
-        class buffer {
+    class buffer {
     public:
         inline buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
-        inline ~buffer() {
-            if(is_mapped()) unmap();
-            if(is_allocated()) deallocate();
-        }
+        ~buffer();
 
         inline bool allocate() {
             gl::glGenBuffers(1, &id_);
@@ -46,18 +43,19 @@ namespace zap { namespace engine {
         inline bool is_mapped() const { return mapped_ptr_ != nullptr; }
         inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }
 
-        inline bool initialise(buffer_type type, buffer_usage usage, size_t size, char* data=nullptr) {
-            assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
-            gl::glBufferData(gl::gl_type(type), size, data, gl::gl_type(usage));
-            return gl_error_check();
+        bool initialise(buffer_type type, buffer_usage usage, size_t size, const char* data=nullptr);
+        inline bool initialise(buffer_type type, buffer_usage usage, const std::vector<char>& data) {
+            return initialise(type, usage, data.size(), data.data());
         }
 
-        bool initialise(buffer_type type, buffer_usage usage, const std::vector<char>& data); // glBufferData
-        bool copy(buffer_type type, size_t offset, size_t size, char* data); // glBufferSubData
-        bool copy(buffer_type type, size_t offset, const std::vector<char>& data); // glBufferSubData
+        bool copy(buffer_type type, size_t offset, size_t size, const char* data); // glBufferSubData
+        inline bool copy(buffer_type type, size_t offset, const std::vector<char>& data) {
+            return copy(type, offset, data.size(), data.data());
+        }
+
         char* map(buffer_type type, buffer_access access); // glMapBuffer
         char* map(buffer_type type, buffer_access access, size_t offset, size_t length); // glMapBufferRange
-        bool unmap(); // glUnmapBuffer
+        bool unmap(buffer_type type); // glUnmapBuffer
 
     protected:
         resource_t id_;

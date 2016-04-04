@@ -2,12 +2,15 @@
 
 #define GLFW_INCLUDE_GLCOREARB
 #include <GLFW/glfw3.h>
+#define LOGGING_ENABLED
 #include <tools/log.hpp>
 #include <engine/shader.hpp>
 #include <vector>
 #include <engine/program.hpp>
 #include <maths/mat4.hpp>
 #include <maths/vec3.hpp>
+#include <maths/vec2.hpp>
+#include <engine/buffer_format.hpp>
 
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
@@ -100,6 +103,28 @@ int main(int argc, char* argv[]) {
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     prog->release();
     gl_error_check();
+
+    using namespace zap::maths;
+
+    using pos3_t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
+    using nor3_t = vertex_attribute<vec2f, attribute_type::AT_NORMAL>;
+    using tan3_t = vertex_attribute<vec3f, attribute_type::AT_TANGENT>;
+    using bin3_t = vertex_attribute<vec3f, attribute_type::AT_BINORMAL>;
+    using type_t = vertex<pos3_t, nor3_t, tan3_t, bin3_t>;
+
+    type_t vertex{{{1.0f,2.0f,3.0f}}, {{10.0f,30.0f}}, {{100.0f,200.0f,300.0f}}, {{0.f,0.f,0.f}}};
+    LOG(vertex.position.x, vertex.position.y, vertex.position.z);
+    LOG(vertex.normal.x, vertex.normal.y);
+
+    get<0>(vertex).x = 123.321f;
+    LOG(std::remove_reference<decltype(get_attrib<2>(vertex))>::type::AT_CODE);
+    LOG(type_t::typecode<2>());
+    LOG(type_t::size());
+    LOG(type_t::attrib_size<0>(), type_t::attrib_size<1>());
+    LOG(vertex.position.x, vertex.tangent.y);
+    LOG("offset =", type_t::attrib_offset<4>());
+
+    LOG("sizeof=", sizeof(type_t), sizeof(vertex), sizeof(vec3f)*2+sizeof(vec2f));
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

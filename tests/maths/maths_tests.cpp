@@ -28,3 +28,10 @@ TEST(ZapMathsTests, Clamp) {
     static_assert(clamp5 == -5.f, "min clamp to space failed");
     EXPECT_EQ(clamp1 + clamp2 + clamp3 + clamp4 + clamp5, 1.f + 0.f + 2.f + 5.f - 5.f);
 }
+
+TEST(ZapMathsTests, Log2Power2) {
+    static_assert(0 == log2_power2(1 << 0), "log2_power2 failed on 1 << 0");
+    static_assert(5 == log2_power2(1 << 5), "log2_power2 failed 1 << 5");
+    static_assert(10 == log2_power2(1 << 10), "log2_power2 failed 1 << 10");
+    EXPECT_EQ(log2_power2(1 << 5), 5);
+}

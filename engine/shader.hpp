@@ -35,6 +35,10 @@ namespace zap { namespace engine {
         bool compiled_;
         shader_type type_;
         std::string src_;
+
+    private:
+        shader(const shader&);
+        shader& operator=(const shader&);
     };
 
     using shader_ptr = std::shared_ptr<shader>;

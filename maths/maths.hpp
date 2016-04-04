@@ -17,10 +17,18 @@ namespace zap { namespace maths {
     template <typename T> constexpr T sign(const T& s) { return (s > T(0)) ? T(1) : s < T(0) ? T(-1) : T(0); }
     template <typename T> constexpr T abs(const T& s) { return sign(s)*s; }
     template <typename T> inline T sgn(const T& s) { return is_zero(s) ? T(0) : sign(s); }
-    template <typename T> constexpr T clamp(const T& v, const T& min, const T& max) { return (v < min) ? min : v > max ? max : v; }
+    template <typename T> constexpr T clamp(const T& v, const T& min, const T& max) { return (v < min) ? min : (v > max) ? max : v; }
     template <typename T> constexpr T clamp(const T& v) { return clamp(v, T(0), T(1)); }
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
+
+    template <typename T> T constexpr log2_power2(T po2) {
+        return ((po2 & 0xAAAAAAAA) != 0) |
+               ((po2 & 0xFFFF0000) != 0) << 4 |
+               ((po2 & 0xFF00FF00) != 0) << 3 |
+               ((po2 & 0xF0F0F0F0) != 0) << 2 |
+               ((po2 & 0xCCCCCCCC) != 0) << 1;
+    }
 
     // Type and size safe static initialiser
     template <typename T, size_t N>
@@ -45,9 +53,9 @@ namespace zap { namespace maths {
     }
 
     // Forward Declarations
-    template <typename T> class vec2;
-    template <typename T> class vec3;
-    template <typename T> class vec4;
+    template <typename T> struct vec2;
+    template <typename T> struct vec3;
+    template <typename T> struct vec4;
 }}
 
 #endif //ZAP_MATHS_HPP
