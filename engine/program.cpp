@@ -41,6 +41,7 @@ bool program::link(bool clear) {
 
     // TODO: Specify Attribute Location Parameters Here
     glBindAttribLocation(id_, 0, "position");
+    glBindAttribLocation(id_, 1, "texcoord1");
 
     glLinkProgram(id_);
     GLint success;

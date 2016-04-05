@@ -59,6 +59,11 @@ namespace zap { namespace maths {
         };
     } __attribute__((aligned(16)));
 
+    using vec4b = vec4<uint8_t>;
+    using vec4i = vec4<int>;
+    using vec4f = vec4<float>;
+    using vec4d = vec4<double>;
+
 }}
 
 #endif //ZAP_VEC4_HPP
