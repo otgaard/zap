@@ -6,7 +6,12 @@
 #include <maths/maths.hpp>
 
 namespace zap { namespace engine { namespace gl {
+#ifdef __APPLE__
 #include <OpenGL/gl3.h>
+#elif __linux__
+#define GL3_PROTOTYPES 1
+#include <GL/gl.h>
+#endif //__APPLE__
     constexpr GLenum gl_shader_types[(int)shader_type::ST_SIZE] = {
             GL_VERTEX_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER
     };

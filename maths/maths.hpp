@@ -5,6 +5,7 @@
 #include <core/core.hpp>
 #include <cmath>
 #include <array>
+#include <limits>
 #include <cassert>
 #include <numeric>
 #include <type_traits>

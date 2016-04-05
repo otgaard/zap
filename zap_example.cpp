@@ -1,6 +1,9 @@
 /* Created by Darren Otgaar on 2016/03/05. http://www.github.com/otgaard/zap */
 
+#ifdef __APPLE__
 #define GLFW_INCLUDE_GLCOREARB
+#endif //__APPLE__
+
 #include <GLFW/glfw3.h>
 #define LOGGING_ENABLED
 #include <tools/log.hpp>
