@@ -17,7 +17,7 @@ bool shader::compile(bool clear) {
 
     id_ = glCreateShader(gl_type(type_));
     if(!is_allocated()) {
-        LOG_ERR("Failed to create shader of type", gl_typename(type_));
+        LOG_ERR("Failed to create shader of pod_t", gl_typename(type_));
         return compiled_;
     }
 

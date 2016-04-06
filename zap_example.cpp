@@ -16,6 +16,8 @@
 #include <maths/vec2.hpp>
 #include <engine/buffer_format.hpp>
 
+#include "engine/vertex_buffer.hpp"
+
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
 }
@@ -159,7 +161,7 @@ int main(int argc, char* argv[]) {
     LOG(vertex.texcoord1.x, vertex.texcoord1.y, vertex.texcoord1.z, vertex.texcoord1.w);
 
     get<0>(vertex).x = 123.321f;
-    LOG(std::remove_reference<decltype(get_attrib<2>(vertex))>::type::AT_CODE);
+    LOG(std::remove_reference<decltype(get_attrib<2>(vertex))>::pod_t::AT_CODE);
     LOG(type_t::typecode<2>());
     LOG(type_t::size());
     LOG(type_t::attrib_size<0>(), type_t::attrib_size<1>());
@@ -207,6 +209,10 @@ int main(int argc, char* argv[]) {
     gl_error_check();
     LOG("offsets =", pos3tex2_t::attrib_offset<0>(), pos3tex2_t::attrib_offset<1>());
     glBindVertexArray(0);
+
+    vertex_buffer<pos3tex2_t, buffer_usage::BU_STATIC_DRAW> my_buffer;
+
+
 
 
     while(!glfwWindowShouldClose(window)) {

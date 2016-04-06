@@ -14,31 +14,11 @@ namespace zap { namespace engine {
         inline buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
         ~buffer();
 
-        inline bool allocate() {
-            gl::glGenBuffers(1, &id_);
-            gl_error_check();
-            return is_allocated();
-        }
+        bool allocate();
+        bool deallocate();
 
-        inline bool deallocate() {
-            assert(!is_mapped() && is_allocated() && "buffer is still mapped or is unallocated");
-            if(is_mapped()) return false;
-
-            gl::glDeleteBuffers(1, &id_);
-            id_ = INVALID_RESOURCE;
-            size_ = 0;
-            return true;
-        }
-
-        inline void bind(buffer_type type) {
-            assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
-            gl::glBindBuffer(gl::gl_type(type), id_);
-            gl_error_check();
-        }
-
-        inline void release(buffer_type type) {
-            gl::glBindBuffer(gl::gl_type(type), 0);
-        }
+        void bind(buffer_type type);
+        void release(buffer_type type);
 
         inline bool is_mapped() const { return mapped_ptr_ != nullptr; }
         inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }
@@ -53,8 +33,8 @@ namespace zap { namespace engine {
             return copy(type, offset, data.size(), data.data());
         }
 
-        char* map(buffer_type type, buffer_access access); // glMapBuffer
-        char* map(buffer_type type, buffer_access access, size_t offset, size_t length); // glMapBufferRange
+        char* map(buffer_type type, buffer_access::bitfield access); // glMapBuffer
+        char* map(buffer_type type, buffer_access::bitfield access, size_t offset, size_t length); // glMapBufferRange
         bool unmap(buffer_type type); // glUnmapBuffer
 
     protected:

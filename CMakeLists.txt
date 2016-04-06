@@ -38,7 +38,11 @@ set(ZAP_EXAMPLE_FILES
         engine/gl_api.hpp
         engine/program.cpp
         engine/buffer.cpp
-        engine/buffer.hpp engine/buffer_format.cpp engine/buffer_format.hpp)
+        engine/buffer.hpp
+        engine/buffer_format.hpp
+        engine/vertex_buffer.hpp
+        engine/index_buffer.hpp
+        engine/pixel_buffer.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)

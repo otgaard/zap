@@ -65,7 +65,7 @@ namespace zap { namespace engine { namespace gl {
     constexpr GLenum gl_type(buffer_usage usage) { return gl_buffer_usage[(int)usage]; }
     constexpr const char* gl_typename(buffer_usage usage) { return gl_buffer_usage_names[(int)usage]; }
 
-    constexpr GLbitfield gl_type(buffer_access access) {
+    constexpr GLbitfield gl_type(buffer_access::bitfield access) {
         using maths::log2_power2;
         return ((access & buffer_access::BA_READ ? gl_buffer_access[log2_power2((uint)buffer_access::BA_READ)] : 0) |
                 (access & buffer_access::BA_WRITE ? gl_buffer_access[log2_power2((uint)buffer_access::BA_WRITE)] : 0) |
@@ -74,7 +74,7 @@ namespace zap { namespace engine { namespace gl {
                 (access & buffer_access::BA_FLUSH_EXPLICIT ? gl_buffer_access[log2_power2((uint)buffer_access::BA_FLUSH_EXPLICIT)] : 0) |
                 (access & buffer_access::BA_UNSYNCHRONISED ? gl_buffer_access[log2_power2((uint)buffer_access::BA_UNSYNCHRONISED)] : 0));
     }
-    constexpr const char* gl_typename(buffer_access access) {
+    constexpr const char* gl_typename(buffer_access::bitfield access) {
         return gl_buffer_access_names[maths::log2_power2((uint)access)];
     }
 
