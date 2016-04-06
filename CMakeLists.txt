@@ -82,5 +82,6 @@ target_link_libraries(zap_example glfw3 ${GLFW_LIBS})
 add_executable(zap_cmd ${ZAP_COMMAND_LINE})
 #target_link_libraries(zap_cmd)
 
+
 add_executable(zap_maths_tests ${ZAP_TESTS_MATHS_FILES})
 target_link_libraries(zap_maths_tests gtest ${GTEST_LIBS})

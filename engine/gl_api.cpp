@@ -19,6 +19,7 @@ bool zap::engine::_gl_error_log(const char* file, int line) {
         LOG_ERR("OpenGL Error:", error, "in", file, "@", line);
         return true;
     }
+
     return false;
 }
 
