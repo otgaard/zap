@@ -3,6 +3,7 @@
 #define ZAP_BUFFER_FORMAT_HPP
 
 #include "engine.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace engine {
 
@@ -167,18 +168,15 @@ struct offset_table {
 template <typename... Args>
 struct vertex : pod<Args...> {
     typedef pod<Args...> pod_t;
-    constexpr static size_t size() { return sizeof...(Args); }
+    constexpr static size_t attrib_count() { return sizeof...(Args); }
+    constexpr static size_t size() { return sizeof(pod_t); }
     template <size_t k> constexpr static attribute_type::bitfield typecode() { return engine::typecode<k, pod_t>(); }
+    template <size_t k> constexpr static size_t index() { return maths::log2_power2(uint32_t(engine::typecode<k, pod_t>())); }
     template <size_t k> constexpr static size_t attrib_size() { return sizeof(typename type_query<k, pod_t>::type); }
     template <size_t k> constexpr static size_t attrib_offset() { return engine::offset_table<k, pod_t>::offset; }
 
     vertex() { }
     vertex(Args... args) : pod<Args...>(args...) { }
-};
-
-template <typename... Args>
-struct index : pod<Args...> {
-
 };
 
 #pragma pack(pop)

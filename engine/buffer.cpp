@@ -12,6 +12,7 @@ buffer::~buffer() {
 
 bool buffer::allocate() {
     gl::glGenBuffers(1, &id_);
+    LOG("Allocated", id_);
     gl_error_check();
     return is_allocated();
 }
@@ -23,6 +24,8 @@ bool buffer::deallocate() {
     gl::glDeleteBuffers(1, &id_);
     id_ = INVALID_RESOURCE;
     size_ = 0;
+    LOG("deallocated");
+
     return true;
 }
 
@@ -36,9 +39,17 @@ void buffer::release(buffer_type type) {
     gl::glBindBuffer(gl::gl_type(type), 0);
 }
 
+bool buffer::is_bound() const {
+    LOG_WARN("OpenGL query operation invoked");
+    GLint bound = 0;
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bound);
+    return bound == id_;
+}
 
 bool buffer::initialise(buffer_type type, buffer_usage usage, size_t size, const char* data) {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
+    assert(is_bound() && "Attempt to initialise unbound buffer");
+    LOG(gl_typename(type), gl_typename(usage));
     glBufferData(gl_type(type), size, data, gl_type(usage));
     if(gl_error_check()) return false;
     size_ = size;
@@ -46,7 +57,7 @@ bool buffer::initialise(buffer_type type, buffer_usage usage, size_t size, const
 }
 
 bool buffer::copy(buffer_type type, size_t offset, size_t size, const char* data) {
-    assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
+    assert(is_allocated() && (offset + size) <= size_ && "Buffer unallocated or too small");
     glBufferSubData(gl_type(type), offset, size, data);
     return !gl_error_check();
 }
@@ -62,7 +73,7 @@ char* buffer::map(buffer_type type, buffer_access::bitfield access) {
 }
 
 char* buffer::map(buffer_type type, buffer_access::bitfield access, size_t offset, size_t length) {
-    assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
+    assert(is_allocated() && (offset + length) <= size_ && "Buffer unallocated or too small");
     mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, gl_type(access)));
     if(mapped_ptr_ == nullptr || gl_error_check()) {
         unmap(type);

@@ -72,7 +72,7 @@ namespace zap { namespace engine {
     enum class data_type : std::uint8_t {
         DT_VOID = 0,
         DT_UCHAR = 1,
-        Dt_CHAR = 2,
+        DT_CHAR = 2,
         DT_USHORT = 3,
         DT_SHORT = 4,
         DT_UINT = 5,

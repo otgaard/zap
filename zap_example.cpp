@@ -101,28 +101,6 @@ int main(int argc, char* argv[]) {
     auto prog2 = std::make_shared<program>(std::move(arr));
     prog2->link(true);
 
-    float tri[3][3] = {
-        { -1.f, -0.5f, 0.5f },
-        { -1.f, +0.5f, 0.5f },
-        { +1.f,   0.f, 0.5f }
-    };
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    if(vao == INVALID_RESOURCE) LOG_ERR("Could not allocate vertex array");
-    glBindVertexArray(vao);
-
-    gl_error_check();
-
-    GLuint buf;
-    glGenBuffers(1, &buf);
-    if(buf == INVALID_RESOURCE) LOG_ERR("Could not allocate vertex buffer");
-    glBindBuffer(GL_ARRAY_BUFFER, buf);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(tri), (void*)tri, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glBindVertexArray(0);
-
     zap::maths::mat4<float> proj_matrix = {
         80/1280.f,      0.f, 0.f, 0.f,
         0.f,       80/768.f, 0.f, 0.f,
@@ -144,85 +122,48 @@ int main(int argc, char* argv[]) {
 
     using namespace zap::maths;
 
-    /*
-    using pos3_t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
-    using nor3_t = vertex_attribute<vec2f, attribute_type::AT_NORMAL>;
-    using tan3_t = vertex_attribute<vec3f, attribute_type::AT_TANGENT>;
-    using bin3_t = vertex_attribute<vec3f, attribute_type::AT_BINORMAL>;
-    using tst4_t = vertex_attribute<vec4f, attribute_type::AT_TEXCOORD1>;
-    using type_t = vertex<pos3_t, nor3_t, tan3_t, bin3_t, tst4_t>;
-
-    type_t vertex{{{1.0f,2.0f,3.0f}}, {{10.0f,30.0f}}, {{100.0f,200.0f,300.0f}}, {{0.f,0.f,0.f}}, {{1.f,2.f,3.f,4.f}}};
-    LOG(vertex.position.x, vertex.position.y, vertex.position.z);
-    LOG(vertex.normal.x, vertex.normal.y);
-    LOG(vertex.texcoord1.x, vertex.texcoord1.y, vertex.texcoord1.z, vertex.texcoord1.w);
-
-    vertex.texcoord1 = vec4f(10.f,20.f,30.f,40.f);
-    LOG(vertex.texcoord1.x, vertex.texcoord1.y, vertex.texcoord1.z, vertex.texcoord1.w);
-
-    get<0>(vertex).x = 123.321f;
-    LOG(std::remove_reference<decltype(get_attrib<2>(vertex))>::pod_t::AT_CODE);
-    LOG(type_t::typecode<2>());
-    LOG(type_t::size());
-    LOG(type_t::attrib_size<0>(), type_t::attrib_size<1>());
-    LOG(vertex.position.x, vertex.tangent.y);
-    LOG("offset =", type_t::attrib_offset<4>());
-
-    LOG("sizeof=", sizeof(type_t), sizeof(vertex), sizeof(vec3f)*2+sizeof(vec2f));
-    */
-
     // Now let's test it in OpenGL
     using position_3t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
     using texcoord1_2t = vertex_attribute<vec2f, attribute_type::AT_TEXCOORD1>;
     using pos3tex2_t = vertex<position_3t, texcoord1_2t>;
+    using vertex_t = vertex_buffer<pos3tex2_t, buffer_usage::BU_STATIC_DRAW>;
+    vertex_t my_buffer;
+    std::vector<pos3tex2_t> disc(61);
 
-    pos3tex2_t triangle[3] = {
-            {
-                    {{-10.f,-10.f,0.f}}, {{0.f,0.f}}
-            },
-            {
-                    {{-10.f,10.f,0.f}}, {{0.f,1.f}}
-            },
-            {
-                    {{10.f,0.f,0.f}}, {{1.f,0.5f}}
-            }
-    };
+    float theta = 0.0f;
+    const float inc = M_PI/30.f;
 
-    LOG(sizeof(triangle), sizeof(vec3f)*3 + sizeof(vec2f)*3);
+    for(auto& v : disc) {
+        auto stheta = std::sin(theta); auto ctheta = std::cos(theta);
+        v.texcoord1.x = 0.5f*ctheta + 0.5f;
+        v.texcoord1.y = 0.5f*stheta + 0.5f;
+        v.position.x = 5.f*ctheta + 10.f;
+        v.position.y = 5.f*stheta;
+        v.position.z = 0;
+        theta += inc;
+    }
 
-    GLuint vao2;
-    glGenVertexArrays(1, &vao2);
-    if(vao2 == INVALID_RESOURCE) LOG_ERR("Could not allocate vertex array");
-    glBindVertexArray(vao2);
-
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
     gl_error_check();
 
-    GLuint buf2;
-    glGenBuffers(1, &buf2);
-    if(buf2 == INVALID_RESOURCE) LOG_ERR("Could not allocate vertex buffer");
-    glBindBuffer(GL_ARRAY_BUFFER, buf2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), (void*)triangle, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(pos3tex2_t), (void*)pos3tex2_t::attrib_offset<0>());
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(pos3tex2_t), (void*)pos3tex2_t::attrib_offset<1>());
-    gl_error_check();
-    LOG("offsets =", pos3tex2_t::attrib_offset<0>(), pos3tex2_t::attrib_offset<1>());
+    my_buffer.allocate();
+    my_buffer.bind();
+    my_buffer.initialise(disc);
+
     glBindVertexArray(0);
-
-    vertex_buffer<pos3tex2_t, buffer_usage::BU_STATIC_DRAW> my_buffer;
-
-
-
+    gl_error_check();
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        glBindVertexArray(vao2);
         prog2->bind();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        prog2->release();
+        glBindVertexArray(vao);
+        glDrawArrays(GL_LINE_STRIP, 0, my_buffer.vertex_count());
+        gl_error_check();
         glBindVertexArray(0);
+        prog2->release();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -19,6 +19,7 @@ namespace zap { namespace engine {
 
         void bind(buffer_type type);
         void release(buffer_type type);
+        bool is_bound() const;
 
         inline bool is_mapped() const { return mapped_ptr_ != nullptr; }
         inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }
@@ -41,10 +42,7 @@ namespace zap { namespace engine {
         resource_t id_;
         size_t size_;
         char* mapped_ptr_;
-        std::vector<char> local_;
     };
-
-
 }}
 
 #endif //ZAP_BUFFER_HPP

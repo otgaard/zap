@@ -42,7 +42,7 @@ set(ZAP_EXAMPLE_FILES
         engine/buffer_format.hpp
         engine/vertex_buffer.hpp
         engine/index_buffer.hpp
-        engine/pixel_buffer.hpp)
+        engine/pixel_buffer.hpp engine/vertex_buffer.cpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)
@@ -50,7 +50,7 @@ set(ZAP_COMMAND_LINE
 set(ZAP_TESTS_MATHS_FILES
         tests/maths/vector_tests.cpp
         tests/maths/maths_tests.cpp
-        tests/maths/matrix_tests.cpp)
+        tests/maths/matrix_tests.cpp tests/engine/buffer_format_tests.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
