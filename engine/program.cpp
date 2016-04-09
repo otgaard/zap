@@ -39,9 +39,9 @@ bool program::link(bool clear) {
         else LOG_ERR("Shader failed to compile during program construction");
     }
 
-    // TODO: Specify Attribute Location Parameters Here
-    glBindAttribLocation(id_, 0, "position");
-    glBindAttribLocation(id_, 1, "texcoord1");
+    for(size_t i = 0; i != maths::log2_pow2(size_t(attribute_type::AT_GUARD)); ++i) {
+        glBindAttribLocation(id_, i, attribute_name[i]);
+    }
 
     glLinkProgram(id_);
     GLint success;

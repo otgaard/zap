@@ -30,8 +30,15 @@ TEST(ZapMathsTests, Clamp) {
 }
 
 TEST(ZapMathsTests, Log2Power2) {
-    static_assert(0 == log2_power2(1 << 0), "log2_power2 failed on 1 << 0");
-    static_assert(5 == log2_power2(1 << 5), "log2_power2 failed 1 << 5");
-    static_assert(10 == log2_power2(1 << 10), "log2_power2 failed 1 << 10");
-    EXPECT_EQ(log2_power2(1 << 5), 5);
+    static_assert(0 == log2_pow2(1 << 0), "log2_power2 failed on 1 << 0");
+    static_assert(5 == log2_pow2(1 << 5), "log2_power2 failed 1 << 5");
+    static_assert(10 == log2_pow2(1 << 10), "log2_power2 failed 1 << 10");
+    EXPECT_EQ(log2_pow2(1 << 5), 5);
+}
+
+TEST(ZapMathsTests, Power2) {
+    static_assert(1 == pow2<0>::value, "pow2(0) should equal 1");
+    static_assert(2*2*2*2*2 == pow2<5>::value, "pow2(5) should equal 2*2*2*2*2");
+    constexpr auto two_to_the_seven = pow2<7>::value;   // EXPECT_EQ causes a link error due to expansion
+    EXPECT_EQ(2*2*2*2*2*2*2, two_to_the_seven);
 }

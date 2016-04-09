@@ -9,6 +9,7 @@ namespace zap { namespace maths {
 
     template <typename T>
     struct vec3 {
+        using type = T;
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec3<T>: T must be an algebraic type");
         constexpr static size_t size() { return 3; }
         constexpr static size_t memsize() { return sizeof(vec3<T>); }

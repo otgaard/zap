@@ -6,6 +6,7 @@
 #define ZAP_ENGINE_HPP
 
 #include <core/core.hpp>
+#include <maths/maths.hpp>
 
 #include <memory>
 #include <cassert>
@@ -58,15 +59,16 @@ namespace zap { namespace engine {
     };
 
     struct buffer_access {
-        constexpr static size_t BA_SIZE = 6;
         enum bitfield {
             BA_READ = 1 << 0,
             BA_WRITE = 1 << 1,
             BA_INVALIDATE_RANGE = 1 << 2,
             BA_INVALIDATE_BUFFER = 1 << 3,
             BA_FLUSH_EXPLICIT = 1 << 4,
-            BA_UNSYNCHRONISED = 1 << 5
+            BA_UNSYNCHRONISED = 1 << 5,
+            BA_GUARD = 1 << 6
         };
+        constexpr static size_t BA_SIZE = maths::log2_pow2(size_t(BA_GUARD));
     };
 
     enum class data_type : std::uint8_t {
@@ -84,8 +86,19 @@ namespace zap { namespace engine {
         DT_SIZE = 11
     };
 
+    template <typename T> struct dt_descriptor { enum { value = int(data_type::DT_VOID) }; };
+    template <> struct dt_descriptor<unsigned char> { enum { value = int(data_type::DT_UCHAR) }; };
+    template <> struct dt_descriptor<char> { enum { value = int(data_type::DT_CHAR) }; };
+    template <> struct dt_descriptor<unsigned short> { enum { value = int(data_type::DT_USHORT) }; };
+    template <> struct dt_descriptor<short> { enum { value = int(data_type::DT_SHORT) }; };
+    template <> struct dt_descriptor<unsigned int> { enum { value = int(data_type::DT_UINT) }; };
+    template <> struct dt_descriptor<int> { enum { value = int(data_type::DT_INT) }; };
+    template <> struct dt_descriptor<unsigned long> { enum { value = int(data_type::DT_ULONG) }; };
+    template <> struct dt_descriptor<long> { enum { value = int(data_type::DT_LONG) }; };
+    template <> struct dt_descriptor<float> { enum { value = int(data_type::DT_FLOAT) }; };
+    template <> struct dt_descriptor<double> { enum { value = int(data_type::DT_DOUBLE) }; };
+
     struct attribute_type {
-        constexpr static size_t AT_SIZE = 16;
         enum bitfield {
             AT_POSITION = 1 << 0,
             AT_NORMAL = 1 << 1,
@@ -102,8 +115,29 @@ namespace zap { namespace engine {
             AT_BLENDINDEX = 1 << 12,
             AT_BLENDWEIGHT = 1 << 13,
             AT_FOGCOORD = 1 << 14,
-            AT_POINTSIZE = 1 << 15
+            AT_POINTSIZE = 1 << 15,
+            AT_GUARD = 1 << 16
         };
+        constexpr static size_t AT_SIZE = maths::log2_pow2(size_t(AT_GUARD));
+    };
+
+    constexpr static const char* attribute_name[maths::log2_pow2(size_t(attribute_type::AT_GUARD))] = {
+            "position",
+            "normal",
+            "tangent",
+            "binormal",
+            "texcoord1",
+            "texcoord2",
+            "texcoord3",
+            "texcoord4",
+            "texcoord5",
+            "texcoord6",
+            "colour1",
+            "colour2",
+            "blend_index",
+            "blend_weight",
+            "fog_coord",
+            "point_size"
     };
 
     bool _gl_error_log(const char* file, int line);

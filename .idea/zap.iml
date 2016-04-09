@@ -9,7 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/maths/vector_tests.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/engine/buffer_format_tests.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/engine/pixel_buffer.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/engine/index_buffer.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/engine/vertex_attribute.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/engine/buffer_format.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/engine/gl_api.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/engine/shader.cpp" isTestSource="false" />
@@ -22,8 +22,10 @@
       <sourceFolder url="file://$MODULE_DIR$/engine/buffer.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/engine/program.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/engine/vertex_buffer.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/engine/index_buffer.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/core/core.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/zap_command.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/vec3.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/mat2.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/vec4.hpp" isTestSource="false" />
@@ -31,7 +33,6 @@
       <sourceFolder url="file://$MODULE_DIR$/maths/mat4.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/maths.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/vec2.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">

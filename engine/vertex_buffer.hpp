@@ -28,8 +28,14 @@ public:
     inline void bind() { buffer::bind(buf_type); }
     inline void release() { buffer::release(buf_type); }
 
-    inline bool initialise(size_t size, const char* data=nullptr) { buffer::initialise(buf_type, usage, size, data); }
-    inline bool initialise(const std::vector<char>& data) { buffer::initialise(buf_type, usage, data); }
+    inline bool initialise(size_t size, const char* data=nullptr) {
+        return buffer::initialise(buf_type, usage, size, data) && configure_attributes();
+    }
+
+    inline bool initialise(const std::vector<char>& data) {
+        return buffer::initialise(buf_type, usage, data) && configure_attributes();
+    }
+
     inline bool initialise(const std::vector<vertex_t>& data) {
         auto result = buffer::initialise(buf_type, usage, vertex_t::size()*data.size(),
                                          reinterpret_cast<const char*>(data.data()));
@@ -57,13 +63,12 @@ bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
 
     LOG_WARN("*** hardcoded values here ***");
 
-    LOG(type_query<0,pod_t>::type::type::size(), type_query<1,pod_t>::type::type::size());
-    LOG(vertex_t::template attrib_offset<0>(), vertex_t::template attrib_offset<1>());
+    // TODO: Bind a single attribute via a different branch
+    for(size_t i = 0; i != vertex_t::attrib_count(); ++i) {
+        gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
+            data_type::DT_FLOAT, false, vertex_t::size(), (void*)vertex_t::offsets::data[i]);
+    }
 
-    gl::vertex_attrib_ptr(0, type_query<0,pod_t>::type::type::size(), data_type::DT_FLOAT, false, vertex_t::size(),
-                          (void*)vertex_t::template attrib_offset<0>());
-    gl::vertex_attrib_ptr(1, type_query<1,pod_t>::type::type::size(), data_type::DT_FLOAT, false, vertex_t::size(),
-                          (void*)vertex_t::template attrib_offset<1>());
     return true;
 }
 

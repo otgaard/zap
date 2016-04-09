@@ -4,6 +4,7 @@
 
 #include "engine.hpp"
 #include <maths/maths.hpp>
+#include "vertex_attribute.hpp"
 
 namespace zap { namespace engine {
 
@@ -12,90 +13,6 @@ namespace zap { namespace engine {
 
 struct index_type {
     constexpr static size_t IT_SIZE = 0;
-};
-
-template <typename T, attribute_type::bitfield CODE>
-struct vertex_attribute {
-};
-
-template <typename T> struct vertex_attribute<T, attribute_type::AT_POSITION> {
-    typedef T type;
-    constexpr static size_t AT_CODE = attribute_type::AT_POSITION;
-    constexpr static size_t size() { return sizeof(vertex_attribute); }
-
-    vertex_attribute() { }
-    vertex_attribute(const T& v) : value(v) { }
-    vertex_attribute(const vertex_attribute& rhs) : value(rhs.value) { }
-    vertex_attribute& operator=(const vertex_attribute& rhs) { if(this != &rhs) value = rhs.value; return *this; }
-
-    union {
-        T position;
-        T value;
-    };
-};
-
-template <typename T> struct vertex_attribute<T, attribute_type::AT_NORMAL> {
-    typedef T type;
-    constexpr static size_t AT_CODE = attribute_type::AT_NORMAL;
-    constexpr static size_t size() { return sizeof(vertex_attribute); }
-
-    vertex_attribute() { }
-    vertex_attribute(const T& v) : value(v) { }
-    vertex_attribute(const vertex_attribute& rhs) : value(rhs.value) { }
-    vertex_attribute& operator=(const vertex_attribute& rhs) { if(this != &rhs) value = rhs.value; return *this; }
-
-    union {
-        T normal;
-        T value;
-    };
-};
-
-template <typename T> struct vertex_attribute<T, attribute_type::AT_TANGENT> {
-    typedef T type;
-    constexpr static size_t AT_CODE = attribute_type::AT_TANGENT;
-    constexpr static size_t size() { return sizeof(vertex_attribute); }
-
-    vertex_attribute() { }
-    vertex_attribute(const T& v) : value(v) { }
-    vertex_attribute(const vertex_attribute& rhs) : value(rhs.value) { }
-    vertex_attribute& operator=(const vertex_attribute& rhs) { if(this != &rhs) value = rhs.value; return *this; }
-
-    union {
-        T tangent;
-        T value;
-    };
-};
-
-template <typename T> struct vertex_attribute<T, attribute_type::AT_BINORMAL> {
-    typedef T type;
-    constexpr static size_t AT_CODE = attribute_type::AT_BINORMAL;
-    constexpr static size_t size() { return sizeof(vertex_attribute); }
-
-    vertex_attribute() { }
-    vertex_attribute(const T& v) : value(v) { }
-    vertex_attribute(const vertex_attribute& rhs) : value(rhs.value) { }
-    vertex_attribute& operator=(const vertex_attribute& rhs) { if(this != &rhs) value = rhs.value; return *this; }
-
-    union {
-        T binormal;
-        T value;
-    };
-};
-
-template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD1> {
-    typedef T type;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD1;
-    constexpr static size_t size() { return sizeof(vertex_attribute); }
-
-    vertex_attribute() { }
-    vertex_attribute(const T& v) : value(v) { }
-    vertex_attribute(const vertex_attribute& rhs) : value(rhs.value) { }
-    vertex_attribute& operator=(const vertex_attribute& rhs) { if(this != &rhs) value = rhs.value; return *this; }
-
-    union {
-        T texcoord1;
-        T value;
-    };
 };
 
 // A variadic POD type
@@ -165,13 +82,64 @@ struct offset_table {
     constexpr static size_t offset = type_query<k-1,T>::type::size() + offset_table<k-1,T>::offset;
 };
 
+struct vertex_data {
+    size_t offset;
+    data_type type;
+    size_t count;
+};
+
+template <size_t... P> struct type_table {
+    static const size_t data[sizeof...(P)];
+};
+
+template <size_t... P> const size_t type_table<P...>::data[sizeof...(P)] = { P... };
+
+template <size_t k, typename POD_T, template <size_t, typename> class FNC, size_t... arr>
+struct table_generator_i {
+    typedef typename table_generator_i<k-1, POD_T, FNC, FNC<k, POD_T>::value, arr...>::result result;
+};
+
+template <typename POD_T, template <size_t, typename> class FNC, size_t... arr>
+struct table_generator_i<0, POD_T, FNC, arr...> {
+    typedef type_table<FNC<0, POD_T>::value, arr...> result;
+};
+
+template <size_t k, typename POD_T, template <size_t, typename>  class FNC>
+struct generate_table {
+    typedef typename table_generator_i<k-1, POD_T, FNC>::result result;
+};
+
+template <size_t k, typename POD_T>
+struct vattrib_offset {
+    enum {
+        value = offset_table<k, POD_T>::offset                  // pod value offset in vertex type
+    };
+};
+
+template <size_t k, typename POD_T>
+struct vattrib_type {
+    enum {
+        value = engine::typecode<k, POD_T>()                    // attribute_type of vertex attribute
+    };
+};
+
+template <size_t k, typename POD_T>
+struct vattrib_count {
+    enum {
+        value = type_query<k, POD_T>::type::type::size()        // wrapper type -> stored type -> elements
+    };
+};
+
 template <typename... Args>
 struct vertex : pod<Args...> {
     typedef pod<Args...> pod_t;
     constexpr static size_t attrib_count() { return sizeof...(Args); }
+    typedef typename generate_table<attrib_count(), pod_t, vattrib_offset>::result offsets;
+    typedef typename generate_table<attrib_count(), pod_t, vattrib_type>::result types;
+    typedef typename generate_table<attrib_count(), pod_t, vattrib_count>::result counts;
     constexpr static size_t size() { return sizeof(pod_t); }
     template <size_t k> constexpr static attribute_type::bitfield typecode() { return engine::typecode<k, pod_t>(); }
-    template <size_t k> constexpr static size_t index() { return maths::log2_power2(uint32_t(engine::typecode<k, pod_t>())); }
+    template <size_t k> constexpr static size_t index() { return maths::log2_pow2(uint32_t(engine::typecode<k, pod_t>())); }
     template <size_t k> constexpr static size_t attrib_size() { return sizeof(typename type_query<k, pod_t>::type); }
     template <size_t k> constexpr static size_t attrib_offset() { return engine::offset_table<k, pod_t>::offset; }
 

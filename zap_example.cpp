@@ -45,18 +45,22 @@ const char* vtx2_src = GLSL(
     uniform mat4 proj_matrix;
     in vec3 position;
     in vec2 texcoord1;
+    in vec3 colour2;
     out vec2 tex1;
+    out vec3 col;
     void main() {
         tex1 = texcoord1;
+        col = colour2;
         gl_Position = proj_matrix*(vec4(position.x, position.y, position.z, 1.0));
     }
 );
 
 const char* frg2_src = GLSL(
     in vec2 tex1;
+    in vec3 col;
     out vec4 frag_colour;
     void main() {
-        frag_colour = mix(vec4(1,0,0,1), vec4(1,1,0,1), tex1.y);
+        frag_colour = mix(vec4(col,1), vec4(1,1,0,1), tex1.y);
     }
 );
 
@@ -125,10 +129,11 @@ int main(int argc, char* argv[]) {
     // Now let's test it in OpenGL
     using position_3t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
     using texcoord1_2t = vertex_attribute<vec2f, attribute_type::AT_TEXCOORD1>;
-    using pos3tex2_t = vertex<position_3t, texcoord1_2t>;
-    using vertex_t = vertex_buffer<pos3tex2_t, buffer_usage::BU_STATIC_DRAW>;
+    using colour2_3t = vertex_attribute<vec3f, attribute_type::AT_COLOUR2>;
+    using pos3tex2col3_t = vertex<position_3t, texcoord1_2t, colour2_3t>;
+    using vertex_t = vertex_buffer<pos3tex2col3_t, buffer_usage::BU_STATIC_DRAW>;
     vertex_t my_buffer;
-    std::vector<pos3tex2_t> disc(61);
+    std::vector<pos3tex2col3_t> disc(61);
 
     float theta = 0.0f;
     const float inc = M_PI/30.f;
@@ -140,6 +145,9 @@ int main(int argc, char* argv[]) {
         v.position.x = 5.f*ctheta + 10.f;
         v.position.y = 5.f*stheta;
         v.position.z = 0;
+        v.colour2.x = 1.0f;
+        v.colour2.y = 0.5f;
+        v.colour2.z = 1.0f;
         theta += inc;
     }
 

@@ -23,13 +23,17 @@ namespace zap { namespace maths {
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
 
-    template <typename T> T constexpr log2_power2(T po2) {
+    template <typename T> T constexpr log2_pow2(T po2) {
         return ((po2 & 0xAAAAAAAA) != 0) |
                ((po2 & 0xFFFF0000) != 0) << 4 |
                ((po2 & 0xFF00FF00) != 0) << 3 |
                ((po2 & 0xF0F0F0F0) != 0) << 2 |
                ((po2 & 0xCCCCCCCC) != 0) << 1;
     }
+
+    template <size_t k> struct pow2;
+    template <> struct pow2<0> { constexpr static size_t value = 1; };
+    template <size_t k> struct pow2 { constexpr static size_t value = 2 * pow2<k-1>::value; };
 
     // Type and size safe static initialiser
     template <typename T, size_t N>
