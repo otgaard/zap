@@ -82,12 +82,6 @@ struct offset_table {
     constexpr static size_t offset = type_query<k-1,T>::type::size() + offset_table<k-1,T>::offset;
 };
 
-struct vertex_data {
-    size_t offset;
-    data_type type;
-    size_t count;
-};
-
 template <size_t... P> struct type_table {
     static const size_t data[sizeof...(P)];
 };
@@ -130,6 +124,13 @@ struct vattrib_count {
     };
 };
 
+template <size_t k, typename POD_T>
+struct vattrib_datatype {
+    enum {
+        value = dt_descriptor<typename type_query<k, POD_T>::type::type::type>::value
+    };
+};
+
 template <typename... Args>
 struct vertex : pod<Args...> {
     typedef pod<Args...> pod_t;
@@ -137,7 +138,8 @@ struct vertex : pod<Args...> {
     typedef typename generate_table<attrib_count(), pod_t, vattrib_offset>::result offsets;
     typedef typename generate_table<attrib_count(), pod_t, vattrib_type>::result types;
     typedef typename generate_table<attrib_count(), pod_t, vattrib_count>::result counts;
-    constexpr static size_t size() { return sizeof(pod_t); }
+    typedef typename generate_table<attrib_count(), pod_t, vattrib_datatype>::result datatypes;
+    constexpr static size_t size() { return sizeof(vertex); }
     template <size_t k> constexpr static attribute_type::bitfield typecode() { return engine::typecode<k, pod_t>(); }
     template <size_t k> constexpr static size_t index() { return maths::log2_pow2(uint32_t(engine::typecode<k, pod_t>())); }
     template <size_t k> constexpr static size_t attrib_size() { return sizeof(typename type_query<k, pod_t>::type); }
@@ -146,6 +148,77 @@ struct vertex : pod<Args...> {
     vertex() { }
     vertex(Args... args) : pod<Args...>(args...) { }
 };
+
+template <typename VTX_T>
+class vertex_iterator : public std::iterator<std::forward_iterator_tag, VTX_T> {
+public:
+    using vertex_t = VTX_T;
+    vertex_iterator(vertex_t* ptr) : ptr_(ptr) { }
+    vertex_iterator(const vertex_iterator& rhs) : ptr_(rhs.ptr_) { }
+    vertex_iterator& operator++() { ++ptr_; return *this; }
+    vertex_iterator operator++(int) { vertex_iterator tmp(*this); operator++(); return tmp; }
+    bool operator==(const vertex_iterator& rhs) { return ptr_ == rhs.ptr_; }
+    bool operator!=(const vertex_iterator& rhs) { return ptr_ != rhs.ptr_; }
+    vertex_t& operator*() { return *ptr_; }
+    vertex_t* operator->() { return ptr_; }
+    vertex_iterator& operator--() { --ptr_; return *this; }
+    vertex_iterator operator--(int) { vertex_iterator tmp(*this); operator--(); return tmp; }
+
+    template <typename T> friend bool operator<(const vertex_iterator& lhs, const vertex_iterator& rhs);
+    template <typename T> friend bool operator>(const vertex_iterator& lhs, const vertex_iterator& rhs);
+    template <typename T> friend bool operator<=(const vertex_iterator& lhs, const vertex_iterator& rhs);
+    template <typename T> friend bool operator>=(const vertex_iterator& lhs, const vertex_iterator& rhs);
+
+    vertex_iterator& operator+=(size_t v) { ptr_ += v; return *this; }
+    template <typename T> friend vertex_iterator operator+(const vertex_iterator& lhs, size_t rhs);
+    template <typename T> friend vertex_iterator operator+(size_t lhs, const vertex_iterator& rhs);
+    vertex_iterator& operator-=(size_t v) { ptr_ -= v; return *this; }
+    template <typename T> friend vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs);
+    template <typename T> friend int operator-(const vertex_iterator& lhs, const vertex_iterator& rhs);
+
+private:
+    vertex_t* ptr_;
+};
+
+template <typename T>
+bool operator<(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+    return lhs.ptr_ < rhs.ptr_;
+}
+
+template <typename T>
+bool operator>(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+    return lhs.ptr_ > rhs.ptr_;
+}
+
+template <typename T>
+bool operator<=(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+    return lhs.ptr_ <= rhs.ptr_;
+}
+
+template <typename T>
+bool operator>=(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+    return lhs.ptr_ >= rhs.ptr_;
+}
+
+template <typename T>
+vertex_iterator<T> operator+(const vertex_iterator<T>& lhs, size_t rhs) {
+    return vertex_iterator<T>(lhs.ptr_ + rhs);
+}
+
+template <typename T>
+vertex_iterator<T> operator+(size_t lhs, const vertex_iterator<T>& rhs) {
+    return vertex_iterator<T>(rhs.ptr_ + lhs);
+}
+
+template <typename T>
+vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs) {
+    return vertex_iterator<T>(lhs.ptr_ - rhs);
+}
+
+template <typename T>
+int operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+    return lhs.ptr_ - rhs.ptr_;
+}
 
 #pragma pack(pop)
 

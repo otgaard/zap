@@ -42,7 +42,7 @@ set(ZAP_EXAMPLE_FILES
         engine/buffer_format.hpp
         engine/vertex_buffer.hpp
         engine/index_buffer.hpp
-        engine/pixel_buffer.hpp engine/vertex_buffer.cpp engine/vertex_attribute.hpp)
+        engine/pixel_buffer.hpp engine/vertex_buffer.cpp engine/vertex_attribute.hpp maths/functions.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)

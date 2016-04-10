@@ -15,6 +15,7 @@
 #include <maths/vec3.hpp>
 #include <maths/vec2.hpp>
 #include <engine/buffer_format.hpp>
+#include <maths/functions.hpp>
 
 #include "engine/vertex_buffer.hpp"
 
@@ -44,23 +45,15 @@ const char* frg_src = GLSL(
 const char* vtx2_src = GLSL(
     uniform mat4 proj_matrix;
     in vec3 position;
-    in vec2 texcoord1;
-    in vec3 colour2;
-    out vec2 tex1;
-    out vec3 col;
     void main() {
-        tex1 = texcoord1;
-        col = colour2;
         gl_Position = proj_matrix*(vec4(position.x, position.y, position.z, 1.0));
     }
 );
 
 const char* frg2_src = GLSL(
-    in vec2 tex1;
-    in vec3 col;
     out vec4 frag_colour;
     void main() {
-        frag_colour = mix(vec4(col,1), vec4(1,1,0,1), tex1.y);
+        frag_colour = vec4(1,1,1,1);
     }
 );
 
@@ -128,50 +121,98 @@ int main(int argc, char* argv[]) {
 
     // Now let's test it in OpenGL
     using position_3t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
-    using texcoord1_2t = vertex_attribute<vec2f, attribute_type::AT_TEXCOORD1>;
-    using colour2_3t = vertex_attribute<vec3f, attribute_type::AT_COLOUR2>;
-    using pos3tex2col3_t = vertex<position_3t, texcoord1_2t, colour2_3t>;
-    using vertex_t = vertex_buffer<pos3tex2col3_t, buffer_usage::BU_STATIC_DRAW>;
-    vertex_t my_buffer;
-    std::vector<pos3tex2col3_t> disc(61);
+    using pos3_t = vertex<position_3t>;
+    using vertex_t = vertex_buffer<pos3_t, buffer_usage::BU_STREAM_DRAW>;
+    vertex_t buffer1;
+    vertex_t buffer2;
+    std::vector<pos3_t> disc(1000);
 
-    float theta = 0.0f;
-    const float inc = M_PI/30.f;
-
+    constexpr float start_x = -10.f;
+    const size_t vertex_count = disc.size();
+    const float inv_count = 1.f/vertex_count;
+    const float delta_x = 20.0f*inv_count;
+    float offset = start_x;
     for(auto& v : disc) {
-        auto stheta = std::sin(theta); auto ctheta = std::cos(theta);
-        v.texcoord1.x = 0.5f*ctheta + 0.5f;
-        v.texcoord1.y = 0.5f*stheta + 0.5f;
-        v.position.x = 5.f*ctheta + 10.f;
-        v.position.y = 5.f*stheta;
-        v.position.z = 0;
-        v.colour2.x = 1.0f;
-        v.colour2.y = 0.5f;
-        v.colour2.z = 1.0f;
-        theta += inc;
+        v.position.x = offset;
+        v.position.y = 0.f;
+        v.position.z = 0.f;
+        offset += delta_x;
     }
 
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    GLuint vao1;
+    glGenVertexArrays(1, &vao1);
+    glBindVertexArray(vao1);
     gl_error_check();
 
-    my_buffer.allocate();
-    my_buffer.bind();
-    my_buffer.initialise(disc);
+    buffer1.allocate();
+    buffer1.bind();
+    buffer1.initialise(disc);
 
     glBindVertexArray(0);
     gl_error_check();
 
+    GLuint vao2;
+    glGenVertexArrays(1, &vao2);
+    glBindVertexArray(vao2);
+    gl_error_check();
+
+    buffer2.allocate();
+    buffer2.bind();
+    buffer2.initialise(disc);
+
+    glBindVertexArray(0);
+    gl_error_check();
+
+    oscillator<float> wave(10);
+    size_t active = 0;
+
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        prog2->bind();
-        glBindVertexArray(vao);
-        glDrawArrays(GL_LINE_STRIP, 0, my_buffer.vertex_count());
-        gl_error_check();
-        glBindVertexArray(0);
-        prog2->release();
+        if(active == 0) {
+            buffer1.copy(buffer2, 0, 1, buffer2.vertex_count()-1);
+
+            buffer1.bind();
+            buffer1.map(buffer_access::BA_WRITE_ONLY);
+            buffer1.begin()->position.y = 10.f * (wave.get_value() - .5f);
+            offset = start_x;
+            for(auto& v : buffer1) {
+                v.position.x = offset;
+                offset += delta_x;
+            }
+
+            buffer1.unmap();
+            buffer1.release();
+
+            prog2->bind();
+            glBindVertexArray(vao2);
+            glDrawArrays(GL_LINE_STRIP, 0, buffer2.vertex_count());
+            gl_error_check();
+            glBindVertexArray(0);
+            prog2->release();
+            active = 1;
+        } else {
+            buffer2.copy(buffer1, 0, 1, buffer1.vertex_count()-1);
+
+            buffer2.bind();
+            buffer2.map(buffer_access::BA_WRITE_ONLY);
+            buffer2.begin()->position.y = 10.f * (wave.get_value() - .5f);
+            offset = start_x;
+            for(auto& v : buffer2) {
+                v.position.x = offset;
+                offset += delta_x;
+            }
+            buffer2.unmap();
+            buffer2.release();
+
+            prog2->bind();
+            glBindVertexArray(vao1);
+            glDrawArrays(GL_LINE_STRIP, 0, buffer1.vertex_count());
+            gl_error_check();
+            glBindVertexArray(0);
+            prog2->release();
+            active = 0;
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

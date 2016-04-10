@@ -6,36 +6,33 @@ using namespace zap::engine;
 using namespace zap::engine::gl;
 
 buffer::~buffer() {
-    assert(!is_mapped());
     if(is_allocated()) deallocate();
 }
 
 bool buffer::allocate() {
     gl::glGenBuffers(1, &id_);
-    LOG("Allocated", id_);
+    LOG("Buffer Allocated:", id_);
     gl_error_check();
     return is_allocated();
 }
 
 bool buffer::deallocate() {
-    assert(!is_mapped() && is_allocated() && "buffer is still mapped or is unallocated");
-    if(is_mapped()) return false;
-
+    if(is_mapped()) LOG_WARN("Buffer still mapped during deallocation");
     gl::glDeleteBuffers(1, &id_);
+    LOG("Buffer Deallocated:", id_);
     id_ = INVALID_RESOURCE;
     size_ = 0;
-    LOG("deallocated");
 
     return true;
 }
 
-void buffer::bind(buffer_type type) {
+void buffer::bind(buffer_type type) const {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
     gl::glBindBuffer(gl::gl_type(type), id_);
     gl_error_check();
 }
 
-void buffer::release(buffer_type type) {
+void buffer::release(buffer_type type) const {
     gl::glBindBuffer(gl::gl_type(type), 0);
 }
 
@@ -49,7 +46,6 @@ bool buffer::is_bound() const {
 bool buffer::initialise(buffer_type type, buffer_usage usage, size_t size, const char* data) {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
     assert(is_bound() && "Attempt to initialise unbound buffer");
-    LOG(gl_typename(type), gl_typename(usage));
     glBufferData(gl_type(type), size, data, gl_type(usage));
     if(gl_error_check()) return false;
     size_ = size;
@@ -62,28 +58,44 @@ bool buffer::copy(buffer_type type, size_t offset, size_t size, const char* data
     return !gl_error_check();
 }
 
-char* buffer::map(buffer_type type, buffer_access::bitfield access) {
+const char* buffer::map(buffer_type type) const {
+    assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
+    mapped_ptr_ = reinterpret_cast<char*>(glMapBuffer(gl_type(type), gl_type(buffer_access::BA_READ_ONLY)));
+    if(gl_error_check() || mapped_ptr_ == nullptr) {
+        glUnmapBuffer(gl_type(type));
+        return nullptr;
+    }
+    return mapped_ptr_;
+}
+
+char* buffer::map(buffer_type type, buffer_access access) {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
     mapped_ptr_ = reinterpret_cast<char*>(glMapBuffer(gl_type(type), gl_type(access)));
-    if(mapped_ptr_ == nullptr || gl_error_check()) {
-        unmap(type);
+    if(gl_error_check() || mapped_ptr_ == nullptr) {
+        glUnmapBuffer(gl_type(type));
         return nullptr;
     }
     return mapped_ptr_;
 }
 
-char* buffer::map(buffer_type type, buffer_access::bitfield access, size_t offset, size_t length) {
+char* buffer::map(buffer_type type, buffer_access access, size_t offset, size_t length) {
     assert(is_allocated() && (offset + length) <= size_ && "Buffer unallocated or too small");
     mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, gl_type(access)));
-    if(mapped_ptr_ == nullptr || gl_error_check()) {
+    if(gl_error_check() || mapped_ptr_ == nullptr) {
         unmap(type);
         return nullptr;
     }
     return mapped_ptr_;
 }
 
-bool buffer::unmap(buffer_type type) {
+bool buffer::unmap(buffer_type type) const {
     assert(is_allocated() && is_mapped() && "Buffer unallocated or unmapped");
     glUnmapBuffer(gl_type(type));
+    return !gl_error_check();
+}
+
+bool buffer::copy_buffer(buffer_type src_type, buffer_type trg_type, size_t src_offset, size_t trg_offset, size_t length) {
+    assert(is_allocated() && "Buffer unallocated or unmapped");
+    glCopyBufferSubData(gl_type(src_type), gl_type(trg_type), src_offset, trg_offset, length);
     return !gl_error_check();
 }

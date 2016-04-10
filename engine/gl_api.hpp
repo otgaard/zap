@@ -41,21 +41,43 @@ namespace zap { namespace engine { namespace gl {
             "GL_STREAM_DRAW", "GL_STREAM_READ", "GL_STREAM_COPY"
     };
 
-    constexpr GLbitfield gl_buffer_access[6] = {
-            GL_MAP_READ_BIT,
-            GL_MAP_WRITE_BIT,
-            GL_MAP_INVALIDATE_RANGE_BIT,
-            GL_MAP_INVALIDATE_BUFFER_BIT,
-            GL_MAP_FLUSH_EXPLICIT_BIT,
-            GL_MAP_UNSYNCHRONIZED_BIT
+    constexpr GLbitfield gl_buffer_access[(int)buffer_access::BA_SIZE] = {
+            GL_READ_ONLY,
+            GL_WRITE_ONLY,
+            GL_READ_WRITE
     };
-    constexpr const char* gl_buffer_access_names[6] = {
-            "GL_MAP_READ_BIT",
-            "GL_MAP_WRITE_BIT",
-            "GL_MAP_INVALIDATE_RANGE_BIT",
-            "GL_MAP_INVALIDATE_BUFFER_BIT",
-            "GL_MAP_FLUSH_EXPLICIT_BIT",
-            "GL_MAP_UNSYNCHRONIZED_BIT"
+    constexpr const char* gl_buffer_access_names[(int)buffer_access::BA_SIZE] = {
+            "GL_READ_ONLY",
+            "GL_WRITE_ONLY",
+            "GL_READ_WRITE"
+    };
+
+    constexpr GLenum gl_data_type[(int)data_type::DT_SIZE] = {
+            GL_FALSE,
+            GL_UNSIGNED_BYTE,
+            GL_BYTE,
+            GL_UNSIGNED_SHORT,
+            GL_SHORT,
+            GL_UNSIGNED_INT,
+            GL_INT,
+            GL_HALF_FLOAT,
+            GL_FIXED,
+            GL_FLOAT,
+            GL_DOUBLE
+    };
+
+    constexpr const char* gl_data_type_names[(int)data_type::DT_SIZE] = {
+            "GL_FALSE",
+            "GL_UNSIGNED_BYTE",
+            "GL_BYTE",
+            "GL_UNSIGNED_SHORT",
+            "GL_SHORT",
+            "GL_UNSIGNED_INT",
+            "GL_INT",
+            "GL_HALF_FLOAT",
+            "GL_FIXED",
+            "GL_FLOAT",
+            "GL_DOUBLE"
     };
 
     constexpr GLenum gl_type(shader_type type) { return gl_shader_types[(int)type]; }
@@ -64,19 +86,10 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(buffer_type type) { return gl_buffer_type_names[(int)type]; }
     constexpr GLenum gl_type(buffer_usage usage) { return gl_buffer_usage[(int)usage]; }
     constexpr const char* gl_typename(buffer_usage usage) { return gl_buffer_usage_names[(int)usage]; }
-
-    constexpr GLbitfield gl_type(buffer_access::bitfield access) {
-        using maths::log2_pow2;
-        return ((access & buffer_access::BA_READ ? gl_buffer_access[log2_pow2((uint)buffer_access::BA_READ)] : 0) |
-                (access & buffer_access::BA_WRITE ? gl_buffer_access[log2_pow2((uint)buffer_access::BA_WRITE)] : 0) |
-                (access & buffer_access::BA_INVALIDATE_RANGE ? gl_buffer_access[log2_pow2((uint)buffer_access::BA_INVALIDATE_RANGE)] : 0) |
-                (access & buffer_access::BA_INVALIDATE_BUFFER ? gl_buffer_access[log2_pow2((uint)buffer_access::BA_INVALIDATE_BUFFER)] : 0) |
-                (access & buffer_access::BA_FLUSH_EXPLICIT ? gl_buffer_access[log2_pow2((uint)buffer_access::BA_FLUSH_EXPLICIT)] : 0) |
-                (access & buffer_access::BA_UNSYNCHRONISED ? gl_buffer_access[log2_pow2((uint)buffer_access::BA_UNSYNCHRONISED)] : 0));
-    }
-    constexpr const char* gl_typename(buffer_access::bitfield access) {
-        return gl_buffer_access_names[maths::log2_pow2((uint)access)];
-    }
+    constexpr GLenum gl_type(data_type usage) { return gl_data_type[(int)usage]; }
+    constexpr const char* gl_typename(data_type usage) { return gl_data_type_names[(int)usage]; }
+    constexpr GLbitfield gl_type(buffer_access access) { return gl_buffer_access[(int)access]; }
+    constexpr const char* gl_typename(buffer_access access) { return gl_buffer_access_names[(int)access]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
 }}}

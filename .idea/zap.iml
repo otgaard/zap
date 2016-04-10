@@ -28,6 +28,7 @@
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/vec3.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/mat2.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/maths/functions.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/vec4.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/mat3.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/maths/mat4.hpp" isTestSource="false" />

@@ -17,8 +17,8 @@ namespace zap { namespace engine {
         bool allocate();
         bool deallocate();
 
-        void bind(buffer_type type);
-        void release(buffer_type type);
+        void bind(buffer_type type) const;
+        void release(buffer_type type) const;
         bool is_bound() const;
 
         inline bool is_mapped() const { return mapped_ptr_ != nullptr; }
@@ -34,14 +34,17 @@ namespace zap { namespace engine {
             return copy(type, offset, data.size(), data.data());
         }
 
-        char* map(buffer_type type, buffer_access::bitfield access); // glMapBuffer
-        char* map(buffer_type type, buffer_access::bitfield access, size_t offset, size_t length); // glMapBufferRange
-        bool unmap(buffer_type type); // glUnmapBuffer
+        const char* map(buffer_type type) const;    // GL_READ_ONLY
+        char* map(buffer_type type, buffer_access access); // glMapBuffer
+        char* map(buffer_type type, buffer_access access, size_t offset, size_t length); // glMapBufferRange
+        bool unmap(buffer_type type) const; // glUnmapBuffer
+
+        bool copy_buffer(buffer_type src_type, buffer_type trg_type, size_t src_offset, size_t trg_offset, size_t length);
 
     protected:
-        resource_t id_;
+        mutable resource_t id_;
         size_t size_;
-        char* mapped_ptr_;
+        mutable char* mapped_ptr_;
     };
 }}
 

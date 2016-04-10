@@ -58,17 +58,11 @@ namespace zap { namespace engine {
         BU_SIZE
     };
 
-    struct buffer_access {
-        enum bitfield {
-            BA_READ = 1 << 0,
-            BA_WRITE = 1 << 1,
-            BA_INVALIDATE_RANGE = 1 << 2,
-            BA_INVALIDATE_BUFFER = 1 << 3,
-            BA_FLUSH_EXPLICIT = 1 << 4,
-            BA_UNSYNCHRONISED = 1 << 5,
-            BA_GUARD = 1 << 6
-        };
-        constexpr static size_t BA_SIZE = maths::log2_pow2(size_t(BA_GUARD));
+    enum class buffer_access : std::uint8_t {
+        BA_READ_ONLY,
+        BA_WRITE_ONLY,
+        BA_READ_WRITE,
+        BA_SIZE
     };
 
     enum class data_type : std::uint8_t {
@@ -79,8 +73,8 @@ namespace zap { namespace engine {
         DT_SHORT = 4,
         DT_UINT = 5,
         DT_INT = 6,
-        DT_ULONG = 7,
-        DT_LONG = 8,
+        DT_HALF_FLOAT = 7,
+        DT_FIXED = 8,
         DT_FLOAT = 9,
         DT_DOUBLE = 10,
         DT_SIZE = 11
@@ -93,8 +87,6 @@ namespace zap { namespace engine {
     template <> struct dt_descriptor<short> { enum { value = int(data_type::DT_SHORT) }; };
     template <> struct dt_descriptor<unsigned int> { enum { value = int(data_type::DT_UINT) }; };
     template <> struct dt_descriptor<int> { enum { value = int(data_type::DT_INT) }; };
-    template <> struct dt_descriptor<unsigned long> { enum { value = int(data_type::DT_ULONG) }; };
-    template <> struct dt_descriptor<long> { enum { value = int(data_type::DT_LONG) }; };
     template <> struct dt_descriptor<float> { enum { value = int(data_type::DT_FLOAT) }; };
     template <> struct dt_descriptor<double> { enum { value = int(data_type::DT_DOUBLE) }; };
 
