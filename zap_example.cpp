@@ -4,6 +4,7 @@
 #define GLFW_INCLUDE_GLCOREARB
 #endif //__APPLE__
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #define LOGGING_ENABLED
 #include <tools/log.hpp>
@@ -76,6 +77,14 @@ int main(int argc, char* argv[]) {
         return -1;
     }
     glfwMakeContextCurrent(window);
+
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+    if(err != GLEW_OK) {
+        LOG("GLEW failed to initialise");
+        LOG(glewGetErrorString(err));
+        return -1;
+    }
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glfwSwapInterval(0);

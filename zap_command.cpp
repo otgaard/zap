@@ -38,7 +38,7 @@ void test_indexing() {
     LOG("Time for increment loop", it_diff.count());
     LOG("Time for indexed loop", idx_diff.count());
 }
-
+/*
 template <typename T>
 constexpr T adder(T v) {
     return v;
@@ -70,7 +70,7 @@ struct offset_table {
 void test_offset() {
     LOG("value=", offset_table<3, int, float, char, double>::offset);
 }
-
+*/
 // These tests determine whether there are performance issues with variadic templates vs hand-written structures.
 
 #include <maths/functions.hpp>

@@ -47,7 +47,7 @@ TEST(VectorMathsTests, AlgebraicTest) {
 
 TEST(VectorMathsTests, Vector2) {
     vec2f u = {10.f, 20.f};
-    vec2f v = {-1.f, -2.f};
+    //vec2f v = {-1.f, -2.f};
 
     for(const auto& f : u) std::cout << f << std::endl;
 }
