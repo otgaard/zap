@@ -71,7 +71,90 @@ void test_offset() {
     LOG("value=", offset_table<3, int, float, char, double>::offset);
 }
 
+// These tests determine whether there are performance issues with variadic templates vs hand-written structures.
+
+#include <maths/functions.hpp>
+#include <engine/buffer_format.hpp>
+
+struct vstruct {
+    zap::maths::vec3f position;
+    zap::maths::vec3f normal;
+    zap::maths::vec3f tangent;
+    zap::maths::vec3f binormal;
+};
+
+void test_variadic() {
+    using namespace zap::maths;
+    using namespace zap::engine;
+
+    timer t;
+
+    constexpr size_t buffer_size = 1000000;
+
+    using pos3_t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
+    using nor3_t = vertex_attribute<vec3f, attribute_type::AT_NORMAL>;
+    using tan3_t = vertex_attribute<vec3f, attribute_type::AT_TANGENT>;
+    using bin3_t = vertex_attribute<vec3f, attribute_type::AT_BINORMAL>;
+    using vertex_t = vertex<pos3_t, nor3_t, tan3_t, bin3_t>;
+
+    t.start();
+    double t0 = t.get_time<double>();
+    std::vector<vstruct> vstruct_buffer(buffer_size);
+    double t1 = t.get_time<double>();
+    std::vector<vertex_t> variadic_buffer(buffer_size);
+    double t2 = t.get_time<double>();
+
+    LOG("plain", t1 - t0);
+    LOG("variadic", t2 - t1);
+
+    for(int i = 0; i < 2000; ++i) {
+        auto d = i/1000.f;
+        for(auto& v : variadic_buffer) {
+            v.position = vec3f(d,d,d);
+            v.normal = vec3f(d,d,d);
+            v.tangent = vec3f(d,d,d);
+            v.binormal = vec3f(d,d,d);
+        }
+    }
+
+    for(int i = 0; i < 2000; ++i) {
+        auto d = i/1000.f;
+        for(auto& v : vstruct_buffer) {
+            v.position = vec3f(d,d,d);
+            v.normal = vec3f(d,d,d);
+            v.tangent = vec3f(d,d,d);
+            v.binormal = vec3f(d,d,d);
+        }
+    }
+
+    LOG("\n", "Setting");
+    t0 = t.get_time<double>();
+    for(int i = 0; i < 10000; ++i) {
+        auto d = i/10000.f;
+        for(auto& v : vstruct_buffer) {
+            v.position = vec3f(d,d,d);
+            v.normal = vec3f(d,d,d);
+            v.tangent = vec3f(d,d,d);
+            v.binormal = vec3f(d,d,d);
+        }
+    }
+    t1 = t.get_time<double>();
+    LOG("plain", t1 - t0);
+    for(int i = 0; i < 10000; ++i) {
+        auto d = i/10000.f;
+        for(auto& v : variadic_buffer) {
+            v.position = vec3f(d,d,d);
+            v.normal = vec3f(d,d,d);
+            v.tangent = vec3f(d,d,d);
+            v.binormal = vec3f(d,d,d);
+        }
+    }
+
+    t2 = t.get_time<double>();
+    LOG("variadic", t2 - t1);
+}
+
 int main(int argc, char* argv[]) {
-    test_offset();
+    test_variadic();
     return 0;
 }
