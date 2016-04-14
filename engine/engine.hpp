@@ -113,7 +113,17 @@ namespace zap { namespace engine {
         constexpr static size_t AT_SIZE = maths::log2_pow2(size_t(AT_GUARD));
     };
 
-    constexpr static const char* attribute_name[maths::log2_pow2(size_t(attribute_type::AT_GUARD))] = {
+#ifdef _WIN32
+	// This structure is due to a very odd bug on Windows where the compiler
+	// crashes when producing a constexpr static array of c-style strings.
+	// TODO: Fix expected in Visual Studio 2015 Update 2
+	struct attribute_name_tbl {
+		static const char* const attribute_name_impl[maths::log2_pow2(size_t(attribute_type::AT_GUARD))];
+	};
+
+#define attribute_name zap::engine::attribute_name_tbl::attribute_name_impl
+#else
+    constexpr static const char* const attribute_name[maths::log2_pow2(size_t(attribute_type::AT_GUARD))] = {
             "position",
             "normal",
             "tangent",
@@ -131,6 +141,7 @@ namespace zap { namespace engine {
             "fog_coord",
             "point_size"
     };
+#endif
 
     bool _gl_error_log(const char* file, int line);
     bool _gl_error_check();

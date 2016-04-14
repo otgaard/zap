@@ -12,6 +12,10 @@ namespace zap { namespace engine { namespace gl {
 #elif __linux__
 #include <GL/glew.h>
 #include <GL/gl.h>
+#elif _WIN32
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/GL.h>
 #endif //__APPLE__
     constexpr GLenum gl_shader_types[(int)shader_type::ST_SIZE] = {
             GL_VERTEX_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER

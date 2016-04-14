@@ -26,3 +26,22 @@ bool zap::engine::_gl_error_log(const char* file, int line) {
 bool zap::engine::_gl_error_check() {
     return gl::glGetError() != GL_NO_ERROR;
 }
+
+const char* const zap::engine::attribute_name_tbl::attribute_name_impl[zap::maths::log2_pow2(size_t(attribute_type::AT_GUARD))] = {
+	"position",
+	"normal",
+	"tangent",
+	"binormal",
+	"texcoord1",
+	"texcoord2",
+	"texcoord3",
+	"texcoord4",
+	"texcoord5",
+	"texcoord6",
+	"colour1",
+	"colour2",
+	"blend_index",
+	"blend_weight",
+	"fog_coord",
+	"point_size"
+};

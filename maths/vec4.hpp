@@ -58,7 +58,7 @@ namespace zap { namespace maths {
             __m128 xmm;
 #endif
         };
-    } __attribute__((aligned(16)));
+	}; // __attribute__((aligned(16)));
 
     using vec4b = vec4<uint8_t>;
     using vec4i = vec4<int>;

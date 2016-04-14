@@ -45,6 +45,8 @@ const char* frg_src = GLSL(
 
 using namespace zap::engine;
 
+#include <engine/gl_api.hpp>
+
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
 
@@ -84,6 +86,7 @@ int main(int argc, char* argv[]) {
 
     auto prog = std::make_shared<program>(std::move(arr));
     prog->link(true);
+	gl_error_check();
 
     zap::maths::mat4<float> proj_matrix = {
         80/1280.f,      0.f, 0.f, 0.f,

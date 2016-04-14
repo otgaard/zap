@@ -135,10 +135,10 @@ template <typename... Args>
 struct vertex : pod<Args...> {
     typedef pod<Args...> pod_t;
     constexpr static size_t attrib_count() { return sizeof...(Args); }
-    typedef typename generate_table<attrib_count(), pod_t, vattrib_offset>::result offsets;
-    typedef typename generate_table<attrib_count(), pod_t, vattrib_type>::result types;
-    typedef typename generate_table<attrib_count(), pod_t, vattrib_count>::result counts;
-    typedef typename generate_table<attrib_count(), pod_t, vattrib_datatype>::result datatypes;
+    typedef typename generate_table<sizeof...(Args), pod_t, vattrib_offset>::result offsets;
+    typedef typename generate_table<sizeof...(Args), pod_t, vattrib_type>::result types;
+    typedef typename generate_table<sizeof...(Args), pod_t, vattrib_count>::result counts;
+    typedef typename generate_table<sizeof...(Args), pod_t, vattrib_datatype>::result datatypes;
     constexpr static size_t size() { return sizeof(vertex); }
     template <size_t k> constexpr static attribute_type::bitfield typecode() { return engine::typecode<k, pod_t>(); }
     template <size_t k> constexpr static size_t index() { return maths::log2_pow2(uint32_t(engine::typecode<k, pod_t>())); }

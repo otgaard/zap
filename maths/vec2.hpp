@@ -49,7 +49,7 @@ namespace zap { namespace maths {
             };
             T arr[2];
         };
-    } __attribute__((aligned(8)));
+	}; // __attribute__((aligned(8)));
 
     template <typename T>
     constexpr vec2<T> operator+(const vec2<T>& lhs, const vec2<T>& rhs) {

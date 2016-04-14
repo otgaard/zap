@@ -13,11 +13,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/bin)
 
 if(APPLE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+add_definitions(-Wall -Werror)
 elseif(UNIX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif(APPLE)
-
 add_definitions(-Wall -Werror)
+elseif(WIN32)
+set(CMAKE_CXX_FLAGS )
+endif(APPLE)
 
 set(ZAP_EXAMPLE_FILES
         zap_example.cpp
@@ -42,7 +44,10 @@ set(ZAP_EXAMPLE_FILES
         engine/buffer_format.hpp
         engine/vertex_buffer.hpp
         engine/index_buffer.hpp
-        engine/pixel_buffer.hpp engine/vertex_buffer.cpp engine/vertex_attribute.hpp maths/functions.hpp)
+        engine/pixel_buffer.hpp
+        engine/vertex_buffer.cpp
+        engine/vertex_attribute.hpp
+        maths/functions.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp)
@@ -50,7 +55,8 @@ set(ZAP_COMMAND_LINE
 set(ZAP_TESTS_MATHS_FILES
         tests/maths/vector_tests.cpp
         tests/maths/maths_tests.cpp
-        tests/maths/matrix_tests.cpp tests/engine/buffer_format_tests.cpp)
+        tests/maths/matrix_tests.cpp
+        tests/engine/buffer_format_tests.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
@@ -76,6 +82,10 @@ elseif(UNIX)
     set(GLFW_LIBS ${OPENGL} ${M} ${DYNLINK} ${XINERAMA} ${XRANDR} ${XI} ${XCURSOR} ${X11} ${XXF86VM} ${PTHREAD})
     set(GTEST_LIBS ${PTHREAD})
     set(LOADER_LIBS libGLEW.a)
+elseif(WIN32)
+    set(GLFW_LIBS opengl32.lib ${CMAKE_SOURCE_DIR}/third_party/lib/Release/Win32/glew32s.lib)
+    set(GTEST_LIBS )
+    set(LOADER_LIBS )
 endif(APPLE)
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
