@@ -123,6 +123,8 @@ int main(int argc, char* argv[]) {
         offset += delta_x;
     }
 
+#define PINGPONG
+
     GLuint vao1;
     glGenVertexArrays(1, &vao1);
     glBindVertexArray(vao1);
@@ -135,6 +137,7 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
+#ifdef PINGPONG
     GLuint vao2;
     glGenVertexArrays(1, &vao2);
     glBindVertexArray(vao2);
@@ -147,12 +150,52 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
-    oscillator<float> wave(1);
     size_t active = 0;
+#endif
+    oscillator<float> wave(1);
+
+    timer t;
+    t.start();
+
+    float prev, curr = t.get_time<float>();
+    float timer_1 = 0;
+    size_t counter = 0;
 
     while(!glfwWindowShouldClose(window)) {
+        prev = curr;
+        curr = t.get_time<float>();
+        if(curr - timer_1 > 1.f) {
+            timer_1 = curr;
+            LOG(counter, "Hz");
+            counter = 0;
+        }
+        counter++;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+#ifndef PINGPONG
+        //buffer1.copy(buffer2, 0, 1, buffer2.vertex_count() - 1);
+
+        buffer1.bind();
+        buffer1.map(buffer_access::BA_WRITE_ONLY);
+        offset = start_x;
+
+        for(auto it = buffer1.end()-1, end = buffer1.begin(); it != end; --it) {
+            it->position.y = (it-1)->position.y;
+        }
+
+        buffer1.begin()->position.y = 10.f * (wave.get_value() - .5f);
+
+        buffer1.unmap();
+        buffer1.release();
+
+        prog->bind();
+        glBindVertexArray(vao1);
+        glDrawArrays(GL_LINE_STRIP, 0, buffer1.vertex_count());
+        gl_error_check();
+        glBindVertexArray(0);
+        prog->release();
+#else
         if(active == 0) {
             buffer1.copy(buffer2, 0, 1, buffer2.vertex_count()-1);
 
@@ -197,6 +240,7 @@ int main(int argc, char* argv[]) {
             prog->release();
             active = 0;
         }
+#endif
 
         glfwSwapBuffers(window);
         glfwPollEvents();

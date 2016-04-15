@@ -67,6 +67,7 @@ public:
     inline const iterator end() const {
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::size()) * vertex_t::size()));
     }
+
     inline vertex_t* data() {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return reinterpret_cast<vertex_t*>(mapped_ptr_);

@@ -150,7 +150,7 @@ struct vertex : pod<Args...> {
 };
 
 template <typename VTX_T>
-class vertex_iterator : public std::iterator<std::forward_iterator_tag, VTX_T> {
+class vertex_iterator : public std::iterator<std::random_access_iterator_tag, VTX_T> {
 public:
     using vertex_t = VTX_T;
     vertex_iterator(vertex_t* ptr) : ptr_(ptr) { }

@@ -41,12 +41,13 @@ template <typename T>
 class oscillator {
 public:
     static_assert(std::is_floating_point<T>::value, ZERR_TYPE_FLOATING);
-    oscillator(T freq) : inv_freq(T(1)/freq), time(false) { }
+    oscillator(T freq) : freq(freq), inv_freq(T(1)/freq), time(false) { }
 
     void start() { time.start(); }
-    T get_value() const { return std::fmod(time.get_time<T>(),inv_freq)/inv_freq; }
+    T get_value() const { return freq * std::fmod(time.get_time<T>(), inv_freq); }
 
 private:
+    T freq;
     T inv_freq;
     timer time;
 };
