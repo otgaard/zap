@@ -40,7 +40,6 @@ bool program::link(bool clear) {
     }
 
     for(size_t i = 0; i != maths::log2_pow2(size_t(attribute_type::AT_GUARD)); ++i) {
-		LOG(id_, i, attribute_name[i]);
         glBindAttribLocation(id_, i, attribute_name[i]);
     }
 

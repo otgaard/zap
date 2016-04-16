@@ -62,7 +62,8 @@ namespace zap { namespace maths {
     }
 
     using vec2b = vec2<uint8_t>;
-    using vec2i = vec2<int>;
+    using vec2s = vec2<int16_t>;
+    using vec2i = vec2<int32_t>;
     using vec2f = vec2<float>;
     using vec2d = vec2<double>;
 

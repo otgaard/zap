@@ -29,6 +29,8 @@ namespace zap { namespace engine {
             return initialise(type, usage, data.size(), data.data());
         }
 
+        bool orphan(buffer_type type, buffer_usage usage);
+
         bool copy(buffer_type type, size_t offset, size_t size, const char* data); // glBufferSubData
         inline bool copy(buffer_type type, size_t offset, const std::vector<char>& data) {
             return copy(type, offset, data.size(), data.data());

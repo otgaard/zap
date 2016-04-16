@@ -132,6 +132,18 @@ namespace zap { namespace engine {
             "point_size"
     };
 
+    enum class primitive_type : std::uint8_t {
+        PT_NONE = 0,
+        PT_POINTS = 1,
+        PT_LINES = 2,
+        PT_LINE_STRIP = 3,
+        PT_LINE_LOOP = 4,
+        PT_TRIANGLES = 5,
+        PT_TRIANGLE_STRIP = 6,
+        PT_TRIANGLE_FAN = 7,
+        PT_SIZE = 8
+    };
+
     bool _gl_error_log(const char* file, int line);
     bool _gl_error_check();
 

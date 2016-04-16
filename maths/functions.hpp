@@ -31,6 +31,9 @@ struct timer {
     void stop() { state = STOPPED; }
     void pause() { state = PAUSED; }
 
+    inline float getf() const { return get_time<float>(); }
+    inline double getd() const { return get_time<double>(); }
+
     template <typename T> T get_time() const {
         auto end_time = std::chrono::high_resolution_clock::now();
         return std::chrono::duration<T>(end_time - start_time).count();

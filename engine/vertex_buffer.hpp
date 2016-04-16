@@ -30,7 +30,11 @@ public:
     inline void release() const { buffer::release(buf_type); }
 
     inline bool initialise(size_t vertex_count, const char* data=nullptr) {
-        return buffer::initialise(buf_type, usage, vertex_count*vertex_t::size(), data) && configure_attributes();
+        if(buffer::initialise(buf_type, usage, vertex_count*vertex_t::size(), data)) {
+            vertex_count_ = vertex_count;
+            return configure_attributes();
+        }
+        return false;
     }
 
     inline bool initialise(const std::vector<char>& data) {
@@ -43,6 +47,8 @@ public:
         vertex_count_ = data.size();
         return result && configure_attributes();
     }
+
+    bool orphan() { return buffer::orphan(buf_type, usage); }
 
     // All sizes are in vertices, i.e src_off = 0 is the first vertex, src_off = 1 is the second and so on.
     bool copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count);
@@ -97,8 +103,8 @@ bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
             gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
                                   (data_type)vertex_t::datatypes::data[i], false, vertex_t::size(),
                                   (void*)vertex_t::offsets::data[i]);
-            if(gl_error_check()) return false;
         }
+        if(gl_error_check()) return false;
     }
 
     return true;

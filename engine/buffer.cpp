@@ -52,6 +52,13 @@ bool buffer::initialise(buffer_type type, buffer_usage usage, size_t size, const
     return true;
 }
 
+bool buffer::orphan(buffer_type type, buffer_usage usage) {
+    assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
+    //assert(is_bound() && "Attempt to orphan unbound buffer");
+    glBufferData(gl_type(type), size_, nullptr, gl_type(usage));
+    return !gl_error_check();
+}
+
 bool buffer::copy(buffer_type type, size_t offset, size_t size, const char* data) {
     assert(is_allocated() && (offset + size) <= size_ && "Buffer unallocated or too small");
     glBufferSubData(gl_type(type), offset, size, data);

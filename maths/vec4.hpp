@@ -17,8 +17,8 @@ namespace zap { namespace maths {
     public:
         using type = T;
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec4<T>: T must be an algebraic type");
-        constexpr size_t size() const { return 4; }
-        constexpr size_t memsize() const { return sizeof(vec4); }
+        constexpr static size_t size() { return 4; }
+        constexpr static size_t memsize() { return sizeof(vec4); }
 
         constexpr vec4() { };
         constexpr vec4(const static_list<T, 4>& lst) : x(lst[0]), y(lst[1]), z(lst[2]), w(lst[3]) { }
@@ -61,7 +61,8 @@ namespace zap { namespace maths {
 	}; // __attribute__((aligned(16)));
 
     using vec4b = vec4<uint8_t>;
-    using vec4i = vec4<int>;
+    using vec4s = vec4<int16_t>;
+    using vec4i = vec4<int32_t>;
     using vec4f = vec4<float>;
     using vec4d = vec4<double>;
 
