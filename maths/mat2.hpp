@@ -80,7 +80,7 @@ namespace zap { namespace maths {
             };
             T arr[size()];
         };
-    } __attribute__((aligned(16)));
+	}; // __attribute__((aligned(16)));
 }}
 
 #endif //ZAP_MAT2_HPP

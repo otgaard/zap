@@ -87,7 +87,7 @@ namespace zap { namespace maths {
             __m128 xmm[cols()];
 #endif //ZAP_MATHS_SSE2
         };
-    } __attribute__((aligned(16)));
+	}; // __attribute__((aligned(16)));
 }}
 
 #endif //ZAP_MAT3_HPP

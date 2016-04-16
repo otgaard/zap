@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
     gl_error_check();
 
     float offset = 0.0f;
-    constexpr float pi = M_PI;
+    constexpr float pi = zap::maths::PI;
     timer t;
     float prev = t.getf(), curr = t.getf();
 

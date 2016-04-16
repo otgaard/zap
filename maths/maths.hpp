@@ -11,6 +11,8 @@
 #include <type_traits>
 
 namespace zap { namespace maths {
+	constexpr double PI = 3.14159265358979323846;
+
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }
     template <typename T> inline bool leq(const T& a, const T& b) { return a < b + std::numeric_limits<T>::epsilon(); }
