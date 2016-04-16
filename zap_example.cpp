@@ -156,8 +156,8 @@ int main(int argc, char* argv[]) {
     timer t;
     float prev = t.getf(), curr = t.getf();
 
-    auto sin1hz = wave<decltype(std::sinf)>::make_fnc(std::sinf, 10, .5f, 0.f);
-    auto sin3hz = wave<decltype(std::sinf)>::make_fnc(std::sinf, 30, .5f, 0.f);
+    auto sin1hz = wave<decltype(sinf)>::make_fnc(sinf, 10, .5f, 0.f);
+    auto sin3hz = wave<decltype(sinf)>::make_fnc(sinf, 30, .5f, 0.f);
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
 
         graph.bind();
         graph.map(buffer_access::BA_WRITE_ONLY);
-        sample(graph.begin(), graph.end(), -pi, pi, [&offset, &sin1hz, &sin3hz](float x) { x+=offset; return sin3hz(x) + sin1hz(x); });
+        sample(graph.begin(), graph.end(), -pi, pi, [&offset, sin1hz, sin3hz](float x) { x+=offset; return sin3hz(x) + sin1hz(x); });
         graph.unmap();
         graph.release();
 

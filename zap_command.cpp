@@ -154,7 +154,24 @@ void test_variadic() {
     LOG("variadic", t2 - t1);
 }
 
+template <typename FNC>
+struct wave {
+    constexpr static auto make_fnc(FNC fnc, float frequency, float amplitude, float phase) {
+        return [=](float x) -> float {
+            return amplitude*fnc(x*frequency + phase);
+        };
+    };
+};
+
 int main(int argc, char* argv[]) {
-    test_variadic();
+    //test_variadic();
+
+    auto fnc = wave<decltype(sinf)>::make_fnc(sinf, 1.f, 1.f, 0.f);
+    float inc = 1/100.f;
+    for(size_t i = 0; i != 100; ++i) {
+        LOG(fnc(i*inc));
+    }
+
+
     return 0;
 }
