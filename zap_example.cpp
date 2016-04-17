@@ -169,7 +169,10 @@ int main(int argc, char* argv[]) {
 
         graph.bind();
         graph.map(buffer_access::BA_WRITE_ONLY);
-        sample(graph.begin(), graph.end(), -pi, pi, [&offset, sin1hz, sin3hz](float x) { x+=offset; return sin3hz(x) + sin1hz(x); });
+        sample(graph.begin(), graph.end(), -pi, pi, [&offset, sin1hz, sin3hz](float x) {
+            x += offset;
+            return sin3hz(x) + sin1hz(x);
+        });
         graph.unmap();
         graph.release();
 
