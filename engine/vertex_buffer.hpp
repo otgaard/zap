@@ -94,6 +94,8 @@ template <typename VTX_T, buffer_usage USAGE>
 bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
     static_assert(vertex_t::attrib_count() > 0, "An empty vertex<> type cannot be configured");
 
+    /*
+    // This branch doesn't work with non-packed data like vec3 aligned to 16 bytes
     if(vertex_t::attrib_count() == 1) {
         gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[0]), vertex_t::counts::data[0],
                               (data_type)vertex_t::datatypes::data[0], false, 0, nullptr);
@@ -106,6 +108,13 @@ bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
         }
         if(gl_error_check()) return false;
     }
+    */
+    for(size_t i = 0; i != vertex_t::attrib_count(); ++i) {
+        gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
+                              (data_type)vertex_t::datatypes::data[i], false, vertex_t::size(),
+                              (void*)vertex_t::offsets::data[i]);
+    }
+    if(gl_error_check()) return false;
 
     return true;
 }

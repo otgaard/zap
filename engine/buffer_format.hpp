@@ -170,8 +170,8 @@ public:
     template <typename T> friend bool operator>=(const vertex_iterator& lhs, const vertex_iterator& rhs);
 
     vertex_iterator& operator+=(size_t v) { ptr_ += v; return *this; }
-    template <typename T> friend vertex_iterator operator+(const vertex_iterator& lhs, size_t rhs);
-    template <typename T> friend vertex_iterator operator+(size_t lhs, const vertex_iterator& rhs);
+    template <typename T> friend vertex_iterator<T> operator+(const vertex_iterator<T>& lhs, size_t rhs);
+    template <typename T> friend vertex_iterator<T> operator+(size_t lhs, const vertex_iterator<T>& rhs);
     vertex_iterator& operator-=(size_t v) { ptr_ -= v; return *this; }
     template <typename T> friend vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs);
     template <typename T> friend int operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs);

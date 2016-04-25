@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(zap)
 
-set(CMAKE_BUILD_TYPE "Release")
-#set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
+
+set(CMAKE_STATIC_BUILD TRUE)
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
 link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
@@ -21,17 +23,21 @@ elseif(WIN32)
 set(CMAKE_CXX_FLAGS )
 endif(APPLE)
 
-set(ZAP_EXAMPLE_FILES
-        zap_example.cpp
-        tools/log.hpp
+set(ZAP_MATHS_FILES
         maths/vec3.hpp
         maths/maths.hpp
-        core/core.hpp
         maths/vec2.hpp
         maths/vec4.hpp
         maths/mat2.hpp
         maths/mat3.hpp
         maths/mat4.hpp
+        maths/functions.hpp
+        maths/dummy
+        maths/dummy.cpp)
+
+set(ZAP_ENGINE_FILES
+        tools/log.hpp
+        core/core.hpp
         engine/shader.hpp
         engine/engine.hpp
         engine/program.hpp
@@ -47,16 +53,28 @@ set(ZAP_EXAMPLE_FILES
         engine/pixel_buffer.hpp
         engine/vertex_buffer.cpp
         engine/vertex_attribute.hpp
-        maths/functions.hpp engine/mesh.cpp engine/mesh.hpp engine/types.hpp)
+        engine/mesh.cpp
+        engine/mesh.hpp
+        engine/export.hpp)
+
+set(ZAP_EXAMPLE_FILES
+        zap_example.cpp
+)
 
 set(ZAP_COMMAND_LINE
-        zap_command.cpp)
+        zap_command.cpp
+)
 
 set(ZAP_TESTS_MATHS_FILES
         tests/maths/vector_tests.cpp
         tests/maths/maths_tests.cpp
-        tests/maths/matrix_tests.cpp
+        tests/maths/matrix_tests.cpp)
+
+set(ZAP_TESTS_ENGINE_FILES
         tests/engine/buffer_format_tests.cpp)
+
+set(SYNESTHESIA_FILES
+        apps/synesthesia/main.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
@@ -68,6 +86,7 @@ if(APPLE)
     set(GLFW_LIBS ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL})
     set(GTEST_LIBS )
     set(LOADER_LIBS GLEW)
+    set(PORTAUDIO_LIBS )
 elseif(UNIX)
     find_library(OPENGL GL)
     find_library(M m)
@@ -88,11 +107,26 @@ elseif(WIN32)
     set(LOADER_LIBS )
 endif(APPLE)
 
+if(CMAKE_STATIC_BUILD)
+    add_library(ZapMaths STATIC ${ZAP_MATHS_FILES})
+    add_library(ZapEngine STATIC ${ZAP_ENGINE_FILES})
+else(CMAKE_STATIC_BUILD)
+    add_library(ZapEngine SHARED ${ZAP_ENGINE_FILES})
+    target_link_libraries(ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
+endif(CMAKE_STATIC_BUILD)
+
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example glfw3 ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example glfw3 ZapEngine ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(zap_cmd ${ZAP_COMMAND_LINE})
 #target_link_libraries(zap_cmd)
 
 add_executable(zap_maths_tests ${ZAP_TESTS_MATHS_FILES})
 target_link_libraries(zap_maths_tests gtest ${GTEST_LIBS})
+
+add_executable(zap_engine_tests ${ZAP_TESTS_ENGINE_FILES})
+target_link_libraries(zap_engine_tests gtest ${GTEST_LIBS})
+
+add_executable(synesthesia ${SYNESTHESIA_FILES})
+target_include_directories(synesthesia PUBLIC ${CMAKE_SOURCE_DIR}/third_party/simple_mp3)
+target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame ${GLFW_LIBS} ${LOADER_LIBS})

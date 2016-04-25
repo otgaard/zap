@@ -133,6 +133,8 @@ int main(int argc, char* argv[]) {
     box.push_back(pos3_t({{10,1,0}}));
     box.push_back(pos3_t({{-10,1,0}}));
 
+    LOG(sizeof(vec3f), pos3_t::attrib_offset<0>(), pos3_t::attrib_offset<1>());
+
     GLuint frame_mesh;
     glGenVertexArrays(1, &frame_mesh);
     glBindVertexArray(frame_mesh);

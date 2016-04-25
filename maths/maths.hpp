@@ -10,6 +10,14 @@
 #include <numeric>
 #include <type_traits>
 
+#ifdef _WIN32
+#define ALIGN_DECL(w) __declspec(align(w))
+#define ALIGN_ATTR(w)
+#else //_WIN32
+#define ALIGN_DECL(w)
+#define ALIGN_ATTR(w) __attribute__((aligned(w)))
+#endif //_WIN32
+
 namespace zap { namespace maths {
 	constexpr double PI = 3.14159265358979323846;
 
