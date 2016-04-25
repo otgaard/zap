@@ -76,19 +76,19 @@ void play_aphextwins() {
     mp3_stream mstream(mp3file, 1024, nullptr);
     mstream.start();
     if(!mstream.is_open()) {
-        LOG("Error opening MP3 File:", mp3file);
+        LOG_ERR("Error opening MP3 File:", mp3file);
         return;
     }
 
     if(Pa_Initialize() != paNoError) {
-        std::cerr << "Error initialising portaudio" << std::endl;
+        LOG_ERR("Error initialising portaudio");
         return;
     }
 
     PaStreamParameters outputParameters;
     outputParameters.device = Pa_GetDefaultOutputDevice();
     if(outputParameters.device == paNoDevice) {
-        std::cerr << "No suitable output device found by portaudio" << std::endl;
+        LOG_ERR("No suitable output device found by portaudio");
         return;
     }
 
@@ -107,13 +107,13 @@ void play_aphextwins() {
     );
 
     if(err != paNoError) {
-        std::cerr << "Pa_OpenStream failed:" << err << Pa_GetErrorText(err) << std::endl;
+        LOG_ERR("Pa_OpenStream failed:", err, Pa_GetErrorText(err));
         if(stream) Pa_CloseStream(stream);
         return;
     }
 
     if(Pa_StartStream(stream) != paNoError) {
-        std::cerr << "Pa_OpenStream failed:" << err << Pa_GetErrorText(err) << std::endl;
+        LOG_ERR("Pa_OpenStream failed:", err, Pa_GetErrorText(err));
         if(stream) Pa_CloseStream(stream);
         return;
     }
@@ -121,7 +121,7 @@ void play_aphextwins() {
     while(Pa_IsStreamActive(stream) > 0) Pa_Sleep(1000);
 
     if(Pa_Terminate() != paNoError) {
-        std::cerr << "Pa_Terminate error:" << err << Pa_GetErrorText(err) << std::endl;
+        LOG_ERR("Pa_Terminate error:", err, Pa_GetErrorText(err));
         return;
     }
 }
@@ -152,26 +152,8 @@ const char* frg_src = GLSL(
         }
 );
 
+using namespace zap::maths;
 using namespace zap::engine;
-
-template <typename FNC>
-struct wave {
-    constexpr static auto make_fnc(FNC fnc, float frequency, float amplitude, float phase) {
-        return [=](float x) -> float {
-            return amplitude*fnc(x*frequency + phase);
-        };
-    };
-};
-
-template <typename IT, typename FNC>
-void sample(IT begin, IT end, float start, float stop, FNC fnc) {
-    const auto samples = end - begin;
-    const auto inc = (stop - start)/samples;
-    for(auto it = begin; it != end; ++it) {
-        it->position.x = start + inc * (it - begin);
-        it->position.y = fnc(it->position.x);
-    }
-}
 
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
@@ -185,7 +167,7 @@ int main(int argc, char* argv[]) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto window = glfwCreateWindow(1280, 768, "zap_example", nullptr, nullptr);
+    auto window = glfwCreateWindow(1280, 768, "synesthesia", nullptr, nullptr);
     if(!window) {
         LOG_ERR("Error creating window - terminating");
         glfwTerminate();
@@ -226,9 +208,6 @@ int main(int argc, char* argv[]) {
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     prog->release();
     gl_error_check();
-
-    using namespace zap::maths;
-    using namespace zap::engine;
 
     vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> frame;
     vertex_buffer<pos3_t, buffer_usage::BU_DYNAMIC_DRAW> graph;
@@ -278,15 +257,18 @@ int main(int argc, char* argv[]) {
         graph.map(buffer_access::BA_READ_WRITE);
         {
             std::unique_lock<std::mutex> scoped_lock(track_mux);
-            for(auto it = graph.end()-sample_count-1, end = graph.begin()-sample_count-1; it != end; --it) {
-                it->position.y = (it-sample_count)->position.y;
-            }
+            if(sample_count != 0) {
+                for(auto it = graph.end() - sample_count - 1, end = graph.begin() - sample_count - 1; it != end; --it) {
+                    it->position.y = (it - sample_count)->position.y;
+                }
 
-            for(auto it = track_sample_buffer.begin(), end = track_sample_buffer.begin()+sample_count; it != end; ++it) {
-                (graph.begin()+(it - track_sample_buffer.begin()))->position.y = (*it);
-            }
+                for(auto it = track_sample_buffer.begin(),
+                         end = track_sample_buffer.begin() + sample_count; it != end; ++it) {
+                    (graph.begin() + (it - track_sample_buffer.begin()))->position.y = (*it);
+                }
 
-            sample_count = 0;
+                sample_count = 0;
+            }
         }
         graph.unmap();
         graph.release();
