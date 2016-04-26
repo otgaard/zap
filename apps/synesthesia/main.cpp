@@ -30,12 +30,17 @@
 std::mutex track_mux;
 std::vector<float> track_sample_buffer(100);
 size_t sample_count = 0;
+bool terminate = false;
+
+// Timer for testing
+/*
+zap::maths::timer t;
+int last = 0;
+*/
 
 constexpr float inv_s16 = 1.f/std::numeric_limits<short>::max();
 
 using unique_lock = std::unique_lock<std::mutex>;
-
-const char* mp3file = "/Users/otgaard/Development/zap/output/assets/aphextwins.mp3";
 
 typedef int callback(const void* input, void* output, u_long frame_count,
                      const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags status_flags,
@@ -57,6 +62,7 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
     // Summarise the stream for display
     {
         unique_lock lock(track_mux);
+        if(terminate) return paComplete;
         if(sample_count < track_sample_buffer.size()-1) {
             float sample = 0;
             auto skip = mp3.channels == 2 ? 2 : 1;
@@ -68,15 +74,23 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
         }
     }
 
+    /*
+    if(!t.is_running()) t.start();
+    if(last < int(t.get_time<float>())) {
+        last = int(t.get_time<float>());
+        LOG(t.get_time<double>());
+    }
+    */
+
     std::copy(buffer.begin(), buffer.begin()+len, out);
     return paContinue;
 }
 
-void play_aphextwins() {
-    mp3_stream mstream(mp3file, 1024, nullptr);
+void play_mp3(const std::string& filename) {
+    mp3_stream mstream(filename, 1024, nullptr);
     mstream.start();
     if(!mstream.is_open()) {
-        LOG_ERR("Error opening MP3 File:", mp3file);
+        LOG_ERR("Error opening MP3 File:", filename);
         return;
     }
 
@@ -132,7 +146,7 @@ static void on_error(int error, const char* description) {
 
 #define GLSL(src) "#version 330 core\n" #src
 
-const char* vtx_src = GLSL(
+const char* const vtx_src = GLSL(
         uniform mat4 proj_matrix;
         in vec2 position;
         out vec2 st;
@@ -143,7 +157,7 @@ const char* vtx_src = GLSL(
         }
 );
 
-const char* frg_src = GLSL(
+const char* const frg_src = GLSL(
         out vec4 frag_colour;
         in vec2 st;
 
@@ -154,6 +168,8 @@ const char* frg_src = GLSL(
 
 using namespace zap::maths;
 using namespace zap::engine;
+
+const char* mp3file = "/Users/otgaard/Development/zap/output/assets/chembros4.mp3";
 
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
@@ -232,10 +248,10 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(line_mesh);
     graph.allocate();
     graph.bind();
-    graph.initialise(1000);
+    graph.initialise(2000);
     graph.map(buffer_access::BA_WRITE_ONLY);
-    for(int i = 0; i < 1000; ++i) {
-        (graph.begin()+i)->position.x = -10.f + i*2/100.f;
+    for(int i = 0; i < 2000; ++i) {
+        (graph.begin()+i)->position.x = -10.f + i*1/100.f;
         (graph.begin()+i)->position.y = 0.f;
         (graph.begin()+i)->position.z = 0.f;
     }
@@ -243,7 +259,10 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
-    std::thread my_thread(play_aphextwins);
+    std::unique_ptr<std::thread> thread_ptr;
+    if(argc == 2) {
+        thread_ptr = std::make_unique<std::thread>(play_mp3, std::string(argv[1]));
+    }
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -282,7 +301,12 @@ int main(int argc, char* argv[]) {
         glfwPollEvents();
     }
 
-    my_thread.join();
+    {
+        unique_lock lock(track_mux);
+        terminate = true;
+    }
+
+    if(thread_ptr) thread_ptr->join();
 
     glfwDestroyWindow(window);
     glfwTerminate();
