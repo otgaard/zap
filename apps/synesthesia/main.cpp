@@ -28,7 +28,8 @@
 // generation. Essentially a fun app to write in order to motivate adding the various parts of the engine.
 
 std::mutex track_mux;
-std::vector<float> track_sample_buffer(100);
+constexpr size_t sample_buffer_size = 100;
+std::vector<float> track_sample_buffer(sample_buffer_size);
 size_t sample_count = 0;
 bool terminate = false;
 
@@ -88,8 +89,7 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
 
 void play_mp3(const std::string& filename) {
     mp3_stream mstream(filename, 1024, nullptr);
-    mstream.start();
-    if(!mstream.is_open()) {
+    if(!mstream.start() || !mstream.is_open()) {
         LOG_ERR("Error opening MP3 File:", filename);
         return;
     }
@@ -264,6 +264,8 @@ int main(int argc, char* argv[]) {
         thread_ptr = std::make_unique<std::thread>(play_mp3, std::string(argv[1]));
     }
 
+    std::vector<float> track_copy(sample_buffer_size, 0);
+    size_t tsamples = 0;
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         prog->bind();
@@ -272,22 +274,26 @@ int main(int argc, char* argv[]) {
         glDrawArrays(GL_LINE_LOOP, 0, frame.vertex_count());
         glBindVertexArray(0);
 
-        graph.bind();
-        graph.map(buffer_access::BA_READ_WRITE);
         {
-            std::unique_lock<std::mutex> scoped_lock(track_mux);
+            unique_lock lock(track_mux);
             if(sample_count != 0) {
-                for(auto it = graph.end() - sample_count - 1, end = graph.begin() - sample_count - 1; it != end; --it) {
-                    it->position.y = (it - sample_count)->position.y;
-                }
-
-                for(auto it = track_sample_buffer.begin(),
-                         end = track_sample_buffer.begin() + sample_count; it != end; ++it) {
-                    (graph.begin() + (it - track_sample_buffer.begin()))->position.y = (*it);
-                }
-
+                std::copy(track_sample_buffer.begin(), track_sample_buffer.begin()+sample_count, track_copy.begin());
+                tsamples = sample_count;
                 sample_count = 0;
             }
+        }
+
+        graph.bind();
+        graph.map(buffer_access::BA_READ_WRITE);
+        if(tsamples != 0) {
+            for(auto it = graph.end() - tsamples - 1, end = graph.begin() - tsamples - 1; it != end; --it) {
+                it->position.y = (it - tsamples)->position.y;
+            }
+
+            for(auto it = track_copy.begin(), end = track_copy.begin() + tsamples; it != end; ++it) {
+                (graph.begin() + (it - track_copy.begin()))->position.y = (*it);
+            }
+            tsamples = 0;
         }
         graph.unmap();
         graph.release();
