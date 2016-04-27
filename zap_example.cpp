@@ -1,24 +1,18 @@
 /* Created by Darren Otgaar on 2016/03/05. http://www.github.com/otgaard/zap */
-
-#ifdef __APPLE__
-//#define GLFW_INCLUDE_GLCOREARB
-#endif //__APPLE__
-
+#include <vector>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #define LOGGING_ENABLED
 #include <tools/log.hpp>
-#include <engine/shader.hpp>
-#include <vector>
-#include <engine/program.hpp>
 #include <maths/mat4.hpp>
-#include <maths/vec4.hpp>
 #include <maths/vec3.hpp>
 #include <maths/vec2.hpp>
-#include <engine/buffer_format.hpp>
+#include <engine/types.hpp>
+#include <engine/shader.hpp>
+#include <engine/program.hpp>
 #include <maths/functions.hpp>
-
-#include "engine/vertex_buffer.hpp"
+#include <engine/buffer_format.hpp>
+#include <engine/vertex_buffer.hpp>
 
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
@@ -36,29 +30,52 @@ const char* vtx_src = GLSL(
 );
 
 const char* frg_src = GLSL(
+    uniform vec3 colour;
     out vec4 frag_colour;
 
     void main() {
-        frag_colour = vec4(1.0, 0.0, 0.0, 1.0);
+        frag_colour = vec4(colour, 1.0);
+    }
+);
+
+const char* pane_vtx_src = GLSL(
+    uniform mat4 proj_matrix;
+    in vec3 position;
+    in vec3 normal;
+    in float point_size;
+
+    out vec2 pos;
+    out vec3 nor;
+    void main() {
+        pos = position.xy * point_size;
+        nor = normal;
+        gl_Position = proj_matrix*vec4(position, 1.0);
+    }
+);
+
+const char* pane_frg_src = GLSL(
+    out vec4 frag_colour;
+    in vec2 pos;
+    in vec3 nor;
+    void main() {
+        frag_colour = vec4(pos.x,pos.y,0,1);
     }
 );
 
 using namespace zap::engine;
 
-#include <engine/gl_api.hpp>
-#include <engine/types.hpp>
-
+// Higher order function to create a wave function from an input periodic function
 template <typename FNC>
 struct wave {
     constexpr static auto make_fnc(FNC fnc, float frequency, float amplitude, float phase) {
         return [=](float x) -> float {
-            return amplitude*fnc(x*frequency + phase);
+            return amplitude * fnc(frequency * x + phase);
         };
     };
 };
 
 template <typename IT, typename FNC>
-void sample(IT begin, IT end, float start, float stop, FNC fnc) {
+constexpr void sample(IT begin, IT end, float start, float stop, FNC fnc) {
     const auto samples = end - begin;
     const auto inc = (stop - start)/samples;
     for(auto it = begin; it != end; ++it) {
@@ -108,21 +125,47 @@ int main(int argc, char* argv[]) {
     prog->link(true);
 	gl_error_check();
 
+    std::vector<shader_ptr> arr2;
+    arr2.push_back(std::make_shared<shader>(shader_type::ST_VERTEX, pane_vtx_src));
+    arr2.push_back(std::make_shared<shader>(shader_type::ST_FRAGMENT, pane_frg_src));
+
+    auto pane_prog = std::make_shared<program>(std::move(arr2));
+    pane_prog->link(true);
+    gl_error_check();
+
     zap::maths::mat4<float> proj_matrix = {
-        80/1280.f,      0.f, 0.f, 0.f,
-        0.f,       80/768.f, 0.f, 0.f,
-        0.f,            0.f, 2.f, 0.f,
-        0.f,            0.f, 0.f, 1.f
+        120/1280.f,       0.f, 0.f, 0.f,
+        0.f,        120/768.f, 0.f, 0.f,
+        0.f,              0.f, 2.f, 0.f,
+        0.f,              0.f, 0.f, 1.f
     };
 
     prog->bind();
     auto loc = prog->uniform_location("proj_matrix");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
+    loc = prog->uniform_location("colour");
+    auto line_colour = zap::maths::vec3f(0,0,1);
+    glUniform3fv(loc, 1, line_colour.data());
+    prog->release();
+    gl_error_check();
+
+    pane_prog->bind();
+    loc = pane_prog->uniform_location("proj_matrix");
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     prog->release();
     gl_error_check();
 
     using namespace zap::maths;
     using namespace zap::engine;
+
+    using p3_t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
+    using n3_t = vertex_attribute<vec3f, attribute_type::AT_NORMAL>;
+    using ps1_t = vertex_attribute<float, attribute_type::AT_POINTSIZE>;
+
+    using vertex_t = vertex<p3_t, n3_t, ps1_t>;
+    using vertex_buf_t = vertex_buffer<vertex_t, buffer_usage::BU_STATIC_DRAW>;
+
+    vertex_buf_t pane;
 
     vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> frame;
     vertex_buffer<pos3_t, buffer_usage::BU_DYNAMIC_DRAW> graph;
@@ -132,6 +175,29 @@ int main(int argc, char* argv[]) {
     box.push_back(pos3_t({{10,-1,0}}));
     box.push_back(pos3_t({{10,1,0}}));
     box.push_back(pos3_t({{-10,1,0}}));
+
+    std::vector<vertex_t> pane_def = {
+            vertex_t(
+                    {{-10, -5, 0}}, // pos
+                    {{0, 0, 1}},    // normal
+                    {-1}
+            ),
+            vertex_t(
+                    {{10, -5, 0}},
+                    {{0, 0, 1}},
+                    {1}
+            ),
+            vertex_t(
+                    {{10, 5, 0}},
+                    {{0, 0, 1}},
+                    {1}
+            ),
+            vertex_t(
+                    {{-10, 5, 0}},
+                    {{0, 0, 1}},
+                    {1}
+            )
+    };
 
     LOG(sizeof(vec3f), pos3_t::attrib_offset<0>(), pos3_t::attrib_offset<1>());
 
@@ -149,7 +215,16 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(line_mesh);
     graph.allocate();
     graph.bind();
-    graph.initialise(1000);
+    graph.initialise(2000);
+    glBindVertexArray(0);
+    gl_error_check();
+
+    GLuint pane_mesh;
+    glGenVertexArrays(1, &pane_mesh);
+    glBindVertexArray(pane_mesh);
+    pane.allocate();
+    pane.bind();
+    pane.initialise(pane_def);
     glBindVertexArray(0);
     gl_error_check();
 
@@ -158,22 +233,32 @@ int main(int argc, char* argv[]) {
     timer t;
     float prev = t.getf(), curr = t.getf();
 
-    auto sin1hz = wave<decltype(sinf)>::make_fnc(sinf, 10, .5f, 0.f);
-    auto sin3hz = wave<decltype(sinf)>::make_fnc(sinf, 30, .5f, 0.f);
+    auto sin5Hz = wave<decltype(sinf)>::make_fnc(sinf, 5, .4f, 0.f);
+    auto sin17Hz = wave<decltype(sinf)>::make_fnc(sinf, 17, .4f, 0.f);
+    auto sin31Hz = wave<decltype(sinf)>::make_fnc(sinf, 31, 0.2f, 0.f);
+    auto synth = [&sin5Hz, &sin17Hz, &sin31Hz](float x) {
+        return sin5Hz(x) + sin17Hz(x) + sin31Hz(x);
+    };
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        prog->bind();
 
+        pane_prog->bind();
+        glBindVertexArray(pane_mesh);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, pane.vertex_count());
+        glBindVertexArray(0);
+        pane_prog->release();
+
+        prog->bind();
         glBindVertexArray(frame_mesh);
         glDrawArrays(GL_LINE_LOOP, 0, frame.vertex_count());
         glBindVertexArray(0);
 
         graph.bind();
         graph.map(buffer_access::BA_WRITE_ONLY);
-        sample(graph.begin(), graph.end(), -pi, pi, [&offset, sin1hz, sin3hz](float x) {
+        sample(graph.begin(), graph.end(), -3*pi, 3*pi, [&offset, synth](float x) {
             x += offset;
-            return sin3hz(x) + sin1hz(x);
+            return synth(x);
         });
         graph.unmap();
         graph.release();

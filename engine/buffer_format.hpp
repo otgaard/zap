@@ -53,12 +53,12 @@ constexpr typename std::enable_if<k != 0, typename type_query<k, pod<Arg, Args..
 }
 
 template <size_t k, typename... Args>
-constexpr typename std::enable_if<k == 0, typename type_query<0, pod<Args...>>::type>::type::type& get(pod<Args...>& t) {
+constexpr typename std::enable_if<k == 0, typename type_query<0, pod<Args...>>::type>::info::type& get(pod<Args...>& t) {
     return t.value;
 }
 
 template <size_t k, typename Arg, typename... Args>
-constexpr typename std::enable_if<k != 0, typename type_query<k, pod<Arg, Args...>>::type>::type::type& get(pod<Arg, Args...>& t) {
+constexpr typename std::enable_if<k != 0, typename type_query<k, pod<Arg, Args...>>::type>::info::type& get(pod<Arg, Args...>& t) {
     pod<Args...>& base = t;
     return get<k - 1>(base);
 }
@@ -120,14 +120,14 @@ struct vattrib_type {
 template <size_t k, typename POD_T>
 struct vattrib_count {
     enum {
-        value = type_query<k, POD_T>::type::type::size()        // wrapper type -> stored type -> elements
+        value = type_query<k, POD_T>::type::info::size          // wrapper type -> stored type -> elements
     };
 };
 
 template <size_t k, typename POD_T>
 struct vattrib_datatype {
     enum {
-        value = dt_descriptor<typename type_query<k, POD_T>::type::type::type>::value
+        value = dt_descriptor<typename type_query<k, POD_T>::type::info::type>::value
     };
 };
 

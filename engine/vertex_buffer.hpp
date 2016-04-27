@@ -24,12 +24,12 @@ public:
     constexpr static auto buf_type = buffer_type::BT_ARRAY;
     constexpr static auto usage = USAGE;
 
-    inline vertex_buffer() : vertex_count_(0) { }
+    vertex_buffer() : vertex_count_(0) { }
 
-    inline void bind() const { buffer::bind(buf_type); }
-    inline void release() const { buffer::release(buf_type); }
+    void bind() const { buffer::bind(buf_type); }
+    void release() const { buffer::release(buf_type); }
 
-    inline bool initialise(size_t vertex_count, const char* data=nullptr) {
+    bool initialise(size_t vertex_count, const char* data=nullptr) {
         if(buffer::initialise(buf_type, usage, vertex_count*vertex_t::size(), data)) {
             vertex_count_ = vertex_count;
             return configure_attributes();
@@ -37,11 +37,15 @@ public:
         return false;
     }
 
-    inline bool initialise(const std::vector<char>& data) {
-        return buffer::initialise(buf_type, usage, data) && configure_attributes();
+    bool initialise(const std::vector<char>& data) {
+        if(buffer::initialise(buf_type, usage, data)) {
+            vertex_count_ = data.size() / vertex_t::size();
+            return configure_attributes();
+        }
+        return false;
     }
 
-    inline bool initialise(const std::vector<vertex_t>& data) {
+    bool initialise(const std::vector<vertex_t>& data) {
         auto result = buffer::initialise(buf_type, usage, vertex_t::size()*data.size(),
                                          reinterpret_cast<const char*>(data.data()));
         vertex_count_ = data.size();
@@ -53,37 +57,37 @@ public:
     // All sizes are in vertices, i.e src_off = 0 is the first vertex, src_off = 1 is the second and so on.
     bool copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count);
 
-    inline char* map(buffer_access access) { return buffer::map(buf_type, access); }
-    inline char* map(buffer_access access, size_t offset, size_t length) {
+    char* map(buffer_access access) { return buffer::map(buf_type, access); }
+    char* map(buffer_access access, size_t offset, size_t length) {
         return buffer::map(buf_type, access, offset, length);
     }
-    inline bool unmap() { return buffer::unmap(buf_type); }
+    bool unmap() { return buffer::unmap(buf_type); }
 
-    inline iterator begin() {
+    iterator begin() {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_));
     }
-    inline iterator end() {
+    iterator end() {
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::size()) * vertex_t::size()));
     }
-    inline const iterator begin() const {
+    const iterator begin() const {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_));
     }
-    inline const iterator end() const {
+    const iterator end() const {
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::size()) * vertex_t::size()));
     }
 
-    inline vertex_t* data() {
+    vertex_t* data() {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return reinterpret_cast<vertex_t*>(mapped_ptr_);
     }
-    inline const vertex_t* data() const {
+    const vertex_t* data() const {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return reinterpret_cast<vertex_t*>(mapped_ptr_);
     }
 
-    inline size_t vertex_count() const { return vertex_count_; }
+    size_t vertex_count() const { return vertex_count_; }
 
 protected:
     bool configure_attributes();

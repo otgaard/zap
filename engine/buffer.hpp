@@ -11,7 +11,7 @@ namespace zap { namespace engine {
 
     class buffer {
     public:
-        inline buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
+        buffer() : id_(INVALID_RESOURCE), mapped_ptr_(nullptr), size_(0) { }
         ~buffer();
 
         bool allocate();
@@ -21,18 +21,18 @@ namespace zap { namespace engine {
         void release(buffer_type type) const;
         bool is_bound() const;
 
-        inline bool is_mapped() const { return mapped_ptr_ != nullptr; }
-        inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }
+        bool is_mapped() const { return mapped_ptr_ != nullptr; }
+        bool is_allocated() const { return id_ != INVALID_RESOURCE; }
 
         bool initialise(buffer_type type, buffer_usage usage, size_t size, const char* data=nullptr);
-        inline bool initialise(buffer_type type, buffer_usage usage, const std::vector<char>& data) {
+        bool initialise(buffer_type type, buffer_usage usage, const std::vector<char>& data) {
             return initialise(type, usage, data.size(), data.data());
         }
 
         bool orphan(buffer_type type, buffer_usage usage);
 
         bool copy(buffer_type type, size_t offset, size_t size, const char* data); // glBufferSubData
-        inline bool copy(buffer_type type, size_t offset, const std::vector<char>& data) {
+        bool copy(buffer_type type, size_t offset, const std::vector<char>& data) {
             return copy(type, offset, data.size(), data.data());
         }
 
@@ -45,8 +45,8 @@ namespace zap { namespace engine {
 
     protected:
         mutable resource_t id_;
-        size_t size_;
         mutable char* mapped_ptr_;
+        size_t size_;
     };
 }}
 

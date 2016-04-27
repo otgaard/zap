@@ -3,7 +3,9 @@
 #define ZAP_MESH_HPP
 
 
+template <typename VtxStream, typename IdxStream>
 class mesh {
+public:
 
 };
 

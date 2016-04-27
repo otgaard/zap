@@ -64,7 +64,7 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
     {
         unique_lock lock(track_mux);
         if(terminate) return paComplete;
-        if(sample_count < track_sample_buffer.size()-1) {
+        if(sample_count < track_sample_buffer.size()) {
             float sample = 0;
             auto skip = mp3.channels == 2 ? 2 : 1;
             for(auto i = 0; i < req_frames; i += skip) {
