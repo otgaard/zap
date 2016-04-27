@@ -75,7 +75,7 @@ struct wave {
 };
 
 template <typename IT, typename FNC>
-constexpr void sample(IT begin, IT end, float start, float stop, FNC fnc) {
+void sample(IT begin, IT end, float start, float stop, FNC fnc) {
     const auto samples = end - begin;
     const auto inc = (stop - start)/samples;
     for(auto it = begin; it != end; ++it) {

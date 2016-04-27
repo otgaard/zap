@@ -7,76 +7,42 @@
 #include <maths/mat3.hpp>
 #include <maths/mat4.hpp>
 
+#define LOGGING_ENABLED
+#include <tools/log.hpp>
+
 using namespace zap::maths;
 
-TEST(MatrixMathsTests, ColumnMajorStorageMat2) {
-    mat2<float> M1 = {{1.f, 2.f, 3.f, 4.f}};
-    mat2<float> M2 = {{1.f, 3.f},               // Column Initialiser
-                      {2.f, 4.f}};
-    mat2<float> M3 = {1.f, 2.f, 3.f, 4.f};
+TEST(MatrixMathsTests, Mat2Tests) {
+    using mat_t = mat2<float>;
+    constexpr mat_t mat1 = { 1, 2,
+                             3, 4 };
+    auto col0 = mat1.col(0);
+    EXPECT_EQ(col0[0], 1); EXPECT_EQ(col0[1], 3);
+    auto row0 = mat1.row(0);
+    EXPECT_EQ(row0[0], 1); EXPECT_EQ(row0[1], 2);
+    auto col1 = mat1.col(1);
+    EXPECT_EQ(col1[0], 2); EXPECT_EQ(col1[1], 4);
+    auto row1 = mat1.row(1);
+    EXPECT_EQ(row1[0], 3); EXPECT_EQ(row1[1], 4);
 
-    EXPECT_EQ(M1(0,0), M2(0,0)); EXPECT_EQ(M2(0,0), M3(0,0));
-    EXPECT_EQ(M1(1,0), M2(1,0)); EXPECT_EQ(M2(1,0), M3(1,0));
-    EXPECT_EQ(M1(0,1), M2(0,1)); EXPECT_EQ(M2(0,1), M3(0,1));
-    EXPECT_EQ(M1(1,1), M2(1,1)); EXPECT_EQ(M2(1,1), M3(1,1));
-}
+    constexpr mat_t mat2 = { -1,  2,
+                              3, -4 };
+    auto r1 = mat1 + mat2;
+    EXPECT_EQ(r1(0,0), 0); EXPECT_EQ(r1(0,1), 4);
+    EXPECT_EQ(r1(1,0), 6); EXPECT_EQ(r1(1,1), 0);
 
-TEST(MatrixMathsTests, ConstructorsMat2) {
-    mat2<float> M1(0.f);
-    mat2<float> M2(3.f, 9.f);
+    constexpr auto r2 = mat1 * mat2;
+    static_assert(r2(0,0) == 5, "Error");
+    static_assert(r2(1,0) == 9, "Error");
+    static_assert(r2(0,1) == -6, "Error");
+    static_assert(r2(1,1) == -10, "Error");
 
-}
+    constexpr auto t2 = transpose(r2);
+    static_assert(t2(0,0) == 5, "Error");
+    static_assert(t2(1,0) == -6, "Error");
+    static_assert(t2(0,1) == 9, "Error");
+    static_assert(t2(1,1) == -10, "Error");
 
-TEST(MatrixMathsTests, ColumnMajorStorageMat3) {
-    mat3<float> M1 = {{1.f, 2.f, 3.f,
-                       4.f, 5.f, 6.f,
-                       7.f, 8.f, 9.f}};
-    mat3<float> M2 = {{1.f, 4.f, 7.f},          // Note, column initialiser
-                      {2.f, 5.f, 8.f},
-                      {3.f, 6.f, 9.f}};
-    mat3<float> M3 = {1.f, 2.f, 3.f,
-                      4.f, 5.f, 6.f,
-                      7.f, 8.f, 9.f};
-
-    EXPECT_EQ(M1(0,0), M2(0,0)); EXPECT_EQ(M2(0,0), M3(0,0));
-    EXPECT_EQ(M1(0,1), M2(0,1)); EXPECT_EQ(M2(0,1), M3(0,1));
-    EXPECT_EQ(M1(0,2), M2(0,2)); EXPECT_EQ(M2(0,2), M3(0,2));
-    EXPECT_EQ(M1(1,0), M2(1,0)); EXPECT_EQ(M2(1,0), M3(1,0));
-    EXPECT_EQ(M1(1,1), M2(1,1)); EXPECT_EQ(M2(1,1), M3(1,1));
-    EXPECT_EQ(M1(1,2), M2(1,2)); EXPECT_EQ(M2(1,2), M3(1,2));
-    EXPECT_EQ(M1(2,0), M2(2,0)); EXPECT_EQ(M2(2,0), M3(2,0));
-    EXPECT_EQ(M1(2,1), M2(2,1)); EXPECT_EQ(M2(2,1), M3(2,1));
-    EXPECT_EQ(M1(2,2), M2(2,2)); EXPECT_EQ(M2(2,2), M3(2,2));
-}
-
-TEST(MatrixMathsTests, ColumnMajorStorageMat4) {
-    mat4<float> M1 = {{1.f,  2.f,  3.f,  4.f,
-                       5.f,  6.f,  7.f,  8.f,
-                       9.f, 10.f, 11.f, 12.f,
-                      13.f, 14.f, 15.f, 16.f}};
-    mat4<float> M2 = {{1.f,  5.f,  9.f, 13.f},          // Note, column initialiser
-                      {2.f,  6.f, 10.f, 14.f},
-                      {3.f,  7.f, 11.f, 15.f},
-                      {4.f,  8.f, 12.f, 16.f}};
-    mat4<float> M3 = {1.f,  2.f,  3.f,  4.f,
-                      5.f,  6.f,  7.f,  8.f,
-                      9.f, 10.f, 11.f, 12.f,
-                     13.f, 14.f, 15.f, 16.f};
-
-    EXPECT_EQ(M1(0,0), M2(0,0)); EXPECT_EQ(M2(0,0), M3(0,0));
-    EXPECT_EQ(M1(0,1), M2(0,1)); EXPECT_EQ(M2(0,1), M3(0,1));
-    EXPECT_EQ(M1(0,2), M2(0,2)); EXPECT_EQ(M2(0,2), M3(0,2));
-    EXPECT_EQ(M1(0,3), M2(0,3)); EXPECT_EQ(M2(0,3), M3(0,3));
-    EXPECT_EQ(M1(1,0), M2(1,0)); EXPECT_EQ(M2(1,0), M3(1,0));
-    EXPECT_EQ(M1(1,1), M2(1,1)); EXPECT_EQ(M2(1,1), M3(1,1));
-    EXPECT_EQ(M1(1,2), M2(1,2)); EXPECT_EQ(M2(1,2), M3(1,2));
-    EXPECT_EQ(M1(1,3), M2(1,3)); EXPECT_EQ(M2(1,3), M3(1,3));
-    EXPECT_EQ(M1(2,0), M2(2,0)); EXPECT_EQ(M2(2,0), M3(2,0));
-    EXPECT_EQ(M1(2,1), M2(2,1)); EXPECT_EQ(M2(2,1), M3(2,1));
-    EXPECT_EQ(M1(2,2), M2(2,2)); EXPECT_EQ(M2(2,2), M3(2,2));
-    EXPECT_EQ(M1(2,3), M2(2,3)); EXPECT_EQ(M2(2,3), M3(2,3));
-    EXPECT_EQ(M1(3,0), M2(3,0)); EXPECT_EQ(M2(3,0), M3(3,0));
-    EXPECT_EQ(M1(3,1), M2(3,1)); EXPECT_EQ(M2(3,1), M3(3,1));
-    EXPECT_EQ(M1(3,2), M2(3,2)); EXPECT_EQ(M2(3,2), M3(3,2));
-    EXPECT_EQ(M1(3,3), M2(3,3)); EXPECT_EQ(M2(3,3), M3(3,3));
+    auto r3 = mat_t::make_rotation(PI);
+    for(const auto& v : r3) LOG(v);
 }
