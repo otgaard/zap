@@ -15,9 +15,9 @@ namespace gl {
 
 template <typename VTX_T, buffer_usage USAGE>
 class vertex_buffer : public buffer {
-public:
     static_assert(is_specialisation_of<vertex, VTX_T>::value, "VTX_T must be a specialisation of vertex<>");
 
+public:
     using vertex_t = VTX_T;
     using iterator = vertex_iterator<VTX_T>;
     using pod_t = typename vertex_t::pod_t;
@@ -62,6 +62,18 @@ public:
         return buffer::map(buf_type, access, offset, length);
     }
     bool unmap() { return buffer::unmap(buf_type); }
+
+    const vertex_t& operator[](size_t idx) const {
+        assert(is_mapped() && "Vertex Buffer must be mapped!");
+        assert(idx < vertex_count_ && ZERR_IDX_OUT_OF_RANGE);
+        return *(reinterpret_cast<vertex_t*>(mapped_ptr_) + idx);
+    }
+
+    vertex_t& operator[](size_t idx) {
+        assert(is_mapped() && "Vertex Buffer must be mapped!");
+        assert(idx < vertex_count_ && ZERR_IDX_OUT_OF_RANGE);
+        return *(reinterpret_cast<vertex_t*>(mapped_ptr_) + idx);
+    }
 
     iterator begin() {
         assert(is_mapped() && "Vertex Buffer must be mapped!");

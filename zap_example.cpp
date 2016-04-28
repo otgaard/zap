@@ -11,7 +11,6 @@
 #include <engine/shader.hpp>
 #include <engine/program.hpp>
 #include <maths/functions.hpp>
-#include <engine/buffer_format.hpp>
 #include <engine/vertex_buffer.hpp>
 
 static void on_error(int error, const char* description) {
@@ -83,6 +82,8 @@ void sample(IT begin, IT end, float start, float stop, FNC fnc) {
         it->position.y = fnc(it->position.x);
     }
 }
+
+#include <engine/index_buffer.hpp>
 
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
@@ -199,7 +200,34 @@ int main(int argc, char* argv[]) {
             )
     };
 
-    LOG(sizeof(vec3f), pos3_t::attrib_offset<0>(), pos3_t::attrib_offset<1>());
+    // Let's build an index of disconnected lines
+    std::vector<uint16_t> lines = { 0, 2, 1, 3, 4, 6, 5, 7 };
+
+    GLuint index_test;
+    glGenVertexArrays(1, &index_test);
+    glBindVertexArray(index_test);
+
+    index_buffer<uint16_t, primitive_type::PT_LINES, buffer_usage::BU_STATIC_DRAW> index1;
+    index1.allocate();
+    index1.bind();
+    index1.initialise(lines);
+
+    index1.map(buffer_access::BA_READ_ONLY);
+    for(int i = 0; i != index1.index_count(); ++i) {
+        LOG(index1[i]);
+    }
+    index1.unmap();
+
+    vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> testbuffer;
+    std::vector<pos3_t> testpoints = {
+            pos3_t({{-1,-1,0}}), pos3_t({{0,0,0}}), pos3_t({{1,1,0}}), pos3_t({{2,-1,0}}),
+            pos3_t({{-3,1,0}}), pos3_t({{-6,-3,0}}), pos3_t({{8,4,0}}), pos3_t({{10,-10,0}})
+    };
+    testbuffer.allocate();
+    testbuffer.bind();
+    testbuffer.initialise(testpoints);
+    glBindVertexArray(0);
+    gl_error_check();
 
     GLuint frame_mesh;
     glGenVertexArrays(1, &frame_mesh);
@@ -256,6 +284,7 @@ int main(int argc, char* argv[]) {
 
         graph.bind();
         graph.map(buffer_access::BA_WRITE_ONLY);
+        LOG(graph[0].position.y, graph[1].position.y, graph[2].position.y);
         sample(graph.begin(), graph.end(), -3*pi, 3*pi, [&offset, synth](float x) {
             x += offset;
             return synth(x);
@@ -272,6 +301,11 @@ int main(int argc, char* argv[]) {
 
         prev = curr;
         curr = t.getf();
+
+        glBindVertexArray(index_test);
+        glDrawElements(GL_LINES, index1.index_count(), GL_UNSIGNED_SHORT, nullptr);
+        gl_error_check();
+        glBindVertexArray(0);
 
         prog->release();
         glfwSwapBuffers(window);
