@@ -56,6 +56,9 @@ set(ZAP_ENGINE_FILES
         engine/mesh.hpp
         engine/export.hpp)
 
+set(STB_ARCHIVE
+        third_party/stb/stb.c)
+
 set(ZAP_EXAMPLE_FILES
         zap_example.cpp
 )
@@ -114,8 +117,10 @@ else(CMAKE_STATIC_BUILD)
     target_link_libraries(ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
 endif(CMAKE_STATIC_BUILD)
 
+add_library(stb STATIC ${STB_ARCHIVE})
+
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example glfw3 ZapEngine ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example glfw3 ZapEngine stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(zap_cmd ${ZAP_COMMAND_LINE})
 #target_link_libraries(zap_cmd)
@@ -128,4 +133,4 @@ target_link_libraries(zap_engine_tests gtest ${GTEST_LIBS})
 
 add_executable(synesthesia ${SYNESTHESIA_FILES})
 target_include_directories(synesthesia PUBLIC ${CMAKE_SOURCE_DIR}/third_party/simple_mp3)
-target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame stb ${GLFW_LIBS} ${LOADER_LIBS})

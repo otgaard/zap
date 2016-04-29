@@ -13,6 +13,8 @@
 #include <maths/functions.hpp>
 #include <engine/vertex_buffer.hpp>
 
+#include <stb_image.h>
+
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
 }
@@ -63,7 +65,7 @@ const char* pane_frg_src = GLSL(
 
 using namespace zap::engine;
 
-// Higher order function to create a wave function from an input periodic function
+// Higher order function to create a wave function from an input periodic function with range [-1, 1]
 template <typename FNC>
 struct wave {
     constexpr static auto make_fnc(FNC fnc, float frequency, float amplitude, float phase) {
@@ -89,6 +91,8 @@ int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
 
     if(!glfwInit()) return -1;
+
+
 
     glfwWindowHint(GLFW_SAMPLES, 8);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
@@ -166,22 +170,11 @@ int main(int argc, char* argv[]) {
     using vertex_t = vertex<p3_t, n3_t, ps1_t>;
     using vertex_buf_t = vertex_buffer<vertex_t, buffer_usage::BU_STATIC_DRAW>;
 
-    vertex_buf_t pane;
-
-    vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> frame;
-    vertex_buffer<pos3_t, buffer_usage::BU_DYNAMIC_DRAW> graph;
-
-    std::vector<pos3_t> box;
-    box.push_back(pos3_t({{-10,-1,0}}));
-    box.push_back(pos3_t({{10,-1,0}}));
-    box.push_back(pos3_t({{10,1,0}}));
-    box.push_back(pos3_t({{-10,1,0}}));
-
     std::vector<vertex_t> pane_def = {
             vertex_t(
                     {{-10, -5, 0}}, // pos
                     {{0, 0, 1}},    // normal
-                    {-1}
+                    {-1}            // point-size
             ),
             vertex_t(
                     {{10, -5, 0}},
@@ -228,6 +221,17 @@ int main(int argc, char* argv[]) {
     testbuffer.initialise(testpoints);
     glBindVertexArray(0);
     gl_error_check();
+
+    vertex_buf_t pane;
+
+    vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> frame;
+    vertex_buffer<pos3_t, buffer_usage::BU_DYNAMIC_DRAW> graph;
+
+    std::vector<pos3_t> box;
+    box.push_back(pos3_t({{-10,-1,0}}));
+    box.push_back(pos3_t({{10,-1,0}}));
+    box.push_back(pos3_t({{10,1,0}}));
+    box.push_back(pos3_t({{-10,1,0}}));
 
     GLuint frame_mesh;
     glGenVertexArrays(1, &frame_mesh);
