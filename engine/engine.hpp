@@ -67,8 +67,8 @@ namespace zap { namespace engine {
 
     enum class data_type : std::uint8_t {
         DT_VOID = 0,
-        DT_UCHAR = 1,
-        DT_CHAR = 2,
+        DT_UBYTE = 1,
+        DT_BYTE = 2,
         DT_USHORT = 3,
         DT_SHORT = 4,
         DT_UINT = 5,
@@ -81,8 +81,8 @@ namespace zap { namespace engine {
     };
 
     template <typename T> struct dt_descriptor { enum { value = int(data_type::DT_VOID) }; };
-    template <> struct dt_descriptor<unsigned char> { enum { value = int(data_type::DT_UCHAR) }; };
-    template <> struct dt_descriptor<char> { enum { value = int(data_type::DT_CHAR) }; };
+    template <> struct dt_descriptor<unsigned char> { enum { value = int(data_type::DT_UBYTE) }; };
+    template <> struct dt_descriptor<char> { enum { value = int(data_type::DT_BYTE) }; };
     template <> struct dt_descriptor<unsigned short> { enum { value = int(data_type::DT_USHORT) }; };
     template <> struct dt_descriptor<short> { enum { value = int(data_type::DT_SHORT) }; };
     template <> struct dt_descriptor<unsigned int> { enum { value = int(data_type::DT_UINT) }; };

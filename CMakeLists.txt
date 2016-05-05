@@ -54,7 +54,7 @@ set(ZAP_ENGINE_FILES
         engine/vertex_attribute.hpp
         engine/mesh.cpp
         engine/mesh.hpp
-        engine/export.hpp)
+        engine/export.hpp engine/pixel_format.hpp core/pod.hpp core/bitfield.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)

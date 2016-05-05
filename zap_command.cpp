@@ -163,15 +163,17 @@ struct wave {
     };
 };
 
-int main(int argc, char* argv[]) {
-    //test_variadic();
-
+void test_wave() {
     auto fnc = wave<decltype(sinf)>::make_fnc(sinf, 1.f, 1.f, 0.f);
     float inc = 1/100.f;
     for(size_t i = 0; i != 100; ++i) {
         LOG(fnc(i*inc));
     }
+}
 
+
+int main(int argc, char* argv[]) {
+    test_wave();
 
     return 0;
 }

@@ -14,6 +14,7 @@
 #include <engine/vertex_buffer.hpp>
 
 #include <stb_image.h>
+#include <engine/pixel_buffer.hpp>
 
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
@@ -91,6 +92,22 @@ int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
 
     if(!glfwInit()) return -1;
+
+    // Pixel Tests
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -288,7 +305,7 @@ int main(int argc, char* argv[]) {
 
         graph.bind();
         graph.map(buffer_access::BA_WRITE_ONLY);
-        LOG(graph[0].position.y, graph[1].position.y, graph[2].position.y);
+        //LOG(graph[0].position.y, graph[1].position.y, graph[2].position.y);
         sample(graph.begin(), graph.end(), -3*pi, 3*pi, [&offset, synth](float x) {
             x += offset;
             return synth(x);
