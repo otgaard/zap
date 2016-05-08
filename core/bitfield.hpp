@@ -5,9 +5,9 @@
 #ifndef ZAP_BITFIELD_HPP
 #define ZAP_BITFIELD_HPP
 
-namespace zap { namespace core {
+#include "meta.hpp"
 
-#include <cctype>
+namespace zap { namespace core {
 
 template <size_t k> struct pow2;
 template <> struct pow2<0> { constexpr static size_t value = 1; };
@@ -84,12 +84,15 @@ struct bitfield {
     using masks = typename generate_table<size, bitfield<T,Bits...>,bitfield_mask>::result;
 
     constexpr bitfield() : value(0) { }
-    T operator[](size_t id) const { return T(value & T(masks::data[id])) >> T(shifts::data[id]); }
+    T operator[](size_t id) const { return T(value & T(masks::data[id])) >> shifts::data[id]; }
     T get(size_t id) const { return operator[](id); }
     void set(size_t id, T v) { value = (value & (T(~masks::data[id]))) | ((v & T(powers::data[id])) << shifts::data[id]); }
 
     T value;
 };
+
+template <typename Parm> struct is_bitfield : std::false_type { };
+template <typename T, size_t... Bits> struct is_bitfield<bitfield<T, Bits...>> : std::true_type { };
 
 }}
 

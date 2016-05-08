@@ -171,9 +171,35 @@ void test_wave() {
     }
 }
 
+#include <engine/pixel_format.hpp>
+
+using namespace zap;
+using namespace zap::core;
+using namespace zap::engine;
 
 int main(int argc, char* argv[]) {
-    test_wave();
+
+    using red3_t = channel<channel_type::CT_RED, 3>;
+    using green3_t = channel<channel_type::CT_GREEN, 3>;
+    using blue2_t = channel<channel_type::CT_BLUE, 2>;
+
+    pixel<bitfield<byte, 3, 3, 2>, red3_t, green3_t, blue2_t> A;
+
+    A.set(0, 1);
+    LOG(size_t(A.get(0)));
+
+    using red8_t = channel<channel_type::CT_RED, 8>;
+    using green8_t = channel<channel_type::CT_GREEN, 8>;
+    using blue8_t = channel<channel_type::CT_BLUE, 8>;
+
+    pixel<byte, red8_t, green8_t, blue8_t> B;
+    B.set(0,1);
+
+    LOG(rgb888_t::channel_types::data[0], rgb888_t::channel_types::data[1], rgb888_t::channel_types::data[2]);
+    LOG(rgb888_t::bytesize, sizeof(rgb888_t));
+
+    LOG(rgba8888_t::channel_types::data[0], rgba8888_t::channel_types::data[1], rgba8888_t::channel_types::data[2], rgba8888_t::channel_types::data[3]);
+    LOG(rgba8888_t::bytesize, sizeof(rgba8888_t));
 
     return 0;
 }

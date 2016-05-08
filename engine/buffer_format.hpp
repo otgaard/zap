@@ -64,8 +64,8 @@ constexpr typename std::enable_if<k != 0, typename type_query<k, pod<Arg, Args..
 }
 
 template <size_t k, typename T>
-constexpr attribute_type::bitfield typecode() {
-    return (attribute_type::bitfield)type_query<k,T>::type::AT_CODE;
+constexpr attribute_type typecode() {
+    return (attribute_type)type_query<k,T>::type::AT_CODE;
 }
 
 template <size_t k, typename T>
@@ -113,7 +113,7 @@ struct vattrib_offset {
 template <size_t k, typename POD_T>
 struct vattrib_type {
     enum {
-        value = engine::typecode<k, POD_T>()                    // attribute_type of vertex attribute
+        value = (size_t)engine::typecode<k, POD_T>()                    // attribute_type of vertex attribute
     };
 };
 
@@ -140,7 +140,7 @@ struct vertex : pod<Args...> {
     typedef typename generate_table<sizeof...(Args), pod_t, vattrib_count>::result counts;
     typedef typename generate_table<sizeof...(Args), pod_t, vattrib_datatype>::result datatypes;
     constexpr static size_t size() { return sizeof(vertex); }
-    template <size_t k> constexpr static attribute_type::bitfield typecode() { return engine::typecode<k, pod_t>(); }
+    template <size_t k> constexpr static attribute_type typecode() { return engine::typecode<k, pod_t>(); }
     template <size_t k> constexpr static size_t index() { return maths::log2_pow2(uint32_t(engine::typecode<k, pod_t>())); }
     template <size_t k> constexpr static size_t attrib_size() { return sizeof(typename type_query<k, pod_t>::type); }
     template <size_t k> constexpr static size_t attrib_offset() { return engine::offset_table<k, pod_t>::offset; }

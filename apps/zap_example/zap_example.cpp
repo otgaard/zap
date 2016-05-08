@@ -64,6 +64,27 @@ const char* pane_frg_src = GLSL(
     }
 );
 
+const char* tex_vtx_src = GLSL(
+    uniform mat4 proj_matrix;
+    in vec3 position;
+    in vec2 texcoord1;
+
+    out vec2 tex1;
+    void main() {
+        tex1 = texcoord1;
+        gl_Position = proj_matrix*vec4(position, 1.0);
+    }
+);
+
+const char* tex_frg_src = GLSL(
+    uniform sampler2D tex;
+    in vec2 tex1;
+    out vec4 frag_colour;
+    void main() {
+        frag_colour = texture(tex, tex1);
+    }
+);
+
 using namespace zap::engine;
 
 // Higher order function to create a wave function from an input periodic function with range [-1, 1]
@@ -87,29 +108,12 @@ void sample(IT begin, IT end, float start, float stop, FNC fnc) {
 }
 
 #include <engine/index_buffer.hpp>
+#include "generator.hpp"
 
 int main(int argc, char* argv[]) {
     glfwSetErrorCallback(::on_error);
 
     if(!glfwInit()) return -1;
-
-    // Pixel Tests
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     glfwWindowHint(GLFW_SAMPLES, 8);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
@@ -139,6 +143,7 @@ int main(int argc, char* argv[]) {
 
     glViewport(0, 0, 1280, 768);
 
+    // PROGRAM 1 SETUP
     std::vector<shader_ptr> arr;
     arr.push_back(std::make_shared<shader>(shader_type::ST_VERTEX, vtx_src));
     arr.push_back(std::make_shared<shader>(shader_type::ST_FRAGMENT, frg_src));
@@ -147,6 +152,7 @@ int main(int argc, char* argv[]) {
     prog->link(true);
 	gl_error_check();
 
+    // PROGRAM 2 SETUP
     std::vector<shader_ptr> arr2;
     arr2.push_back(std::make_shared<shader>(shader_type::ST_VERTEX, pane_vtx_src));
     arr2.push_back(std::make_shared<shader>(shader_type::ST_FRAGMENT, pane_frg_src));
@@ -154,6 +160,18 @@ int main(int argc, char* argv[]) {
     auto pane_prog = std::make_shared<program>(std::move(arr2));
     pane_prog->link(true);
     gl_error_check();
+
+    // PROGRAM 3 SETUP
+    std::vector<shader_ptr> arr3;
+    arr3.push_back(std::make_shared<shader>(shader_type::ST_VERTEX, tex_vtx_src));
+    arr3.push_back(std::make_shared<shader>(shader_type::ST_FRAGMENT, tex_frg_src));
+
+    auto tex_prog = std::make_shared<program>(std::move(arr3));
+    tex_prog->link(true);
+    gl_error_check();
+
+    // Texture
+    auto tex1 = generator::create_checker();
 
     zap::maths::mat4<float> proj_matrix = {
         120/1280.f,       0.f, 0.f, 0.f,
@@ -177,10 +195,24 @@ int main(int argc, char* argv[]) {
     prog->release();
     gl_error_check();
 
+    // Setup Texture Program & Unit
+    tex1->bind();
+    tex_prog->bind();
+    glActiveTexture(GL_TEXTURE0);
+    loc = tex_prog->uniform_location("proj_matrix");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
+    gl_error_check();
+    loc = tex_prog->uniform_location("tex");
+    glUniform1i(loc, 0);
+    tex_prog->release();
+    tex1->release();
+    gl_error_check();
+
     using namespace zap::maths;
     using namespace zap::engine;
 
     using p3_t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
+    using t2_t = vertex_attribute<vec2f, attribute_type::AT_TEXCOORD1>;
     using n3_t = vertex_attribute<vec3f, attribute_type::AT_NORMAL>;
     using ps1_t = vertex_attribute<float, attribute_type::AT_POINTSIZE>;
 
@@ -207,6 +239,28 @@ int main(int argc, char* argv[]) {
                     {{-10, 5, 0}},
                     {{0, 0, 1}},
                     {1}
+            )
+    };
+
+    using p3t2_t = vertex<p3_t, t2_t>;
+    using p3t2_buf_t = vertex_buffer<p3t2_t, buffer_usage::BU_STATIC_DRAW>;
+
+    std::vector<p3t2_t> texpane_def = {
+            p3t2_t(
+                    {{-10, -5, 0}}, // pos
+                    {{0, 0}}        // texcoord
+            ),
+            p3t2_t(
+                    {{10, -5, 0}},
+                    {{1, 0}}
+            ),
+            p3t2_t(
+                    {{10, 5, 0}},
+                    {{1, 1}}
+            ),
+            p3t2_t(
+                    {{-10, 5, 0}},
+                    {{0, 1}}
             )
     };
 
@@ -277,6 +331,16 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
+    p3t2_buf_t texpane;
+    GLuint tex_mesh;
+    glGenVertexArrays(1, &tex_mesh);
+    glBindVertexArray(tex_mesh);
+    texpane.allocate();
+    texpane.bind();
+    texpane.initialise(texpane_def);
+    glBindVertexArray(0);
+    gl_error_check();
+
     float offset = 0.0f;
     constexpr float pi = zap::maths::PI;
     timer t;
@@ -292,11 +356,14 @@ int main(int argc, char* argv[]) {
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        pane_prog->bind();
-        glBindVertexArray(pane_mesh);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, pane.vertex_count());
+        tex_prog->bind();
+        glActiveTexture(GL_TEXTURE0);
+        tex1->bind();
+        glBindVertexArray(tex_mesh);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, texpane.vertex_count());
         glBindVertexArray(0);
-        pane_prog->release();
+        tex1->release();
+        tex_prog->release();
 
         prog->bind();
         glBindVertexArray(frame_mesh);

@@ -6,12 +6,10 @@
 #include "pixel_format.hpp"
 
 namespace zap { namespace engine {
-
-    template <typename PIX_T>
+    template <typename PIX_T, buffer_usage USAGE>
     class pixel_buffer : public buffer {
     public:
         using pixel_t = PIX_T;
-
     };
 }}
 

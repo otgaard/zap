@@ -39,7 +39,7 @@ bool program::link(bool clear) {
         else LOG_ERR("Shader failed to compile during program construction");
     }
 
-    for(size_t i = 0; i != maths::log2_pow2(size_t(attribute_type::AT_GUARD)); ++i) {
+    for(size_t i = 0; i != size_t(attribute_type::AT_SIZE); ++i) {
         glBindAttribLocation(id_, i, attribute_name[i]);
     }
 

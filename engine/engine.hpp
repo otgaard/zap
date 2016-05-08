@@ -90,30 +90,27 @@ namespace zap { namespace engine {
     template <> struct dt_descriptor<float> { enum { value = int(data_type::DT_FLOAT) }; };
     template <> struct dt_descriptor<double> { enum { value = int(data_type::DT_DOUBLE) }; };
 
-    struct attribute_type {
-        enum bitfield {
-            AT_POSITION = 1 << 0,
-            AT_NORMAL = 1 << 1,
-            AT_TANGENT = 1 << 2,
-            AT_BINORMAL = 1 << 3,
-            AT_TEXCOORD1 = 1 << 4,
-            AT_TEXCOORD2 = 1 << 5,
-            AT_TEXCOORD3 = 1 << 6,
-            AT_TEXCOORD4 = 1 << 7,
-            AT_TEXCOORD5 = 1 << 8,
-            AT_TEXCOORD6 = 1 << 9,
-            AT_COLOUR1 = 1 << 10,
-            AT_COLOUR2 = 1 << 11,
-            AT_BLENDINDEX = 1 << 12,
-            AT_BLENDWEIGHT = 1 << 13,
-            AT_FOGCOORD = 1 << 14,
-            AT_POINTSIZE = 1 << 15,
-            AT_GUARD = 1 << 16
-        };
-        constexpr static size_t AT_SIZE = maths::log2_pow2(size_t(AT_GUARD));
+    enum class attribute_type : size_t {
+        AT_POSITION = 1 << 0,
+        AT_NORMAL = 1 << 1,
+        AT_TANGENT = 1 << 2,
+        AT_BINORMAL = 1 << 3,
+        AT_TEXCOORD1 = 1 << 4,
+        AT_TEXCOORD2 = 1 << 5,
+        AT_TEXCOORD3 = 1 << 6,
+        AT_TEXCOORD4 = 1 << 7,
+        AT_TEXCOORD5 = 1 << 8,
+        AT_TEXCOORD6 = 1 << 9,
+        AT_COLOUR1 = 1 << 10,
+        AT_COLOUR2 = 1 << 11,
+        AT_BLENDINDEX = 1 << 12,
+        AT_BLENDWEIGHT = 1 << 13,
+        AT_FOGCOORD = 1 << 14,
+        AT_POINTSIZE = 1 << 15,
+        AT_SIZE = zap::maths::log2_pow2(1 << 16)
     };
 
-    constexpr static const char* const attribute_name[maths::log2_pow2(size_t(attribute_type::AT_GUARD))] = {
+    constexpr static const char* const attribute_name[size_t(attribute_type::AT_SIZE)] = {
             "position",
             "normal",
             "tangent",

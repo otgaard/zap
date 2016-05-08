@@ -17,6 +17,8 @@ using byte = unsigned char;
 #define ZERR_TYPE_INVALID "Invalid type used for template instantiation"
 #define ZERR_TYPE_FLOATING "Requires floating-point type"
 
+#define checkidx(var, val) assert((var) < (val) && ZERR_IDX_OUT_OF_RANGE)
+
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
 template <template <typename...> class TYPE, typename T>

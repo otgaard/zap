@@ -34,14 +34,14 @@ template <> struct attribute_info<float> {
 
 #pragma pack(push, 4)
 
-template <typename T, attribute_type::bitfield CODE>
+template <typename T, attribute_type CODE>
 struct vertex_attribute {
 };
 
 template <typename T> struct vertex_attribute<T, attribute_type::AT_POSITION> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_POSITION;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_POSITION;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -58,7 +58,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_POSITION> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_NORMAL> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_NORMAL;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_NORMAL;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -75,7 +75,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_NORMAL> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TANGENT> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TANGENT;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TANGENT;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -92,7 +92,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TANGENT> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_BINORMAL> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_BINORMAL;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_BINORMAL;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -109,7 +109,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_BINORMAL> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD1> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD1;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TEXCOORD1;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -125,7 +125,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD1> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD2> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD2;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TEXCOORD2;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -141,7 +141,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD2> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD3> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD3;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TEXCOORD3;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -157,7 +157,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD3> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD4> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD4;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TEXCOORD4;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -173,7 +173,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD4> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD5> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD5;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TEXCOORD5;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -189,7 +189,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD5> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD6> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_TEXCOORD6;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_TEXCOORD6;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -205,7 +205,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_TEXCOORD6> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_COLOUR1> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_COLOUR1;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_COLOUR1;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -221,7 +221,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_COLOUR1> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_COLOUR2> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_COLOUR2;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_COLOUR2;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -237,7 +237,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_COLOUR2> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_BLENDINDEX> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_BLENDINDEX;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_BLENDINDEX;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -253,7 +253,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_BLENDINDEX> 
 template <typename T> struct vertex_attribute<T, attribute_type::AT_BLENDWEIGHT> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_BLENDWEIGHT;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_BLENDWEIGHT;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -269,7 +269,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_BLENDWEIGHT>
 template <typename T> struct vertex_attribute<T, attribute_type::AT_FOGCOORD> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_FOGCOORD;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_FOGCOORD;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }
@@ -285,7 +285,7 @@ template <typename T> struct vertex_attribute<T, attribute_type::AT_FOGCOORD> {
 template <typename T> struct vertex_attribute<T, attribute_type::AT_POINTSIZE> {
     using type = T;
     using info = attribute_info<T>;
-    constexpr static size_t AT_CODE = attribute_type::AT_POINTSIZE;
+    constexpr static attribute_type AT_CODE = attribute_type::AT_POINTSIZE;
     constexpr static size_t size() { return sizeof(vertex_attribute); }
 
     vertex_attribute() { }

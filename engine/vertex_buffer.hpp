@@ -3,6 +3,7 @@
 #define ZAP_VERTEX_BUFFER_HPP
 
 #include "buffer.hpp"
+#include <core/pod.hpp>
 #include "buffer_format.hpp"
 
 namespace zap { namespace engine {

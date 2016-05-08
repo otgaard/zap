@@ -40,7 +40,7 @@ bool buffer::is_bound() const {
     LOG_WARN("OpenGL query operation invoked");
     GLint bound = 0;
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bound);
-    return bound == (GLint)id_;
+    return id_ == (resource_t)bound;
 }
 
 bool buffer::initialise(buffer_type type, buffer_usage usage, size_t size, const char* data) {
