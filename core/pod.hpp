@@ -18,8 +18,12 @@ namespace zap { namespace core {
  * Use MAKE_PODFIELD() to generate member names
  */
 
+
 template <typename T, typename ID_T, ID_T ID>
 struct podfield {
+    /* This is an issue due to aligned vector/matrix types - how to check for aligned-trivially-copyable?
+    static_assert(std::is_trivially_copyable<T>::value, "podfield<> only accepts trivially copyable types");
+    */
     using type = T;
     using id_t = ID_T;
     constexpr static id_t field_id = ID;
@@ -32,12 +36,14 @@ struct podfield {
 
 #define MAKE_PODFIELD(MemberName, ID_T, ID) \
 template <typename T> struct podfield<T, ID_T, ID> { \
-    static_assert(std::is_trivially_copyable<T>::value, "podfield<> only accepts trivially copyable types"); \
+    /*static_assert(std::is_trivially_copyable<T>::value, "podfield<> only accepts trivially copyable types");*/ \
     using type = T; \
     using id_t = ID_T; \
     constexpr static id_t field_id = ID; \
     podfield() = default; \
     podfield(const T& v) : value(v) { } \
+    podfield(const podfield& r) : value(r.value) { } \
+    podfield& operator=(const podfield& r) { if(this != &r) { value = r.value; } return *this; } \
     union { \
         T MemberName; \
         T value; \

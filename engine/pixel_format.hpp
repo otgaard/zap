@@ -72,6 +72,9 @@ namespace zap { namespace engine {
         using type = typename data_t::type;
         using channel_types = typename core::generate_table<data_t::size, channels, channel_query>::result;
         using bits = typename core::generate_table<data_t::size, channels, bits_query>::result;
+
+        constexpr pixel() = default;
+
     };
 
     using red3_t = channel<channel_type::CT_RED, 3>;

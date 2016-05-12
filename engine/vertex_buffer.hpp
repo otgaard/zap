@@ -31,7 +31,7 @@ public:
     void release() const { buffer::release(buf_type); }
 
     bool initialise(size_t vertex_count, const char* data=nullptr) {
-        if(buffer::initialise(buf_type, usage, vertex_count*vertex_t::size(), data)) {
+        if(buffer::initialise(buf_type, usage, vertex_count*vertex_t::bytesize(), data)) {
             vertex_count_ = vertex_count;
             return configure_attributes();
         }
@@ -40,14 +40,14 @@ public:
 
     bool initialise(const std::vector<char>& data) {
         if(buffer::initialise(buf_type, usage, data)) {
-            vertex_count_ = data.size() / vertex_t::size();
+            vertex_count_ = data.size() / vertex_t::bytesize();
             return configure_attributes();
         }
         return false;
     }
 
     bool initialise(const std::vector<vertex_t>& data) {
-        auto result = buffer::initialise(buf_type, usage, vertex_t::size()*data.size(),
+        auto result = buffer::initialise(buf_type, usage, vertex_t::bytesize()*data.size(),
                                          reinterpret_cast<const char*>(data.data()));
         vertex_count_ = data.size();
         return result && configure_attributes();
@@ -81,14 +81,14 @@ public:
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_));
     }
     iterator end() {
-        return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::size()) * vertex_t::size()));
+        return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::bytesize()) * vertex_t::bytesize()));
     }
     const iterator begin() const {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_));
     }
     const iterator end() const {
-        return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::size()) * vertex_t::size()));
+        return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::bytesize()) * vertex_t::bytesize()));
     }
 
     vertex_t* data() {
@@ -108,8 +108,8 @@ protected:
 };
 
 template <typename VTX_T, buffer_usage USAGE>
-bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
-    static_assert(vertex_t::attrib_count() > 0, "An empty vertex<> type cannot be configured");
+bool vertex_buffer<VTX_T, USAGE>::configure_attributes() {
+    static_assert(vertex_t::size > 0, "An empty vertex<> type cannot be configured");
 
     /*
     // This branch doesn't work with non-packed data like vec3 aligned to 16 bytes
@@ -126,9 +126,9 @@ bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
         if(gl_error_check()) return false;
     }
     */
-    for(size_t i = 0; i != vertex_t::attrib_count(); ++i) {
+    for(size_t i = 0; i != vertex_t::size; ++i) {
         gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
-                              (data_type)vertex_t::datatypes::data[i], false, vertex_t::size(),
+                              (data_type)vertex_t::datatypes::data[i], false, vertex_t::bytesize(),
                               (void*)vertex_t::offsets::data[i]);
     }
     if(gl_error_check()) return false;
@@ -138,9 +138,9 @@ bool vertex_buffer<VTX_T,USAGE>::configure_attributes() {
 
 template <typename VTX_T, buffer_usage USAGE>
 bool vertex_buffer<VTX_T,USAGE>::copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count) {
-    const size_t length = vertex_count * VTX_T::size();
-    const size_t source_offset = src_off * VTX_T::size();
-    const size_t target_offset = trg_off * VTX_T::size();
+    const size_t length = vertex_count * VTX_T::bytesize();
+    const size_t source_offset = src_off * VTX_T::bytesize();
+    const size_t target_offset = trg_off * VTX_T::bytesize();
     if(source_offset + length <= src.size_ && target_offset + length <= size_) {
         src.buffer::bind(buffer_type::BT_COPY_READ);
         buffer::bind(buffer_type::BT_COPY_WRITE);

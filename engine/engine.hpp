@@ -123,10 +123,10 @@ namespace zap { namespace engine {
             "texcoord6",
             "colour1",
             "colour2",
-            "blend_index",
-            "blend_weight",
-            "fog_coord",
-            "point_size"
+            "blendindex",
+            "blendweight",
+            "fogcoord",
+            "pointsize"
     };
 
     enum class primitive_type : std::uint8_t {

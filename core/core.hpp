@@ -6,6 +6,7 @@
 #define ZAP_CORE_HPP
 
 #include <cstdint>
+#include <cassert>
 #include <type_traits>
 
 constexpr std::uint32_t INVALID_IDX = std::uint32_t(-1);
@@ -17,7 +18,8 @@ using byte = unsigned char;
 #define ZERR_TYPE_INVALID "Invalid type used for template instantiation"
 #define ZERR_TYPE_FLOATING "Requires floating-point type"
 
-#define checkidx(var, val) assert((var) < (val) && ZERR_IDX_OUT_OF_RANGE)
+template <typename T>
+inline void checkidx(T var, T val) { assert((var) < (val) && ZERR_IDX_OUT_OF_RANGE); }
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 

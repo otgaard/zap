@@ -6,12 +6,11 @@
 #define ZAP_BITFIELD_HPP
 
 #include "meta.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace core {
 
-template <size_t k> struct pow2;
-template <> struct pow2<0> { constexpr static size_t value = 1; };
-template <size_t k> struct pow2 { constexpr static size_t value = 2 * pow2<k-1>::value; };
+using zap::maths::pow2;
 
 template <typename T, size_t... Bits>
 struct bitfield;

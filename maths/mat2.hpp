@@ -32,8 +32,8 @@ namespace zap { namespace maths {
         using row_t = vec2<T>;
         using col_t = vec2<T>;
 
+        constexpr static size_t bytesize() { return sizeof(mat2<T>); }
         constexpr static size_t size() { return 4; }
-        constexpr static size_t memsize() { return sizeof(mat2<T>); }
         constexpr static size_t cols() { return 2; }
         constexpr static size_t rows() { return 2; }
         constexpr static size_t idx(size_t row, size_t col) { return col*rows() + row; }
@@ -43,6 +43,12 @@ namespace zap { namespace maths {
         constexpr mat2(const static_list<T, 4>& lst) : m00(lst[0]), m10(lst[2]), m01(lst[1]), m11(lst[3]) { }
         constexpr mat2(T m00, T m01, T m10, T m11) : m00(m00), m10(m10), m01(m01), m11(m11) { }
         constexpr explicit mat2(T m00, T m11) : m00(m00), m10(T(0)), m01(T(0)), m11(m11) { }
+        constexpr mat2(const mat2& rhs) : m00(rhs.m00), m10(rhs.m10), m01(rhs.m01), m11(rhs.m11) { }
+
+        mat2& operator=(const mat2& rhs) {
+            if(this != &rhs) std::copy(rhs.begin(), rhs.end(), begin());
+            return *this;
+        }
 
         constexpr static mat2 make_col(T m00, T m10, T m01, T m11) {
             return mat2(m00, m01, m10, m11);
@@ -54,18 +60,18 @@ namespace zap { namespace maths {
         constexpr static mat2 make_col(const col_t& col0, const col_t& col1) {
             return mat2(col0[0], col1[0], col0[1], col1[1]);
         }
-        static inline mat2 make_rotation(T theta) {
+        static mat2 make_rotation(T theta) {
             static_assert(std::is_floating_point<T>::value, ZERR_TYPE_FLOATING);
             const T cos = std::cos(theta), sin = std::sin(theta);
             return mat2(cos, -sin, sin, cos);
         }
 
-        inline T* begin() { return arr; }
-        inline T* end() { return arr + size(); }
-        inline const T* begin() const { return arr; }
-        inline const T* end() const { return arr + size(); }
-        inline const T* data() const { return arr; }
-        inline T* data() { return arr; }
+        T* begin() { return arr; }
+        T* end() { return arr + size(); }
+        const T* begin() const { return arr; }
+        const T* end() const { return arr + size(); }
+        const T* data() const { return arr; }
+        T* data() { return arr; }
 
         void clean() {
             for(auto& v : (*this)) {

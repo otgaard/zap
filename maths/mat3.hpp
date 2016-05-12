@@ -36,7 +36,7 @@ namespace zap { namespace maths {
         using col_t = vec3<T>;
 
         constexpr static size_t size() { return 9; }
-        constexpr static size_t memsize() { return sizeof(mat3<T>); }
+        constexpr static size_t bytesize() { return sizeof(mat3<T>); }
         constexpr static size_t cols() { return 3; }
         constexpr static size_t rows() { return 3; }
         constexpr static size_t idx(size_t row, size_t col) { return col*(rows()+1) + row; }
@@ -65,6 +65,9 @@ namespace zap { namespace maths {
         constexpr static mat3 make_col(const col_t& col0, const col_t& col1, const col_t& col2) {
             return mat3(col0[0], col1[0], col2[0], col0[1], col1[1], col2[1], col0[2], col1[2], col2[2]);
         }
+
+        // Need to write a custom iterator for dealing with the 16 byte alignment
+
 
         const T& operator()(size_t row, size_t col) const {
             assert(row < rows() && col < cols() && ZERR_IDX_OUT_OF_RANGE);

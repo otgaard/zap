@@ -34,7 +34,7 @@ namespace zap { namespace maths {
         using col_t = vec4<T>;
 
         constexpr static size_t size() { return 16; }
-        constexpr static size_t memsize() { return sizeof(mat4<T>); }
+        constexpr static size_t bytesize() { return sizeof(mat4<T>); }
         constexpr static size_t cols() { return 4; }
         constexpr static size_t rows() { return 4; }
         constexpr static size_t idx(size_t row, size_t col) { return col*rows() + row; }

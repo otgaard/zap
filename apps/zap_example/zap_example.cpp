@@ -211,10 +211,13 @@ int main(int argc, char* argv[]) {
     using namespace zap::maths;
     using namespace zap::engine;
 
-    using p3_t = vertex_attribute<vec3f, attribute_type::AT_POSITION>;
-    using t2_t = vertex_attribute<vec2f, attribute_type::AT_TEXCOORD1>;
-    using n3_t = vertex_attribute<vec3f, attribute_type::AT_NORMAL>;
-    using ps1_t = vertex_attribute<float, attribute_type::AT_POINTSIZE>;
+    //static_assert(std::is_trivially_copyable<vec3f>::value, "What?");
+
+    using p3_t = zap::core::position<vec3f>;   // vertex_attribute<vec3f, attribute_type::AT_POSITION>;
+    using t2_t = zap::core::texcoord1<vec2f>;  //vertex_attribute<vec2f, attribute_type::AT_TEXCOORD1>;
+    using n3_t = zap::core::normal<vec3f>;     //using n3_t = vertex_attribute<vec3f, attribute_type::AT_NORMAL>;
+    using ps1_t = zap::core::pointsize<float>; //using ps1_t = vertex_attribute<float, attribute_type::AT_POINTSIZE>;
+    using pos3_t = vertex<p3_t>;
 
     using vertex_t = vertex<p3_t, n3_t, ps1_t>;
     using vertex_buf_t = vertex_buffer<vertex_t, buffer_usage::BU_STATIC_DRAW>;
@@ -304,12 +307,26 @@ int main(int argc, char* argv[]) {
     box.push_back(pos3_t({{10,1,0}}));
     box.push_back(pos3_t({{-10,1,0}}));
 
+    LOG(sizeof(pos3_t), pos3_t::offsets::data[0], pos3_t::types::data[0], pos3_t::counts::data[0], pos3_t::datatypes::data[0]);
+
     GLuint frame_mesh;
     glGenVertexArrays(1, &frame_mesh);
     glBindVertexArray(frame_mesh);
     frame.allocate();
     frame.bind();
     frame.initialise(box);
+
+    LOG("Frame Size = ", frame.vertex_count(), frame.end() - frame.begin());
+
+    frame.bind();
+    frame.map(buffer_access::BA_READ_ONLY);
+
+    for(const auto& v : frame) {
+        LOG(v.position.x, v.position.y, v.position.z);
+    }
+
+    frame.unmap();
+
     glBindVertexArray(0);
     gl_error_check();
 
@@ -396,6 +413,7 @@ int main(int argc, char* argv[]) {
         glBindVertexArray(0);
 
         prog->release();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

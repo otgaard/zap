@@ -76,7 +76,7 @@ set(ZAP_COMMAND_LINE
 set(ZAP_TESTS_MATHS_FILES
         tests/maths/vector_tests.cpp
         tests/maths/maths_tests.cpp
-        tests/maths/matrix_tests.cpp)
+        tests/maths/matrix_tests.cpp tests/maths/mat2_tests.cpp tests/maths/mat3_tests.cpp tests/maths/mat4_tests.cpp)
 
 set(ZAP_TESTS_ENGINE_FILES
         tests/engine/buffer_format_tests.cpp)
