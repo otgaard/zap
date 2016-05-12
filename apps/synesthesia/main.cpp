@@ -18,7 +18,7 @@
 #include <engine/program.hpp>
 #include <maths/vec2.hpp>
 #include <maths/vec3.hpp>
-#include <engine/buffer_format.hpp>
+#include <engine/vertex_format.hpp>
 #include <maths/functions.hpp>
 #include "engine/vertex_buffer.hpp"
 #include <engine/gl_api.hpp>
@@ -224,6 +224,9 @@ int main(int argc, char* argv[]) {
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     prog->release();
     gl_error_check();
+
+    using p3_t = zap::core::position<vec3f>;
+    using pos3_t = vertex<p3_t>;
 
     vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> frame;
     vertex_buffer<pos3_t, buffer_usage::BU_DYNAMIC_DRAW> graph;

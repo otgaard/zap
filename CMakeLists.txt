@@ -46,7 +46,7 @@ set(ZAP_ENGINE_FILES
         engine/program.cpp
         engine/buffer.cpp
         engine/buffer.hpp
-        engine/buffer_format.hpp
+        engine/vertex_format.hpp
         engine/vertex_buffer.hpp
         engine/index_buffer.hpp
         engine/pixel_buffer.hpp

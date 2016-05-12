@@ -74,7 +74,7 @@ void test_offset() {
 // These tests determine whether there are performance issues with variadic templates vs hand-written structures.
 
 #include <maths/functions.hpp>
-#include <engine/buffer_format.hpp>
+#include <engine/vertex_format.hpp>
 
 struct vstruct {
     zap::maths::vec3f position;

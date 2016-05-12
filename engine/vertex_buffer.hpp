@@ -4,7 +4,7 @@
 
 #include "buffer.hpp"
 #include <core/pod.hpp>
-#include "buffer_format.hpp"
+#include "vertex_format.hpp"
 
 namespace zap { namespace engine {
 

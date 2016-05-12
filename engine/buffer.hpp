@@ -11,7 +11,7 @@ namespace zap { namespace engine {
 
     class buffer {
     public:
-        buffer() : id_(INVALID_RESOURCE), mapped_ptr_(nullptr), size_(0) { }
+        buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
         ~buffer();
 
         bool allocate();
@@ -44,9 +44,9 @@ namespace zap { namespace engine {
         bool copy_buffer(buffer_type src_type, buffer_type trg_type, size_t src_offset, size_t trg_offset, size_t length);
 
     protected:
-        mutable resource_t id_;
-        mutable char* mapped_ptr_;
+        resource_t id_;
         size_t size_;
+        mutable char* mapped_ptr_;
     };
 }}
 

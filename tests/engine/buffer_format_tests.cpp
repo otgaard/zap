@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <maths/maths.hpp>
 #include <engine/engine.hpp>
-#include <engine/buffer_format.hpp>
+#include <engine/vertex_format.hpp>
 
 using namespace zap;
 using namespace zap::engine;

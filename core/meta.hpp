@@ -18,7 +18,7 @@ namespace zap { namespace core {
  *
  */
 
-namespace detail_i {
+namespace detail {
     template<size_t... Parms>
     struct data_table {
         static constexpr size_t data[sizeof...(Parms)] = {Parms...};
@@ -39,7 +39,7 @@ namespace detail_i {
 
 template <size_t k, typename Template, template <size_t, typename> class Function>
 struct generate_table {
-    typedef typename detail_i::table_gen_i<k-1, Template, Function>::result result;
+    typedef typename detail::table_gen_i<k-1, Template, Function>::result result;
 };
 
 }}

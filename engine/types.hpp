@@ -12,7 +12,7 @@
 #include <maths/mat2.hpp>
 #include <maths/mat3.hpp>
 #include <maths/mat4.hpp>
-#include <engine/buffer_format.hpp>
+#include <engine/vertex_format.hpp>
 
 namespace zap { namespace engine {
         /*
