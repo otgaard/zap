@@ -85,6 +85,28 @@ namespace zap { namespace engine { namespace gl {
             "GL_DOUBLE"
     };
 
+    constexpr GLenum gl_primitive_type[(int)primitive_type::PT_SIZE] = {
+            0,
+            GL_POINTS,
+            GL_LINES,
+            GL_LINE_STRIP,
+            GL_LINE_LOOP,
+            GL_TRIANGLES,
+            GL_TRIANGLE_STRIP,
+            GL_TRIANGLE_FAN
+    };
+
+    constexpr const char* gl_primitive_type_names[(int)primitive_type::PT_SIZE] = {
+            "NONE",
+            "GL_POINTS",
+            "GL_LINES",
+            "GL_LINE_STRIP",
+            "GL_LINE_LOOP",
+            "GL_TRIANGLES",
+            "GL_TRIANGLE_STRIP",
+            "GL_TRIANGLE_FAN"
+    };
+
     constexpr GLenum gl_type(shader_type type) { return gl_shader_types[(int)type]; }
     constexpr const char* gl_typename(shader_type type) { return gl_shader_type_names[(int)type]; }
     constexpr GLenum gl_type(buffer_type type) { return gl_buffer_types[(int)type]; }
@@ -95,6 +117,8 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(data_type usage) { return gl_data_type_names[(int)usage]; }
     constexpr GLbitfield gl_type(buffer_access access) { return gl_buffer_access[(int)access]; }
     constexpr const char* gl_typename(buffer_access access) { return gl_buffer_access_names[(int)access]; }
+    constexpr GLenum gl_type(primitive_type type) { return gl_primitive_type[(int)type]; }
+    constexpr const char* gl_typename(primitive_type type) { return gl_primitive_type_names[(int)type]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
 }}}

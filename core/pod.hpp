@@ -27,7 +27,7 @@ struct podfield {
     using type = T;
     using id_t = ID_T;
     constexpr static id_t field_id = ID;
-    podfield() = default;
+    podfield() { };
     podfield(const T& v) : value(v) { }
     podfield(const podfield& r) : value(r.value) { }
     podfield& operator=(const podfield& r) { if(this != &r) { value = r.value; } return *this; }
@@ -40,7 +40,7 @@ template <typename T> struct podfield<T, ID_T, ID> { \
     using type = T; \
     using id_t = ID_T; \
     constexpr static id_t field_id = ID; \
-    podfield() = default; \
+    podfield() { }; \
     podfield(const T& v) : value(v) { } \
     podfield(const podfield& r) : value(r.value) { } \
     podfield& operator=(const podfield& r) { if(this != &r) { value = r.value; } return *this; } \
@@ -86,13 +86,13 @@ struct pod_query<k, pod<Arg, Args...>> {
 
 template <size_t k, typename... Args>
 constexpr typename std::enable_if<k==0, typename pod_query<0, pod<Args...>>::type>::type& get(pod<Args...>& D) {
-return D;
+    return D;
 };
 
 template <size_t k, typename Arg, typename... Args>
 constexpr typename std::enable_if<k!=0, typename pod_query<k, pod<Arg, Args...>>::type>::type& get(pod<Arg, Args...>& D) {
-pod<Args...>& base = D;
-return get<k-1>(base);
+    pod<Args...>& base = D;
+    return get<k-1>(base);
 };
 
 template <size_t k, typename POD_T> struct pod_offset;

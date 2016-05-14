@@ -7,8 +7,6 @@
 #include "engine.hpp"
 
 namespace zap { namespace engine {
-    static const char* const ZERR_UNALLOCATED_BUFFER = "buffer is not allocated";
-
     class buffer {
     public:
         buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }

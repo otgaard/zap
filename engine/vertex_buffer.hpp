@@ -127,6 +127,7 @@ bool vertex_buffer<VTX_T, USAGE>::configure_attributes() {
     }
     */
     for(size_t i = 0; i != vertex_t::size; ++i) {
+        LOG(vertex_t::types::data[i], vertex_t::counts::data[i], vertex_t::datatypes::data[i], vertex_t::offsets::data[i]);
         gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
                               (data_type)vertex_t::datatypes::data[i], false, vertex_t::bytesize(),
                               (void*)vertex_t::offsets::data[i]);
@@ -151,6 +152,9 @@ bool vertex_buffer<VTX_T,USAGE>::copy(const vertex_buffer& src, size_t src_off, 
     }
     return false;
 }
+
+template <typename Parm> struct is_vertex_buffer : std::false_type { };
+template <typename VTX_T, buffer_usage USAGE> struct is_vertex_buffer<vertex_buffer<VTX_T, USAGE>> : std::true_type { };
 
 }}
 

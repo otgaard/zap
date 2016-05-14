@@ -16,6 +16,14 @@
 #include <stb_image.h>
 #include <engine/pixel_buffer.hpp>
 
+/*
+ * Goals for this weekend:
+ * 1) Finish up textures/pixels
+ * 2) Add the mesh class
+ * 3) Add framebuffers
+ * 4) Add uniform buffers/blocks
+ */
+
 static void on_error(int error, const char* description) {
     LOG_ERR("GLFW Error:", error, "Description:", description);
 }
@@ -108,6 +116,7 @@ void sample(IT begin, IT end, float start, float stop, FNC fnc) {
 }
 
 #include <engine/index_buffer.hpp>
+#include <engine/mesh.hpp>
 #include "generator.hpp"
 
 int main(int argc, char* argv[]) {
@@ -184,7 +193,7 @@ int main(int argc, char* argv[]) {
     auto loc = prog->uniform_location("proj_matrix");
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     loc = prog->uniform_location("colour");
-    auto line_colour = zap::maths::vec3f(0,0,1);
+    auto line_colour = zap::maths::vec3f(1,0,0);
     glUniform3fv(loc, 1, line_colour.data());
     prog->release();
     gl_error_check();
@@ -247,6 +256,43 @@ int main(int argc, char* argv[]) {
 
     using p3t2_t = vertex<p3_t, t2_t>;
     using p3t2_buf_t = vertex_buffer<p3t2_t, buffer_usage::BU_STATIC_DRAW>;
+    using n3__t = vertex<n3_t>;
+    using n3_buf_t = vertex_buffer<n3__t, buffer_usage::BU_DYNAMIC_DRAW>;
+    //using index_t = index_buffer<uint16_t, primitive_type::PT_LINES, buffer_usage::BU_STATIC_DRAW>;
+    using vtx_stream_t = vertex_stream<p3t2_buf_t, n3_buf_t>;
+    using my_mesh = mesh<vtx_stream_t, primitive_type::PT_POINTS>;
+
+    my_mesh point_mesh(vtx_stream_t(new p3t2_buf_t(), new n3_buf_t()));
+
+    point_mesh.allocate();
+    point_mesh.bind();
+
+    LOG(point_mesh.vstream.ptr);
+
+    std::vector<p3t2_t> some_points(4);
+    std::vector<n3__t> some_normals(4);
+    for(int i = 0; i < 4; ++i) {
+        some_points[i].position.x = i % 2 == 0 ? -1 : 1;
+        some_points[i].position.y = i % 3 == 0 ?  1 : -1;
+        some_points[i].position.z = 0;
+        some_normals[i].normal = vec3f(0,1,0);
+    }
+
+    get<0>(point_mesh.vstream)->allocate();
+    get<0>(point_mesh.vstream)->bind();
+    get<0>(point_mesh.vstream)->initialise(some_points);
+    get<0>(point_mesh.vstream)->release();
+
+    get<1>(point_mesh.vstream)->allocate();
+    get<1>(point_mesh.vstream)->bind();
+    get<1>(point_mesh.vstream)->initialise(some_normals);
+    get<1>(point_mesh.vstream)->release();
+
+    LOG(stream_query<0, vtx_stream_t>::type::vertex_t::offsets::data[0]);
+    LOG(sizeof(point_mesh.vstream), sizeof(get<0>(point_mesh.vstream)), sizeof(get<1>(point_mesh.vstream)), get<0>(point_mesh.vstream), get<1>(point_mesh.vstream));
+
+    point_mesh.release();
+    gl_error_check();
 
     std::vector<p3t2_t> texpane_def = {
             p3t2_t(
@@ -296,9 +342,8 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
-    vertex_buf_t pane;
-
-    vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW> frame;
+    using vb_pos3_t = vertex_buffer<pos3_t, buffer_usage::BU_STATIC_DRAW>;
+    vb_pos3_t frame;
     vertex_buffer<pos3_t, buffer_usage::BU_DYNAMIC_DRAW> graph;
 
     std::vector<pos3_t> box;
@@ -307,11 +352,11 @@ int main(int argc, char* argv[]) {
     box.push_back(pos3_t({{10,1,0}}));
     box.push_back(pos3_t({{-10,1,0}}));
 
-    LOG(sizeof(pos3_t), pos3_t::offsets::data[0], pos3_t::types::data[0], pos3_t::counts::data[0], pos3_t::datatypes::data[0]);
+    //LOG(sizeof(pos3_t), pos3_t::offsets::data[0], pos3_t::types::data[0], pos3_t::counts::data[0], pos3_t::datatypes::data[0]);
 
-    GLuint frame_mesh;
-    glGenVertexArrays(1, &frame_mesh);
-    glBindVertexArray(frame_mesh);
+    mesh<vertex_stream<vb_pos3_t>, primitive_type::PT_LINES> frame_mesh((vertex_stream<vb_pos3_t>(&frame)));
+    frame_mesh.allocate();
+    frame_mesh.bind();
     frame.allocate();
     frame.bind();
     frame.initialise(box);
@@ -326,8 +371,7 @@ int main(int argc, char* argv[]) {
     }
 
     frame.unmap();
-
-    glBindVertexArray(0);
+    frame_mesh.release();
     gl_error_check();
 
     GLuint line_mesh;
@@ -339,13 +383,18 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
-    GLuint pane_mesh;
-    glGenVertexArrays(1, &pane_mesh);
-    glBindVertexArray(pane_mesh);
+    vertex_buf_t pane;
+    mesh<vertex_stream<vertex_buf_t>, primitive_type::PT_LINES> pane_mesh((vertex_stream<vertex_buf_t>(&pane)));
+    pane_mesh.allocate();
+    pane_mesh.bind();
+    //GLuint pane_mesh;
+    //glGenVertexArrays(1, &pane_mesh);
+    //glBindVertexArray(pane_mesh);
     pane.allocate();
     pane.bind();
     pane.initialise(pane_def);
-    glBindVertexArray(0);
+    //glBindVertexArray(0);
+    pane_mesh.release();
     gl_error_check();
 
     p3t2_buf_t texpane;
@@ -358,6 +407,7 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
     gl_error_check();
 
+    /*
     float offset = 0.0f;
     constexpr float pi = zap::maths::PI;
     timer t;
@@ -369,10 +419,11 @@ int main(int argc, char* argv[]) {
     auto synth = [&sin5Hz, &sin17Hz, &sin31Hz](float x) {
         return sin5Hz(x) + sin17Hz(x) + sin31Hz(x);
     };
-
+    */
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+        /*
         tex_prog->bind();
         glActiveTexture(GL_TEXTURE0);
         tex1->bind();
@@ -381,8 +432,14 @@ int main(int argc, char* argv[]) {
         glBindVertexArray(0);
         tex1->release();
         tex_prog->release();
-
+        */
         prog->bind();
+
+        point_mesh.bind();
+        point_mesh.draw();
+        point_mesh.release();
+
+        /*
         glBindVertexArray(frame_mesh);
         glDrawArrays(GL_LINE_LOOP, 0, frame.vertex_count());
         glBindVertexArray(0);
@@ -411,6 +468,7 @@ int main(int argc, char* argv[]) {
         glDrawElements(GL_LINES, index1.index_count(), GL_UNSIGNED_SHORT, nullptr);
         gl_error_check();
         glBindVertexArray(0);
+        */
 
         prog->release();
 

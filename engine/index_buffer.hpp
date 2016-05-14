@@ -60,6 +60,9 @@ protected:
     size_t index_count_;
 };
 
+template <typename Parm> struct is_index_buffer : std::false_type { };
+template <typename T, primitive_type PRIM, buffer_usage USAGE> struct is_index_buffer<index_buffer<T, PRIM, USAGE>> : std::true_type { };
+
 }}
 
 #endif //ZAP_INDEX_BUFFER_HPP

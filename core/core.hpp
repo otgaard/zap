@@ -17,6 +17,7 @@ using byte = unsigned char;
 #define ZERR_ARG_COUNT_INVALID "Incorrect number of values provided"
 #define ZERR_TYPE_INVALID "Invalid type used for template instantiation"
 #define ZERR_TYPE_FLOATING "Requires floating-point type"
+#define ZERR_UNALLOCATED_BUFFER "buffer is not allocated"
 
 template <typename T>
 inline void checkidx(T var, T val) { assert((var) < (val) && ZERR_IDX_OUT_OF_RANGE); }
