@@ -20,6 +20,7 @@ namespace zap { namespace engine {
         ~program();
 
         std::int32_t uniform_location(const std::string& name);
+        std::int32_t uniform_block_index(const std::string& name);
 
         inline resource_t resource() const { return id_; }
         inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }

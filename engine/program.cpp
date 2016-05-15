@@ -16,6 +16,10 @@ std::int32_t program::uniform_location(const std::string& name) {
     return gl::glGetUniformLocation(id_, name.c_str());
 }
 
+std::int32_t program::uniform_block_index(const std::string& name) {
+    return gl::glGetUniformBlockIndex(id_, name.c_str());
+}
+
 void program::bind() {
     gl::glUseProgram(id_);
 }

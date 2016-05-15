@@ -40,4 +40,24 @@ public:
     }
 };
 
+// Higher order function to create a wave function from an input periodic function with range [-1, 1]
+template <typename FNC>
+struct wave {
+    constexpr static auto make_fnc(FNC fnc, float frequency, float amplitude, float phase) {
+        return [=](float x) -> float {
+            return amplitude * fnc(frequency * x + phase);
+        };
+    };
+};
+
+template <typename IT, typename FNC>
+void sample(IT begin, IT end, float start, float stop, FNC fnc) {
+    const auto samples = end - begin;
+    const auto inc = (stop - start)/samples;
+    for(auto it = begin; it != end; ++it) {
+        it->position.x = start + inc * (it - begin);
+        it->position.y = fnc(it->position.x);
+    }
+}
+
 #endif //ZAP_GENERATOR_HPP

@@ -26,3 +26,7 @@ bool zap::engine::_gl_error_log(const char* file, int line) {
 bool zap::engine::_gl_error_check() {
     return gl::glGetError() != GL_NO_ERROR;
 }
+
+void gl::bind_buffer_base(buffer_type type, int idx, uint32_t bo) {
+    glBindBufferBase(zap::engine::gl::gl_type(type), idx, bo);
+}

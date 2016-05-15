@@ -60,14 +60,14 @@ set(ZAP_ENGINE_FILES
         core/bitfield.hpp
         core/meta.hpp
         engine/texture.cpp
-        engine/texture.hpp)
+        engine/texture.hpp engine/uniform_buffer.hpp engine/uniform_block.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
 
 set(ZAP_EXAMPLE_FILES
         apps/zap_example/zap_example.cpp
-        apps/zap_example/generator.cpp apps/zap_example/generator.hpp)
+        apps/zap_example/generator.cpp apps/zap_example/generator.hpp apps/zap_example/application.cpp apps/zap_example/application.hpp apps/zap_example/shader_src.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp

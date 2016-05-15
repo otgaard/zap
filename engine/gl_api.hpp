@@ -121,6 +121,9 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(primitive_type type) { return gl_primitive_type_names[(int)type]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
+
+    void bind_buffer_base(buffer_type type, int idx, uint32_t bo);
+
 }}}
 
 #endif //ZAP_GL_API_HPP

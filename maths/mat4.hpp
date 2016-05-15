@@ -25,7 +25,7 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    struct mat4 {
+    struct ALIGN_DECL(16) mat4 {
         using type = T;
 
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "mat4<T>: T must be an algebraic type");
@@ -98,6 +98,12 @@ namespace zap { namespace maths {
             __m128 xmm[cols()];
 #endif //ZAP_MATHS_SSE2
         };
-	}; // __attribute__((aligned(16)));
+	} ALIGN_ATTR(16);
+
+    using mat4b = mat4<uint8_t>;
+    using mat4s = mat4<int16_t>;
+    using mat4i = mat4<int32_t>;
+    using mat4f = mat4<float>;
+    using mat4d = mat4<double>;
 }}
 #endif //ZAP_MAT4_HPP
