@@ -33,6 +33,8 @@ namespace zap { namespace maths {
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
 
+    template <typename T, typename S> T lerp(T u, T v, S i) { return (1 - i)*u + i*v; };
+
     template <typename T> T constexpr log2_pow2(T po2) {
         return ((po2 & 0xAAAAAAAA) != 0) |
                ((po2 & 0xFFFF0000) != 0) << 4 |

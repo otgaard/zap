@@ -17,6 +17,7 @@
 #include <engine/uniform_buffer.hpp>
 
 #include <GL/glew.h>
+#include <generators/textures/spectral.hpp>
 
 /*
  * Goals for this weekend:
@@ -48,7 +49,6 @@ using ublock1 = uniform_block<
         core::cam_projection<mat4f>>;
 using ublock1_buffer = uniform_buffer<ublock1, buffer_usage::BU_DYNAMIC_DRAW>;
 
-
 class zap_example : public application {
 public:
     zap_example() : application("zap_example"), osc_(3.f) { }
@@ -65,6 +65,7 @@ protected:
     std::unique_ptr<mesh_t> mesh_ptr;
     std::unique_ptr<ublock1_buffer> ublock1_ptr;
     oscillator<float> osc_;
+    std::unique_ptr<texture> tex_ptr;
 };
 
 void zap_example::initialise() {
@@ -83,7 +84,7 @@ void zap_example::initialise() {
     gl_error_check();
 
     mat4f proj_matrix = {
-            120/1280.f,       0.f, 0.f, 0.f,
+            60/1280.f,       0.f, 0.f, 0.f,
             0.f,         60/768.f, 0.f, 0.f,
             0.f,              0.f, 2.f, 0.f,
             0.f,              0.f, 0.f, 1.f
@@ -98,7 +99,37 @@ void zap_example::initialise() {
     prog1->release();
     gl_error_check();
 
+
     prog2->bind();
+
+    tex_ptr = std::make_unique<texture>();
+    tex_ptr->allocate();
+
+    auto pixels = zap::generators::spectral<rgb888_t>::make_clouds(5, 5, 1024, 1024);
+    // Remap colours
+
+    constexpr auto max_byte = std::numeric_limits<typename rgb888_t::type>::max();
+    constexpr float inv_byte = 1.f/std::numeric_limits<typename rgb888_t::type>::max();
+
+    const vec3f blue = vec3f(0./max_byte, 191./max_byte, 255./max_byte);
+    const vec3f white = vec3f(180./max_byte, 206./max_byte, 235./max_byte);
+
+    for(auto& pixel : pixels) {
+        auto c = lerp(white, blue, pixel.get(0)*inv_byte);
+        pixel.set(0, typename rgb888_t::type(c.x*max_byte));
+        pixel.set(1, typename rgb888_t::type(c.y*max_byte));
+        pixel.set(2, typename rgb888_t::type(c.z*max_byte));
+    }
+
+    tex_ptr->initialise(1024, 1024, pixels, false);
+    //return ptr;
+
+    //tex_ptr = generator::create_checker();
+    tex_ptr->bind();
+    loc = prog2->uniform_location("tex");
+    glUniform1i(loc, 0);
+    //tex_ptr->release();
+
     std::vector<vertex_t> box =
     {
             {
@@ -151,18 +182,20 @@ void zap_example::initialise() {
 }
 
 void zap_example::update(double t, float dt) {
+    /*
     ublock1_ptr->bind();
     ublock1_ptr->map(buffer_access::BA_READ_WRITE);
 
     auto& cv = ublock1_ptr->get()->cam_view;
-    cv = vec3f(osc_.get_value(), 1.f-osc_.get_value(), 0.0f);
+    //cv = vec3f(osc_.get_value(), 1.f-osc_.get_value(), 0.0f);
 
-    auto& pj = ublock1_ptr->get()->cam_projection;
-    pj(1,1) = 100*osc_.get_value()/768.f;
-    pj(0,0) = 100*osc_.get_value()/1280.f;
+    //auto& pj = ublock1_ptr->get()->cam_projection;
+    //pj(1,1) = 100*osc_.get_value()/768.f;
+    //pj(0,0) = 100*osc_.get_value()/1280.f;
 
     ublock1_ptr->unmap();
     ublock1_ptr->release();
+    */
 }
 
 void zap_example::draw() {

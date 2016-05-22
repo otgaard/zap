@@ -27,6 +27,7 @@ const char* frg_src = GLSL(
 
 const char* vtx_ub_src = GLSL(
     in vec2 position;
+    in vec2 texcoord1;
 
     layout (std140) uniform ublock1 {
         vec3 cam_position;
@@ -35,19 +36,25 @@ const char* vtx_ub_src = GLSL(
         mat4 proj_matrix;
     };
 
+    out vec2 texcoord;
     out vec3 colour;
 
     void main() {
+        texcoord = texcoord1;
         colour = cam_view;
         gl_Position = proj_matrix*vec4(position.x, position.y, 0.0, 1.0);
     }
 );
 
 const char* frg_ub_src = GLSL(
+    uniform sampler2D tex;
+
     in vec3 colour;
+    in vec2 texcoord;
+
     out vec4 fragColour;
     void main() {
-        fragColour = vec4(colour, 1.0);
+        fragColour = texture(tex, texcoord) + 0.1*vec4(colour, 1.0);
     }
 );
 

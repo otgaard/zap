@@ -60,7 +60,7 @@ set(ZAP_ENGINE_FILES
         core/bitfield.hpp
         core/meta.hpp
         engine/texture.cpp
-        engine/texture.hpp engine/uniform_buffer.hpp engine/uniform_block.hpp)
+        engine/texture.hpp engine/uniform_buffer.hpp engine/uniform_block.hpp generators/textures/spectral.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)

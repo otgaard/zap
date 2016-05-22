@@ -46,6 +46,9 @@ public:
 
     // Test Function
     bool initialise(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps=true);
+    bool initialise(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps=true);
+
+
 
 protected:
     resource_t id_;

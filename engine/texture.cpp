@@ -50,6 +50,19 @@ bool texture::initialise(size_t width, size_t height, const std::vector<rgb332_t
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2, buffer.data());
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
     release();
-    gl_error_check();
-    return true;
+    return !gl_error_check();
+}
+
+
+bool texture::initialise(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps) {
+    bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+    if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+    release();
+    return !gl_error_check();
 }
