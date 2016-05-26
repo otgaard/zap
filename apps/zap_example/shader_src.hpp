@@ -42,7 +42,7 @@ const char* vtx_ub_src = GLSL(
     void main() {
         texcoord = texcoord1;
         colour = cam_view;
-        gl_Position = proj_matrix*vec4(position.x, position.y, 0.0, 1.0);
+        gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, 0, 1.0);
     }
 );
 

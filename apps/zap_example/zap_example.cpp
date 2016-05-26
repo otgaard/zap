@@ -18,7 +18,7 @@
 
 #include <GL/glew.h>
 #include <generators/textures/spectral.hpp>
-
+#include <geometry/ray.hpp>
 /*
  * Goals for this weekend:
  * 1) Finish up textures/pixels
@@ -28,6 +28,7 @@
  */
 
 #include "shader_src.hpp"
+#include "maths/io.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -66,6 +67,11 @@ protected:
     std::unique_ptr<ublock1_buffer> ublock1_ptr;
     oscillator<float> osc_;
     std::unique_ptr<texture> tex_ptr;
+
+    // Temp stuff
+    mat4<float> translation;
+    float angle;
+    float distance;
 };
 
 void zap_example::initialise() {
@@ -133,22 +139,22 @@ void zap_example::initialise() {
     std::vector<vertex_t> box =
     {
             {
-                    {{-10,-10,0}},  // Position
+                    {{-1,-1,0}},  // Position
                     {{0,0,1}},      // Normal
                     {{0,0}}         // Texcoord
             },
             {
-                    {{10,-10,0}},
+                    {{1,-1,0}},
                     {{0,0,1}},
                     {{1,0}}
             },
             {
-                    {{10,10,0}},
+                    {{1,1,0}},
                     {{0,0,1}},
                     {{1,1}}
             },
             {
-                    {{-10,10,0}},
+                    {{-1,1,0}},
                     {{0,0,1}},
                     {{0,1}}
             }
@@ -163,12 +169,16 @@ void zap_example::initialise() {
     vbuffer_ptr->initialise(box);
 
     // Now, let's create a uniform buffer & block
-
     ublock1 my_block;
     my_block.cam_position = vec3f(0,0,-10);
     my_block.cam_view = vec3f(1,1,0);
-    my_block.cam_projection = proj_matrix;
-    my_block.mv_matrix = proj_matrix;
+    my_block.cam_projection = make_perspective<float>(90.f, 1280.f/768.f, 1.f, 100.f);
+
+    translation = make_translation(0.f,0.f,2.f);
+    angle = 0;
+    distance = 0;
+
+    my_block.mv_matrix = translation;
 
     ublock1_ptr = std::make_unique<ublock1_buffer>();
     ublock1_ptr->allocate();
@@ -182,20 +192,15 @@ void zap_example::initialise() {
 }
 
 void zap_example::update(double t, float dt) {
-    /*
     ublock1_ptr->bind();
     ublock1_ptr->map(buffer_access::BA_READ_WRITE);
 
-    auto& cv = ublock1_ptr->get()->cam_view;
-    //cv = vec3f(osc_.get_value(), 1.f-osc_.get_value(), 0.0f);
-
-    //auto& pj = ublock1_ptr->get()->cam_projection;
-    //pj(1,1) = 100*osc_.get_value()/768.f;
-    //pj(0,0) = 100*osc_.get_value()/1280.f;
+    angle += dt;
+    distance += dt;
+    ublock1_ptr->get()->mv_matrix = translation * make_rotation(vec3f(0,0,1), angle) * make_rotation(vec3f(1,0,0), angle);
 
     ublock1_ptr->unmap();
     ublock1_ptr->release();
-    */
 }
 
 void zap_example::draw() {

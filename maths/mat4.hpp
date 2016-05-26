@@ -8,6 +8,9 @@
 #include "maths.hpp"
 #include "vec4.hpp"
 
+#include <iostream>
+
+
 /* Note:
  * Matrices are represented in standard mathematical notation:
  * The matrix M has R rows and C columns.
@@ -21,6 +24,9 @@
  *  [  {  8,  9, 10,  11 }, ]          { 2,  6, 10, 14 },  // Col 2
  *  [  { 12, 13, 14,  15 }} ]          { 3,  7, 11, 15 }}  // Col 3
  *  So that matrices may be post-multiplied.
+ *
+ *  The matrix does full multiplication so it can be used as a 4x4 matrix or affine matrix.  An optimised 3x4 matrix
+ *  should be added for affine transformations.
  */
 
 namespace zap { namespace maths {
@@ -73,6 +79,10 @@ namespace zap { namespace maths {
                         col0[2], col1[2], col2[2], col3[2], col0[3], col1[3], col2[3], col3[3]);
         }
 
+        constexpr static mat4 identity() {
+            return mat4(1,1,1,1);
+        }
+
         const T& operator()(size_t row, size_t col) const {
             assert(row < rows() && col < cols() && ZERR_IDX_OUT_OF_RANGE);
             return arr[idx(row,col)];
@@ -83,8 +93,53 @@ namespace zap { namespace maths {
             return arr[idx(row,col)];
         }
 
+        T& operator[](size_t idx) {
+            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
+            return arr[idx];
+        }
+
+        const T& operator[](size_t idx) const {
+            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
+            return arr[idx];
+        }
+
+        inline T* begin() { return arr; }
+        inline T* end() { return arr + size(); }
+        inline const T* begin() const { return arr; }
+        inline const T* end() const { return arr + size(); }
         inline const T* data() const { return arr; }
         inline T* data() { return arr; }
+
+        mat4<T>& operator+=(const mat4& rhs) { for(size_t i = 0; i < size(); ++i) (*this)[i] += rhs[i]; }
+        mat4<T>& operator-=(const mat4& rhs) { for(size_t i = 0; i < size(); ++i) (*this)[i] -= rhs[i]; }
+        template <typename S> mat4<T>& operator*=(const S& scalar) { for(auto& v : *this) v *= scalar; return *this; }
+
+        mat4<T>& operator*=(const mat4& rhs) {
+            auto& self = *this; mat4<T> lhs(self);
+            self(0,0) = lhs(0,0)*rhs(0,0) + lhs(0,1)*rhs(1,0) + lhs(0,2)*rhs(2,0) + lhs(0,3)*rhs(3,0);
+            self(0,1) = lhs(0,0)*rhs(0,1) + lhs(0,1)*rhs(1,1) + lhs(0,2)*rhs(2,1) + lhs(0,3)*rhs(3,1);
+            self(0,2) = lhs(0,0)*rhs(0,2) + lhs(0,1)*rhs(1,2) + lhs(0,2)*rhs(2,2) + lhs(0,3)*rhs(3,2);
+            self(0,3) = lhs(0,0)*rhs(0,3) + lhs(0,1)*rhs(1,3) + lhs(0,2)*rhs(2,3) + lhs(0,3)*rhs(3,3);
+            self(1,0) = lhs(1,0)*rhs(0,0) + lhs(1,1)*rhs(1,0) + lhs(1,2)*rhs(2,0) + lhs(1,3)*rhs(3,0);
+            self(1,1) = lhs(1,0)*rhs(0,1) + lhs(1,1)*rhs(1,1) + lhs(1,2)*rhs(2,1) + lhs(1,3)*rhs(3,1);
+            self(1,2) = lhs(1,0)*rhs(0,2) + lhs(1,1)*rhs(1,2) + lhs(1,2)*rhs(2,2) + lhs(1,3)*rhs(3,2);
+            self(1,3) = lhs(1,0)*rhs(0,3) + lhs(1,1)*rhs(1,3) + lhs(1,2)*rhs(2,3) + lhs(1,3)*rhs(3,3);
+            self(2,0) = lhs(2,0)*rhs(0,0) + lhs(2,1)*rhs(1,0) + lhs(2,2)*rhs(2,0) + lhs(2,3)*rhs(3,0);
+            self(2,1) = lhs(2,0)*rhs(0,1) + lhs(2,1)*rhs(1,1) + lhs(2,2)*rhs(2,1) + lhs(2,3)*rhs(3,1);
+            self(2,2) = lhs(2,0)*rhs(0,2) + lhs(2,1)*rhs(1,2) + lhs(2,2)*rhs(2,2) + lhs(2,3)*rhs(3,2);
+            self(2,3) = lhs(2,0)*rhs(0,3) + lhs(2,1)*rhs(1,3) + lhs(2,2)*rhs(2,3) + lhs(2,3)*rhs(3,3);
+            self(3,0) = lhs(3,0)*rhs(0,0) + lhs(3,1)*rhs(1,0) + lhs(3,2)*rhs(2,0) + lhs(3,3)*rhs(3,0);
+            self(3,1) = lhs(3,0)*rhs(0,1) + lhs(3,1)*rhs(1,1) + lhs(3,2)*rhs(2,1) + lhs(3,3)*rhs(3,1);
+            self(3,2) = lhs(3,0)*rhs(0,2) + lhs(3,1)*rhs(1,2) + lhs(3,2)*rhs(2,2) + lhs(3,3)*rhs(3,2);
+            self(3,3) = lhs(3,0)*rhs(0,3) + lhs(3,1)*rhs(1,3) + lhs(3,2)*rhs(2,3) + lhs(3,3)*rhs(3,3);
+        }
+
+        mat4<T>& transpose() {
+            auto& self = *this;
+            std::swap(self(0,1), self(1,0)); std::swap(self(0,2),self(2,0)); std::swap(self(0,3),self(3,0));
+            std::swap(self(1,2), self(2,1)); std::swap(self(1,3),self(3,1)); std::swap(self(2,3),self(3,2));
+            return self;
+        }
 
         union {
             struct {
@@ -99,6 +154,98 @@ namespace zap { namespace maths {
 #endif //ZAP_MATHS_SSE2
         };
 	} ALIGN_ATTR(16);
+
+    template <typename T>
+    mat4<T> make_translation(T x, T y, T z) {
+        mat4<T> r = mat4<T>::identity();
+        r(0,3) = x; r(1,3) = y; r(2,3) = z;
+        return r;
+    }
+
+    template <typename T, typename S>
+    mat4<T> make_rotation(const vec3<T>& axis, const S& theta) {
+        assert(axis.is_unit() && "Rotation axis must be normalised");
+        mat4<T> r = mat4<T>::identity();
+        T ct = std::cos(theta), st = std::sin(theta), t = 1 - ct;
+        T tx = t*axis.x,   ty = t*axis.y,   tz = t*axis.z;
+        T sx = st*axis.x,  sy = st*axis.y,  sz = st*axis.z;
+        T txy = tx*axis.y, tyz = ty*axis.z, txz = tx*axis.z;
+
+        r(0,0) = tx*axis.x + ct; r(0,1) = txy + sz;       r(0,2) = txz - sy;
+        r(1,0) = txy - sz;       r(1,1) = ty*axis.y + ct; r(1,2) = tyz + sx;
+        r(2,0) = txz + sy;       r(2,1) = tyz - sx;       r(2,2) = tz*axis.z + ct;
+        return r;
+    };
+
+
+    template <typename T>
+    mat4<T> make_perspective(T fov, T ar, T dmin, T dmax) {
+        mat4<T> r;
+        T ha_rad = deg_to_rad<T>(.5 * fov);
+        T umax = dmin * std::tan(ha_rad), rmax = ar * umax, umin = -umax, rmin = -rmax;
+        T inv_d = 1/(dmax - dmin), inv_u = 1/(umax - umin), inv_r = 1/(rmax - rmin);
+        T sD = (dmin + dmax) * inv_d, sU = (umin + umax) * inv_u, sR = (rmin + rmax) * inv_r;
+        T two_dmin_inv_r = 2 * dmin * inv_r;
+        T two_dmin_inv_u = 2 * dmin * inv_u;
+        T two_dmin_dmax_inv_D = 2*(dmin * (dmax * inv_d));
+
+        // Col 1, 2, 3, 4
+        r(0,0) = two_dmin_inv_r; r(1,0) = 0; r(2,0) = 0; r(3,0) = 0;
+        r(0,1) = 0; r(1,1) = two_dmin_inv_u; r(2,1) = 0; r(3,1) = 0;
+        r(0,2) = -sR; r(1,2) = -sU; r(2,2) = sD; r(3,2) = T(1);
+        r(0,3) = 0; r(1,3) = 0; r(2,3) = -two_dmin_dmax_inv_D; r(3,3) = 0;
+        return r;
+    }
+
+    template <typename T>
+    mat4<T> operator+(const mat4<T>& lhs, const mat4<T>& rhs) {
+        mat4<T> r;
+        for(size_t i = 0; i != mat4<T>::size(); ++i) r[i] = lhs[i] + rhs[i];
+        return r;
+    }
+
+    template <typename T>
+    mat4<T> operator-(const mat4<T>& lhs, const mat4<T>& rhs) {
+        mat4<T> r;
+        for(size_t i = 0; i != mat4<T>::size(); ++i) r[i] = lhs[i] - rhs[i];
+        return r;
+    }
+
+    template <typename T, typename S>
+    mat4<T> operator*(const mat4<T>& lhs, const S& scalar) {
+        mat4<T> r;
+        for(size_t i = 0; i != mat4<T>::size(); ++i) r[i] = scalar*lhs[i];
+        return r;
+    };
+
+    template <typename T, typename S>
+    mat4<T> operator*(const S& scalar, const mat4<T>& rhs) {
+        mat4<T> r;
+        for(size_t i = 0; i != mat4<T>::size(); ++i) r[i] = scalar*rhs[i];
+        return r;
+    };
+
+    template <typename T>
+    mat4<T> operator*(const mat4<T>& lhs, const mat4<T>& rhs) {
+        mat4<T> r;
+        r(0,0) = lhs(0,0)*rhs(0,0) + lhs(0,1)*rhs(1,0) + lhs(0,2)*rhs(2,0) + lhs(0,3)*rhs(3,0);
+        r(0,1) = lhs(0,0)*rhs(0,1) + lhs(0,1)*rhs(1,1) + lhs(0,2)*rhs(2,1) + lhs(0,3)*rhs(3,1);
+        r(0,2) = lhs(0,0)*rhs(0,2) + lhs(0,1)*rhs(1,2) + lhs(0,2)*rhs(2,2) + lhs(0,3)*rhs(3,2);
+        r(0,3) = lhs(0,0)*rhs(0,3) + lhs(0,1)*rhs(1,3) + lhs(0,2)*rhs(2,3) + lhs(0,3)*rhs(3,3);
+        r(1,0) = lhs(1,0)*rhs(0,0) + lhs(1,1)*rhs(1,0) + lhs(1,2)*rhs(2,0) + lhs(1,3)*rhs(3,0);
+        r(1,1) = lhs(1,0)*rhs(0,1) + lhs(1,1)*rhs(1,1) + lhs(1,2)*rhs(2,1) + lhs(1,3)*rhs(3,1);
+        r(1,2) = lhs(1,0)*rhs(0,2) + lhs(1,1)*rhs(1,2) + lhs(1,2)*rhs(2,2) + lhs(1,3)*rhs(3,2);
+        r(1,3) = lhs(1,0)*rhs(0,3) + lhs(1,1)*rhs(1,3) + lhs(1,2)*rhs(2,3) + lhs(1,3)*rhs(3,3);
+        r(2,0) = lhs(2,0)*rhs(0,0) + lhs(2,1)*rhs(1,0) + lhs(2,2)*rhs(2,0) + lhs(2,3)*rhs(3,0);
+        r(2,1) = lhs(2,0)*rhs(0,1) + lhs(2,1)*rhs(1,1) + lhs(2,2)*rhs(2,1) + lhs(2,3)*rhs(3,1);
+        r(2,2) = lhs(2,0)*rhs(0,2) + lhs(2,1)*rhs(1,2) + lhs(2,2)*rhs(2,2) + lhs(2,3)*rhs(3,2);
+        r(2,3) = lhs(2,0)*rhs(0,3) + lhs(2,1)*rhs(1,3) + lhs(2,2)*rhs(2,3) + lhs(2,3)*rhs(3,3);
+        r(3,0) = lhs(3,0)*rhs(0,0) + lhs(3,1)*rhs(1,0) + lhs(3,2)*rhs(2,0) + lhs(3,3)*rhs(3,0);
+        r(3,1) = lhs(3,0)*rhs(0,1) + lhs(3,1)*rhs(1,1) + lhs(3,2)*rhs(2,1) + lhs(3,3)*rhs(3,1);
+        r(3,2) = lhs(3,0)*rhs(0,2) + lhs(3,1)*rhs(1,2) + lhs(3,2)*rhs(2,2) + lhs(3,3)*rhs(3,2);
+        r(3,3) = lhs(3,0)*rhs(0,3) + lhs(3,1)*rhs(1,3) + lhs(3,2)*rhs(2,3) + lhs(3,3)*rhs(3,3);
+        return r;
+    }
 
     using mat4b = mat4<uint8_t>;
     using mat4s = mat4<int16_t>;

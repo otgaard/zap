@@ -32,7 +32,9 @@ set(ZAP_MATHS_FILES
         maths/mat3.hpp
         maths/mat4.hpp
         maths/functions.hpp
-        maths/dummy.cpp)
+        geometry/ray.hpp
+        maths/io.cpp
+        maths/io.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -60,7 +62,7 @@ set(ZAP_ENGINE_FILES
         core/bitfield.hpp
         core/meta.hpp
         engine/texture.cpp
-        engine/texture.hpp engine/uniform_buffer.hpp engine/uniform_block.hpp generators/textures/spectral.hpp)
+        engine/texture.hpp engine/uniform_buffer.hpp engine/uniform_block.hpp generators/textures/spectral.hpp renderer/camera.cpp renderer/camera.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -126,7 +128,7 @@ endif(CMAKE_STATIC_BUILD)
 add_library(stb STATIC ${STB_ARCHIVE})
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example glfw3 ZapEngine stb ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example glfw3 ZapEngine ZapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(zap_cmd ${ZAP_COMMAND_LINE})
 #target_link_libraries(zap_cmd)

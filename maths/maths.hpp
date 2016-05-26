@@ -20,6 +20,11 @@
 
 namespace zap { namespace maths {
 	constexpr double PI = 3.14159265358979323846;
+    constexpr double d2r_ratio = PI/180;
+    constexpr double r2d_ratio = 180/PI;
+
+    template <typename T> constexpr T deg_to_rad(T v) { return v * d2r_ratio; }
+    template <typename T> constexpr T rad_to_deg(T v) { return v * r2d_ratio; }
 
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }
