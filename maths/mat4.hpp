@@ -165,15 +165,16 @@ namespace zap { namespace maths {
     template <typename T, typename S>
     mat4<T> make_rotation(const vec3<T>& axis, const S& theta) {
         assert(axis.is_unit() && "Rotation axis must be normalised");
-        mat4<T> r = mat4<T>::identity();
+        mat4<T> r;
         T ct = std::cos(theta), st = std::sin(theta), t = 1 - ct;
         T tx = t*axis.x,   ty = t*axis.y,   tz = t*axis.z;
         T sx = st*axis.x,  sy = st*axis.y,  sz = st*axis.z;
         T txy = tx*axis.y, tyz = ty*axis.z, txz = tx*axis.z;
 
-        r(0,0) = tx*axis.x + ct; r(0,1) = txy + sz;       r(0,2) = txz - sy;
-        r(1,0) = txy - sz;       r(1,1) = ty*axis.y + ct; r(1,2) = tyz + sx;
-        r(2,0) = txz + sy;       r(2,1) = tyz - sx;       r(2,2) = tz*axis.z + ct;
+        r(0,0) = tx*axis.x + ct; r(0,1) = txy + sz;       r(0,2) = txz - sy;       r(0,3) = 0;
+        r(1,0) = txy - sz;       r(1,1) = ty*axis.y + ct; r(1,2) = tyz + sx;       r(1,3) = 0;
+        r(2,0) = txz + sy;       r(2,1) = tyz - sx;       r(2,2) = tz*axis.z + ct; r(2,3) = 0;
+        r(3,0) = 0;              r(3,1) = 0;              r(3,2) = 0;              r(3,3) = T(1);
         return r;
     };
 

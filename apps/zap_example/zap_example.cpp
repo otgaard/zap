@@ -172,7 +172,7 @@ void zap_example::initialise() {
     ublock1 my_block;
     my_block.cam_position = vec3f(0,0,-10);
     my_block.cam_view = vec3f(1,1,0);
-    my_block.cam_projection = make_perspective<float>(90.f, 1280.f/768.f, 1.f, 100.f);
+    my_block.cam_projection = make_perspective<float>(90.f, 1280.f/768.f, 1.f, 10.f);
 
     translation = make_translation(0.f,0.f,2.f);
     angle = 0;
