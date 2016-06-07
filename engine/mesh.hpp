@@ -17,7 +17,7 @@ public:
     void bind();
     void release();
 
-    void draw(primitive_type type, size_t first, size_t count);
+    void draw_impl(primitive_type type, size_t first, size_t count);
 
 private:
     resource_t vao_;
@@ -32,6 +32,7 @@ struct vertex_stream<VBuf, VBuffers...> : vertex_stream<VBuffers...> {
     static_assert(is_vertex_buffer<VBuf>::value, "VBuf must be of type vertex_buffer<>");
     using type = VBuf;
     using ptr_t = VBuf*;
+    vertex_stream() : ptr(nullptr) { }
     vertex_stream(VBuf* vbuf_ptr, VBuffers*... vbuffers) : vertex_stream<VBuffers...>(vbuffers...), ptr(vbuf_ptr) { }
     VBuf* ptr;
 };
@@ -73,9 +74,16 @@ public:
     using vertex_stream = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
+    mesh() : mesh_base() { }
     mesh(const vertex_stream& vtxstream) : mesh_base(), vstream(vtxstream) { }
 
-    void draw() { mesh_base::draw(primitive, 0, vstream.ptr->vertex_count()); }
+    void set_stream(const vertex_stream& vtxstream) { vstream = vtxstream; }
+
+    size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
+
+    void draw(primitive_type prim=primitive, size_t start=0, size_t count=0) {
+        mesh_base::draw_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
+    }
 
     vertex_stream vstream;
 };

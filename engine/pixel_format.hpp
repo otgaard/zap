@@ -51,6 +51,7 @@ namespace zap { namespace engine {
 
     template <channel_type Type, size_t Bits>
     struct channel {
+        using id_t = channel_type;
         constexpr static channel_type ch_type = Type;
         constexpr static size_t bits = Bits;
     };
@@ -67,6 +68,7 @@ namespace zap { namespace engine {
     struct pixel : pixel_data<T, sizeof...(Channels)> {
         static_assert(std::is_trivially_copyable<pixel_data<T, sizeof...(Channels)>>::value, "pixel<> must be trivially copyable");
         using data_t = pixel_data<T, sizeof...(Channels)>;
+        constexpr static size_t size = sizeof...(Channels);
         constexpr static size_t bytesize = sizeof(data_t);
         using channels = core::pod<Channels...>;
         using type = typename data_t::type;

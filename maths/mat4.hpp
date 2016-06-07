@@ -162,6 +162,13 @@ namespace zap { namespace maths {
         return r;
     }
 
+    template <typename T>
+    mat4<T> make_scale(T x, T y, T z) {
+        mat4<T> r = mat4<T>::identity();
+        r(0,0) = x; r(1,1) = y; r(2,2) = z;
+        return r;
+    }
+
     template <typename T, typename S>
     mat4<T> make_rotation(const vec3<T>& axis, const S& theta) {
         assert(axis.is_unit() && "Rotation axis must be normalised");
@@ -191,10 +198,10 @@ namespace zap { namespace maths {
         T two_dmin_dmax_inv_D = 2*(dmin * (dmax * inv_d));
 
         // Col 1, 2, 3, 4
-        r(0,0) = two_dmin_inv_r; r(1,0) = 0; r(2,0) = 0; r(3,0) = 0;
-        r(0,1) = 0; r(1,1) = two_dmin_inv_u; r(2,1) = 0; r(3,1) = 0;
-        r(0,2) = -sR; r(1,2) = -sU; r(2,2) = sD; r(3,2) = T(1);
-        r(0,3) = 0; r(1,3) = 0; r(2,3) = -two_dmin_dmax_inv_D; r(3,3) = 0;
+        r(0,0) = two_dmin_inv_r; r(1,0) = 0;              r(2,0) = 0;                    r(3,0) = 0;
+        r(0,1) = 0;              r(1,1) = two_dmin_inv_u; r(2,1) = 0;                    r(3,1) = 0;
+        r(0,2) = -sR;            r(1,2) = -sU;            r(2,2) = sD;                   r(3,2) = T(1);
+        r(0,3) = 0;              r(1,3) = 0;              r(2,3) = -two_dmin_dmax_inv_D; r(3,3) = 0;
         return r;
     }
 

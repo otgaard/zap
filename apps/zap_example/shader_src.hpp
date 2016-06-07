@@ -9,10 +9,11 @@
 
 const char* vtx_src = GLSL(
         uniform mat4 proj_matrix;
+        uniform mat4 mv_matrix;
         in vec2 position;
 
         void main() {
-            gl_Position = proj_matrix*vec4(position.x, position.y, 0.0, 1.0);
+            gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, 0.0, 1.0);
         }
 );
 
@@ -26,35 +27,40 @@ const char* frg_src = GLSL(
 );
 
 const char* vtx_ub_src = GLSL(
-    in vec2 position;
+    in vec3 position;
+    in vec3 normal;
     in vec2 texcoord1;
 
-    layout (std140) uniform ublock1 {
+    layout (std140) uniform transform {
         vec3 cam_position;
         vec3 cam_view;
         mat4 mv_matrix;
         mat4 proj_matrix;
     };
 
+    out vec3 nor;
     out vec2 texcoord;
     out vec3 colour;
 
     void main() {
+        nor = normal;
         texcoord = texcoord1;
         colour = cam_view;
-        gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, 0, 1.0);
+        gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, position.z, 1.0);
     }
 );
 
 const char* frg_ub_src = GLSL(
     uniform sampler2D tex;
 
+    in vec3 nor;
     in vec3 colour;
     in vec2 texcoord;
 
     out vec4 fragColour;
     void main() {
-        fragColour = texture(tex, texcoord) + 0.1*vec4(colour, 1.0);
+        float s = max(dot(nor, normalize(vec3(0,10,10))), 0);
+        fragColour = s*(0.8*texture(tex, texcoord) + 0.2*vec4(colour, 1.0));
     }
 );
 

@@ -21,7 +21,7 @@ void mesh_base::release() {
     gl_error_check();
 }
 
-void mesh_base::draw(primitive_type type, size_t first, size_t count) {
+void mesh_base::draw_impl(primitive_type type, size_t first, size_t count) {
     glDrawArrays(gl_type(type), first, count);
 }
 

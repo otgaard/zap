@@ -51,13 +51,26 @@ namespace detail {
 template <typename... Args>
 struct vertex : core::pod<Args...> {
     using pod_t = core::pod<Args...>;
+    using id_t = typename pod_t::id_t;
     constexpr static size_t size = sizeof...(Args);
 
     using offsets = typename core::generate_table<size, pod_t, core::pod_offset>::result;
     using types = typename core::generate_table<size, pod_t, core::pod_id>::result;
     using counts = typename core::generate_table<size, pod_t, detail::vattrib_count>::result;
     using datatypes = typename core::generate_table<size, pod_t, detail::vattrib_datatype>::result;
+    using fieldsizes = typename core::generate_table<size, pod_t, core::pod_size>::result;
     constexpr static size_t bytesize() { return sizeof(vertex); }
+
+    static size_t find(id_t id) {
+        for(size_t i = 0; i != size; ++i) if((id_t)types::data[i] == id) return i;
+        return INVALID_IDX;
+    }
+
+    template <typename T> void set(size_t idx, const T& value) {
+        assert(idx < size && fieldsizes::data[idx] == sizeof(T) && "Attempt to access invalid field in vertex");
+        if(idx < size && fieldsizes::data[idx] == sizeof(T))
+            memcpy((((unsigned char*) this) + offsets::data[idx]), &value, sizeof(T));
+    }
 
     vertex() { }
     vertex(Args... args) : core::pod<Args...>(args...) { }

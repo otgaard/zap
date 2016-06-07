@@ -34,7 +34,7 @@ set(ZAP_MATHS_FILES
         maths/functions.hpp
         geometry/ray.hpp
         maths/io.cpp
-        maths/io.hpp)
+        maths/io.hpp geometry/disc.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -62,14 +62,28 @@ set(ZAP_ENGINE_FILES
         core/bitfield.hpp
         core/meta.hpp
         engine/texture.cpp
-        engine/texture.hpp engine/uniform_buffer.hpp engine/uniform_block.hpp generators/textures/spectral.hpp renderer/camera.cpp renderer/camera.hpp)
+        engine/texture.hpp
+        engine/uniform_buffer.hpp
+        engine/uniform_block.hpp
+        generators/textures/spectral.hpp
+        renderer/camera.cpp
+        renderer/camera.hpp
+        engine/framebuffer.cpp
+        engine/framebuffer.hpp
+        generators/geometry/surface.cpp
+        generators/geometry/surface.hpp
+        generators/geometry/geometry2.hpp generators/textures/planar.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
 
 set(ZAP_EXAMPLE_FILES
         apps/zap_example/zap_example.cpp
-        apps/zap_example/generator.cpp apps/zap_example/generator.hpp apps/zap_example/application.cpp apps/zap_example/application.hpp apps/zap_example/shader_src.hpp)
+        apps/zap_example/generator.cpp
+        apps/zap_example/generator.hpp
+        apps/zap_example/application.cpp
+        apps/zap_example/application.hpp
+        apps/zap_example/shader_src.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp

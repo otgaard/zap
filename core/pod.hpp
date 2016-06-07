@@ -63,6 +63,7 @@ template <typename T, typename ID_T, ID_T ID> struct is_podfield<podfield<T, ID_
 
 template <typename Arg, typename... Args>
 struct pod<Arg, Args...> : Arg, pod<Args...> {
+    using id_t = typename Arg::id_t;
     static_assert(is_podfield<Arg>::value, "pod<> only accepts podfield<> parameters");
     constexpr pod() = default;
     pod(const Arg& arg, Args... args) : Arg(arg), pod<Args...>(args...) { }

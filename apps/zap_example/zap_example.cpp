@@ -19,13 +19,11 @@
 #include <GL/glew.h>
 #include <generators/textures/spectral.hpp>
 #include <geometry/ray.hpp>
-/*
- * Goals for this weekend:
- * 1) Finish up textures/pixels
- * 2) Add the mesh class
- * 3) Add framebuffers
- * 4) Add uniform buffers/blocks
- */
+#include <geometry/disc.hpp>
+#include <generators/geometry/geometry2.hpp>
+#include <generators/textures/planar.hpp>
+#include <generators/geometry/surface.hpp>
+#include <thread>
 
 #include "shader_src.hpp"
 #include "maths/io.hpp"
@@ -37,18 +35,19 @@ using namespace zap::engine;
 using pos3_t = core::position<vec3f>;
 using nor3_t = core::normal<vec3f>;
 using tex2_t = core::texcoord1<vec2f>;
+using col3_t = core::colour1<vec3f>;
 
-using vertex_t = vertex<pos3_t, nor3_t, tex2_t>;
-using vertex_buffer_t = vertex_buffer<vertex_t, buffer_usage::BU_STATIC_DRAW>;
+using vertex_t = vertex<pos3_t, nor3_t, tex2_t, col3_t>;
+using vertex_buffer_t = vertex_buffer<vertex_t, buffer_usage::BU_DYNAMIC_DRAW>;
 using vtx_stream_t = vertex_stream<vertex_buffer_t>;
-using mesh_t = mesh<vtx_stream_t, primitive_type::PT_TRIANGLE_FAN>;
+using mesh_t = mesh<vtx_stream_t, primitive_type::PT_TRIANGLES>;
 
 using ublock1 = uniform_block<
         core::cam_position<vec3f>,
         core::cam_view<vec3f>,
         core::mv_matrix<mat4f>,
         core::cam_projection<mat4f>>;
-using ublock1_buffer = uniform_buffer<ublock1, buffer_usage::BU_DYNAMIC_DRAW>;
+using transform_buffer = uniform_buffer<ublock1, buffer_usage::BU_DYNAMIC_DRAW>;
 
 class zap_example : public application {
 public:
@@ -62,19 +61,18 @@ public:
 protected:
     std::unique_ptr<program> prog1;
     std::unique_ptr<program> prog2;
-    std::unique_ptr<vertex_buffer_t> vbuffer_ptr;
-    std::unique_ptr<mesh_t> mesh_ptr;
-    std::unique_ptr<ublock1_buffer> ublock1_ptr;
-    oscillator<float> osc_;
-    std::unique_ptr<texture> tex_ptr;
 
-    // Temp stuff
-    mat4<float> translation;
-    float angle;
-    float distance;
+    vertex_buffer_t vbuffer;
+    mesh_t mesh;
+    transform_buffer transform;
+    texture tex;
+    std::vector<vertex_t> surf;
+    oscillator<float> osc_;
 };
 
 void zap_example::initialise() {
+    LOG("Number of Concurrent threads supported:", std::thread::hardware_concurrency());
+
     std::vector<shader_ptr> arr;
     arr.push_back(std::make_shared<shader>(shader_type::ST_VERTEX, vtx_src));
     arr.push_back(std::make_shared<shader>(shader_type::ST_FRAGMENT, frg_src));
@@ -90,121 +88,155 @@ void zap_example::initialise() {
     gl_error_check();
 
     mat4f proj_matrix = {
-            60/1280.f,       0.f, 0.f, 0.f,
-            0.f,         60/768.f, 0.f, 0.f,
-            0.f,              0.f, 2.f, 0.f,
-            0.f,              0.f, 0.f, 1.f
+            60/1280.f,      0.f, 0.f, 0.f,
+            0.f,       60/768.f, 0.f, 0.f,
+            0.f,            0.f, 2.f, 0.f,
+            0.f,            0.f, 0.f, 1.f
+    };
+
+    mat4f mv_matrix = {
+            6.4f, 0.f,  0.f, 0.f,
+            0.f, 6.4f,  0.f, 0.f,
+            0.f,  0.f, 6.4f, 0.f,
+            0.f,  0.f,  0.f, 1.f
     };
 
     prog1->bind();
     auto loc = prog1->uniform_location("proj_matrix");
     glUniformMatrix4fv(loc, 1, GL_FALSE, proj_matrix.data());
     loc = prog1->uniform_location("colour");
-    auto line_colour = zap::maths::vec3f(1,0,0);
+    auto line_colour = zap::maths::vec3f(1,1,0);
     glUniform3fv(loc, 1, line_colour.data());
+    loc = prog1->uniform_location("mv_matrix");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, mv_matrix.data());
     prog1->release();
     gl_error_check();
 
 
     prog2->bind();
-
-    tex_ptr = std::make_unique<texture>();
-    tex_ptr->allocate();
-
-    auto pixels = zap::generators::spectral<rgb888_t>::make_clouds(5, 5, 1024, 1024);
-    // Remap colours
-
-    constexpr auto max_byte = std::numeric_limits<typename rgb888_t::type>::max();
-    constexpr float inv_byte = 1.f/std::numeric_limits<typename rgb888_t::type>::max();
-
-    const vec3f blue = vec3f(0./max_byte, 191./max_byte, 255./max_byte);
-    const vec3f white = vec3f(180./max_byte, 206./max_byte, 235./max_byte);
-
-    for(auto& pixel : pixels) {
-        auto c = lerp(white, blue, pixel.get(0)*inv_byte);
-        pixel.set(0, typename rgb888_t::type(c.x*max_byte));
-        pixel.set(1, typename rgb888_t::type(c.y*max_byte));
-        pixel.set(2, typename rgb888_t::type(c.z*max_byte));
-    }
-
-    tex_ptr->initialise(1024, 1024, pixels, false);
-    //return ptr;
-
-    //tex_ptr = generator::create_checker();
-    tex_ptr->bind();
     loc = prog2->uniform_location("tex");
     glUniform1i(loc, 0);
-    //tex_ptr->release();
+
+    tex.allocate();
+    auto checker = zap::generators::planar<rgb888_t>::make_checker<vec3b>(32, 32, vec3b(255, 255, 0), vec3b(255, 0, 255));
+    tex.initialise(32, 32, checker, true);
+    tex.bind();
 
     std::vector<vertex_t> box =
     {
             {
                     {{-1,-1,0}},  // Position
-                    {{0,0,1}},      // Normal
-                    {{0,0}}         // Texcoord
+                    {{0,0,1}},    // Normal
+                    {{0,0}},      // Texcoord
+                    {{0,0,0}}     // Colour1
             },
             {
                     {{1,-1,0}},
                     {{0,0,1}},
-                    {{1,0}}
+                    {{1,0}},
+                    {{0,0,0}}
             },
             {
                     {{1,1,0}},
                     {{0,0,1}},
-                    {{1,1}}
+                    {{1,1}},
+                    {{0,0,0}}
             },
             {
                     {{-1,1,0}},
                     {{0,0,1}},
-                    {{0,1}}
+                    {{0,1}},
+                    {{0,0,0}}
             }
     };
 
-    vbuffer_ptr = std::make_unique<vertex_buffer_t>();
-    mesh_ptr = std::make_unique<mesh_t>(vtx_stream_t(vbuffer_ptr.get()));
-    mesh_ptr->allocate();
-    mesh_ptr->bind();
-    vbuffer_ptr->allocate();
-    vbuffer_ptr->bind();
-    vbuffer_ptr->initialise(box);
+    mesh.set_stream(vertex_stream<vertex_buffer_t>(&vbuffer));
+    mesh.allocate();
+    mesh.bind();
+    vbuffer.allocate();
+    vbuffer.bind();
+    vbuffer.initialise(15000);
+    //vbuffer.initialise(box);
 
-    // Now, let's create a uniform buffer & block
-    ublock1 my_block;
-    my_block.cam_position = vec3f(0,0,-10);
-    my_block.cam_view = vec3f(1,1,0);
-    my_block.cam_projection = make_perspective<float>(90.f, 1280.f/768.f, 1.f, 10.f);
+    auto fnc = [](float x, float y, float z) {
+        vec3f v(x-0.5f, y-0.5f, z-0.5f);
+        vec3f u(x-0.7f, y-0.5f, z-0.5f);
+        return 0.5f/dot(v,v) + 0.2f/dot(u,u);
+    };
+    surf.reserve(15000);
+    generators::surface<vertex_buffer_t>::marching_cubes(fnc, surf);
+    LOG("Finished building surface", surf.size());
+    vbuffer.initialise(surf);
 
-    translation = make_translation(0.f,0.f,2.f);
-    angle = 0;
-    distance = 0;
+    transform.allocate();
+    transform.bind();
+    transform.initialise(nullptr);
+    if(transform.map(buffer_access::BA_WRITE_ONLY)) {
+        auto& ref = transform.ref();
+        ref.cam_position = vec3f(0, 0, -10);
+        ref.cam_view = vec3f(1, 1, 0);
+        ref.cam_projection = make_perspective<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
+        ref.mv_matrix = make_translation<float>(0, 0, 2);
+        transform.unmap();
+    }
 
-    my_block.mv_matrix = translation;
+    loc = prog2->uniform_block_index("transform");
+    transform.bind_point(loc);
 
-    ublock1_ptr = std::make_unique<ublock1_buffer>();
-    ublock1_ptr->allocate();
-    ublock1_ptr->bind();
-    ublock1_ptr->initialise(my_block);
+    transform.release();
 
-    auto ublock1_loc = prog2->uniform_block_index("ublock1");
-    ublock1_ptr->bind_point(ublock1_loc);
-    ublock1_ptr->release();
-    osc_.start();
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 }
 
+static float angle = 0.f;
+static float dx = 0.0f;
+static float dy = 0.0f;
+
+static float offset = 0.0f;
+static int dir = 1;
+
 void zap_example::update(double t, float dt) {
-    ublock1_ptr->bind();
-    ublock1_ptr->map(buffer_access::BA_READ_WRITE);
+    transform.bind();
+    if(transform.map(buffer_access::BA_WRITE_ONLY)) {
+        transform.ref().mv_matrix = make_scale<float>(20,20,10) * make_translation<float>(-0.5f, -0.5f, 1);
+        transform.unmap();
+    }
+    transform.release();
+
+    auto fnc = [](float x, float y, float z) {
+        vec3f v(x-0.5f, y-0.5f, z-0.5f);
+        vec3f u(x-dx, y-dy, z-0.5f);
+        return 0.3f/dot(v,v) + 0.2f/dot(u,u);
+    };
+    surf.clear();
+    generators::surface<vertex_buffer_t>::marching_cubes(fnc, surf);
+
+    dx = 0.5f + 0.2f*std::cos(2.f*angle) + 0.01f*offset;
+    dy = 0.5f + 0.2f*std::sin(2.f*angle);
+
+    vbuffer.bind();
+    if(vbuffer.map(buffer_access::BA_WRITE_ONLY)) {
+        std::copy(surf.begin(), surf.end(), vbuffer.begin());
+        vbuffer.unmap();
+    }
+    vbuffer.release();
 
     angle += dt;
-    distance += dt;
-    ublock1_ptr->get()->mv_matrix = translation * make_rotation(vec3f(0,0,1), angle) * make_rotation(vec3f(1,0,0), angle);
+    angle = angle > 2*maths::PI ? 0 : angle;
 
-    ublock1_ptr->unmap();
-    ublock1_ptr->release();
+    offset += dir*11*dt;
+    if(offset < 2.f*PI) dir = 1;
+    if(offset > 2.f*PI) dir = -1;
 }
 
 void zap_example::draw() {
-    mesh_ptr->draw();
+    mesh.draw(primitive_type::PT_TRIANGLES, 0, surf.size());
+    gl_error_check();
 }
 
 void zap_example::shutdown() {

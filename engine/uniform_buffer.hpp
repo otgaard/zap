@@ -47,6 +47,9 @@ public:
     }
     bool unmap() { return buffer::unmap(buf_type); }
 
+    const block_t& ref() const { return *get(); }
+    block_t& ref() { return *get(); }
+
     const block_t* get() const {
         assert(is_mapped() && "Uniform Buffer must be mapped!");
         return reinterpret_cast<block_t*>(mapped_ptr_);

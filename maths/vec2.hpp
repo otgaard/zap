@@ -43,6 +43,10 @@ namespace zap { namespace maths {
         constexpr vec2<T> operator-() const { return vec2<T>(-x, -y); }
         inline vec2<T>& operator+=(const vec2<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i]; }
 
+        constexpr T length_sq() const { return x*x + y*y; }
+        T length() const { return std::sqrt(length_sq()); }
+        vec2<T>& perp() { std::swap(x,y); x *= -1; return *this; }
+
         union {
             struct {
                 T x, y;
@@ -50,6 +54,11 @@ namespace zap { namespace maths {
             T arr[2];
         };
 	} ALIGN_ATTR(8);
+
+    template <typename T>
+    constexpr vec2<T> perp(const vec2<T>& v) {
+        return vec2<T>(-v.y, v.x);
+    }
 
     template <typename T>
     constexpr vec2<T> operator+(const vec2<T>& lhs, const vec2<T>& rhs) {
