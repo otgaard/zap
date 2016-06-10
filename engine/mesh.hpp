@@ -71,13 +71,15 @@ public:
 template <typename VtxStream, primitive_type Primitive>
 struct mesh<VtxStream, Primitive, void> : public mesh_base {
 public:
-    using vertex_stream = VtxStream;
+    using vertex_stream_t = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
     mesh() : mesh_base() { }
-    mesh(const vertex_stream& vtxstream) : mesh_base(), vstream(vtxstream) { }
+    mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
+    template <typename... VBuffers>
+    mesh<vertex_stream<VBuffers...>, Primitive>(VBuffers*... buffers) : mesh_base(), vstream(buffers...) { }
 
-    void set_stream(const vertex_stream& vtxstream) { vstream = vtxstream; }
+    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
 
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
 
@@ -85,7 +87,7 @@ public:
         mesh_base::draw_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
     }
 
-    vertex_stream vstream;
+    vertex_stream_t vstream;
 };
 
 }}

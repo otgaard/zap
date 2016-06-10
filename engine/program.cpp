@@ -67,3 +67,7 @@ bool program::link(bool clear) {
     linked_ = true;
     return linked_;
 }
+
+template <> void zap::engine::program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type) {
+    gl::glUniformMatrix4fv(location, 1, GL_FALSE, type.data());
+}

@@ -28,6 +28,7 @@ namespace zap { namespace generators {
     class surface {
     public:
         template<typename T> using vec3 = zap::maths::vec3<T>;
+
         static constexpr float fTargetValue = 48.f;
         static constexpr int iDataSetSize = 50;
         static constexpr float fStepSize = 1.f/iDataSetSize;

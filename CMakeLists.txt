@@ -98,7 +98,13 @@ set(ZAP_TESTS_ENGINE_FILES
         tests/engine/buffer_format_tests.cpp)
 
 set(SYNESTHESIA_FILES
-        apps/synesthesia/main.cpp)
+        apps/synesthesia/fft.cpp
+        apps/synesthesia/fft.hpp
+        apps/synesthesia/shader_src.hpp
+        apps/synesthesia/application.cpp
+        apps/synesthesia/application.hpp
+        apps/synesthesia/synesthesia.cpp
+        apps/synesthesia/module.hpp apps/synesthesia/modules/bars.cpp apps/synesthesia/modules/bars.hpp apps/synesthesia/graphic_types.hpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)

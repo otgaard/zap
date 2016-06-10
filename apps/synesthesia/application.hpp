@@ -1,4 +1,4 @@
-/* Created by Darren Otgaar on 2016/05/15. http://www.github.com/otgaard/zap */
+/* Created by Darren Otgaar on 2016/06/10. http://www.github.com/otgaard/zap */
 #ifndef ZAP_APPLICATION_HPP
 #define ZAP_APPLICATION_HPP
 
@@ -14,9 +14,14 @@ public:
     virtual void draw() { }
     virtual void shutdown() { }
 
-    virtual void on_keypress(char ch) { }
+    virtual void on_keypress(char ch);
+    virtual void on_resize(int width, int height);
 
     int run();
+
+protected:
+    int sc_width_;
+    int sc_height_;
 
 private:
     std::string app_name_;
