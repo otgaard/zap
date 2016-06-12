@@ -80,6 +80,29 @@ namespace zap { namespace maths {
         return scale*value + bias;
     }
 
+    template <typename T>
+    T wrap(const T& value, const T& min, const T& max) {
+        return value < min ? max + std::fmod(value, min) : value > max ? min + std::fmod(value, max) : value;
+    }
+
+    template <typename T>
+    struct loop {
+        inline loop(T min, T max, T value=T(0), T dir=T(1)) : min(min), max(max), value(value), dir(dir) { }
+
+        float operator+=(const T& t) {
+            value += dir * t;
+            if(value > max) {
+                dir *= -1;
+                value = clamp(value, min, max);
+            } else if(value < min) {
+                dir *= -1;
+                value = clamp(value, min, max);
+            }
+            return value;
+        }
+        T min, max, value, dir;
+    };
+
     // Forward Declarations
     template <typename T> struct vec2;
     template <typename T> struct vec3;

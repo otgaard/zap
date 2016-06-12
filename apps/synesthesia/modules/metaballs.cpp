@@ -1,8 +1,5 @@
 /* Created by Darren Otgaar on 2016/06/11. http://www.github.com/otgaard/zap */
 #include "metaballs.hpp"
-
-/* Created by Darren Otgaar on 2016/06/10. http://www.github.com/otgaard/zap */
-#include "bars.hpp"
 #include "../graphic_types.hpp"
 #include "../application.hpp"
 
@@ -18,25 +15,34 @@ const char* metaballs_vshdr = GLSL(
         in vec3 normal;
 
         layout (std140) uniform transform {
+            float scale;
             mat4 mv_matrix;
             mat4 proj_matrix;
         };
 
         out vec3 nor;
+        out vec3 tex;
+        out float freq;
 
         void main() {
+            freq = scale;
             nor = normal;
+            tex = position.xyz;
             gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, position.z, 1.0);
         }
 );
 
 const char* metaballs_fshdr = GLSL(
+        uniform sampler2D diffuse;
         in vec3 nor;
+        in vec3 tex;
+        in float freq;
 
         out vec4 frag_colour;
         void main() {
-            float s = max(dot(nor, normalize(vec3(0,10,10))), 0);
-            frag_colour = s*vec4(nor, 1);
+            float s = max(dot(nor, vec3(0,0,1)), 0);
+            vec3 colour = mix(vec3(1,0,0), vec3(0,0,1), texture(diffuse, tex.xy).s);
+            frag_colour = vec4(s*colour, 0.8);
         }
 );
 
@@ -45,6 +51,7 @@ const char* metaballs_fshdr = GLSL(
  */
 
 using metaballs_block = uniform_block<
+        core::scale<float>,
         core::mv_matrix<mat4f>,
         core::cam_projection<mat4f>>;
 using metaballs_uniform = uniform_buffer<metaballs_block, buffer_usage::BU_DYNAMIC_DRAW>;
@@ -58,6 +65,9 @@ struct metaballs::state_t {
     metaballs_mesh_t metaballs_mesh;
     metaballs_uniform uniform;
     std::vector<vtx_p3n3_t> blob;
+    texture tex1;
+
+    float rotation; // For testing
 };
 
 metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
@@ -66,9 +76,21 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
     // The OpenGL Context should be valid here
     auto& s = *state.get();
 
+    s.rotation = 0.f;
+
     s.metaballs_program.add_shader(new shader(shader_type::ST_VERTEX, metaballs_vshdr));
     s.metaballs_program.add_shader(new shader(shader_type::ST_FRAGMENT, metaballs_fshdr));
     if(!s.metaballs_program.link(true)) gl_error_check();
+
+    s.tex1.allocate();
+    s.tex1.bind();
+    s.tex1.initialise(32, 32, generators::planar<rgb888_t>::make_checker(32, 32, colour::black8, colour::white8), true);
+
+    s.metaballs_program.bind();
+    auto tex_loc = s.metaballs_program.uniform_location("diffuse");
+    s.metaballs_program.bind_texture_unit(tex_loc, 0);
+    s.metaballs_program.release();
+    s.tex1.release();
 
     s.uniform.allocate();
     s.uniform.bind();
@@ -81,7 +103,7 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
         s.uniform.unmap();
     }
 
-    const size_t max_tris = 40000;
+    const size_t max_tris = 50000;
 
     s.metaballs_mesh.allocate();
     s.metaballs_mesh.bind();
@@ -116,15 +138,23 @@ void metaballs::update(double t, float dt) {
     auto& s = *state;
     s.blob.clear();
 
-    const auto* analysis_ptr = analysis_.data();
+    constexpr static float dtheta = float(TWO_PI/16);
+    static vec3f positions[16];
+    static float mag[16];
+    for(int i = 0; i < 16; ++i) {
+        float theta = i*dtheta;
+        mag[i] = .4f*0.5f*(analysis_[2*i] + analysis_[2*i+1]);
+        positions[i] = vec3f(.5f + mag[i]*cos(theta), .5f + mag[i]*sin(theta), .5f + ((i%2) ? -0.05f : +0.05f));
+    }
 
-    auto fnc = [analysis_ptr](float x, float y, float z) {
+    auto fnc = [=](float x, float y, float z) {
         const auto P = vec3f(x,y,z);
-        auto a = P - vec3f(0.5f+analysis_ptr[0]*0.3f, 0.5f+analysis_ptr[1]*0.3f, 0.5f+analysis_ptr[10]*0.3f);
-        auto b = P - vec3f(0.5f-analysis_ptr[2]*0.3f, 0.5f+analysis_ptr[3]*0.3f, 0.5f+analysis_ptr[11]*0.3f);
-        auto c = P - vec3f(0.5f+analysis_ptr[4]*0.3f, 0.5f-analysis_ptr[5]*0.3f, 0.5f+analysis_ptr[12]*0.3f);
-        auto d = P - vec3f(0.5f-analysis_ptr[6]*0.3f, 0.5f-analysis_ptr[7]*0.3f, 0.5f+analysis_ptr[13]*0.3f);
-        return analysis_ptr[6]/dot(a,a) + analysis_ptr[7]/dot(b,b) + analysis_ptr[8]/dot(c,c) + analysis_ptr[9]/dot(d,d);
+        float result = 0;
+        for(int i = 0; i != 16; ++i) {
+            auto d = P - positions[i];
+            result += mag[i] / dot(d, d);
+        }
+        return result;
     };
 
     generators::surface<metaballs_vbuf_t>::marching_cubes(fnc, s.blob);
@@ -132,19 +162,45 @@ void metaballs::update(double t, float dt) {
     s.metaballs_buffer.copy(s.blob, 0, s.blob.size());
     s.metaballs_buffer.release();
     gl_error_check();
+
+    static loop<float> y_angle = loop<float>(-PI/6, PI/6);
+    static loop<float> x_angle = loop<float>(-PI/6, PI/6);
+    y_angle += 0.5f*dt; x_angle += 0.3f*dt;
+
+    s.uniform.bind();
+    if(s.uniform.map(buffer_access::BA_READ_WRITE)) {
+        auto& ref = s.uniform.ref();
+        ref.mv_matrix = make_scale<float>(3,3,3) *
+                make_translation<float>(0,0,-0.65f) *
+                make_rotation(vec3f(1,0,0), x_angle.value) *
+                make_rotation(vec3f(0,1,0), y_angle.value) *
+                make_rotation(vec3f(0,0,1), s.rotation) *
+                make_translation<float>(-.5f, -.5f, -.5f);
+        s.uniform.unmap();
+    }
+    s.uniform.release();
+
+    static loop<float> dir(-0.07f, 0.07f);
+    dir += 0.01f*mag[0]*dt;
+    s.rotation = wrap<float>(s.rotation + dir.value, -TWO_PI, TWO_PI);
+
 }
 
 void metaballs::draw() {
     auto& s = *state.get();
 
     app_ptr_->depth_test(true);
+    //app_ptr_->alpha_blending(true);
 
     s.metaballs_program.bind();
+    s.tex1.bind();
     s.metaballs_mesh.bind();
     s.metaballs_mesh.draw(primitive_type::PT_TRIANGLES, 0, s.blob.size());
     s.metaballs_mesh.release();
+    s.tex1.release();
     s.metaballs_program.release();
 
+    //app_ptr_->alpha_blending(false);
     app_ptr_->depth_test(false);
 }
 

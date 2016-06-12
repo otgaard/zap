@@ -44,6 +44,20 @@ namespace zap { namespace generators {
 
             return image;
         }
+
+        template <typename ColourT>
+        static std::vector<Pixel> make_lerp(size_t width, const ColourT& colour_a, const ColourT& colour_b) {
+            std::vector<Pixel> image(width);
+            float inv_w = 1.f/width;
+            for(size_t col = 0; col != width; ++col) {
+                for(int ch = 0; ch != Pixel::size; ++ch) {
+                    auto u = col * inv_w;
+                    image[col].set(ch, maths::lerp(colour_a[ch], colour_b[ch], u));
+                }
+            }
+
+            return image;
+        }
     };
 }}
 

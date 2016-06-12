@@ -62,7 +62,8 @@ bars::bars(application* app_ptr) : module(app_ptr, "bars") {
     if(!s.bars_program.link(true)) gl_error_check();
 
     s.checker.allocate();
-    s.checker.initialise(2, 16, generators::planar<rgb888_t>::make_checker(2, 16, colour::red8, colour::blue8), false);
+    //s.checker.initialise(1, 2, generators::planar<rgb888_t>::make_checker(1, 2, colour::red8, colour::blue8), false);
+    s.checker.initialise(1, 256, generators::planar<rgb888_t>::make_lerp(256, colour::red8, colour::yellow8), false);
     s.checker.bind();
 
     s.bars_program.bind();
@@ -129,9 +130,11 @@ void bars::update(double t, float dt) {
 void bars::draw() {
     auto& s = *state.get();
     s.bars_program.bind();
+    s.checker.bind();
     s.bars_mesh.bind();
     s.bars_mesh.draw();
     s.bars_mesh.release();
+    s.checker.release();
     s.bars_program.release();
 }
 

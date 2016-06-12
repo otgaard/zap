@@ -21,6 +21,7 @@ struct uniform_block : core::pod<Args...> {
 };
 
 enum class ublock_attribute : size_t {
+    UA_SCALE,
     UA_CAM_POSITION,
     UA_CAM_RIGHT,
     UA_CAM_UP,
@@ -36,6 +37,7 @@ enum class ublock_attribute : size_t {
 }
 
 namespace core {
+    MAKE_PODFIELD(scale, engine::ublock_attribute, engine::ublock_attribute::UA_SCALE);
     MAKE_PODFIELD(cam_position, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_POSITION);
     MAKE_PODFIELD(cam_right, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_RIGHT);
     MAKE_PODFIELD(cam_up, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_UP);

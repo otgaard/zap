@@ -22,6 +22,7 @@ public:
     // TODO: Remove and replace with render_state.
     void depth_test(bool on);
     void bf_culling(bool on);
+    void alpha_blending(bool on);
 
 protected:
     int sc_width_;

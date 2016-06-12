@@ -105,3 +105,12 @@ void application::bf_culling(bool on) {
     glCullFace(GL_BACK);
     on ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
 }
+
+void application::alpha_blending(bool on) {
+    if(on) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else {
+        glDisable(GL_BLEND);
+    }
+}
