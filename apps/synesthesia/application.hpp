@@ -19,6 +19,10 @@ public:
 
     int run();
 
+    // TODO: Remove and replace with render_state.
+    void depth_test(bool on);
+    void bf_culling(bool on);
+
 protected:
     int sc_width_;
     int sc_height_;

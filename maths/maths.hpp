@@ -75,6 +75,11 @@ namespace zap { namespace maths {
                : std::numeric_limits<T>::quiet_NaN();
     }
 
+    template <typename T>
+    constexpr T scale_bias(const T& value, const T& scale, const T& bias) {
+        return scale*value + bias;
+    }
+
     // Forward Declarations
     template <typename T> struct vec2;
     template <typename T> struct vec3;

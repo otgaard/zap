@@ -96,3 +96,12 @@ void application::on_resize(int width, int height) {
     sc_width_ = width; sc_height_ = height;
     LOG("RESIZE_EVENT", width, height);
 }
+
+void application::depth_test(bool on) {
+    on ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+}
+
+void application::bf_culling(bool on) {
+    glCullFace(GL_BACK);
+    on ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+}

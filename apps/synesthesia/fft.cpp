@@ -1,6 +1,6 @@
 /* Created by Darren Otgaar on 2016/06/08. http://www.github.com/otgaard/zap */
 #include "fft.hpp"
-#define ENABLE_LOGGING
+#define LOGGING_ENABLED
 #include <tools/log.hpp>
 
 // From implementation described at:
@@ -9,9 +9,6 @@
 // Triangular smoothing function
 constexpr static float tri_smooth[5] = { 1.f, 2.f, 3.f, 2.f, 1.f };
 constexpr static float inv_tri = 1.f/9.f; // or 1/5 for box smoothing && { 1, 1, 1, 1, 1 };
-constexpr static size_t dB = 80;
-constexpr static float inv_scale = 1.f/dB;  // 1/100
-
 
 void fft::run_fft(const std::vector<float>& samples, std::vector<float>& bins, size_t count) {
     if(samples.size() < count) return;
@@ -28,7 +25,7 @@ void fft::run_fft(const std::vector<float>& samples, std::vector<float>& bins, s
         smoothing_[5*i] = mag; mag = 0;
         for(int k = 0; k != 5; ++k) mag += tri_smooth[k]*smoothing_[5*i+k];
         mag *= inv_tri;
-        bins[i] = (mag + 60.f)*inv_scale;
+        bins[i] = (zap::maths::clamp(mag, -100.f, 0.f) + 100.f)*0.01f;
     }
 }
 
@@ -43,11 +40,11 @@ void fft::process_samples(const float* buffer, size_t channels, buffer_t& result
         const auto idx = 2*i;
         if(i < frame_size_) {
             result[idx]     = prev_[idx] * hamming_window(i, samples);
-            result[idx + 1] = 0;//prev_[idx+1] * hamming_window(i, samples);
+            result[idx + 1] = 0;    // Left channel only, use complex part for 2-channel interleaved
         } else {
             const auto offset = idx - samples;
             result[idx]     = buffer[offset] * hamming_window(i, samples);
-            result[idx + 1] = 0;//buffer[offset+1]*hamming_window(i, samples);
+            result[idx + 1] = 0;
             curr_[offset] = buffer[offset];
         }
     }

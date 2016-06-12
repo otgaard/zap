@@ -45,7 +45,7 @@ bool buffer::is_bound() const {
 
 bool buffer::initialise(buffer_type type, buffer_usage usage, size_t size, const char* data) {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
-    assert(is_bound() && "Attempt to initialise unbound buffer");
+    //assert(is_bound() && "Attempt to initialise unbound buffer");
     glBufferData(gl_type(type), size, data, gl_type(usage));
     if(gl_error_check()) return false;
     size_ = size;

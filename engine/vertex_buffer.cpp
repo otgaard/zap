@@ -24,3 +24,4 @@ void gl::vertex_attrib_lptr(uint32_t index, int32_t size, data_type type, uint32
     glVertexAttribLPointer(index, size, gl_type(type), stride, ptr);
     gl_error_check();
 }
+

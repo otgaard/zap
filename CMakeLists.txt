@@ -104,7 +104,7 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/application.cpp
         apps/synesthesia/application.hpp
         apps/synesthesia/synesthesia.cpp
-        apps/synesthesia/module.hpp apps/synesthesia/modules/bars.cpp apps/synesthesia/modules/bars.hpp apps/synesthesia/graphic_types.hpp)
+        apps/synesthesia/module.hpp apps/synesthesia/modules/bars.cpp apps/synesthesia/modules/bars.hpp apps/synesthesia/graphic_types.hpp apps/synesthesia/colour.hpp apps/synesthesia/colour.cpp apps/synesthesia/modules/metaballs.cpp apps/synesthesia/modules/metaballs.hpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)

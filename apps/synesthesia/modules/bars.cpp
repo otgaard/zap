@@ -2,6 +2,8 @@
 #include "bars.hpp"
 #include "../graphic_types.hpp"
 
+#include <generators/textures/planar.hpp>
+
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
@@ -12,7 +14,10 @@ const char* bars_vshader = GLSL(
     in vec2 position;
     in vec2 texcoord1;
 
+    out vec2 texcoord;
+
     void main() {
+        texcoord = texcoord1;
         gl_Position = proj_matrix * vec4(position.xy, 0, 1);
     }
 );
@@ -24,6 +29,16 @@ const char* bars_fshader = GLSL(
     }
 );
 
+const char* bars_ftexshader = GLSL(
+    in vec2 texcoord;
+    out vec4 frag_colour;
+    uniform sampler2D tex;
+
+    void main() {
+        frag_colour = texture(tex, texcoord);
+    }
+);
+
 using bars_vbuf_t = vertex_buffer<vtx_p2t2_t, buffer_usage::BU_DYNAMIC_DRAW>;
 using bars_mesh_t = mesh<vertex_stream<bars_vbuf_t>, primitive_type::PT_TRIANGLES>;
 
@@ -31,17 +46,28 @@ struct bars::state_t {
     program bars_program;
     bars_vbuf_t bars_buffer;
     bars_mesh_t bars_mesh;
+    texture checker;
 };
 
-bars::bars() : module("bars") {
+bars::bars(application* app_ptr) : module(app_ptr, "bars") {
+    UNUSED(bars_fshader);
+
     state = std::make_unique<state_t>();
 
     // The OpenGL Context should be valid here
     auto& s = *state.get();
 
     s.bars_program.add_shader(new shader(shader_type::ST_VERTEX, bars_vshader));
-    s.bars_program.add_shader(new shader(shader_type::ST_FRAGMENT, bars_fshader));
+    s.bars_program.add_shader(new shader(shader_type::ST_FRAGMENT, bars_ftexshader));
     if(!s.bars_program.link(true)) gl_error_check();
+
+    s.checker.allocate();
+    s.checker.initialise(2, 16, generators::planar<rgb888_t>::make_checker(2, 16, colour::red8, colour::blue8), false);
+    s.checker.bind();
+
+    s.bars_program.bind();
+    auto loc = s.bars_program.uniform_location("tex");
+    s.bars_program.bind_texture_unit(loc, 0);
 
     s.bars_mesh.set_stream(&s.bars_buffer);
 
@@ -58,7 +84,7 @@ bars::bars() : module("bars") {
     };
 
     s.bars_program.bind();
-    auto loc = s.bars_program.uniform_location("proj_matrix");
+    loc = s.bars_program.uniform_location("proj_matrix");
     s.bars_program.bind_uniform(loc, proj_matrix);
     s.bars_buffer.initialise(2*3*64);     // 2 tris per bar, 64 bars in total
 
@@ -90,7 +116,7 @@ void bars::update(double t, float dt) {
     if(s.bars_buffer.map(buffer_access::BA_WRITE_ONLY)) {
         for(size_t i = 0; i != 64; ++i) {
             size_t idx = 6*i;
-            float height = 20.f*analysis_[i];
+            float height = -10.f + 20.f*analysis_[i];
             s.bars_buffer[idx+2].position.y = height;
             s.bars_buffer[idx+4].position.y = height;
             s.bars_buffer[idx+5].position.y = height;

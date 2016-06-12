@@ -2,11 +2,11 @@
 #ifndef ZAP_BARS_HPP
 #define ZAP_BARS_HPP
 
-#include "../module.hpp"
+#include "module.hpp"
 
 class bars : public module {
 public:
-    bars();
+    bars(application* app_ptr);
     virtual ~bars();
 
     virtual void update(double t, float dt);

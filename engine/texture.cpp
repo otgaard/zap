@@ -61,8 +61,15 @@ bool texture::initialise(size_t width, size_t height, const std::vector<rgb888_t
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+    // TODO: Fix texture alignment
+    int pixel_alignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
     release();
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
     return !gl_error_check();
 }

@@ -29,7 +29,7 @@ namespace zap { namespace generators {
     public:
         template<typename T> using vec3 = zap::maths::vec3<T>;
 
-        static constexpr float fTargetValue = 48.f;
+        static constexpr float fTargetValue = 36.f;
         static constexpr int iDataSetSize = 50;
         static constexpr float fStepSize = 1.f/iDataSetSize;
 
@@ -116,10 +116,10 @@ namespace zap { namespace generators {
                     iVertex = triangle_connection_tbl[iFlagIndex][3*iTriangle+iCorner];
 
                     vertex_t vtx;
-                    vGetColor(vtx.colour1, asEdgeNorm[iVertex]);
+                    //vGetColor(vtx.colour1, asEdgeNorm[iVertex]);
                     vtx.normal = asEdgeNorm[iVertex];
                     vtx.position = asEdgeVertex[iVertex];
-                    vtx.texcoord1 = maths::vec2f(vtx.position.x, vtx.position.y);
+                    //vtx.texcoord1 = maths::vec2f(vtx.position.x, vtx.position.y);
                     buffer.push_back(vtx);
                 }
             }
@@ -174,7 +174,7 @@ namespace zap { namespace generators {
                 for(iCorner = 0; iCorner < 3; iCorner++) {
                     iVertex = tetra_triangle_tbl[iFlagIndex][3*iTriangle+iCorner];
                     vertex_t vtx;
-                    vGetColor(vtx.colour1, asEdgeNorm[iVertex]);
+                    //vGetColor(vtx.colour1, asEdgeNorm[iVertex]);
                     vtx.normal = asEdgeNorm[iVertex];
                     vtx.position = asEdgeVertex[iVertex];
                     buffer.push_back(vtx);

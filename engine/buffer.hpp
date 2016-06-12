@@ -41,6 +41,9 @@ namespace zap { namespace engine {
 
         bool copy_buffer(buffer_type src_type, buffer_type trg_type, size_t src_offset, size_t trg_offset, size_t length);
 
+        size_t size() const { return size_; }
+        size_t query_size() const;
+
     protected:
         resource_t id_;
         size_t size_;

@@ -57,6 +57,9 @@ public:
 
     // All sizes are in vertices, i.e src_off = 0 is the first vertex, src_off = 1 is the second and so on.
     bool copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count);
+    bool copy(const std::vector<vertex_t>& data, size_t offset, size_t vertex_count) {
+        return buffer::copy(buf_type, offset, vertex_t::bytesize()*data.size(), reinterpret_cast<const char*>(data.data()));
+    }
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
     char* map(buffer_access access, size_t offset, size_t length) {
@@ -81,6 +84,7 @@ public:
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_));
     }
     iterator end() {
+        assert(is_mapped() && "Vertex Buffer must be mapped!");
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_ + (size_ / vertex_t::bytesize()) * vertex_t::bytesize()));
     }
     const iterator begin() const {
@@ -101,6 +105,7 @@ public:
     }
 
     size_t vertex_count() const { return vertex_count_; }
+    size_t capacity() const { return size() / vertex_t::bytesize(); }
 
 protected:
     bool configure_attributes();
@@ -127,7 +132,8 @@ bool vertex_buffer<VTX_T, USAGE>::configure_attributes() {
     }
     */
     for(size_t i = 0; i != vertex_t::size; ++i) {
-        LOG(vertex_t::types::data[i], vertex_t::counts::data[i], vertex_t::datatypes::data[i], vertex_t::offsets::data[i]);
+        LOG("Vertex Attribute Binding", vertex_t::types::data[i], vertex_t::counts::data[i], vertex_t::datatypes::data[i],
+            vertex_t::offsets::data[i]);
         gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
                               (data_type)vertex_t::datatypes::data[i], false, vertex_t::bytesize(),
                               (void*)vertex_t::offsets::data[i]);

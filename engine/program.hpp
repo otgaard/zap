@@ -40,6 +40,7 @@ namespace zap { namespace engine {
         bool link(bool clear=true);
 
         template <typename T> void bind_uniform(int location, const T& type);
+        void bind_texture_unit(int location, int unit);
 
     protected:
         resource_t id_;

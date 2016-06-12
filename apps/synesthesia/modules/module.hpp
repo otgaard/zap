@@ -10,20 +10,25 @@
  * A switchable module for visualisation.
  */
 
+class application;
+
 class module {
 public:
     using fft_analysis_t = std::array<float, 64>;
 
-    module(const std::string& name) : name_(name), updated_(false) { }
+    module(application* app_ptr, const std::string& name) : app_ptr_(app_ptr), name_(name), updated_(false) {
+        for(auto& v : analysis_) v = 0.f;
+    }
     virtual ~module() { }
 
-    inline void set_analysis(const fft_analysis_t& fft) { analysis_ = fft; }
+        inline void set_analysis(const fft_analysis_t& fft) { std::copy(fft.begin(), fft.end(), analysis_.begin()); }
     inline const fft_analysis_t& get_analysis() const { return analysis_; }
 
     virtual void update(double t, float dt) { }
     virtual void draw() { }
 
 protected:
+    application* app_ptr_;
     std::string name_;
     fft_analysis_t analysis_;
     std::atomic<bool> updated_;

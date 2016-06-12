@@ -18,9 +18,10 @@
  * LOCAL INCLUDES
  ****************/
 #include "fft.hpp"
-#include "module.hpp"
 #include "application.hpp"
+#include "modules/module.hpp"
 #include "modules/bars.hpp"
+#include "modules/metaballs.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -31,8 +32,8 @@ using namespace zap::engine;
  **********************/
 
 constexpr float inv_s16 = 1.f/std::numeric_limits<short>::max();
-//const char* mp3file = "/Users/otgaard/Development/zap/output/assets/chembros4.mp3";
-const char* mp3file = "/Users/otgaard/test.mp3";
+const char* mp3file = "/Users/otgaard/Development/zap/output/assets/aphextwins.mp3";
+//const char* mp3file = "/Users/otgaard/test.mp3";
 
 /*************
  * STREAM_DATA
@@ -56,6 +57,11 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
     static std::vector<float> samples(1024, 0.f);
     static std::vector<float> analysis(1024, 0.f);
 
+    // This delay syncs the FFT with the audible frame
+    static std::vector<short> delay(1024, 0);
+    static size_t delay_count = 0;
+    static size_t output_len = 0;
+
     stream_data* stream_ptr = static_cast<stream_data*>(userdata);
     const auto& mp3 = stream_ptr->stream->get_header();
     short* out = static_cast<short*>(output);
@@ -65,20 +71,25 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
         buffer.resize(req_frames);
         samples.resize(req_frames);
         analysis.resize(req_frames);
+        delay.resize(req_frames);
     }
 
-    std::transform(buffer.begin(), buffer.end(), samples.begin(), [](short s) { return inv_s16*s; });
-    stream_ptr->fourier.run_fft(samples, analysis);
-    if(stream_ptr->write_flag) {
-        std::copy(analysis.begin(), analysis.begin()+stream_ptr->curr_analysis.size(), stream_ptr->curr_analysis.begin());
-        stream_ptr->write_flag = false;
-        stream_ptr->read_flag = true;
+    buffer = delay;
+    output_len = delay_count;
+    delay_count = stream_ptr->stream->read(delay, req_frames);
+    if(delay_count == 0 && output_len == 0) { return paComplete; }
+
+    if(delay_count > 0) {
+        std::transform(delay.begin(), delay.begin() + delay_count, samples.begin(), [](short s) { return inv_s16 * s; });
+        stream_ptr->fourier.run_fft(samples, analysis);
+        if(stream_ptr->write_flag) {
+            std::copy(analysis.begin(), analysis.begin() + stream_ptr->curr_analysis.size(), stream_ptr->curr_analysis.begin());
+            stream_ptr->write_flag = false;
+            stream_ptr->read_flag = true;
+        }
     }
 
-    auto len = stream_ptr->stream->read(buffer, req_frames);
-    if(len == 0) return paComplete;
-
-    std::copy(buffer.begin(), buffer.begin()+len, out);
+    std::copy(buffer.begin(), buffer.begin()+output_len, out);
     return paContinue;
 }
 
@@ -108,7 +119,6 @@ private:
     bool play_mp3(const std::string& path);
 
     audio_state state_;
-    std::unordered_map<std::string, program> program_table_;
     PaStream* pa_stream_;
     std::vector<std::unique_ptr<module>> modules_;
 
@@ -139,8 +149,12 @@ void synesthesia::stop() {
 }
 
 void synesthesia::initialise() {
+    // Initialise state...
+    bf_culling(true);
+
     // Initialise bars...
-    modules_.emplace_back(std::make_unique<bars>());
+    modules_.emplace_back(std::make_unique<bars>(this));
+    modules_.emplace_back(std::make_unique<metaballs>(this));
 
     play();
 }
@@ -198,15 +212,20 @@ void synesthesia::update(double t, float dt) {
         LOG("Finished mp3");
         stream_ptr_.reset(nullptr);
         pa_stream_ = nullptr;
+
+        // Zero the fft
+        module::fft_analysis_t zeros;
+        for(auto& v : zeros) v = -0.5f;
+        for(auto& mod : modules_) mod->set_analysis(zeros);
     }
 
-    if(stream_ptr_->read_flag) {
-        modules_[0]->set_analysis(stream_ptr_->curr_analysis);
+    if(stream_ptr_ && stream_ptr_->read_flag) {
+        for(auto& mod : modules_) mod->set_analysis(stream_ptr_->curr_analysis);
         stream_ptr_->read_flag = false;
         stream_ptr_->write_flag = true;
     }
 
-    modules_[0]->update(t, dt);
+    for(auto& mod : modules_) mod->update(t, dt);
 }
 
 /******
@@ -214,7 +233,7 @@ void synesthesia::update(double t, float dt) {
  ******/
 
 void synesthesia::draw() {
-    if(modules_.size() > 0) modules_[0]->draw();
+    for(auto& mod : modules_) mod->draw();
 }
 
 void synesthesia::shutdown() {

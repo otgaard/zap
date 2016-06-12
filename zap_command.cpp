@@ -9,6 +9,7 @@
 
 #define LOGGING_ENABLED
 #include <tools/log.hpp>
+/*
 
 volatile int sink = 0;
 using zap_clock = std::chrono::high_resolution_clock;
@@ -38,7 +39,7 @@ void test_indexing() {
     LOG("Time for increment loop", it_diff.count());
     LOG("Time for indexed loop", idx_diff.count());
 }
-/*
+
 template <typename T>
 constexpr T adder(T v) {
     return v;
@@ -70,7 +71,7 @@ struct offset_table {
 void test_offset() {
     LOG("value=", offset_table<3, int, float, char, double>::offset);
 }
-*/
+
 // These tests determine whether there are performance issues with variadic templates vs hand-written structures.
 
 #include <maths/functions.hpp>
@@ -176,9 +177,9 @@ void test_wave() {
 using namespace zap;
 using namespace zap::core;
 using namespace zap::engine;
-
+*/
 int main(int argc, char* argv[]) {
-
+/*
     using red3_t = channel<channel_type::CT_RED, 3>;
     using green3_t = channel<channel_type::CT_GREEN, 3>;
     using blue2_t = channel<channel_type::CT_BLUE, 2>;
@@ -200,6 +201,6 @@ int main(int argc, char* argv[]) {
 
     LOG(rgba8888_t::channel_types::data[0], rgba8888_t::channel_types::data[1], rgba8888_t::channel_types::data[2], rgba8888_t::channel_types::data[3]);
     LOG(rgba8888_t::bytesize, sizeof(rgba8888_t));
-
+*/
     return 0;
 }
