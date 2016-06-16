@@ -30,7 +30,7 @@ namespace zap { namespace generators {
         template<typename T> using vec3 = zap::maths::vec3<T>;
 
         static constexpr float fTargetValue = 70.f;
-        static constexpr int iDataSetSize = 40;
+        static constexpr int iDataSetSize = 30;
         static constexpr float fStepSize = 1.f/iDataSetSize;
 
         using vertex_t = typename VBuffer::vertex_t;

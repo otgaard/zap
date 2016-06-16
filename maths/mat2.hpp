@@ -38,7 +38,7 @@ namespace zap { namespace maths {
         constexpr static size_t rows() { return 2; }
         constexpr static size_t idx(size_t row, size_t col) { return col*rows() + row; }
 
-        constexpr mat2() { }
+        mat2() { }
         constexpr explicit mat2(T init) : m00(init), m10(init), m01(init), m11(init) { }
         constexpr mat2(const static_list<T, 4>& lst) : m00(lst[0]), m10(lst[2]), m01(lst[1]), m11(lst[3]) { }
         constexpr mat2(T m00, T m01, T m10, T m11) : m00(m00), m10(m10), m01(m01), m11(m11) { }

@@ -91,11 +91,8 @@ namespace zap { namespace maths {
 
         float operator+=(const T& t) {
             value += dir * t;
-            if(value > max) {
-                dir *= -1;
-                value = clamp(value, min, max);
-            } else if(value < min) {
-                dir *= -1;
+            if(value < min || value > max) {
+                dir *= T(-1);
                 value = clamp(value, min, max);
             }
             return value;

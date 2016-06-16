@@ -45,7 +45,7 @@ namespace zap { namespace maths {
         constexpr static size_t rows() { return 4; }
         constexpr static size_t idx(size_t row, size_t col) { return col*rows() + row; }
 
-        constexpr mat4() { }
+        mat4() { }
         constexpr explicit mat4(T init) : m00(init), m10(init), m20(init), m30(init),
                                           m01(init), m11(init), m21(init), m31(init),
                                           m02(init), m12(init), m22(init), m32(init),

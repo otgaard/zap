@@ -153,9 +153,9 @@ void synesthesia::initialise() {
     // Initialise state...
     bf_culling(true);
 
-    // Initialise bars...
+    // Initialise modules...
     modules_.emplace_back(std::make_unique<bars>(this));
-    modules_.emplace_back(std::make_unique<metaballs>(this));
+    //modules_.emplace_back(std::make_unique<metaballs>(this));
 
     play();
 }
@@ -173,10 +173,8 @@ bool synesthesia::play_mp3(const std::string& path) {
     if(outputParameters.device == paNoDevice) { LOG_ERR("No suitable output device found by portaudio"); return false; }
 
     LOG(stream_ptr_->stream->get_header().channels, stream_ptr_->stream->get_header().samplerate, stream_ptr_->stream->get_header().bitrate);
-
     stream_ptr_->write_flag = true;
 
-    //PaStream* stream;
     PaError err = Pa_OpenDefaultStream(
             &pa_stream_,
             0,
@@ -216,7 +214,7 @@ void synesthesia::update(double t, float dt) {
 
         // Zero the fft
         module::fft_analysis_t zeros;
-        for(auto& v : zeros) v = -0.5f;
+        for(auto& v : zeros) v = 0.f;
         for(auto& mod : modules_) mod->set_analysis(zeros);
     }
 

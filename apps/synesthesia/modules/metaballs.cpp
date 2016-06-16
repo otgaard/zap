@@ -144,7 +144,7 @@ void metaballs::update(double t, float dt) {
     for(int i = 0; i < 16; ++i) {
         float theta = i*dtheta;
         mag[i] = .4f*0.5f*(analysis_[2*i] + analysis_[2*i+1]);
-        positions[i] = vec3f(.5f + mag[i]*cos(theta), .5f + mag[i]*sin(theta), .5f + ((i%2) ? -0.05f : +0.05f));
+        positions[i] = vec3f(.5f + mag[i]*std::cos(theta), .5f + mag[i]*std::sin(theta), .5f + ((i%2) ? -0.05f : +0.05f));
     }
 
     auto fnc = [=](float x, float y, float z) {
