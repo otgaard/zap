@@ -34,7 +34,7 @@ set(ZAP_MATHS_FILES
         maths/functions.hpp
         geometry/ray.hpp
         maths/io.cpp
-        maths/io.hpp geometry/disc.hpp)
+        maths/io.hpp geometry/disc.hpp maths/algebra.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -81,9 +81,9 @@ set(STB_ARCHIVE
 set(ZAP_EXAMPLE_FILES
         apps/zap_example/zap_example.cpp
         apps/zap_example/generator.cpp
+        apps/application.cpp
+        apps/application.hpp
         apps/zap_example/generator.hpp
-        apps/zap_example/application.cpp
-        apps/zap_example/application.hpp
         apps/zap_example/shader_src.hpp)
 
 set(ZAP_COMMAND_LINE
@@ -105,8 +105,8 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/fft.cpp
         apps/synesthesia/fft.hpp
         apps/synesthesia/shader_src.hpp
-        apps/synesthesia/application.cpp
-        apps/synesthesia/application.hpp
+        apps/application.cpp
+        apps/application.hpp
         apps/synesthesia/synesthesia.cpp
         apps/synesthesia/modules/module.hpp
         apps/synesthesia/modules/bars.cpp

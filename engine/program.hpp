@@ -8,7 +8,7 @@
 #include <vector>
 #include "engine.hpp"
 #include "shader.hpp"
-#include <maths/mat4.hpp>
+#include <maths/algebra.hpp>
 
 namespace zap { namespace engine {
     class program {
@@ -23,17 +23,17 @@ namespace zap { namespace engine {
         std::int32_t uniform_location(const std::string& name);
         std::int32_t uniform_block_index(const std::string& name);
 
-        inline resource_t resource() const { return id_; }
-        inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }
-        inline bool is_linked() const { return is_allocated() && linked_; }
+        resource_t resource() const { return id_; }
+        bool is_allocated() const { return id_ != INVALID_RESOURCE; }
+        bool is_linked() const { return is_allocated() && linked_; }
 
         void bind();
         void release();
 
-        inline void add_shader(shader* shdr) { add_shader(std::shared_ptr<shader>(shdr)); }
-        inline void add_shader(shader_ptr shdr) { shaders_.push_back(shdr); }
-        inline size_t shader_count() const { return shaders_.size(); }
-        inline shader_ptr get_shader(size_t idx) const {
+        void add_shader(shader* shdr) { add_shader(std::shared_ptr<shader>(shdr)); }
+        void add_shader(shader_ptr shdr) { shaders_.push_back(shdr); }
+        size_t shader_count() const { return shaders_.size(); }
+        shader_ptr get_shader(size_t idx) const {
             assert(idx < shaders_.size() && ZERR_IDX_OUT_OF_RANGE);
             return shaders_[idx];
         }
@@ -70,6 +70,7 @@ namespace zap { namespace engine {
         return *this;
     }
 
+    template <> void program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type);
     template <> void program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type);
 }}
 

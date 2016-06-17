@@ -13,7 +13,7 @@ namespace zap { namespace engine {
         ~buffer();
 
         bool allocate();
-        bool deallocate();
+        void deallocate();
 
         void bind(buffer_type type) const;
         void release(buffer_type type) const;

@@ -6,17 +6,24 @@ namespace zap { namespace engine {
 
 using namespace gl;
 
-void mesh_base::allocate() {
+bool mesh_base::allocate() {
     glGenVertexArrays(1, &vao_);
-    gl_error_check();
+    LOG("Mesh Allocated: ", vao_);
+    return is_allocated() && !gl_error_check();
 }
 
-void mesh_base::bind() {
+void mesh_base::deallocate() {
+    glDeleteVertexArrays(1, &vao_);
+    LOG("Mesh Deallocated:", vao_);
+    vao_ = INVALID_RESOURCE;
+}
+
+void mesh_base::bind() const {
     glBindVertexArray(vao_);
     gl_error_check();
 }
 
-void mesh_base::release() {
+void mesh_base::release() const {
     glBindVertexArray(0);
     gl_error_check();
 }

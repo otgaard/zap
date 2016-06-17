@@ -17,16 +17,16 @@ namespace zap { namespace engine {
         shader& operator=(shader&& rhs);
         ~shader();
 
-        inline resource_t resource() const { return id_; }
-        inline void type(shader_type type) { type_ = type; }
-        inline shader_type type() const { return type_; }
-        inline void source(const std::string& src) { src_ = src; }
-        inline const std::string& source() const { return src_; }
+        resource_t resource() const { return id_; }
+        void type(shader_type type) { type_ = type; }
+        shader_type type() const { return type_; }
+        void source(const std::string& src) { src_ = src; }
+        const std::string& source() const { return src_; }
 
-        inline bool is_allocated() const { return id_ != INVALID_RESOURCE; }
-        inline bool is_compiled() const { return is_allocated() && compiled_; }
-        inline resource_t resource_id() const { return id_; }
-        inline bool is_type(shader_type type) const { return type_ == type; }
+        bool is_allocated() const { return id_ != INVALID_RESOURCE; }
+        bool is_compiled() const { return is_allocated() && compiled_; }
+        resource_t resource_id() const { return id_; }
+        bool is_type(shader_type type) const { return type_ == type; }
 
         bool compile(bool clear=true);
 

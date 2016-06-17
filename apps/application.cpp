@@ -21,7 +21,8 @@ static void on_keypress_handler(GLFWwindow* window_ptr, int key, int scancode, i
     }
 }
 
-application::application(const std::string& name) : sc_width_(0), sc_height_(0), app_name_(name) {
+application::application(const std::string& name, int width, int height, bool fullscreen) : sc_width_(width),
+    sc_height_(height), fullscreen_(fullscreen), app_name_(name) {
 }
 
 int application::run() {
@@ -35,7 +36,8 @@ int application::run() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto window = glfwCreateWindow(1280, 768, app_name_.c_str(), nullptr, nullptr);
+    auto window = glfwCreateWindow(sc_width_, sc_height_, app_name_.c_str(),
+                                   fullscreen_ ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if(!window) {
         LOG_ERR("Error creating window - terminating");
         glfwTerminate();
@@ -59,7 +61,7 @@ int application::run() {
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glfwSwapInterval(1);
-    glViewport(0, 0, 1280, 768);
+    glViewport(0, 0, sc_width_, sc_height_);
 
     initialise();
 
@@ -94,7 +96,6 @@ void application::on_keypress(char ch) {
 
 void application::on_resize(int width, int height) {
     sc_width_ = width; sc_height_ = height;
-    LOG("RESIZE_EVENT", width, height);
 }
 
 void application::depth_test(bool on) {

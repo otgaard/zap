@@ -11,11 +11,15 @@ namespace zap { namespace engine {
 class mesh_base {
 public:
     mesh_base() : vao_(INVALID_RESOURCE) { }
-    ~mesh_base() { vao_ = INVALID_RESOURCE; }
+    ~mesh_base() { deallocate(); vao_ = INVALID_RESOURCE; }
 
-    void allocate();
-    void bind();
-    void release();
+    bool is_allocated() const { return vao_ != INVALID_RESOURCE; }
+
+    bool allocate();
+    void deallocate();
+
+    void bind() const;
+    void release() const;
 
     void draw_impl(primitive_type type, size_t first, size_t count);
 
@@ -76,8 +80,6 @@ public:
 
     mesh() : mesh_base() { }
     mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
-    template <typename... VBuffers>
-    mesh<vertex_stream<VBuffers...>, Primitive>(VBuffers*... buffers) : mesh_base(), vstream(buffers...) { }
 
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
 

@@ -12,18 +12,15 @@ buffer::~buffer() {
 bool buffer::allocate() {
     gl::glGenBuffers(1, &id_);
     LOG("Buffer Allocated:", id_);
-    gl_error_check();
-    return is_allocated();
+    return is_allocated() && !gl_error_check();
 }
 
-bool buffer::deallocate() {
+void buffer::deallocate() {
     if(is_mapped()) LOG_WARN("Buffer still mapped during deallocation");
     gl::glDeleteBuffers(1, &id_);
     LOG("Buffer Deallocated:", id_);
     id_ = INVALID_RESOURCE;
     size_ = 0;
-
-    return true;
 }
 
 void buffer::bind(buffer_type type) const {

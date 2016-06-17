@@ -20,7 +20,9 @@ namespace zap { namespace maths {
         constexpr static size_t size() { return 4; }
         constexpr static size_t memsize() { return sizeof(vec4); }
 
-        vec4() { };
+        vec4() { }
+        constexpr explicit vec4(T init) : x(init), y(init), z(init), w(init) { }
+        constexpr explicit vec4(const T* ptr) : x(ptr[0]), y(ptr[1]), z(ptr[2]), w(ptr[3]) { }
         constexpr vec4(const static_list<T, 4>& lst) : x(lst[0]), y(lst[1]), z(lst[2]), w(lst[3]) { }
         constexpr vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) { }
         constexpr vec4(const vec2<T>& rhs, T z, T w) : x(rhs.x), y(rhs.y), z(z), w(w) { }

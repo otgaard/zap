@@ -107,6 +107,48 @@ namespace zap { namespace engine { namespace gl {
             "GL_TRIANGLE_FAN"
     };
 
+    constexpr GLenum gl_pixel_format_type[(int)pixel_format::PF_SIZE] = {
+            0,
+            GL_RED,
+            GL_RG,
+            GL_RGB,
+            GL_BGR,
+            GL_RGBA,
+            GL_BGRA,
+            GL_DEPTH_COMPONENT,
+            GL_DEPTH_STENCIL
+    };
+
+    constexpr const char* gl_pixel_format_names[(int)pixel_format::PF_SIZE] = {
+            "NONE",
+            "GL_RED",
+            "GL_RG",
+            "GL_RGB",
+            "GL_BGR",
+            "GL_RGBA",
+            "GL_BGRA",
+            "GL_DEPTH_COMPONENT",
+            "GL_DEPTH_STENCIL"
+    };
+
+    constexpr GLenum gl_pixel_dtype_type[(int)pixel_datatype::PD_SIZE] = {
+            0,
+            GL_UNSIGNED_BYTE_3_3_2,
+            GL_UNSIGNED_BYTE,
+            GL_FLOAT,
+            GL_UNSIGNED_INT_24_8,
+            GL_UNSIGNED_INT
+    };
+
+    constexpr const char* gl_pixel_dtype_names[(int)pixel_datatype::PD_SIZE] = {
+            "NONE",
+            "GL_UNSIGNED_BYTE_3_3_2",
+            "GL_UNSIGNED_BYTE",
+            "GL_FLOAT",
+            "GL_UNSIGNED_INT_24_8",
+            "GL_UNSIGNED_INT"
+    };
+
     constexpr GLenum gl_type(shader_type type) { return gl_shader_types[(int)type]; }
     constexpr const char* gl_typename(shader_type type) { return gl_shader_type_names[(int)type]; }
     constexpr GLenum gl_type(buffer_type type) { return gl_buffer_types[(int)type]; }
@@ -119,6 +161,10 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(buffer_access access) { return gl_buffer_access_names[(int)access]; }
     constexpr GLenum gl_type(primitive_type type) { return gl_primitive_type[(int)type]; }
     constexpr const char* gl_typename(primitive_type type) { return gl_primitive_type_names[(int)type]; }
+    constexpr GLenum gl_type(pixel_format type) { return gl_pixel_format_type[(int)type]; }
+    constexpr const char* gl_typename(pixel_format type) { return gl_pixel_format_names[(int)type]; }
+    constexpr GLenum gl_type(pixel_datatype type) { return gl_pixel_dtype_type[(int)type]; }
+    constexpr const char* gl_typename(pixel_datatype type) { return gl_pixel_dtype_names[(int)type]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
 

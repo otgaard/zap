@@ -80,6 +80,29 @@ namespace zap { namespace engine {
         DT_SIZE = 11
     };
 
+    enum class pixel_format : size_t {
+        PF_NONE = 0,
+        PF_RED,
+        PF_RG,
+        PF_RGB,
+        PF_BGR,
+        PF_RGBA,
+        PF_BGRA,
+        PF_DEPTH_COMPONENT,
+        PF_DEPTH_STENCIL,
+        PF_SIZE
+    };
+
+    enum class pixel_datatype : size_t {
+        PD_NONE = 0,
+        PD_UNSIGNED_BYTE_3_3_2,
+        PD_UNSIGNED_BYTE,
+        PD_FLOAT,
+        PD_UNSIGNED_INT_24_8,
+        PD_UNSIGNED_INT,
+        PD_SIZE
+    };
+
     template <typename T> struct dt_descriptor { enum { value = int(data_type::DT_VOID) }; };
     template <> struct dt_descriptor<unsigned char> { enum { value = int(data_type::DT_UBYTE) }; };
     template <> struct dt_descriptor<char> { enum { value = int(data_type::DT_BYTE) }; };

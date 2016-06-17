@@ -76,6 +76,17 @@ namespace zap { namespace engine {
         using bits = typename core::generate_table<data_t::size, channels, bits_query>::result;
 
         constexpr pixel() = default;
+
+        using data_t::set;
+        using data_t::get;
+        void set1(const T& a) { set(0, a); }
+        void set2(const T& a, const T& b) { set(0, a); set(1, b); }
+        void set3(const T& a, const T& b, const T& c) { set(0, a); set(1, b), set(2, c); }
+        void set4(const T& a, const T& b, const T& c, const T& d) { set(0, a), set(1, b), set(2, c), set(3, d); }
+        T get1() const { return get(0); }
+        std::tuple<T, T> get2() const { return std::make_tuple(get(0), get(1)); }
+        std::tuple<T, T, T> get3() const { return std::make_tuple(get(0), get(1), get(2)); }
+        std::tuple<T, T, T, T> get4() const { return std::make_tuple(get(0), get(1), get(2), get(3)); }
     };
 
     using red3_t = channel<channel_type::CT_RED, 3>;
@@ -87,9 +98,24 @@ namespace zap { namespace engine {
     using blue8_t = channel<channel_type::CT_BLUE, 8>;
     using alpha8_t = channel<channel_type::CT_ALPHA, 8>;
 
+    using depth24_t = channel<channel_type::CT_DEPTH, 24>;
+    using stencil8_t = channel<channel_type::CT_STENCIL, 8>;
+
     using rgb332_t = pixel<core::bitfield<byte, 3, 3, 2>, red3_t, green3_t, blue2_t>;
     using rgb888_t = pixel<byte, red8_t, green8_t, blue8_t>;
     using rgba8888_t = pixel<byte, red8_t, green8_t, blue8_t, alpha8_t>;
+    using d24s8_t = pixel<core::bitfield<uint32_t, 24, 8>, depth24_t, stencil8_t>;
+
+    template <typename PixelT> struct pixel_type { };
+
+#define DEF_PIXEL_TYPE(pix_type, pix_format_id, data_type_id) template <> struct pixel_type<pix_type> { \
+        constexpr static pixel_format format = pix_format_id; \
+        constexpr static pixel_datatype datatype = data_type_id; \
+    };
+
+    DEF_PIXEL_TYPE(rgb332_t, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE_3_3_2);
+    DEF_PIXEL_TYPE(rgb888_t, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE);
+    DEF_PIXEL_TYPE(rgba8888_t, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE);
 }}
 
 #endif //ZAP_PIXEL_FORMAT_HPP

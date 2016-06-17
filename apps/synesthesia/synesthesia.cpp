@@ -32,7 +32,7 @@ using namespace zap::engine;
  **********************/
 
 constexpr float inv_s16 = 1.f/std::numeric_limits<short>::max();
-const char* mp3file = "/Users/otgaard/synesthesia_music_folder/3.mp3";
+const char* mp3file = "/Users/otgaard/synesthesia_music_folder/4.mp3";
 //const char* mp3file = "/Users/otgaard/Development/zap/output/assets/chembros4.mp3";
 //const char* mp3file = "/Users/otgaard/test.mp3";
 
@@ -155,7 +155,7 @@ void synesthesia::initialise() {
 
     // Initialise modules...
     modules_.emplace_back(std::make_unique<bars>(this));
-    //modules_.emplace_back(std::make_unique<metaballs>(this));
+    modules_.emplace_back(std::make_unique<metaballs>(this));
 
     play();
 }

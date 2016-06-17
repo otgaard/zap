@@ -7,7 +7,7 @@
 
 class application {
 public:
-    application(const std::string& name);
+    application(const std::string& name, int width, int height, bool fullscreen);
 
     virtual void initialise() { }
     virtual void update(double t, float dt) { }
@@ -27,6 +27,7 @@ public:
 protected:
     int sc_width_;
     int sc_height_;
+    bool fullscreen_;
 
 private:
     std::string app_name_;

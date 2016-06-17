@@ -2,7 +2,6 @@
 // Created by Darren Otgaar on 2016/03/25.
 //
 
-#include <maths/maths.hpp>
 #include "program.hpp"
 #include "gl_api.hpp"
 
@@ -70,6 +69,10 @@ bool program::link(bool clear) {
 
 void program::bind_texture_unit(int location, int unit) {
     gl::glUniform1i(location, unit);
+}
+
+template <> void zap::engine::program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type) {
+    gl::glUniform3fv(location, 1, type.data());
 }
 
 template <> void zap::engine::program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type) {

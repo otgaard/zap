@@ -84,7 +84,7 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
 
     s.tex1.allocate();
     s.tex1.bind();
-    s.tex1.initialise(32, 32, generators::planar<rgb888_t>::make_checker(32, 32, colour::black8, colour::white8), true);
+    s.tex1.initialise(32, 32, generators::planar<rgb332_t>::make_checker(32, 32, colour::black8, colour::white8), true);
 
     s.metaballs_program.bind();
     auto tex_loc = s.metaballs_program.uniform_location("diffuse");

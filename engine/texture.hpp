@@ -8,6 +8,7 @@
 
 namespace zap { namespace engine {
 
+/*
 enum class texture_type : char {
     TT_NONE,
     TT_TEX1D,
@@ -30,11 +31,12 @@ enum class channels : char {
     CH_DEPTH_STENCIL,
     CH_GUARD
 };
+*/
 
 class texture {
 public:
     texture() : id_(INVALID_RESOURCE) { }
-    ~texture();
+    ~texture() { if(is_allocated()) deallocate(); }
 
     bool allocate();
     bool deallocate();
@@ -45,14 +47,19 @@ public:
     bool is_bound() const;
 
     // Test Function
-    bool initialise(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps=true);
-    bool initialise(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps=true);
+    template <typename Pixel>
+    bool initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps=false);
+    bool initialise(size_t width, size_t height, pixel_format format, pixel_datatype datatype, bool generate_mipmaps=false);
 
-
+    //bool initialise(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps=true);
+    //bool initialise(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps=true);
 
 protected:
     resource_t id_;
 };
+
+//template<> bool texture::initialise<rgb888_t>(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps);
+//template<> bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
 
 /*
  *  Functions I need:
