@@ -2,14 +2,19 @@
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
-#include "apps/application.hpp"
-#include <engine/engine.hpp>
 
+#include "shader_src.hpp"
+#include "apps/application.hpp"
+
+#include <engine/engine.hpp>
 #include <engine/mesh.hpp>
 #include <maths/algebra.hpp>
 #include <engine/program.hpp>
-
-#include "shader_src.hpp"
+#include <engine/framebuffer.hpp>
+#include <generators/geometry/geometry2.hpp>
+#include <generators/geometry/geometry3.hpp>
+#include <engine/uniform_block.hpp>
+#include <engine/uniform_buffer.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -19,6 +24,18 @@ using p2_t = core::position<vec2s>;
 using vtx_p2_t = vertex<p2_t>;
 using vbuf_p2_t = vertex_buffer<vtx_p2_t, buffer_usage::BU_STATIC_DRAW>;
 using mesh_p2_t = mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_TRIANGLE_FAN>;
+
+using pos3_t = core::position<vec3f>;
+using nor3_t = core::normal<vec3f>;
+using vtx_p3n3_t = vertex<pos3_t, nor3_t>;
+using vbuf_p3n3_t = vertex_buffer<vtx_p3n3_t, buffer_usage::BU_STATIC_DRAW>;
+using mesh_p3n3_t = mesh<vertex_stream<vbuf_p3n3_t>, primitive_type::PT_TRIANGLES>;
+
+using transform_block = uniform_block<
+        core::scale<float>,
+        core::mv_matrix<mat4f>,
+        core::cam_projection<mat4f>>;
+using transform_uniform = uniform_buffer<transform_block, buffer_usage::BU_DYNAMIC_DRAW>;
 
 class zap_example : public application {
 public:
@@ -32,34 +49,81 @@ public:
     void on_resize(int width, int height) final;
 
 protected:
+
     mesh_p2_t screenquad;
     vbuf_p2_t sq_buffer;
     program prog1;
+    program prog2;
+    program prog3;
+    framebuffer framebuffer1;
+    mesh_p3n3_t cube;
+    vbuf_p3n3_t cube_buffer;
+    transform_uniform uni1;
 };
 
 void zap_example::initialise() {
     prog1.add_shader(new shader(shader_type::ST_VERTEX, vtx_src));
     prog1.add_shader(new shader(shader_type::ST_FRAGMENT, frg_src));
     if(!prog1.link(true)) {
-        LOG_ERR("Couldn't link shader.");
+        LOG_ERR("Couldn't link prog1.");
+        return;
+    }
+
+    prog2.add_shader(new shader(shader_type::ST_VERTEX, vtx_src));
+    prog2.add_shader(new shader(shader_type::ST_FRAGMENT, tex_frg_src));
+    if(!prog2.link(true)) {
+        LOG_ERR("Couldn't link prog2.");
+        return;
+    }
+
+    prog3.add_shader(new shader(shader_type::ST_VERTEX, cube_vtx_src));
+    prog3.add_shader(new shader(shader_type::ST_FRAGMENT, cube_frg_src));
+    if(!prog3.link(true)) {
+        LOG_ERR("Couldn't link prog3.");
         return;
     }
 
     mat4f proj_matrix = {
-        2.f/sc_width_,            0.f, 0.f, -1.f,
-                  0.f, 2.f/sc_height_, 0.f, -1.f,
-                  0.f,            0.f, 2.f,  0.f,
-                  0.f,            0.f, 0.f,  1.f
+        2.f, 0.f, 0.f, -1.f,
+        0.f, 2.f, 0.f, -1.f,
+        0.f, 0.f, 2.f, -1.f,
+        0.f, 0.f, 0.f,  1.f
     };
 
     prog1.bind();
-    auto loc = prog1.uniform_location("proj_matrix");
-    prog1.bind_uniform(loc, proj_matrix);
-    loc = prog1.uniform_location("mv_matrix");
-    prog1.bind_uniform(loc, make_scale<float>(sc_width_, sc_height_, 1.f));
-    loc = prog1.uniform_location("colour");
-    prog1.bind_uniform(loc, vec3f(1,1,0));
+    prog1.bind_uniform("proj_matrix", proj_matrix);
+    prog1.bind_uniform("colour", vec3f(1,1,0));
     gl_error_check();
+
+    // Testing framebuffers
+    framebuffer1.allocate();
+    framebuffer1.initialise<rgb888_t>(1, 10, 10, false, false);
+    gl_error_check();
+
+    prog2.bind();
+    prog2.bind_uniform("proj_matrix", proj_matrix);
+    prog2.bind_uniform("tex", 0);
+    prog2.release();
+
+    uni1.allocate();
+    uni1.bind();
+    gl_error_check();
+    uni1.initialise(nullptr);
+    if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
+        auto& ref = uni1.ref();
+        ref.cam_projection = make_perspective2<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
+        ref.mv_matrix = make_translation<float>(0, 0, -2.f) *
+                        make_rotation(vec3f(0,1,0), PI/3) *
+                        make_rotation(vec3f(1,0,0), PI/3);
+        uni1.unmap();
+    }
+    uni1.release();
+
+    prog3.bind();
+    auto loc = prog3.uniform_block_index("transform");
+    uni1.bind_point(loc);
+    uni1.release();
+    prog3.release();
 
     if(!screenquad.allocate() || !sq_buffer.allocate()) {
         LOG_ERR("Could not allocate screenquad mesh or buffer.");
@@ -71,50 +135,89 @@ void zap_example::initialise() {
     screenquad.bind();
     sq_buffer.bind();
 
-    std::vector<vtx_p2_t> vertices = {
-        {
-            {{0, 0}}
-        },
-        {
-            {{1, 0}}
-        },
-        {
-            {{1,1}}
-        },
-        {
-            {{0, 1}}
-        }
-    };
+    std::vector<vtx_p2_t> vertices = { {{{0, 0}}}, {{{1, 0}}}, {{{1, 1}}}, {{{0, 1}}} };
 
     sq_buffer.initialise(vertices);
     screenquad.release();
+
+    if(!cube.allocate() || !cube_buffer.allocate()) {
+        LOG_ERR("Could not allocate cube mesh or buffer.");
+        return;
+    }
+
+    cube.set_stream(&cube_buffer);
+
+    cube.bind();
+    cube_buffer.bind();
+    auto v = generators::geometry3<vtx_p3n3_t, primitive_type::PT_TRIANGLES>::make_cube<float>(vec3f(1,1,1));
+    cube_buffer.initialise(v);
 }
 
 void zap_example::on_resize(int width, int height) {
     application::on_resize(width, height);
 
     mat4f proj_matrix = {
-        2.f/width,        0.f, 0.f, -1.f,
-              0.f, 2.f/height, 0.f, -1.f,
-              0.f,        0.f, 2.f,  0.f,
-              0.f,        0.f, 0.f,  1.f
+        2.f, 0.f, 0.f, -1.f,
+        0.f, 2.f, 0.f, -1.f,
+        0.f, 0.f, 2.f, -1.f,
+        0.f, 0.f, 0.f,  1.f
     };
 
     prog1.bind();
-    auto loc = prog1.uniform_location("proj_matrix");
-    prog1.bind_uniform(loc, proj_matrix);
-    loc = prog1.uniform_location("mv_matrix");
-    prog1.bind_uniform(loc, make_scale<float>(width, height, 1));
+    prog1.bind_uniform("proj_matrix", proj_matrix);
+    prog1.release();
     gl_error_check();
 }
 
+static float rot = 0.0f;
+
 void zap_example::update(double t, float dt) {
+    uni1.bind();
+    gl_error_check();
+    uni1.initialise(nullptr);
+    if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
+        auto& ref = uni1.ref();
+        ref.cam_projection = make_perspective2<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
+        ref.mv_matrix = make_translation<float>(0, 0, -2.f) *
+                        make_rotation(vec3f(0,1,0), rot) *
+                        make_rotation(vec3f(1,0,0), rot*1.13);
+        uni1.unmap();
+    }
+
+    rot = wrap<float>(rot + dt, -TWO_PI, TWO_PI);
 }
 
 void zap_example::draw() {
+    depth_test(true);
+    prog3.bind();
+    cube.bind();
+    cube_buffer.bind();
+
+    cube.draw();
+
+    cube_buffer.release();
+    cube.release();
+    prog3.release();
+    depth_test(false);
+
+    /*
     screenquad.bind();
+
+    prog1.bind();
+    framebuffer1.bind();
     screenquad.draw();
+    framebuffer1.release();
+    prog1.release();
+
+
+    prog2.bind();
+    framebuffer1.get_attachment(0).bind();
+    screenquad.draw();
+    framebuffer1.get_attachment(0).release();
+    prog2.release();
+
     screenquad.release();
+    */
 }
 
 void zap_example::shutdown() {

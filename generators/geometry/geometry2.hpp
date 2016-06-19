@@ -6,26 +6,23 @@
 #define ZAP_GEOMETRY2_HPP
 
 #include <maths/vec2.hpp>
-#include <geometry/disc.hpp>
-
-#define ENABLE_LOGGING
-#include <tools/log.hpp>
+#include <engine/engine.hpp>
 
 namespace zap { namespace generators {
     using prim_t = zap::engine::primitive_type;
     using maths::vec2;
 
-    template <typename Vertex, prim_t PrimT>
+    template <typename VertexT, prim_t Primitive>
     class geometry2 {
     public:
-        constexpr static prim_t primitive = PrimT;
-        template <typename T> static std::vector<Vertex> make_disc(const vec2<T>& C, T radius, size_t slices) {
+        constexpr static prim_t primitive = Primitive;
+        template <typename T> static std::vector<VertexT> make_disc(const vec2<T>& C, T radius, size_t slices) {
             // Assume either LINE_LOOP or TRI_FAN (intended to be specialised if generic cost is too great)
             auto vertex_count = primitive == prim_t::PT_TRIANGLE_FAN ? slices+2 : slices;
-            std::vector<Vertex> vertices(vertex_count);
+            std::vector<VertexT> vertices(vertex_count);
             const T dt = T(2.0*zap::maths::PI)/slices;
             const auto end = primitive == prim_t::PT_TRIANGLE_FAN ? slices+1 : slices;
-            const size_t texcoord = Vertex::find(engine::attribute_type::AT_TEXCOORD1);
+            const size_t texcoord = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
 
             size_t idx = 0;
             if(primitive == prim_t::PT_TRIANGLE_FAN) {

@@ -24,6 +24,8 @@ public:
     void bf_culling(bool on);
     void alpha_blending(bool on);
 
+    void clear();
+
 protected:
     int sc_width_;
     int sc_height_;

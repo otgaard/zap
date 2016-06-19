@@ -45,7 +45,6 @@ int application::run() {
     }
     glfwMakeContextCurrent(window);
 
-
     glewExperimental = GL_TRUE;
     GLenum err = glewInit();
     if(err != GLEW_OK) {
@@ -62,6 +61,8 @@ int application::run() {
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glfwSwapInterval(1);
     glViewport(0, 0, sc_width_, sc_height_);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     initialise();
 
@@ -114,4 +115,8 @@ void application::alpha_blending(bool on) {
     } else {
         glDisable(GL_BLEND);
     }
+}
+
+void application::clear() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }

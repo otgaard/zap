@@ -11,12 +11,12 @@ program::~program() {
     if(is_linked()) gl::glDeleteProgram(id_);
 }
 
-std::int32_t program::uniform_location(const std::string& name) {
-    return gl::glGetUniformLocation(id_, name.c_str());
+std::int32_t program::uniform_location(const char* name) {
+    return gl::glGetUniformLocation(id_, name);
 }
 
-std::int32_t program::uniform_block_index(const std::string& name) {
-    return gl::glGetUniformBlockIndex(id_, name.c_str());
+std::int32_t program::uniform_block_index(const char* name) {
+    return gl::glGetUniformBlockIndex(id_, name);
 }
 
 void program::bind() {
@@ -71,10 +71,32 @@ void program::bind_texture_unit(int location, int unit) {
     gl::glUniform1i(location, unit);
 }
 
+template <> void zap::engine::program::bind_uniform<int>(int location, const int& value) {
+    gl::glUniform1i(location, value);
+}
+
 template <> void zap::engine::program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type) {
     gl::glUniform3fv(location, 1, type.data());
 }
 
 template <> void zap::engine::program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type) {
     gl::glUniformMatrix4fv(location, 1, GL_FALSE, type.data());
+}
+
+template <> void zap::engine::program::bind_uniform<zap::maths::vec3f>(const char* name, const zap::maths::vec3f& type) {
+    auto loc = uniform_location(name);
+    assert(loc != -1 && "Invalid mat4f uniform specified");
+    if(loc != -1) gl::glUniform3fv(loc, 1, type.data());
+}
+
+template <> void zap::engine::program::bind_uniform<zap::maths::mat4f>(const char* name, const zap::maths::mat4f& type) {
+    auto loc = uniform_location(name);
+    assert(loc != -1 && "Invalid mat4f uniform specified");
+    if(loc != -1) gl::glUniformMatrix4fv(loc, 1, GL_FALSE, type.data());
+}
+
+template <> void zap::engine::program::bind_uniform<int>(const char* name, const int& value) {
+    auto loc = uniform_location(name);
+    assert(loc != -1 && "Invalid mat4f uniform specified");
+    if(loc != -1) gl::glUniform1i(loc, value);
 }

@@ -18,19 +18,6 @@ enum class texture_type : char {
     TT_CUBE,
     TT_GUARD
 };
-
-enum class channels : char {
-    CH_NONE,
-    CH_RED,
-    CH_RG,
-    CH_RGB,
-    CH_BGR,
-    CH_RGBA,
-    CH_BGRA,
-    CH_DEPTH_COMPONENT,
-    CH_DEPTH_STENCIL,
-    CH_GUARD
-};
 */
 
 class texture {
@@ -42,7 +29,9 @@ public:
     bool deallocate();
     bool is_allocated() const { return id_ != INVALID_RESOURCE; }
 
-    void bind() const;
+    resource_t resource() const { return id_; }
+
+    void bind(size_t unit=0) const;
     void release() const;
     bool is_bound() const;
 
@@ -51,28 +40,11 @@ public:
     bool initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps=false);
     bool initialise(size_t width, size_t height, pixel_format format, pixel_datatype datatype, bool generate_mipmaps=false);
 
-    //bool initialise(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps=true);
-    //bool initialise(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps=true);
+    static size_t query_max_units();
 
 protected:
     resource_t id_;
 };
-
-//template<> bool texture::initialise<rgb888_t>(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps);
-//template<> bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
-
-/*
- *  Functions I need:
- *  glGenTextures
- *  glBindTexture
- *  glActiveTexture
- *  glIsTexture
- *  glDeleteTextures
- *  glTexImage1D, glTexImage2D, glTexImage3D,
- *  glTexImage2DMultisample, glTexImage3DMultisample
- *  glTexSubImage2D, glTexSubImage3D
- */
-
 
 }}
 

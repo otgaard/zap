@@ -38,6 +38,8 @@ namespace zap { namespace maths {
         inline T& operator[](size_t idx) { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
         inline const T& operator[](size_t idx) const { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
 
+        void set(T nx, T ny, T nz) { x = nx; y = ny; z = nz; }
+
         constexpr vec3<T> operator-() const { return vec3<T>(-x, -y, -z); }
 
         inline vec3<T>& operator+=(const vec3<T>& rhs) {

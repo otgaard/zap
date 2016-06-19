@@ -9,8 +9,9 @@ namespace zap { namespace engine {
 
 class framebuffer {
 public:
-    template <typename PixelT>
-    framebuffer(size_t target_count, size_t width, size_t height, bool mipmaps, bool depthstencil);
+    framebuffer() : framebuffer_(INVALID_IDX), target_count_(0) { }
+    framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
+                bool mipmaps, bool depthstencil);
     ~framebuffer() { if(is_allocated()) deallocate(); }
 
     bool allocate();
@@ -21,7 +22,16 @@ public:
     void release() const;
     bool is_bound() const;
 
+    const texture& get_attachment(size_t idx) const { checkidx(idx, target_count_); return attachments_[idx]; }
+
     bool initialise();
+    bool initialise(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
+        bool mipmaps, bool depthstencil);
+    template <typename PixelT>
+    bool initialise(size_t target_count, size_t width, size_t height, bool mipmaps, bool depthstencil) {
+        return initialise(target_count, width, height, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype,
+            mipmaps, depthstencil);
+    }
     bool is_initialised() const { return attachments_.size() > 0; }
 
 protected:
@@ -29,18 +39,21 @@ protected:
     size_t target_count_;
     size_t width_;
     size_t height_;
-    bool mipmaps_;
-    bool depthstencil_;
     pixel_format pix_format_;
     pixel_datatype pix_dtype_;
     std::vector<texture> attachments_;  // If depthstencil == true, attachments_.size() == target_count + 1
+    std::vector<uint32_t> draw_buffers_;
+    bool mipmaps_;
+    bool depthstencil_;
+    mutable int32_t curr_viewport_[4];
+    mutable double curr_depthrange_[2];
 };
 
-template <typename PixelT>
-framebuffer::framebuffer(size_t target_count, size_t width, size_t height, bool mipmaps, bool depthstencil) :
-        target_count_(target_count), width_(width), height_(height), mipmaps_(mipmaps), depthstencil_(depthstencil),
-        pix_format_(pixel_type<PixelT>::format), pix_dtype_(pixel_type<PixelT>::datatype) {
+inline framebuffer::framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
+        bool mipmaps, bool depthstencil) : target_count_(target_count), width_(width), height_(height), pix_format_(format),
+        pix_dtype_(datatype), mipmaps_(mipmaps), depthstencil_(depthstencil) {
 }
+
 
 }}
 

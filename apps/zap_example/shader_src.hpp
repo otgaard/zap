@@ -9,14 +9,13 @@
 
 const char* vtx_src = GLSL(
         uniform mat4 proj_matrix;
-        uniform mat4 mv_matrix;
         in vec2 position;
 
         out vec2 pos;
 
         void main() {
             pos = position;
-            gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, 0.0, 1.0);
+            gl_Position = proj_matrix * vec4(position.x, position.y, 0.0, 1.0);
         }
 );
 
@@ -29,6 +28,46 @@ const char* frg_src = GLSL(
         void main() {
             frag_colour = vec4(mix(vec3(0,0,0), colour, max(1 - 2.0f*length(vec2(0.5) - pos), 0)), 1);
         }
+);
+
+const char* tex_frg_src = GLSL(
+    uniform sampler2D tex;
+    out vec4 frag_colour;
+
+    in vec2 pos;
+
+    void main() {
+        frag_colour = texture(tex, pos);
+    }
+);
+
+const char* cube_vtx_src = GLSL(
+    layout (std140) uniform transform {
+        float scale;
+        mat4 mv_matrix;
+        mat4 proj_matrix;
+    };
+
+    in vec4 position;
+    in vec3 normal;
+
+    out vec3 nor;
+
+    void main() {
+        nor = vec3(mv_matrix*vec4(normal,0));
+        gl_Position = proj_matrix * mv_matrix * position;
+    }
+);
+
+const char* cube_frg_src = GLSL(
+    const vec3 light_dir = normalize(vec3(0,1,1));
+    in vec3 nor;
+    out vec4 frag_colour;
+
+    void main() {
+        float s = max(dot(nor, light_dir), 0);
+        frag_colour = vec4(s*vec3(1,1,1), 1);
+    }
 );
 
 #endif //ZAP_SHADER_SRC_HPP

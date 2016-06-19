@@ -1,7 +1,7 @@
 /* Created by Darren Otgaar on 2016/06/11. http://www.github.com/otgaard/zap */
 #include "metaballs.hpp"
 #include "../graphic_types.hpp"
-#include "../application.hpp"
+#include "apps/application.hpp"
 
 #include <generators/textures/planar.hpp>
 #include <generators/geometry/surface.hpp>

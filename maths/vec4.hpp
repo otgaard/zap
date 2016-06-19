@@ -41,15 +41,94 @@ namespace zap { namespace maths {
         inline const T* data() const { return arr; }
         inline T* data() { return arr; }
 
-        inline T& operator[](size_t idx) {
-            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
-            return arr[idx];
+        inline T& operator[](size_t idx) { checkidx(idx,size()); return arr[idx]; }
+        inline const T& operator[](size_t idx) const { checkidx(idx,size()); return arr[idx]; }
+
+        void set(T nx, T ny, T nz, T nw) { x = nx; y = ny; z = nz; w = nw; }
+
+        constexpr vec4<T> operator-() const { return vec4<T>(-x, -y, -z, -w); }
+
+        inline vec4<T>& operator+=(const vec4<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i];
+            return *this;
         }
 
-        inline const T& operator[](size_t idx) const {
-            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
-            return arr[idx];
+        inline vec4<T>& operator-=(const vec4<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] -= rhs.arr[i];
+            return *this;
         }
+
+        inline vec4<T>& operator*=(const vec4<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] *= rhs.arr[i];
+            return *this;
+        }
+
+        inline vec4<T>& operator*=(T scalar) {
+            for(size_t i = 0; i != size(); ++i) arr[i] *= scalar;
+            return *this;
+        }
+
+        inline vec4<T>& operator/=(const vec4<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] /= rhs.arr[i];
+            return *this;
+        }
+
+        inline vec4<T>& operator/=(T scalar) {
+            for(size_t i = 0; i != size(); ++i) arr[i] /= scalar;
+            return *this;
+        }
+
+        constexpr T length_sqr() const { return dot(*this, *this); }
+        inline T length() const { return std::sqrt(length_sqr()); }
+        inline vec4<T>& normalise() { auto l = T(1)/length(); for(auto& v : arr) v *= l; return *this; }
+
+        inline bool operator==(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(arr[i] != rhs.arr[i]) return false;
+            return true;
+        }
+
+        inline bool operator!=(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(arr[i] == rhs.arr[i]) return false;
+            return true;
+        }
+
+        inline bool operator<(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
+            return true;
+        }
+
+        inline bool operator<=(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(arr[i] > rhs.arr[i]) return false;
+            return true;
+        }
+
+        inline bool operator>(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(arr[i] <= rhs.arr[i]) return false;
+            return true;
+        }
+
+        inline bool operator>=(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(arr[i] < rhs.arr[i]) return false;
+            return true;
+        }
+
+        inline bool eq(const vec4<T>& rhs) const {
+            for(size_t i = 0; i != size(); ++i) if(!eq(arr[i], rhs.arr[i])) return false;
+            return true;
+        }
+
+        inline bool eq(const vec4<T>& rhs, T epsilon) const {
+            for(size_t i = 0; i != size(); ++i) if(!maths::eq(arr[i], rhs.arr[i], epsilon)) return false;
+            return true;
+        }
+
+        inline bool is_zero() const {
+            for(size_t i = 0; i != size(); ++i) if(!maths::is_zero(arr[i])) return false;
+            return true;
+        }
+
+        inline bool neq(const vec4<T>& rhs) const { return !eq(rhs); }
+        inline bool is_unit() const { return length_sqr() == T(1); }
 
         union {
             struct {
@@ -62,7 +141,52 @@ namespace zap { namespace maths {
         };
 	} ALIGN_ATTR(16);
 
-    using vec4b = vec4<uint8_t>;
+        template <typename T>
+        constexpr vec4<T> operator*(const vec4<T>& lhs, const vec4<T>& rhs) {
+            return vec4<T>(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+        }
+
+        template <typename T>
+        constexpr vec4<T> operator/(const vec4<T>& lhs, const vec4<T>& rhs) {
+            return vec4<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+        }
+
+        template <typename T>
+        constexpr vec4<T> operator*(T scalar, const vec4<T>& rhs) {
+            return vec4<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w);
+        }
+
+        template <typename T>
+        constexpr vec4<T> operator*(const vec4<T>& rhs, T scalar) { return operator*(scalar, rhs); }
+
+        template <typename T>
+        constexpr vec4<T> operator/(const vec4<T>& lhs, T scalar) {
+            const T inv_scalar = T(1) / scalar;
+            return vec4<T>(lhs.x * inv_scalar, lhs.y * inv_scalar, lhs.z * inv_scalar, lhs.w * inv_scalar);
+        }
+
+        template <typename T>
+        constexpr vec4<T> operator/(T scalar, const vec4<T>& rhs) {
+            return vec4<T>(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z, scalar / rhs.w);
+        }
+
+        template <typename T>
+        constexpr T dot(const vec4<T>& lhs, const vec4<T>& rhs) {
+            return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+        }
+
+        template <typename T>
+        inline vec4<T> normalise(const vec4<T>& v) {
+            return T(1)/v.length() * v;
+        }
+
+        template <typename T>
+        constexpr vec4<T> inverse(const vec4<T>& v) {
+            return T(1)/v;
+        }
+
+
+        using vec4b = vec4<uint8_t>;
     using vec4s = vec4<int16_t>;
     using vec4i = vec4<int32_t>;
     using vec4f = vec4<float>;

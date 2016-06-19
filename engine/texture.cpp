@@ -2,6 +2,18 @@
 #include "texture.hpp"
 #include "gl_api.hpp"
 
+/*
+ *  Functions I need:
+ *  glGenTextures
+ *  glBindTexture
+ *  glActiveTexture
+ *  glIsTexture
+ *  glDeleteTextures
+ *  glTexImage1D, glTexImage2D, glTexImage3D,
+ *  glTexImage2DMultisample, glTexImage3DMultisample
+ *  glTexSubImage2D, glTexSubImage3D
+ */
+
 template <typename Pixel>
 bool zap::engine::texture::initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps) {
     using namespace gl;
@@ -52,7 +64,14 @@ bool texture::deallocate() {
     return true;
 }
 
-void texture::bind() const {
+size_t texture::query_max_units() {
+    GLint units = 0;
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &units);
+    return units;
+}
+
+void texture::bind(size_t unit) const {
+    glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, id_);      // TODO: Oi!
     gl_error_check();
 }
@@ -83,40 +102,3 @@ bool texture::initialise(size_t width, size_t height, pixel_format format, pixel
     release();
     return !gl_error_check();
 }
-
-/*
-template <>
-bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps) {
-    bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2, buffer.data());
-    if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
-    release();
-    return !gl_error_check();
-}
-
-template <>
-bool texture::initialise<rgb888_t>(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps) {
-    bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    // TODO: Fix texture alignment
-    int pixel_alignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
-    if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
-    release();
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
-    return !gl_error_check();
-}
-*/

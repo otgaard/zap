@@ -116,6 +116,7 @@ namespace zap { namespace engine {
     DEF_PIXEL_TYPE(rgb332_t, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE_3_3_2);
     DEF_PIXEL_TYPE(rgb888_t, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE);
     DEF_PIXEL_TYPE(rgba8888_t, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE);
+    DEF_PIXEL_TYPE(d24s8_t, pixel_format::PF_DEPTH_STENCIL, pixel_datatype::PD_UNSIGNED_INT_24_8);
 }}
 
 #endif //ZAP_PIXEL_FORMAT_HPP

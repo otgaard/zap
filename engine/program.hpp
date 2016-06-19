@@ -20,8 +20,8 @@ namespace zap { namespace engine {
         program& operator=(program&& rhs);
         ~program();
 
-        std::int32_t uniform_location(const std::string& name);
-        std::int32_t uniform_block_index(const std::string& name);
+        std::int32_t uniform_location(const char* name);
+        std::int32_t uniform_block_index(const char* name);
 
         resource_t resource() const { return id_; }
         bool is_allocated() const { return id_ != INVALID_RESOURCE; }
@@ -40,6 +40,7 @@ namespace zap { namespace engine {
         bool link(bool clear=true);
 
         template <typename T> void bind_uniform(int location, const T& type);
+        template <typename T> void bind_uniform(const char* name, const T& type);
         void bind_texture_unit(int location, int unit);
 
     protected:
@@ -70,8 +71,16 @@ namespace zap { namespace engine {
         return *this;
     }
 
+    template <> void program::bind_uniform<int>(int location, const int& value);
     template <> void program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type);
     template <> void program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type);
+
+    template <> void program::bind_uniform<int>(const char* name, const int& value);
+    template <> void program::bind_uniform<zap::maths::vec3f>(const char* name, const zap::maths::vec3f& type);
+    template <> void program::bind_uniform<zap::maths::mat4f>(const char* name, const zap::maths::mat4f& type);
+
+
+
 }}
 
 #endif //ZAP_PROGRAM_HPP

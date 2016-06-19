@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(zap)
 
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Debug")
 
 set(CMAKE_STATIC_BUILD TRUE)
@@ -73,7 +73,7 @@ set(ZAP_ENGINE_FILES
         generators/geometry/surface.cpp
         generators/geometry/surface.hpp
         generators/geometry/geometry2.hpp
-        generators/textures/planar.hpp)
+        generators/textures/planar.hpp generators/geometry/geometry3.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)

@@ -18,7 +18,7 @@
  * LOCAL INCLUDES
  ****************/
 #include "fft.hpp"
-#include "application.hpp"
+#include "apps/application.hpp"
 #include "modules/module.hpp"
 #include "modules/bars.hpp"
 #include "modules/metaballs.hpp"
@@ -102,7 +102,7 @@ enum class audio_state {
 
 class synesthesia : public application {
 public:
-    synesthesia() : application("synesthesia"), state_(audio_state::AS_STOPPED), pa_stream_(nullptr) { }
+    synesthesia() : application("synesthesia", 1280, 768, false), state_(audio_state::AS_STOPPED), pa_stream_(nullptr) { }
     void initialise() final;
     void update(double t, float dt) final;
     void draw() final;
