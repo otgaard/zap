@@ -22,7 +22,7 @@
 #include <engine/texture.hpp>
 #include <engine/mesh.hpp>
 
-#include "colour.hpp"
+#include <renderer/colour.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -39,7 +39,7 @@ using col3b_t = core::colour1<vec3b>;
 using col4b_t = core::colour1<vec3b>;
 
 using vtx_p2t2_t = vertex<pos2f_t, tex2f_t>;
-using vtx_p3n3_t = vertex<pos3f_t, nor3f_t>;
+using vtx_p3n3t2_t = vertex<pos3f_t, nor3f_t>;
 using vtx_p3n3t2c3_t = vertex<pos3f_t, nor3f_t, tex2f_t, col3f_t>;
 
 #define GLSL(src) "#version 330 core\n" #src

@@ -24,7 +24,7 @@ public:
     void bf_culling(bool on);
     void alpha_blending(bool on);
 
-    void clear();
+    void clear(float r=.15f, float g=.15f, float b=.15f, float a=1.f);
 
 protected:
     int sc_width_;

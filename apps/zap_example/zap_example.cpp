@@ -15,6 +15,7 @@
 #include <generators/geometry/geometry3.hpp>
 #include <engine/uniform_block.hpp>
 #include <engine/uniform_buffer.hpp>
+#include <renderer/colour.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -27,9 +28,10 @@ using mesh_p2_t = mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_TRIANGLE_FAN
 
 using pos3_t = core::position<vec3f>;
 using nor3_t = core::normal<vec3f>;
-using vtx_p3n3_t = vertex<pos3_t, nor3_t>;
-using vbuf_p3n3_t = vertex_buffer<vtx_p3n3_t, buffer_usage::BU_STATIC_DRAW>;
-using mesh_p3n3_t = mesh<vertex_stream<vbuf_p3n3_t>, primitive_type::PT_TRIANGLES>;
+using tex2_t = core::texcoord1<vec2f>;
+using vtx_p3n3t2_t = vertex<pos3_t, nor3_t, tex2_t>;
+using vbuf_p3n3t2_t = vertex_buffer<vtx_p3n3t2_t, buffer_usage::BU_STATIC_DRAW>;
+using mesh_p3n3t2_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES>;
 
 using transform_block = uniform_block<
         core::scale<float>,
@@ -49,16 +51,17 @@ public:
     void on_resize(int width, int height) final;
 
 protected:
-
     mesh_p2_t screenquad;
     vbuf_p2_t sq_buffer;
     program prog1;
     program prog2;
     program prog3;
     framebuffer framebuffer1;
-    mesh_p3n3_t cube;
-    vbuf_p3n3_t cube_buffer;
+    framebuffer framebuffer2;
+    mesh_p3n3t2_t cube;
+    vbuf_p3n3t2_t cube_buffer;
     transform_uniform uni1;
+    texture test_tex;
 };
 
 void zap_example::initialise() {
@@ -97,7 +100,11 @@ void zap_example::initialise() {
 
     // Testing framebuffers
     framebuffer1.allocate();
-    framebuffer1.initialise<rgb888_t>(1, 10, 10, false, false);
+    framebuffer1.initialise<rgb888_t>(1, 1024, 1024, false, true);
+    gl_error_check();
+
+    framebuffer2.allocate();
+    framebuffer2.initialise<rgb888_t>(1, 1024, 1024, false, true);
     gl_error_check();
 
     prog2.bind();
@@ -111,13 +118,12 @@ void zap_example::initialise() {
     uni1.initialise(nullptr);
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
-        ref.cam_projection = make_perspective2<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
-        ref.mv_matrix = make_translation<float>(0, 0, -2.f) *
+        ref.cam_projection = make_perspective<float>(45.f, 1.f, 1.f, 100.f);
+        ref.mv_matrix = make_translation<float>(0, 0, -1.f) *
                         make_rotation(vec3f(0,1,0), PI/3) *
                         make_rotation(vec3f(1,0,0), PI/3);
         uni1.unmap();
     }
-    uni1.release();
 
     prog3.bind();
     auto loc = prog3.uniform_block_index("transform");
@@ -149,8 +155,30 @@ void zap_example::initialise() {
 
     cube.bind();
     cube_buffer.bind();
-    auto v = generators::geometry3<vtx_p3n3_t, primitive_type::PT_TRIANGLES>::make_cube<float>(vec3f(1,1,1));
+    auto v = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>::make_cube<float>(vec3f(1,1,1));
     cube_buffer.initialise(v);
+
+    // Initialise testing texture
+    test_tex.allocate();
+
+    const auto cols = 1024, rows = 1024;
+    const auto inv_c = 1.f/cols, inv_r = 1.f/rows;
+    std::vector<rgb888_t> pixels(cols*rows);
+    for(size_t r = 0; r != rows; ++r) {
+        for(size_t c = 0; c != cols; ++c) {
+            auto P = bilinear(c*inv_c, r*inv_r, colour::red8, colour::green8, colour::yellow8, colour::blue8);
+            pixels[cols*r+c].set3(P.x, P.y, P.z);
+        }
+    }
+
+    test_tex.initialise(cols, rows, pixels, false);
+
+    framebuffer1.bind();
+    clear(1,1,0,1);
+    framebuffer1.release();
+    framebuffer2.bind();
+    clear(1,1,0,1);
+    framebuffer2.release();
 }
 
 void zap_example::on_resize(int width, int height) {
@@ -174,50 +202,54 @@ static float rot = 0.0f;
 void zap_example::update(double t, float dt) {
     uni1.bind();
     gl_error_check();
-    uni1.initialise(nullptr);
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
-        ref.cam_projection = make_perspective2<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
-        ref.mv_matrix = make_translation<float>(0, 0, -2.f) *
+        ref.mv_matrix = make_translation<float>(0, 0, -1.2f) *
                         make_rotation(vec3f(0,1,0), rot) *
-                        make_rotation(vec3f(1,0,0), rot*1.13);
+                        make_rotation(vec3f(1,0,0), 2*rot);
         uni1.unmap();
     }
 
     rot = wrap<float>(rot + dt, -TWO_PI, TWO_PI);
 }
 
+static int current_framebuffer = 1; // or 2
+
 void zap_example::draw() {
+    auto* active = current_framebuffer == 1 ? &framebuffer1 : &framebuffer2;
+    auto* render = current_framebuffer == 1 ? &framebuffer2 : &framebuffer1;
+
+    active->bind();
+    clear();
     depth_test(true);
     prog3.bind();
     cube.bind();
     cube_buffer.bind();
 
+    render->get_attachment(0).bind(0);
     cube.draw();
+    render->get_attachment(0).release();
 
     cube_buffer.release();
     cube.release();
     prog3.release();
     depth_test(false);
+    active->release();
 
-    /*
+
     screenquad.bind();
 
-    prog1.bind();
-    framebuffer1.bind();
-    screenquad.draw();
-    framebuffer1.release();
-    prog1.release();
-
-
     prog2.bind();
-    framebuffer1.get_attachment(0).bind();
+    //test_tex.bind(0);
+    active->get_attachment(0).bind();
     screenquad.draw();
-    framebuffer1.get_attachment(0).release();
+    //test_tex.release();
+    active->get_attachment(0).release();
     prog2.release();
 
     screenquad.release();
-    */
+
+    current_framebuffer = current_framebuffer == 1 ? 2 : 1;
 }
 
 void zap_example::shutdown() {

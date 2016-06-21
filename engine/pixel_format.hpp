@@ -29,7 +29,7 @@ namespace zap { namespace engine {
         using type = T;
         constexpr static size_t size = len;
 
-        constexpr pixel_data() = default;
+        pixel_data() = default;
         void set(size_t id, T v) { checkidx(id,size); data[id] = v; }
         T get(size_t id) const { checkidx(id,size); return data[id]; }
 
@@ -42,7 +42,7 @@ namespace zap { namespace engine {
         using type = typename T::type;
         constexpr static size_t size = len;
 
-        constexpr pixel_data() = default;
+        pixel_data() = default;
         void set(size_t id, type v) { checkidx(id,size); data.set(id, v); }
         type get(size_t id) const { checkidx(id,size); return data.get(id); }
 
@@ -75,7 +75,7 @@ namespace zap { namespace engine {
         using channel_types = typename core::generate_table<data_t::size, channels, channel_query>::result;
         using bits = typename core::generate_table<data_t::size, channels, bits_query>::result;
 
-        constexpr pixel() = default;
+        pixel() = default;
 
         using data_t::set;
         using data_t::get;

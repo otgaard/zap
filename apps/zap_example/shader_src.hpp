@@ -50,23 +50,28 @@ const char* cube_vtx_src = GLSL(
 
     in vec4 position;
     in vec3 normal;
+    in vec2 texcoord1;
 
     out vec3 nor;
+    out vec2 tc;
 
     void main() {
         nor = vec3(mv_matrix*vec4(normal,0));
+        tc = texcoord1;
         gl_Position = proj_matrix * mv_matrix * position;
     }
 );
 
 const char* cube_frg_src = GLSL(
+    uniform sampler2D tex;
     const vec3 light_dir = normalize(vec3(0,1,1));
     in vec3 nor;
+    in vec2 tc;
     out vec4 frag_colour;
 
     void main() {
-        float s = max(dot(nor, light_dir), 0);
-        frag_colour = vec4(s*vec3(1,1,1), 1);
+        float s = 2.*max(dot(nor, light_dir), 0);
+        frag_colour = vec4(s*vec3(1,1,0)*texture(tex, tc).xyz, 1);
     }
 );
 

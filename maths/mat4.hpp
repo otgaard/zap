@@ -23,7 +23,7 @@
  *  [  {  4,  5,  6,   7 }, ]          { 1,  5,  9, 13 },  // Col 1
  *  [  {  8,  9, 10,  11 }, ]          { 2,  6, 10, 14 },  // Col 2
  *  [  { 12, 13, 14,  15 }} ]          { 3,  7, 11, 15 }}  // Col 3
- *  So that matrices may be post-multiplied.
+ *  So that matrices may be efficiently post-multiplied.
  *
  *  The matrix does full multiplication so it can be used as a 4x4 matrix or affine matrix.  An optimised 3x4 matrix
  *  should be added for affine transformations.
@@ -185,29 +185,9 @@ namespace zap { namespace maths {
         return r;
     };
 
-    // Takes degrees
-    template <typename T>
-    mat4<T> make_perspective(T fov, T ar, T dmin, T dmax) {
-        mat4<T> r;
-        T ha_rad = deg_to_rad<T>(.5 * fov);
-        T umax = dmin * std::tan(ha_rad), rmax = ar * umax, umin = -umax, rmin = -rmax;
-        T inv_d = 1/(dmax - dmin), inv_u = 1/(umax - umin), inv_r = 1/(rmax - rmin);
-        T sD = (dmin + dmax) * inv_d, sU = (umin + umax) * inv_u, sR = (rmin + rmax) * inv_r;
-        T two_dmin_inv_r = 2 * dmin * inv_r;
-        T two_dmin_inv_u = 2 * dmin * inv_u;
-        T two_dmin_dmax_inv_D = 2*(dmin * (dmax * inv_d));
-
-        // Col 1, 2, 3, 4
-        r(0,0) = two_dmin_inv_r; r(1,0) = 0;              r(2,0) = 0;                    r(3,0) = 0;
-        r(0,1) = 0;              r(1,1) = two_dmin_inv_u; r(2,1) = 0;                    r(3,1) = 0;
-        r(0,2) = -sR;            r(1,2) = -sU;            r(2,2) = sD;                   r(3,2) = T(1);
-        r(0,3) = 0;              r(1,3) = 0;              r(2,3) = -two_dmin_dmax_inv_D; r(3,3) = 0;
-        return r;
-    }
-
     // Takes degrees - force of habit
     template <typename T>
-    mat4<T> make_perspective2(T fov, T ar, T dmin, T dmax) {
+    mat4<T> make_perspective(T fov, T ar, T dmin, T dmax) {
         const T ha_rad_tan = std::tan(deg_to_rad(.5 * fov));
         mat4<T> r(0);
         r(0,0) = T(1) / (ar * ha_rad_tan);

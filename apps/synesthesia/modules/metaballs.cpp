@@ -56,7 +56,7 @@ using metaballs_block = uniform_block<
         core::cam_projection<mat4f>>;
 using metaballs_uniform = uniform_buffer<metaballs_block, buffer_usage::BU_DYNAMIC_DRAW>;
 
-using metaballs_vbuf_t = vertex_buffer<vtx_p3n3_t, buffer_usage::BU_DYNAMIC_COPY>;
+using metaballs_vbuf_t = vertex_buffer<vtx_p3n3t2_t, buffer_usage::BU_DYNAMIC_COPY>;
 using metaballs_mesh_t = mesh<vertex_stream<metaballs_vbuf_t>, primitive_type::PT_TRIANGLES>;
 
 struct metaballs::state_t {
@@ -64,7 +64,7 @@ struct metaballs::state_t {
     metaballs_vbuf_t metaballs_buffer;
     metaballs_mesh_t metaballs_mesh;
     metaballs_uniform uniform;
-    std::vector<vtx_p3n3_t> blob;
+    std::vector<vtx_p3n3t2_t> blob;
     texture tex1;
 
     float rotation; // For testing
@@ -98,7 +98,7 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
     s.uniform.initialise(nullptr);
     if(s.uniform.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = s.uniform.ref();
-        ref.cam_projection = make_perspective2<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
+        ref.cam_projection = make_perspective<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
         ref.mv_matrix = make_scale<float>(30,30,10) * make_translation<float>(-.5f, -.5f, -2.f);
         s.uniform.unmap();
     }

@@ -7,6 +7,8 @@
 
 #include <maths/vec3.hpp>
 
+namespace zap {
+
 struct colour {
     using vec3b = zap::maths::vec3b;
 
@@ -18,7 +20,8 @@ struct colour {
     constexpr static vec3b yellow8 = vec3b(255, 255, 0);
     constexpr static vec3b purple8 = vec3b(255, 0, 255);
     constexpr static vec3b cyan8 = vec3b(0, 255, 255);
-
 };
+
+}
 
 #endif //ZAP_COLOUR_HPP

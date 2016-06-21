@@ -155,13 +155,13 @@ namespace zap { namespace maths {
         return vec3<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
     }
 
-    template <typename T>
-    constexpr vec3<T> operator*(T scalar, const vec3<T>& rhs) {
+    template <typename T, typename S>
+    constexpr vec3<T> operator*(S scalar, const vec3<T>& rhs) {
         return vec3<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z);
     }
 
-    template <typename T>
-    constexpr vec3<T> operator*(const vec3<T>& rhs, T scalar) { return operator*(scalar, rhs); }
+    template <typename T, typename S>
+    constexpr vec3<T> operator*(const vec3<T>& rhs, S scalar) { return operator*(scalar, rhs); }
 
     template <typename T>
     constexpr vec3<T> operator/(const vec3<T>& lhs, T scalar) {
