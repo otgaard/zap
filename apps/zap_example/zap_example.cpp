@@ -16,6 +16,7 @@
 #include <engine/uniform_block.hpp>
 #include <engine/uniform_buffer.hpp>
 #include <renderer/colour.hpp>
+#include <generators/noise/value_noise.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -57,7 +58,6 @@ protected:
     program prog2;
     program prog3;
     framebuffer framebuffer1;
-    framebuffer framebuffer2;
     mesh_p3n3t2_t cube;
     vbuf_p3n3t2_t cube_buffer;
     transform_uniform uni1;
@@ -98,13 +98,8 @@ void zap_example::initialise() {
     prog1.bind_uniform("colour", vec3f(1,1,0));
     gl_error_check();
 
-    // Testing framebuffers
     framebuffer1.allocate();
     framebuffer1.initialise<rgb888_t>(1, 1024, 1024, false, true);
-    gl_error_check();
-
-    framebuffer2.allocate();
-    framebuffer2.initialise<rgb888_t>(1, 1024, 1024, false, true);
     gl_error_check();
 
     prog2.bind();
@@ -118,7 +113,7 @@ void zap_example::initialise() {
     uni1.initialise(nullptr);
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
-        ref.cam_projection = make_perspective<float>(45.f, 1.f, 1.f, 100.f);
+        ref.cam_projection = make_perspective<float>(45.f, 1280.f/768.f, 1.f, 100.f);
         ref.mv_matrix = make_translation<float>(0, 0, -1.f) *
                         make_rotation(vec3f(0,1,0), PI/3) *
                         make_rotation(vec3f(1,0,0), PI/3);
@@ -161,24 +156,21 @@ void zap_example::initialise() {
     // Initialise testing texture
     test_tex.allocate();
 
+    generators::value_noise<float> noise;
     const auto cols = 1024, rows = 1024;
-    const auto inv_c = 1.f/cols, inv_r = 1.f/rows;
+    const auto inv_c = 32.f/cols, inv_r = 32.f/rows;
+    UNUSED(inv_r);
     std::vector<rgb888_t> pixels(cols*rows);
     for(size_t r = 0; r != rows; ++r) {
         for(size_t c = 0; c != cols; ++c) {
-            auto P = bilinear(c*inv_c, r*inv_r, colour::red8, colour::green8, colour::yellow8, colour::blue8);
+            auto P = lerp(colour::black8, colour::green8, scale_bias(noise.turbulence(c*inv_c, r*inv_r, 4), .5f, 0.5f));
+            //auto P = bilinear(c*inv_c, r*inv_r, colour::red8, colour::green8, colour::yellow8, colour::blue8);
+            //auto P = vec3b(rnd.rand()%256, rnd.rand()%256, rnd.rand()%256);
             pixels[cols*r+c].set3(P.x, P.y, P.z);
         }
     }
 
-    test_tex.initialise(cols, rows, pixels, false);
-
-    framebuffer1.bind();
-    clear(1,1,0,1);
-    framebuffer1.release();
-    framebuffer2.bind();
-    clear(1,1,0,1);
-    framebuffer2.release();
+    test_tex.initialise(cols, rows, pixels, true);
 }
 
 void zap_example::on_resize(int width, int height) {
@@ -204,7 +196,7 @@ void zap_example::update(double t, float dt) {
     gl_error_check();
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
-        ref.mv_matrix = make_translation<float>(0, 0, -1.2f) *
+        ref.mv_matrix = make_translation<float>(0, 0, -2.f) *
                         make_rotation(vec3f(0,1,0), rot) *
                         make_rotation(vec3f(1,0,0), 2*rot);
         uni1.unmap();
@@ -213,32 +205,23 @@ void zap_example::update(double t, float dt) {
     rot = wrap<float>(rot + dt, -TWO_PI, TWO_PI);
 }
 
-static int current_framebuffer = 1; // or 2
-
 void zap_example::draw() {
-    auto* active = current_framebuffer == 1 ? &framebuffer1 : &framebuffer2;
-    auto* render = current_framebuffer == 1 ? &framebuffer2 : &framebuffer1;
-
-    active->bind();
-    clear();
     depth_test(true);
     prog3.bind();
     cube.bind();
     cube_buffer.bind();
 
-    render->get_attachment(0).bind(0);
+    test_tex.bind(0);
     cube.draw();
-    render->get_attachment(0).release();
+    test_tex.release();
 
     cube_buffer.release();
     cube.release();
     prog3.release();
     depth_test(false);
-    active->release();
 
-
+    /*
     screenquad.bind();
-
     prog2.bind();
     //test_tex.bind(0);
     active->get_attachment(0).bind();
@@ -248,8 +231,7 @@ void zap_example::draw() {
     prog2.release();
 
     screenquad.release();
-
-    current_framebuffer = current_framebuffer == 1 ? 2 : 1;
+    */
 }
 
 void zap_example::shutdown() {

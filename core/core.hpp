@@ -12,6 +12,10 @@
 constexpr std::uint32_t INVALID_IDX = std::uint32_t(-1);
 using uchar = unsigned char;
 using byte = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using ulong = unsigned long;
+using ulonglong = unsigned long long;
 
 #define ZERR_IDX_OUT_OF_RANGE "Index out of range"
 #define ZERR_ARG_COUNT_INVALID "Incorrect number of values provided"

@@ -34,7 +34,7 @@ set(ZAP_MATHS_FILES
         maths/functions.hpp
         geometry/ray.hpp
         maths/io.cpp
-        maths/io.hpp geometry/disc.hpp maths/algebra.hpp)
+        maths/io.hpp geometry/disc.hpp maths/algebra.hpp maths/rand_lcg.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -76,7 +76,11 @@ set(ZAP_ENGINE_FILES
         generators/textures/planar.hpp
         generators/geometry/geometry3.hpp
         renderer/colour.hpp
-        renderer/colour.cpp)
+        renderer/colour.cpp
+        generators/particles/particle_engine.hpp
+        generators/particles/particle_engine.cpp
+        generators/noise/value_noise.hpp
+        generators/noise/noise.cpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)

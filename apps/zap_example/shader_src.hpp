@@ -70,8 +70,8 @@ const char* cube_frg_src = GLSL(
     out vec4 frag_colour;
 
     void main() {
-        float s = 2.*max(dot(nor, light_dir), 0);
-        frag_colour = vec4(s*vec3(1,1,0)*texture(tex, tc).xyz, 1);
+        float s = max(dot(nor, light_dir), 0);
+        frag_colour = vec4(s*texture(tex, tc).xyz, 1);
     }
 );
 
