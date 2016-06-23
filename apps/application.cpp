@@ -63,6 +63,9 @@ int application::run() {
     glViewport(0, 0, sc_width_, sc_height_);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    bf_culling(true);
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(std::numeric_limits<uint16_t>::max());
 
     initialise();
 

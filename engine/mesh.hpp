@@ -21,7 +21,8 @@ public:
     void bind() const;
     void release() const;
 
-    void draw_impl(primitive_type type, size_t first, size_t count);
+    void draw_arrays_impl(primitive_type type, size_t first, size_t count);
+    void draw_elements_impl(primitive_type type, data_type index_type, size_t count);
 
 private:
     resource_t vao_;
@@ -65,11 +66,31 @@ constexpr typename std::enable_if<k!=0, typename stream_query<k, vertex_stream<V
 };
 
 template <typename VtxStream, primitive_type Primitive, typename Index=void>
-struct mesh {
+struct mesh : public mesh_base {
 public:
     static_assert(is_index_buffer<Index>::value, "Index must be of type index_buffer<>");
-    using vertex_stream = VtxStream;
+    using vertex_stream_t = VtxStream;
+    using index_buffer_t = Index;
     constexpr static primitive_type primitive = Index::primitive;
+
+    mesh() : mesh_base(), idx_buffer_ptr(nullptr) { }
+    mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr) : mesh_base(),
+                                                                      vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
+
+    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
+    void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; }
+    size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
+
+    void draw(size_t start=0, size_t count=0) {
+        if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
+
+        mesh_base::draw_elements_impl(primitive,
+                                      (data_type)dt_descriptor<typename index_buffer_t::type>::value,
+                                      idx_buffer_ptr->index_count());
+    }
+
+    vertex_stream_t vstream;
+    Index* idx_buffer_ptr;
 };
 
 template <typename VtxStream, primitive_type Primitive>
@@ -86,7 +107,7 @@ public:
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
 
     void draw(primitive_type prim=primitive, size_t start=0, size_t count=0) {
-        mesh_base::draw_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
+        mesh_base::draw_arrays_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
     }
 
     vertex_stream_t vstream;

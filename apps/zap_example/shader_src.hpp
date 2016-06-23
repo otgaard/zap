@@ -64,7 +64,7 @@ const char* cube_vtx_src = GLSL(
 
 const char* cube_frg_src = GLSL(
     uniform sampler2D tex;
-    const vec3 light_dir = normalize(vec3(0,1,1));
+    const vec3 light_dir = normalize(vec3(0,0,1));
     in vec3 nor;
     in vec2 tc;
     out vec4 frag_colour;

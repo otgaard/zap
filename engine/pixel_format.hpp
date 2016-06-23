@@ -8,6 +8,9 @@
 #include <maths/maths.hpp>
 #include <core/bitfield.hpp>
 #include <core/pod.hpp>
+#include <maths/vec2.hpp>
+#include <maths/vec3.hpp>
+#include <maths/vec4.hpp>
 
 namespace zap { namespace engine {
     using zap::maths::pow2;
@@ -79,14 +82,24 @@ namespace zap { namespace engine {
 
         using data_t::set;
         using data_t::get;
+
         void set1(const T& a) { set(0, a); }
         void set2(const T& a, const T& b) { set(0, a); set(1, b); }
         void set3(const T& a, const T& b, const T& c) { set(0, a); set(1, b), set(2, c); }
         void set4(const T& a, const T& b, const T& c, const T& d) { set(0, a), set(1, b), set(2, c), set(3, d); }
+
+        template <typename S> void set2(const maths::vec2<S>& v) { set2(v[0], v[1]); }
+        template <typename S> void set3(const maths::vec3<S>& v) { set3(v[0], v[1], v[2]); }
+        template <typename S> void set4(const maths::vec4<S>& v) { set4(v[0], v[1], v[2], v[3]); }
+
         T get1() const { return get(0); }
         std::tuple<T, T> get2() const { return std::make_tuple(get(0), get(1)); }
         std::tuple<T, T, T> get3() const { return std::make_tuple(get(0), get(1), get(2)); }
         std::tuple<T, T, T, T> get4() const { return std::make_tuple(get(0), get(1), get(2), get(3)); }
+
+        template <typename S> maths::vec2<S> get2v() const { return maths::vec2<S>(get(0), get(1)); }
+        template <typename S> maths::vec3<S> get3v() const { return maths::vec3<S>(get(0), get(1), get(2)); }
+        template <typename S> maths::vec4<S> get4v() const { return maths::vec4<S>(get(0), get(1), get(2), get(3)); }
     };
 
     using red3_t = channel<channel_type::CT_RED, 3>;

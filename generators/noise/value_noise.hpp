@@ -39,32 +39,73 @@ namespace zap { namespace generators {
             return maths::bilinear(dx, dy, noise_i(xi, yi), noise_i(xi+1, yi), noise_i(xi,yi+1), noise_i(xi+1,yi+1));
         }
 
+        T noise(T x, T y, T z) const {
+            int xi = floor(x), yi = floor(y), zi = floor(z);
+            T dx = x - xi, dy = y - yi, dz = z - zi;
+            return maths::lerp(maths::bilinear(dx, dy, noise_i(xi, yi, zi), noise_i(xi+1, yi, zi),
+                                                       noise_i(xi,yi+1,zi), noise_i(xi+1,yi+1,zi)),
+                               maths::bilinear(dx, dy, noise_i(xi, yi, zi+1), noise_i(xi+1, yi, zi+1),
+                                                       noise_i(xi,yi+1,zi+1), noise_i(xi+1,yi+1,zi+1)),
+                               dz);
+        }
+
+        // Output in range [-1, 1]
         T fractal(T x, T y, byte octaves) {
             T freq = T(1);
             T ampl = T(1);
             T accum = T(0);
-            T div = T(0);
+            T mag = T(0);   // Limit is 2
             for(byte i = 0; i != octaves; ++i) {
                 accum += ampl*noise(x*freq, y*freq);
-                div += ampl;
+                mag += ampl;
                 ampl *= T(0.5);
                 freq *= T(2);
             }
-            return (T(1)/div)*accum;
+            return (T(1)/mag)*accum;
         }
 
+        T fractal(T x, T y, T z, byte octaves) {
+            T freq = T(1);
+            T ampl = T(1);
+            T accum = T(0);
+            T mag = T(0);   // Limit is 2
+            for(byte i = 0; i != octaves; ++i) {
+                accum += ampl*noise(x*freq, y*freq, z*freq);
+                mag += ampl;
+                ampl *= T(0.5);
+                freq *= T(2);
+            }
+            return (T(1)/mag)*accum;
+        }
+
+
+        // Output in range [0, 1]
         T turbulence(T x, T y, byte octaves) {
             T freq = T(1);
             T ampl = T(1);
             T accum = T(0);
-            T div = T(0);
+            T mag = T(0);   // Limit is 2
             for(byte i = 0; i != octaves; ++i) {
                 accum += maths::abs(ampl*noise(x*freq, y*freq));
-                div += ampl;
+                mag += ampl;
                 ampl *= T(0.5);
                 freq *= T(2);
             }
-            return (T(1)/div)*accum;
+            return (T(1)/mag)*accum;
+        }
+
+        T turbulence(T x, T y, T z, byte octaves) {
+            T freq = T(1);
+            T ampl = T(1);
+            T accum = T(0);
+            T mag = T(0);   // Limit is 2
+            for(byte i = 0; i != octaves; ++i) {
+                accum += maths::abs(ampl*noise(x*freq, y*freq, z*freq));
+                mag += ampl;
+                ampl *= T(0.5);
+                freq *= T(2);
+            }
+            return (T(1)/mag)*accum;
         }
 
     protected:

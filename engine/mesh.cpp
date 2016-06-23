@@ -28,8 +28,12 @@ void mesh_base::release() const {
     gl_error_check();
 }
 
-void mesh_base::draw_impl(primitive_type type, size_t first, size_t count) {
+void mesh_base::draw_arrays_impl(primitive_type type, size_t first, size_t count) {
     glDrawArrays(gl_type(type), first, count);
+}
+
+void mesh_base::draw_elements_impl(primitive_type type, data_type index_type, size_t count) {
+    glDrawElements(gl_type(type), count, gl_type(index_type), nullptr);
 }
 
 }}

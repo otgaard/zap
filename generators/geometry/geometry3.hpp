@@ -17,6 +17,7 @@ namespace zap { namespace generators {
     class geometry3 {
     public:
         constexpr static prim_t primitive = Primitive;
+
         template <typename T> static std::vector<VertexT> make_cube(const vec3<T>& dimensions={1,1,1}) {
             static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_cube expects PT_TRIANGLES");
             std::vector<VertexT> vertices(36);
@@ -133,6 +134,46 @@ namespace zap { namespace generators {
             }
 
             return vertices;
+        }
+
+        static std::tuple<std::vector<VertexT>,std::vector<uint16_t>> make_cylinder(float radius, float height,
+                                                                                    size_t slices, size_t stacks) {
+            const float dt = maths::TWO_PI/slices;
+            const float dh = height/stacks;
+            const float hh = height/2.f;
+
+            const size_t vertex_count = (slices+1) * (stacks+1);
+            const size_t index_count = 2*(slices+1)*stacks + stacks; // Primitive Restart
+
+            std::vector<VertexT> vertices(vertex_count);
+            std::vector<uint16_t> indices(index_count);
+
+            // Calculate the first coords once & copy
+            for(size_t t = 0; t != slices+1; ++t) {
+                const auto theta = (t%slices)*dt, ctheta = std::cos(theta), stheta = std::sin(theta);
+                vertices[t].position.set(radius*ctheta, radius*stheta, hh);
+                vertices[t].normal.set(ctheta, stheta, 0);
+                vertices[t].texcoord1.set(t/float(slices), 0.f);
+            }
+
+            for(size_t h = 1, h_end = stacks+1; h != h_end; ++h) {
+                const auto v_offset = h*(slices+1);
+                const auto i_offset = (h-1)*(2*(slices+1) + 1);
+                const float hgt = hh - h*dh;
+                const float v = h/float(stacks);
+                std::copy(vertices.begin(), vertices.begin()+(slices+1), vertices.begin()+v_offset);
+                for(size_t t = 0; t != slices+1; ++t) {
+                    const auto idx = v_offset+t;
+                    vertices[idx].position.z = hgt;
+                    vertices[idx].texcoord1.y = v;
+                    indices[i_offset+2*t] = idx - (slices+1);
+                    indices[i_offset+2*t+1] = idx;
+                }
+
+                indices[i_offset+2*(slices+1)] = std::numeric_limits<uint16_t>::max();
+            }
+
+            return std::make_tuple(vertices, indices);
         }
     };
 }}

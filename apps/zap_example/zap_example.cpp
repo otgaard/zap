@@ -17,6 +17,8 @@
 #include <engine/uniform_buffer.hpp>
 #include <renderer/colour.hpp>
 #include <generators/noise/value_noise.hpp>
+#include <maths/curves/curves.hpp>
+#include <generators/textures/convolution.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -32,7 +34,10 @@ using nor3_t = core::normal<vec3f>;
 using tex2_t = core::texcoord1<vec2f>;
 using vtx_p3n3t2_t = vertex<pos3_t, nor3_t, tex2_t>;
 using vbuf_p3n3t2_t = vertex_buffer<vtx_p3n3t2_t, buffer_usage::BU_STATIC_DRAW>;
+using idx_us16_t = index_buffer<uint16_t, primitive_type::PT_TRIANGLE_STRIP, buffer_usage::BU_STATIC_DRAW>;
+
 using mesh_p3n3t2_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES>;
+using mesh_p3n3t2_tf_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLE_STRIP, idx_us16_t>;
 
 using transform_block = uniform_block<
         core::scale<float>,
@@ -62,6 +67,9 @@ protected:
     vbuf_p3n3t2_t cube_buffer;
     transform_uniform uni1;
     texture test_tex;
+    mesh_p3n3t2_tf_t cylinder;
+    idx_us16_t cylinder_index;
+    vbuf_p3n3t2_t cylinder_buffer;
 };
 
 void zap_example::initialise() {
@@ -114,9 +122,7 @@ void zap_example::initialise() {
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
         ref.cam_projection = make_perspective<float>(45.f, 1280.f/768.f, 1.f, 100.f);
-        ref.mv_matrix = make_translation<float>(0, 0, -1.f) *
-                        make_rotation(vec3f(0,1,0), PI/3) *
-                        make_rotation(vec3f(1,0,0), PI/3);
+        ref.mv_matrix = make_translation<float>(0, 0, -3.f) * make_rotation(vec3f(1,0,0), PI/2);
         uni1.unmap();
     }
 
@@ -157,20 +163,44 @@ void zap_example::initialise() {
     test_tex.allocate();
 
     generators::value_noise<float> noise;
-    const auto cols = 1024, rows = 1024;
-    const auto inv_c = 32.f/cols, inv_r = 32.f/rows;
-    UNUSED(inv_r);
+    const auto cols = 1024, rows = 512;
+    const auto inv_c = float(TWO_PI)/(cols-1), inv_r = 16.f/rows;
+    //auto inv_c = 1.f/cols, inv_r = 1.f/rows;
+    UNUSED(inv_c); UNUSED(inv_r);
+
     std::vector<rgb888_t> pixels(cols*rows);
     for(size_t r = 0; r != rows; ++r) {
         for(size_t c = 0; c != cols; ++c) {
-            auto P = lerp(colour::black8, colour::green8, scale_bias(noise.turbulence(c*inv_c, r*inv_r, 4), .5f, 0.5f));
+            const float theta = (c%(cols-1))*inv_c, ctheta = std::cos(theta), stheta = std::sin(theta);
+            vec3b P = lerp(colour::black8, colour::green8, scale_bias(noise.turbulence(8*ctheta, 8*stheta, r*inv_r, 6), 1.f, 1.f));
+            //if(v < min) min = v; if(v > max) max = v;
             //auto P = bilinear(c*inv_c, r*inv_r, colour::red8, colour::green8, colour::yellow8, colour::blue8);
             //auto P = vec3b(rnd.rand()%256, rnd.rand()%256, rnd.rand()%256);
             pixels[cols*r+c].set3(P.x, P.y, P.z);
         }
     }
 
+    //pixels = generators::convolution<rgb888_t>::boxblur(cols, rows, 32, pixels);
+
     test_tex.initialise(cols, rows, pixels, true);
+
+    // Build the cylinder
+    if(!cylinder.allocate() || !cylinder_buffer.allocate() || !cylinder_index.allocate()) {
+        LOG_ERR("Could not allocate cylinder mesh or buffer.");
+        return;
+    }
+
+    cylinder.set_stream(&cylinder_buffer);
+    cylinder.set_index(&cylinder_index);
+    cylinder.bind();
+    cylinder_buffer.bind();
+    auto cyl = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_STRIP>::make_cylinder(2.f, 4.f, 60, 4);
+    cylinder_buffer.initialise(get<0>(cyl));
+    cylinder_index.bind();
+    cylinder_index.initialise(get<1>(cyl));
+    cylinder.release();
+
+    gl_error_check();
 }
 
 void zap_example::on_resize(int width, int height) {
@@ -194,11 +224,15 @@ static float rot = 0.0f;
 void zap_example::update(double t, float dt) {
     uni1.bind();
     gl_error_check();
+
+    //static auto fnc2 = curves::curve2<float, decltype(std::cosf), decltype(std::sinf)>::make_fnc(std::cosf, std::sinf);
+    //auto P = fnc2(rot);
+
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
-        ref.mv_matrix = make_translation<float>(0, 0, -2.f) *
+        ref.mv_matrix = make_translation<float>(0, 0.f, -6.f) *
                         make_rotation(vec3f(0,1,0), rot) *
-                        make_rotation(vec3f(1,0,0), 2*rot);
+                        make_rotation(vec3f(1,0,0), PI/2);
         uni1.unmap();
     }
 
@@ -206,28 +240,33 @@ void zap_example::update(double t, float dt) {
 }
 
 void zap_example::draw() {
+
     depth_test(true);
     prog3.bind();
-    cube.bind();
-    cube_buffer.bind();
+    //cube.bind();
+    //cube_buffer.bind();
+
+    cylinder.bind();
 
     test_tex.bind(0);
-    cube.draw();
+    cylinder.draw();
     test_tex.release();
 
-    cube_buffer.release();
-    cube.release();
+    //cube_buffer.release();
+    //cube.release();
+    cylinder.release();
     prog3.release();
     depth_test(false);
+
 
     /*
     screenquad.bind();
     prog2.bind();
-    //test_tex.bind(0);
-    active->get_attachment(0).bind();
+    test_tex.bind(0);
+    //active->get_attachment(0).bind();
     screenquad.draw();
-    //test_tex.release();
-    active->get_attachment(0).release();
+    test_tex.release();
+    //active->get_attachment(0).release();
     prog2.release();
 
     screenquad.release();
