@@ -1,6 +1,6 @@
 /* Created by Darren Otgaar on 2016/06/10. http://www.github.com/otgaard/zap */
 #include "bars.hpp"
-#include "../graphic_types.hpp"
+#include "apps/graphic_types.hpp"
 
 #include <generators/textures/planar.hpp>
 

@@ -19,6 +19,8 @@
 #include <generators/noise/value_noise.hpp>
 #include <maths/curves/curves.hpp>
 #include <generators/textures/convolution.hpp>
+#include <generators/noise/perlin.hpp>
+#include "plotter2.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -70,6 +72,7 @@ protected:
     mesh_p3n3t2_tf_t cylinder;
     idx_us16_t cylinder_index;
     vbuf_p3n3t2_t cylinder_buffer;
+    plotter2 plotter;
 };
 
 void zap_example::initialise() {
@@ -162,18 +165,40 @@ void zap_example::initialise() {
     // Initialise testing texture
     test_tex.allocate();
 
-    generators::value_noise<float> noise;
+    // Initialise noise PRN tables
+    generators::noise::initialise(0);
+
+    generators::value_noise<float> vnoise;
+    generators::perlin<float> pnoise;
+
+    pnoise.noise2(0,0);
+
     const auto cols = 1024, rows = 512;
     const auto inv_c = float(TWO_PI)/(cols-1), inv_r = 16.f/rows;
     //auto inv_c = 1.f/cols, inv_r = 1.f/rows;
     UNUSED(inv_c); UNUSED(inv_r);
 
     std::vector<rgb888_t> pixels(cols*rows);
+
     for(size_t r = 0; r != rows; ++r) {
         for(size_t c = 0; c != cols; ++c) {
             const float theta = (c%(cols-1))*inv_c, ctheta = std::cos(theta), stheta = std::sin(theta);
-            vec3b P = lerp(colour::black8, colour::green8, scale_bias(noise.turbulence(8*ctheta, 8*stheta, r*inv_r, 6), 1.f, 1.f));
-            //if(v < min) min = v; if(v > max) max = v;
+            float value;
+
+            if(r < 256) value = 2*pnoise.turbulence(8*ctheta, 8*stheta, r*inv_r, 4);
+            else        value = vnoise.turbulence(8*ctheta, 8*stheta, r*inv_r, 4);
+
+            /*
+            if(r < 256) value = scale_bias(pnoise.fractal(8*ctheta, 8*stheta, r*inv_r, 6), 1.f, .5f);
+            else        value = scale_bias(vnoise.fractal(8*ctheta, 8*stheta, r*inv_r, 6), .5f, .5f);
+            */
+
+            //LOG(value);
+            //const float value = scale_bias(vnoise.fractal(2*ctheta, 8*stheta, r*inv_r, 4, .5f, 2.f), .5f, .5f);
+            //const float value = vnoise.turbulence(8*ctheta, 8*stheta, r*inv_r, 4);
+            //const float value = scale_bias(noise.fractal(8*ctheta, 8*stheta, r*inv_r, 6), .5f, .5f);
+            vec3b P = lerp(colour::green8, colour::black8, value);
+            //if(value < min) min = value; if(value > max) max = value;
             //auto P = bilinear(c*inv_c, r*inv_r, colour::red8, colour::green8, colour::yellow8, colour::blue8);
             //auto P = vec3b(rnd.rand()%256, rnd.rand()%256, rnd.rand()%256);
             pixels[cols*r+c].set3(P.x, P.y, P.z);
@@ -194,11 +219,17 @@ void zap_example::initialise() {
     cylinder.set_index(&cylinder_index);
     cylinder.bind();
     cylinder_buffer.bind();
-    auto cyl = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_STRIP>::make_cylinder(2.f, 4.f, 60, 4);
+    auto cyl = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_STRIP>::make_cylinder(1.f, 2.f, 60, 4);
     cylinder_buffer.initialise(get<0>(cyl));
     cylinder_index.bind();
     cylinder_index.initialise(get<1>(cyl));
     cylinder.release();
+
+    // Initialising plotter
+    if(!plotter.initialise()) {
+        LOG_ERR("Could not initialise plotter");
+        return;
+    }
 
     gl_error_check();
 }
@@ -230,7 +261,7 @@ void zap_example::update(double t, float dt) {
 
     if(uni1.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = uni1.ref();
-        ref.mv_matrix = make_translation<float>(0, 0.f, -6.f) *
+        ref.mv_matrix = make_translation<float>(0, 0.f, -3.f) *
                         make_rotation(vec3f(0,1,0), rot) *
                         make_rotation(vec3f(1,0,0), PI/2);
         uni1.unmap();
@@ -240,7 +271,6 @@ void zap_example::update(double t, float dt) {
 }
 
 void zap_example::draw() {
-
     depth_test(true);
     prog3.bind();
     //cube.bind();
@@ -258,6 +288,7 @@ void zap_example::draw() {
     prog3.release();
     depth_test(false);
 
+    plotter.draw();
 
     /*
     screenquad.bind();

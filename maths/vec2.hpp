@@ -183,6 +183,11 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
+    constexpr T dot(const vec2<T>& lhs, T x, T y) {
+        return lhs.x * x + lhs.y * y;
+    }
+
+    template <typename T>
     inline vec2<T> normalise(const vec2<T>& v) {
         return T(1)/v.length() * v;
     }

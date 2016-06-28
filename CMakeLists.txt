@@ -34,7 +34,11 @@ set(ZAP_MATHS_FILES
         maths/functions.hpp
         geometry/ray.hpp
         maths/io.cpp
-        maths/io.hpp geometry/disc.hpp maths/algebra.hpp maths/rand_lcg.hpp maths/curves/curves.hpp)
+        maths/io.hpp
+        geometry/disc.hpp
+        maths/algebra.hpp
+        maths/rand_lcg.hpp
+        maths/curves/curves.hpp maths/transform.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -80,7 +84,10 @@ set(ZAP_ENGINE_FILES
         generators/particles/particle_engine.hpp
         generators/particles/particle_engine.cpp
         generators/noise/value_noise.hpp
-        generators/noise/noise.cpp generators/textures/convolution.hpp)
+        generators/noise/noise.cpp
+        generators/textures/convolution.hpp
+        generators/noise/perlin.hpp
+        generators/noise/noise.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -90,8 +97,11 @@ set(ZAP_EXAMPLE_FILES
         apps/zap_example/generator.cpp
         apps/application.cpp
         apps/application.hpp
+        apps/graphic_types.hpp
         apps/zap_example/generator.hpp
-        apps/zap_example/shader_src.hpp)
+        apps/zap_example/shader_src.hpp
+        apps/zap_example/plotter2.cpp
+        apps/zap_example/plotter2.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp
@@ -118,7 +128,7 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/modules/module.hpp
         apps/synesthesia/modules/bars.cpp
         apps/synesthesia/modules/bars.hpp
-        apps/synesthesia/graphic_types.hpp
+        apps/graphic_types.hpp
         apps/synesthesia/modules/metaballs.cpp
         apps/synesthesia/modules/metaballs.hpp)
 

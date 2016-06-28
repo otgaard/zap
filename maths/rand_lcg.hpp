@@ -19,8 +19,13 @@ namespace zap { namespace maths {
         }
 
         float random() const {
+            uint flt_i = 0x3f800000 | (rand() >> 9);    // [1 .. 2]
+            return *(float*)(&flt_i) - 1.f;             // [0 .. 1]
+        }
+
+        float random_s() const {        // Signed random
             uint flt_i = 0x3f800000 | (rand() >> 9);
-            return *(float*)(&flt_i) - 1.f;
+            return 2*((*(float*)(&flt_i)) - 1.5f);      // [-1 .. 1]
         }
 
     private:
