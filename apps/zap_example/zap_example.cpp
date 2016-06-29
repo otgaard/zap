@@ -21,7 +21,6 @@
 #include <generators/textures/convolution.hpp>
 #include <generators/noise/perlin.hpp>
 #include "plotter2.hpp"
-#include <generators/noise/noise.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -169,7 +168,7 @@ void zap_example::initialise() {
     // Initialise noise PRN tables
     generators::noise::initialise(0);
 
-    generators::value_noise<float> vnoise_gen;
+    //generators::value_noise<float> vnoise_gen;
     generators::perlin<float> pnoise_gen;
 
     using noise = generators::noise;
@@ -181,29 +180,16 @@ void zap_example::initialise() {
 
     std::vector<rgb888_t> pixels(cols*rows);
 
+    auto frac1 = noise::make_fractal<generators::perlin<float>, float, float, float, float>(pnoise_gen, 4, .5f, 2.f);
+    auto turb1 = noise::make_turbulence<generators::perlin<float>, float, float, float, float>(pnoise_gen, 4, .5f, 2.f);
+
     for(size_t r = 0; r != rows; ++r) {
         for(size_t c = 0; c != cols; ++c) {
             const float theta = (c%(cols-1))*inv_c, ctheta = std::cos(theta), stheta = std::sin(theta);
             float value;
-
-            //float value = 2*pnoise_gen.turbulence(8*ctheta, 8*stheta, r*inv_r, 4);
-
-            if(r < 256) value = 2*noise::turbulence(pnoise_gen, 4, .5f, 2.f, 8*ctheta, 8*stheta, r*inv_r);
-            else        value = noise::turbulence(vnoise_gen, 4, .5f, 2.f, 8*ctheta, 8*stheta, r*inv_r);
-
-            /*
-            if(r < 256) value = scale_bias(pnoise.fractal(8*ctheta, 8*stheta, r*inv_r, 6), 1.f, .5f);
-            else        value = scale_bias(vnoise.fractal(8*ctheta, 8*stheta, r*inv_r, 6), .5f, .5f);
-            */
-
-            //LOG(value);
-            //const float value = scale_bias(vnoise.fractal(2*ctheta, 8*stheta, r*inv_r, 4, .5f, 2.f), .5f, .5f);
-            //const float value = vnoise.turbulence(8*ctheta, 8*stheta, r*inv_r, 4);
-            //const float value = scale_bias(noise.fractal(8*ctheta, 8*stheta, r*inv_r, 6), .5f, .5f);
+            if(r < 256) value = scale_bias(frac1(8*ctheta, 8*stheta, r*inv_r), 1.f, 0.5f);
+            else        value = 2*turb1(8*ctheta, 8*stheta, r*inv_r);
             vec3b P = lerp(value, colour::green8, colour::black8);
-            //if(value < min) min = value; if(value > max) max = value;
-            //auto P = bilinear(c*inv_c, r*inv_r, colour::red8, colour::green8, colour::yellow8, colour::blue8);
-            //auto P = vec3b(rnd.rand()%256, rnd.rand()%256, rnd.rand()%256);
             pixels[cols*r+c].set3(P.x, P.y, P.z);
         }
     }

@@ -31,7 +31,7 @@ namespace zap { namespace generators {
         static vec3f grad(int x, int y, int z) { return grad3[perm(x, y, z)]; }
 
         template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
-        static T fractal(const NoiseT& generator, T x, byte octaves, T persistence, T lacunarity, Args... args) {
+        static T fractal(const NoiseT& generator, byte octaves, T persistence, T lacunarity, Args... args) {
             T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
             for(byte i = 0; i != octaves; ++i) {
                 accum += ampl*generator.noise(freq * args...);
@@ -53,6 +53,34 @@ namespace zap { namespace generators {
             }
             return (T(1)/mag)*accum;
         }
+
+        template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
+        constexpr static auto make_fractal(NoiseT generator, byte octaves, T persistence, T lacunarity) {
+            return [=](Args... args) -> T {
+                T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
+                for(byte i = 0; i != octaves; ++i) {
+                    accum += ampl*generator.noise(freq * args...);
+                    mag += ampl;
+                    ampl *= persistence;
+                    freq *= lacunarity;
+                }
+                return (T(1)/mag)*accum;
+            };
+        };
+
+        template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
+        constexpr static auto make_turbulence(NoiseT generator, byte octaves, T persistence, T lacunarity) {
+            return [=](Args... args) -> T {
+                T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
+                for(byte i = 0; i != octaves; ++i) {
+                    accum += maths::abs(ampl*generator.noise(freq * args...));
+                    mag += ampl;
+                    ampl *= persistence;
+                    freq *= lacunarity;
+                }
+                return (T(1)/mag)*accum;
+            };
+        };
 
         static float grad_i(int x) { return grad1[perm(x)]; }
         static float grad_i(int x, int y) { return grad1[perm(x,y)]; }
