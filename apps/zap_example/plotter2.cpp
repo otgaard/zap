@@ -116,7 +116,7 @@ void plotter2::draw() {
 
     s.buffer.bind();
     if(s.buffer.map(buffer_access::BA_WRITE_ONLY)) {
-        for(size_t i = 0; i != 1000; ++i) s.buffer[i].position.y = 6*generators::noise::turbulence(s.noise, 4, .5f, 2.f, angle + 0.001f*i) - 1.f;
+        for(size_t i = 0; i != 1000; ++i) s.buffer[i].position.y = 6*generators::noise::turbulence<generators::perlin<float>>(4, .5f, 2.f, angle + 0.001f*i) - 1.f;
         s.buffer.unmap();
     }
     s.buffer.release();

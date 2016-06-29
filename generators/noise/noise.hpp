@@ -31,10 +31,10 @@ namespace zap { namespace generators {
         static vec3f grad(int x, int y, int z) { return grad3[perm(x, y, z)]; }
 
         template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
-        static T fractal(const NoiseT& generator, byte octaves, T persistence, T lacunarity, Args... args) {
+        static T fractal(byte octaves, T persistence, T lacunarity, Args... args) {
             T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
             for(byte i = 0; i != octaves; ++i) {
-                accum += ampl*generator.noise(freq * args...);
+                accum += ampl * NoiseT::noise(freq * args...);
                 mag += ampl;
                 ampl *= persistence;
                 freq *= lacunarity;
@@ -43,10 +43,10 @@ namespace zap { namespace generators {
         }
 
         template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
-        static T turbulence(const NoiseT& generator, byte octaves, T persistence, T lacunarity, Args... args) {
+        static T turbulence(byte octaves, T persistence, T lacunarity, Args... args) {
             T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
             for(byte i = 0; i != octaves; ++i) {
-                accum += maths::abs(ampl * generator.noise(freq * args...));
+                accum += maths::abs(ampl * NoiseT::noise(freq * args...));
                 mag += ampl;
                 ampl *= persistence;
                 freq *= lacunarity;
@@ -55,11 +55,11 @@ namespace zap { namespace generators {
         }
 
         template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
-        constexpr static auto make_fractal(NoiseT generator, byte octaves, T persistence, T lacunarity) {
+        constexpr static auto make_fractal(byte octaves, T persistence, T lacunarity) {
             return [=](Args... args) -> T {
                 T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
                 for(byte i = 0; i != octaves; ++i) {
-                    accum += ampl*generator.noise(freq * args...);
+                    accum += ampl * NoiseT::noise(freq * args...);
                     mag += ampl;
                     ampl *= persistence;
                     freq *= lacunarity;
@@ -69,11 +69,11 @@ namespace zap { namespace generators {
         };
 
         template <typename NoiseT, typename T=typename NoiseT::type_t, typename... Args>
-        constexpr static auto make_turbulence(NoiseT generator, byte octaves, T persistence, T lacunarity) {
+        constexpr static auto make_turbulence(byte octaves, T persistence, T lacunarity) {
             return [=](Args... args) -> T {
                 T freq = T(1), ampl = T(1), accum = T(0), mag = T(0);
                 for(byte i = 0; i != octaves; ++i) {
-                    accum += maths::abs(ampl*generator.noise(freq * args...));
+                    accum += maths::abs(ampl * NoiseT::noise(freq * args...));
                     mag += ampl;
                     ampl *= persistence;
                     freq *= lacunarity;

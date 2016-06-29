@@ -9,23 +9,22 @@
 
 namespace zap { namespace generators {
     template <typename T>
-    class value_noise {
-    public:
+    struct value_noise {
         using type_t = T;
 
-        T noise(T x) const {
+        static T noise(T x) {
             int xi = noise::floor(x);
             T dx = x - xi;
             return maths::lerp(dx, noise::grad_i(xi), noise::grad_i(xi+1));
         }
 
-        T noise(T x, T y) const {
+        static T noise(T x, T y) {
             int xi = noise::floor(x), yi = noise::floor(y);
             T dx = x - xi, dy = y - yi;
             return maths::bilinear(dx, dy, noise::grad_i(xi, yi), noise::grad_i(xi+1, yi), noise::grad_i(xi,yi+1), noise::grad_i(xi+1,yi+1));
         }
 
-        T noise(T x, T y, T z) const {
+        static T noise(T x, T y, T z) {
             int xi = noise::floor(x), yi = noise::floor(y), zi = noise::floor(z);
             T dx = x - xi, dy = y - yi, dz = z - zi;
             return maths::lerp(dz,

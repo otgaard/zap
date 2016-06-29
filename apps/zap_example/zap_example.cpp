@@ -169,7 +169,7 @@ void zap_example::initialise() {
     generators::noise::initialise(0);
 
     //generators::value_noise<float> vnoise_gen;
-    generators::perlin<float> pnoise_gen;
+    //generators::perlin<float> pnoise_gen;
 
     using noise = generators::noise;
 
@@ -180,14 +180,14 @@ void zap_example::initialise() {
 
     std::vector<rgb888_t> pixels(cols*rows);
 
-    auto frac1 = noise::make_fractal<generators::perlin<float>, float, float, float, float>(pnoise_gen, 4, .5f, 2.f);
-    auto turb1 = noise::make_turbulence<generators::perlin<float>, float, float, float, float>(pnoise_gen, 4, .5f, 2.f);
+    //auto frac1 = noise::make_fractal<generators::perlin<float>, float, float, float, float>(4, .5f, 2.f);
+    auto turb1 = noise::make_turbulence<generators::perlin<float>, float, float, float, float>(4, .5f, 2.f);
 
     for(size_t r = 0; r != rows; ++r) {
         for(size_t c = 0; c != cols; ++c) {
             const float theta = (c%(cols-1))*inv_c, ctheta = std::cos(theta), stheta = std::sin(theta);
-            float value;
-            if(r < 256) value = scale_bias(frac1(8*ctheta, 8*stheta, r*inv_r), 1.f, 0.5f);
+            float value = 2*noise::turbulence<generators::perlin<float>>(4, .5f, 2.f, 8*ctheta, 8*stheta, r*inv_r);
+            if(r < 256) ;//value = scale_bias(frac1(8*ctheta, 8*stheta, r*inv_r), 1.f, 0.5f);
             else        value = 2*turb1(8*ctheta, 8*stheta, r*inv_r);
             vec3b P = lerp(value, colour::green8, colour::black8);
             pixels[cols*r+c].set3(P.x, P.y, P.z);

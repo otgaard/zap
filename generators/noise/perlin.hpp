@@ -16,7 +16,7 @@ namespace zap { namespace generators {
     struct perlin {
         using type_t = T;
 
-        T noise(T x) const {
+        static T noise(T x) {
             using namespace maths;
 
             int bx0, bx1;
@@ -34,7 +34,7 @@ namespace zap { namespace generators {
             return lerp(sx, u, v);
         }
 
-        T noise(T x, T y) const {
+        static T noise(T x, T y) {
             using namespace maths;
             float sx, sy, a, b, u, v;
 
@@ -58,7 +58,7 @@ namespace zap { namespace generators {
             return lerp(sy, a, b);
         }
 
-        T noise(T x, T y, T z) const {
+        static T noise(T x, T y, T z) {
             using namespace maths;
             float sx, sy, sz, a, b, c, d, u, v;
 
