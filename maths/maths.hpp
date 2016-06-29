@@ -39,7 +39,7 @@ namespace zap { namespace maths {
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
 
-    template <typename T, typename S> T lerp(T u, T v, S i) { return (1 - i)*u + i*v; };
+    template <typename T, typename S> T lerp(const S& u, const T& P0, const T& P1) { return (S(1) - u)*P0 + u*P1; };
 
     template <typename T, typename S>
     T bilinear(const S& u, const S& v, const T& P00, const T& P01, const T& P10, const T& P11) {

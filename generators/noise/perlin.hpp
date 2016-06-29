@@ -6,6 +6,7 @@
 #define ZAP_PERLIN_HPP
 
 #include "noise.hpp"
+#include <maths/maths.hpp>
 #include <maths/rand_lcg.hpp>
 
 // Based on Ken Perlin's implementation at https://mrl.nyu.edu/~perlin/doc/oscar.html
@@ -13,98 +14,15 @@
 namespace zap { namespace generators {
     template <typename T>
     struct perlin {
-        T fractal(T x, byte octaves, T persistence=T(.5), T lacunarity=T(2)) {
-            T freq = T(1);
-            T ampl = T(1);
-            T accum = T(0);
-            T mag = T(0);   // Limit is 2
-            for(byte i = 0; i != octaves; ++i) {
-                accum += ampl*noise1(x*freq);
-                mag += ampl;
-                ampl *= persistence;
-                freq *= lacunarity;
-            }
-            return (T(1)/mag)*accum;
-        }
+        using type_t = T;
 
-        // Output approximately in range [-.5, .5] - requires clamping
-        T fractal(T x, T y, byte octaves, T persistence=T(.5), T lacunarity=T(2)) {
-            T freq = T(1);
-            T ampl = T(1);
-            T accum = T(0);
-            T mag = T(0);   // Limit is 2
-            for(byte i = 0; i != octaves; ++i) {
-                accum += ampl*noise2(x*freq, y*freq);
-                mag += ampl;
-                ampl *= persistence;
-                freq *= lacunarity;
-            }
-            return (T(1)/mag)*accum;
-        }
+        T noise(T x) const {
+            using namespace maths;
 
-        T fractal(T x, T y, T z, byte octaves, T persistence=T(.5), T lacunarity=T(2)) {
-            T freq = T(1);
-            T ampl = T(1);
-            T accum = T(0);
-            T mag = T(0);   // Limit is 2
-            for(byte i = 0; i != octaves; ++i) {
-                accum += ampl*noise3(x*freq, y*freq, z*freq);
-                mag += ampl;
-                ampl *= persistence;
-                freq *= lacunarity;
-            }
-            return (T(1)/mag)*accum;
-        }
-
-        T turbulence(T x, byte octaves, T persistence=T(.5), T lacunarity=T(2)) {
-            T freq = T(1);
-            T ampl = T(1);
-            T accum = T(0);
-            T mag = T(0);   // Limit is 2
-            for(byte i = 0; i != octaves; ++i) {
-                accum += maths::abs(ampl*noise1(x*freq));
-                mag += ampl;
-                ampl *= persistence;
-                freq *= lacunarity;
-            }
-            return (T(1)/mag)*accum;
-        }
-
-        // Output in range [0, .5]
-        T turbulence(T x, T y, byte octaves, T persistence=T(.5), T lacunarity=T(2)) {
-            T freq = T(1);
-            T ampl = T(1);
-            T accum = T(0);
-            T mag = T(0);   // Limit is 2
-            for(byte i = 0; i != octaves; ++i) {
-                accum += maths::abs(ampl*noise2(x*freq, y*freq));
-                mag += ampl;
-                ampl *= persistence;
-                freq *= lacunarity;
-            }
-            return (T(1)/mag)*accum;
-        }
-
-        // Output in range [0, .5]
-        T turbulence(T x, T y, T z, byte octaves, T persistence=T(.5), T lacunarity=T(2)) {
-            T freq = T(1);
-            T ampl = T(1);
-            T accum = T(0);
-            T mag = T(0);   // Limit is 2
-            for(byte i = 0; i != octaves; ++i) {
-                accum += maths::abs(ampl*noise3(x*freq, y*freq, z*freq));
-                mag += ampl;
-                ampl *= persistence;
-                freq *= lacunarity;
-            }
-            return (T(1)/mag)*accum;
-        }
-
-        T noise1(T arg) {
             int bx0, bx1;
             float rx0, rx1, sx, t, u, v;
 
-            t = arg + noise::mask;
+            t = x + noise::mask;
             bx0 = ((int)t) & noise::mask;
             bx1 = (bx0+1) & noise::mask;
             rx0 = t - (int)t;
@@ -116,15 +34,11 @@ namespace zap { namespace generators {
             return lerp(sx, u, v);
         }
 
-        T noise2(T x, T y) {
-            T v[2] = { x, y };
-            return noise2(v);
-        }
-
-        T noise2(T vec[2]) {
+        T noise(T x, T y) const {
+            using namespace maths;
             float sx, sy, a, b, u, v;
 
-            maths::vec2f pos(vec[0] + noise::mask, vec[1] + noise::mask);
+            maths::vec2f pos(x + noise::mask, y + noise::mask);
             maths::vec2i b0(noise::floor(pos.x) & noise::mask, noise::floor(pos.y) & noise::mask);
             maths::vec2i b1((b0.x + 1) & noise::mask, (b0.y + 1) & noise::mask);
             maths::vec2f r0(pos.x - noise::floor(pos.x), pos.y - noise::floor(pos.y));
@@ -144,15 +58,11 @@ namespace zap { namespace generators {
             return lerp(sy, a, b);
         }
 
-        T noise3(T x, T y, T z) {
-            T v[3] = { x, y, z };
-            return noise3(v);
-        }
-
-        T noise3(T vec[3]) {
+        T noise(T x, T y, T z) const {
+            using namespace maths;
             float sx, sy, sz, a, b, c, d, u, v;
 
-            maths::vec3f pos(vec[0] + noise::mask, vec[1] + noise::mask, vec[2] + noise::mask);
+            maths::vec3f pos(x + noise::mask, y + noise::mask, z + noise::mask);
             maths::vec3i b0(noise::floor(pos.x) & noise::mask, noise::floor(pos.y) & noise::mask, noise::floor(pos.z) & noise::mask);
             maths::vec3i b1((b0.x + 1) & noise::mask, (b0.y + 1) & noise::mask, (b0.z + 1) & noise::mask);
             maths::vec3f r0(pos.x - noise::floor(pos.x), pos.y - noise::floor(pos.y), pos.z - noise::floor(pos.z));
@@ -185,7 +95,6 @@ namespace zap { namespace generators {
         }
 
         static inline T easing_curve(T value) { return value * value * (T(3) - T(2) * value); }
-        static inline T lerp(T value, T a, T b) { return a + value * (b - a); }
     };
 
 }}

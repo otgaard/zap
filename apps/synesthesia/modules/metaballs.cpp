@@ -203,4 +203,3 @@ void metaballs::draw() {
     //app_ptr_->alpha_blending(false);
     app_ptr_->depth_test(false);
 }
-

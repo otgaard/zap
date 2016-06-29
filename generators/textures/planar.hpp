@@ -52,7 +52,7 @@ namespace zap { namespace generators {
             for(size_t col = 0; col != width; ++col) {
                 for(int ch = 0; ch != Pixel::size; ++ch) {
                     auto u = col * inv_w;
-                    image[col].set(ch, maths::lerp(colour_a[ch], colour_b[ch], u));
+                    image[col].set(ch, maths::lerp(u, colour_a[ch], colour_b[ch]));
                 }
             }
 
