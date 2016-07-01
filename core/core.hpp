@@ -12,12 +12,14 @@
 
 // Some missing defs for GCC
 #ifdef __GNUG__
+#ifdef __linux__
 namespace std {
     template<typename T, typename... Args>
     std::unique_ptr<T> make_unique(Args... args) {
         return std::unique_ptr<T>(new T(args...));
     }
 };
+#endif
 #endif
 
 constexpr std::uint32_t INVALID_IDX = std::uint32_t(-1);
