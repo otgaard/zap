@@ -75,7 +75,7 @@ struct vertex : core::pod<Args...> {
     }
 
     vertex() { }
-    vertex(Args... args) : core::pod<Args...>(args...) { }
+    vertex(const Args&... args) : core::pod<Args...>(args...) { }
 };
 
 template <typename VTX_T>

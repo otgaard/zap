@@ -66,7 +66,7 @@ struct pod<Arg, Args...> : Arg, pod<Args...> {
     using id_t = typename Arg::id_t;
     static_assert(is_podfield<Arg>::value, "pod<> only accepts podfield<> parameters");
     constexpr pod() = default;
-    pod(const Arg& arg, Args... args) : Arg(arg), pod<Args...>(args...) { }
+    pod(const Arg& arg, const Args&... args) : Arg(arg), pod<Args...>(args...) { }
 };
 
 /* POD queries (using the generate_table metafunction) */

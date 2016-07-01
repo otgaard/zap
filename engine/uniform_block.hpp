@@ -17,7 +17,7 @@ struct uniform_block : core::pod<Args...> {
     using offsets = typename core::generate_table<size, pod_t, core::pod_offset>::result;
 
     uniform_block() { }
-    uniform_block(Args... args) : core::pod<Args...>(args...) { }
+    uniform_block(const Args&... args) : core::pod<Args...>(args...) { }
 };
 
 enum class ublock_attribute : size_t {
