@@ -109,7 +109,7 @@ const char* cube_frg_src = GLSL(
     float turbulence3(float x, float y, float z, int octaves, float persistence, float lacunarity) {
         float freq = 1.0; float ampl = 1.0; float accum = 0.0; float mag = 0.0;
         for(int i = 0; i != octaves; ++i) {
-            accum += abs(ampl * vnoise3(freq * x, freq * y, freq * z));
+            accum += abs(ampl * (2.0*vnoise3(freq * x, freq * y, freq * z) - 1.0));
             mag += ampl;
             ampl *= persistence;
             freq *= lacunarity;
@@ -119,7 +119,8 @@ const char* cube_frg_src = GLSL(
 
     void main() {
         float s = max(dot(nor, light_dir), 0);
-        frag_colour = vec4(vec3(s*turbulence3(10*pos.x, 10*pos.y, 10*pos.z, 4, .5, 2.)), 1);
+        float v = turbulence3(10*pos.x, 10*pos.y, 10*pos.z, 4, .5, 2.);
+        frag_colour = vec4(s*mix(vec3(1,1,0), vec3(1,0,0), v), 1);
         //frag_colour = vec4(s*texture(tex, tc).rgb, 1);
     }
 );
