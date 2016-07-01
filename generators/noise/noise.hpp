@@ -18,6 +18,8 @@ namespace zap { namespace generators {
         constexpr static size_t prn_tbl_size = 256;
         constexpr static byte mask = prn_tbl_size - 1;
 
+        static bool is_initialised() { return initialised; }
+
         template <typename T> static int floor(T x) { return ((int)x - (x < 0 && x != (int)x)); }
         static byte perm(int x) { return noise::prn_tbl[x & noise::mask]; }
         static byte perm(int x, int y) { return perm(x + perm(y)); }
@@ -85,6 +87,11 @@ namespace zap { namespace generators {
         static float grad_i(int x) { return grad1[perm(x)]; }
         static float grad_i(int x, int y) { return grad1[perm(x,y)]; }
         static float grad_i(int x, int y, int z) { return grad1[perm(x,y,z)]; }
+
+        static const byte* prn_tbl_ptr() { return prn_tbl; }
+        static const vec3f* grad3_tbl_ptr() { return grad3; }
+        static const vec2f* grad2_tbl_ptr() { return grad2; }
+        static const float* grad1_tbl_ptr() { return grad1; }
 
     protected:
         static bool initialised;

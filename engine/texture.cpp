@@ -14,29 +14,46 @@
  *  glTexSubImage2D, glTexSubImage3D
  */
 
+/* TODO: Implement correct type handling for pixel formats */
+
+zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap::engine::pixel_datatype datatype) {
+    using namespace zap::engine; using namespace gl;
+    if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) return gl_type(format);
+    else if(datatype == pixel_datatype::PD_UNSIGNED_BYTE_3_3_2) return gl_type(format);
+    else if(datatype == pixel_datatype::PD_FLOAT) {
+        if(format == pixel_format::PF_RGB) return GL_RGB32F;
+        else return GL_NONE;
+    }
+    return GL_NONE;
+}
+
+/* TODO: Fix all this code and build a proper set of reflection structures to automate binding. */
+
 template <typename Pixel>
 bool zap::engine::texture::initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps) {
     using namespace gl;
 
     bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, generate_mipmaps ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     const auto format =  gl_type(pixel_type<Pixel>::format);
     const auto datatype = gl_type(pixel_type<Pixel>::datatype);
 
-    // TODO: Fix texture alignment
-    int pixel_alignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    // TODO: Fix texture alignment (let float use 4 for now)
+    int pixel_alignment = 0;
+    if(pixel_type<Pixel>::datatype == pixel_datatype::PD_UNSIGNED_BYTE) {
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    }
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, datatype, buffer.data());
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
 
     release();
-    glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
+    if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
     return !gl_error_check();
 }
 
@@ -44,6 +61,7 @@ bool zap::engine::texture::initialise(size_t width, size_t height, const std::ve
 namespace zap { namespace engine {
     template bool texture::initialise<rgb888_t>(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
+    template bool texture::initialise<rgb32f_t>(size_t width, size_t height, const std::vector<rgb32f_t>& buffer, bool generate_mipmaps);
 }}
 
 using namespace zap::engine;
@@ -72,33 +90,56 @@ size_t texture::query_max_units() {
 
 void texture::bind(size_t unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, id_);      // TODO: Oi!
+    glBindTexture(gl_type(type_), id_);
     gl_error_check();
 }
 
 void texture::release() const {
-    glBindTexture(GL_TEXTURE_2D, 0);        // TODO: Oi!
+    glBindTexture(gl_type(type_), 0);
 }
 
 bool texture::is_bound() const {
-    LOG_WARN("OpenGL query operation invoked");
+    LOG_WARN("OpenGL query operation invoked", "Incomplete function invoked");
     GLint bound = 0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound);   // TODO: Generic for tex type
     return id_ == (resource_t)bound;
 }
 
-bool texture::initialise(size_t width, size_t height, pixel_format format, pixel_datatype datatype, bool generate_mipmaps) {
+
+bool texture::initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype, const void* data) {
     using namespace gl;
 
-    bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    type_ = type;
+    auto gltype = gl_type(type);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_type(format), width, height, 0, gl_type(format), gl_type(datatype), 0);
-    if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+    bind();
+    glTexParameteri(gltype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(gltype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(gltype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(gltype, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    // TODO: Fix texture alignment (let float use 4 for now)
+    int pixel_alignment = 0;
+    if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) {
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    }
+
+    if(type_ == texture_type::TT_TEX1D) {
+        if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE)
+            glTexImage1D(gltype, 0, GL_R8UI, width, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
+        else
+            glTexImage1D(gltype, 0, gl_type(format), width, 0, gl_type(format), gl_type(datatype), data);
+    } else if(type_ == texture_type::TT_TEX2D) {
+        if(datatype == pixel_datatype::PD_FLOAT)
+            glTexImage2D(gltype, 0, GL_RGB32F, width, height, 0, GL_RGB, gl_type(datatype), data);
+        else
+            glTexImage2D(gltype, 0, gl_type(format), width, height, 0, gl_type(format), gl_type(datatype), data);
+    } else {
+        LOG_ERR("This function is incomplete and the texture you've just initialised isn't gonna work.");
+    }
 
     release();
+    if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
     return !gl_error_check();
 }

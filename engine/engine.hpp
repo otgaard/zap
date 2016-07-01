@@ -100,6 +100,7 @@ namespace zap { namespace engine {
         PD_FLOAT,
         PD_UNSIGNED_INT_24_8,
         PD_UNSIGNED_INT,
+        PD_DN_UNSIGNED_BYTE, // denormalised unsigned byte
         PD_SIZE
     };
 
@@ -162,6 +163,19 @@ namespace zap { namespace engine {
         PT_TRIANGLE_STRIP = 6,
         PT_TRIANGLE_FAN = 7,
         PT_SIZE = 8
+    };
+
+    enum class texture_type : std::uint8_t {
+        TT_NONE = 0,
+        TT_TEX1D = 1,
+        TT_TEX2D = 2,
+        TT_TEX3D = 3,
+        TT_TEX2D_MS = 4,
+        TT_CUBE_MAP = 5,
+        TT_RECTANGLE = 6,
+        TT_TEX1D_ARR = 7,
+        TT_TEX2D_ARR = 8,
+        TT_SIZE = 9
     };
 
     bool _gl_error_log(const char* file, int line);

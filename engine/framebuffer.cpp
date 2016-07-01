@@ -64,7 +64,7 @@ bool framebuffer::initialise() {
         attachments_.emplace_back(texture());
         draw_buffers_.push_back(GL_COLOR_ATTACHMENT0 + i);
         attachments_[i].allocate();
-        attachments_[i].initialise(width_, height_, pix_format_, pix_dtype_, mipmaps_);
+        attachments_[i].initialise(texture_type::TT_TEX2D, width_, height_, pix_format_, pix_dtype_);
         attachments_[i].bind();
         if(mipmaps_) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -79,8 +79,8 @@ bool framebuffer::initialise() {
 
     if(depthstencil_) {
         attachments_[target_count_].allocate();
-        attachments_[target_count_].initialise(width_, height_, pixel_format::PF_DEPTH_STENCIL,
-                                               pixel_datatype::PD_UNSIGNED_INT_24_8, false);
+        attachments_[target_count_].initialise(texture_type::TT_TEX2D, width_, height_, pixel_format::PF_DEPTH_STENCIL,
+                                               pixel_datatype::PD_UNSIGNED_INT_24_8);
         attachments_[target_count_].bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

@@ -21,6 +21,7 @@
 #include <generators/textures/convolution.hpp>
 #include <generators/noise/perlin.hpp>
 #include "plotter2.hpp"
+#include "module.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -73,6 +74,7 @@ protected:
     idx_us16_t cylinder_index;
     vbuf_p3n3t2_t cylinder_buffer;
     plotter2 plotter;
+    noise_module mod;
 };
 
 void zap_example::initialise() {
@@ -171,26 +173,19 @@ void zap_example::initialise() {
     //generators::value_noise<float> vnoise_gen;
     //generators::perlin<float> pnoise_gen;
 
-    using noise = generators::noise;
+    //using noise = generators::noise;
 
     const auto cols = 1024, rows = 512;
-    const auto inv_c = float(TWO_PI)/(cols-1), inv_r = 16.f/rows;
-    //auto inv_c = 1.f/cols, inv_r = 1.f/rows;
-    UNUSED(inv_c); UNUSED(inv_r);
-
-    std::vector<rgb888_t> pixels(cols*rows);
-
-    //auto frac1 = noise::make_fractal<generators::perlin<float>, float, float, float, float>(4, .5f, 2.f);
-    auto turb1 = noise::make_turbulence<generators::perlin<float>, float, float, float, float>(4, .5f, 2.f);
+    //const auto inv_c = float(TWO_PI)/(cols-1), inv_r = 16.f/rows;
+    std::vector<rgb32f_t> pixels(cols*rows);
 
     for(size_t r = 0; r != rows; ++r) {
         for(size_t c = 0; c != cols; ++c) {
-            const float theta = (c%(cols-1))*inv_c, ctheta = std::cos(theta), stheta = std::sin(theta);
-            float value = 2*noise::turbulence<generators::perlin<float>>(4, .5f, 2.f, 8*ctheta, 8*stheta, r*inv_r);
-            if(r < 256) ;//value = scale_bias(frac1(8*ctheta, 8*stheta, r*inv_r), 1.f, 0.5f);
-            else        value = 2*turb1(8*ctheta, 8*stheta, r*inv_r);
-            vec3b P = lerp(value, colour::green8, colour::black8);
-            pixels[cols*r+c].set3(P.x, P.y, P.z);
+           // const float theta = (c%(cols-1))*inv_c, ctheta = std::cos(theta), stheta = std::sin(theta);
+            //float value = scale_bias(noise::fractal<generators::perlin<float>>(4, .5f, 2.f, 8*ctheta, 8*stheta, r*inv_r), 1.f, .5f);
+            float value = scale_bias(generators::value_noise<float>::noise(20*PI*c/float(cols), 20*r/float(rows)), 0.5f, 0.5f);
+            vec3b P;
+            pixels[cols*r+c].set3(value, value, value);
         }
     }
 
@@ -219,6 +214,8 @@ void zap_example::initialise() {
         LOG_ERR("Could not initialise plotter");
         return;
     }
+
+    mod.initialise();
 
     gl_error_check();
 }
@@ -253,6 +250,7 @@ void zap_example::update(double t, float dt) {
         ref.mv_matrix = make_translation<float>(0, 0.f, -3.f) *
                         make_rotation(vec3f(0,1,0), rot) *
                         make_rotation(vec3f(1,0,0), PI/2);
+        ref.scale += dt;
         uni1.unmap();
     }
 
@@ -267,9 +265,12 @@ void zap_example::draw() {
 
     cylinder.bind();
 
-    test_tex.bind(0);
+
+    mod.bind(1, 0, 2);
+    //test_tex.bind(0);
     cylinder.draw();
-    test_tex.release();
+    //test_tex.release();
+    mod.release();
 
     //cube_buffer.release();
     //cube.release();

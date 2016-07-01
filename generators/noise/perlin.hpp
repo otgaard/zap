@@ -68,7 +68,7 @@ namespace zap { namespace generators {
             maths::vec3f r0(pos.x - noise::floor(pos.x), pos.y - noise::floor(pos.y), pos.z - noise::floor(pos.z));
             maths::vec3f r1 = r0 - maths::vec3f(1,1,1);
 
-            sx  = easing_curve(r0.x);
+            sx = easing_curve(r0.x);
             sy = easing_curve(r0.y);
             sz = easing_curve(r0.z);
 

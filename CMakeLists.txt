@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(zap)
 
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Debug")
 
 set(CMAKE_STATIC_BUILD TRUE)
@@ -101,7 +101,7 @@ set(ZAP_EXAMPLE_FILES
         apps/zap_example/generator.hpp
         apps/zap_example/shader_src.hpp
         apps/zap_example/plotter2.cpp
-        apps/zap_example/plotter2.hpp)
+        apps/zap_example/plotter2.hpp apps/zap_example/module.cpp apps/zap_example/module.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp

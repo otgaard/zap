@@ -8,21 +8,9 @@
 
 namespace zap { namespace engine {
 
-/*
-enum class texture_type : char {
-    TT_NONE,
-    TT_TEX1D,
-    TT_TEX2D,
-    TT_TEX2D_MS,
-    TT_TEX3D_MS,
-    TT_CUBE,
-    TT_GUARD
-};
-*/
-
 class texture {
 public:
-    texture() : id_(INVALID_RESOURCE) { }
+    texture(texture_type type=texture_type::TT_TEX2D) : type_(type), id_(INVALID_RESOURCE) { }
     ~texture() { if(is_allocated()) deallocate(); }
 
     bool allocate();
@@ -38,11 +26,14 @@ public:
     // Test Function
     template <typename Pixel>
     bool initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps=false);
-    bool initialise(size_t width, size_t height, pixel_format format, pixel_datatype datatype, bool generate_mipmaps=false);
+    /*bool initialise(size_t width, size_t height, pixel_format format, pixel_datatype datatype);*/
+    bool initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
+                    const void* data=nullptr);
 
     static size_t query_max_units();
 
 protected:
+    texture_type type_;
     resource_t id_;
 };
 

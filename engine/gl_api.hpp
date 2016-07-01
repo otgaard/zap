@@ -149,6 +149,30 @@ namespace zap { namespace engine { namespace gl {
             "GL_UNSIGNED_INT"
     };
 
+    constexpr GLenum gl_texture_type[(int)texture_type::TT_SIZE] = {
+            GL_NONE,
+            GL_TEXTURE_1D,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_3D,
+            GL_TEXTURE_2D_MULTISAMPLE,
+            GL_TEXTURE_CUBE_MAP,
+            GL_TEXTURE_RECTANGLE,
+            GL_TEXTURE_1D_ARRAY,
+            GL_TEXTURE_2D_ARRAY
+    };
+
+    constexpr const char* gl_texture_type_names[(int)texture_type::TT_SIZE] = {
+            "GL_NONE",
+            "GL_TEXTURE_1D",
+            "GL_TEXTURE_2D",
+            "GL_TEXTURE_3D",
+            "GL_TEXTURE_2D_MULTISAMPLE",
+            "GL_TEXTURE_CUBE_MAP",
+            "GL_TEXTURE_RECTANGLE",
+            "GL_TEXTURE_1D_ARRAY",
+            "GL_TEXTURE_2D_ARRAY"
+    };
+
     constexpr GLenum gl_type(shader_type type) { return gl_shader_types[(int)type]; }
     constexpr const char* gl_typename(shader_type type) { return gl_shader_type_names[(int)type]; }
     constexpr GLenum gl_type(buffer_type type) { return gl_buffer_types[(int)type]; }
@@ -165,6 +189,8 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(pixel_format type) { return gl_pixel_format_names[(int)type]; }
     constexpr GLenum gl_type(pixel_datatype type) { return gl_pixel_dtype_type[(int)type]; }
     constexpr const char* gl_typename(pixel_datatype type) { return gl_pixel_dtype_names[(int)type]; }
+    constexpr GLenum gl_type(texture_type type) { return gl_texture_type[(int)type]; }
+    constexpr const char* gl_typename(texture_type type) { return gl_texture_type_names[(int)type]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
 
