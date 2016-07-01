@@ -126,8 +126,9 @@ struct pod_size {
 
 template <typename... Args>
 struct mapping : pod<Args...> {
+#ifndef __GNUG__
     static_assert(std::is_trivially_copyable<pod<Args...>>::value, "mapping<> must be trivially copyable");
-
+#endif
     using pod_t = pod<Args...>;
     constexpr static size_t size = sizeof...(Args);
     constexpr static size_t bytesize = sizeof(pod_t);

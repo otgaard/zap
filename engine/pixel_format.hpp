@@ -69,7 +69,9 @@ namespace zap { namespace engine {
 
     template<typename T, typename... Channels>
     struct pixel : pixel_data<T, sizeof...(Channels)> {
+#ifndef __GNUG__
         static_assert(std::is_trivially_copyable<pixel_data<T, sizeof...(Channels)>>::value, "pixel<> must be trivially copyable");
+#endif
         using data_t = pixel_data<T, sizeof...(Channels)>;
         constexpr static size_t size = sizeof...(Channels);
         constexpr static size_t bytesize = sizeof(data_t);

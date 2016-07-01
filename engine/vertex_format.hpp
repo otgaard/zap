@@ -2,6 +2,8 @@
 #ifndef ZAP_BUFFER_FORMAT_HPP
 #define ZAP_BUFFER_FORMAT_HPP
 
+#include <memory>
+#include <cstring>
 #include "engine.hpp"
 #include <maths/maths.hpp>
 #include "vertex_attribute.hpp"

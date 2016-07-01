@@ -4,6 +4,7 @@
 
 #include "noise.hpp"
 #include <random>
+#include <algorithm>
 
 namespace zap { namespace generators {
     bool noise::initialised = false;

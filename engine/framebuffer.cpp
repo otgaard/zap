@@ -78,6 +78,7 @@ bool framebuffer::initialise() {
     }
 
     if(depthstencil_) {
+        attachments_.emplace_back(texture());
         attachments_[target_count_].allocate();
         attachments_[target_count_].initialise(texture_type::TT_TEX2D, width_, height_, pixel_format::PF_DEPTH_STENCIL,
                                                pixel_datatype::PD_UNSIGNED_INT_24_8);

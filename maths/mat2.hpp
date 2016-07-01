@@ -79,9 +79,9 @@ namespace zap { namespace maths {
             }
         }
 
-        constexpr T& operator[](size_t i) const {
+        const T& operator[](size_t i) const {
             assert(i < size() && ZERR_IDX_OUT_OF_RANGE);
-            return i == 0 ? m00 : i == 1 ? m10 : i == 2 ? m01 : i == 3 ? m11 : *static_cast<T*>(nullptr);
+            return arr[i];
         }
 
         T& operator[](size_t i) {
@@ -89,7 +89,7 @@ namespace zap { namespace maths {
             return arr[i];
         }
 
-        constexpr T& operator()(size_t row, size_t col) const {
+        const T& operator()(size_t row, size_t col) const {
             assert(row < rows() && col < cols() && ZERR_IDX_OUT_OF_RANGE);
             return operator[](idx(row,col));
         }

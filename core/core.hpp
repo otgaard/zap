@@ -5,9 +5,20 @@
 #ifndef ZAP_CORE_HPP
 #define ZAP_CORE_HPP
 
+#include <memory>
 #include <cstdint>
 #include <cassert>
 #include <type_traits>
+
+// Some missing defs for GCC
+#ifdef __GNUG__
+namespace std {
+    template<typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args... args) {
+        return std::unique_ptr<T>(new T(args...));
+    }
+};
+#endif
 
 constexpr std::uint32_t INVALID_IDX = std::uint32_t(-1);
 using uchar = unsigned char;
