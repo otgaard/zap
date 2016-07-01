@@ -134,7 +134,7 @@ struct mapping : pod<Args...> {
     constexpr static size_t bytesize = sizeof(pod_t);
 
     mapping() = default;
-    mapping(Args... args) : pod<Args...>(args...) { }
+    mapping(const Args&... args) : pod<Args...>(args...) { }
 };
 
 }}
