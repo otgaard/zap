@@ -5,6 +5,7 @@
 
 #include <generators/textures/planar.hpp>
 #include <generators/geometry/surface.hpp>
+#include <generators/noise/noise.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -27,22 +28,68 @@ const char* metaballs_vshdr = GLSL(
         void main() {
             freq = scale;
             nor = normal;
-            tex = position.xyz;
+            tex = vec3(position.xy, position.z+scale);
             gl_Position = proj_matrix * mv_matrix * vec4(position.x, position.y, position.z, 1.0);
         }
 );
 
 const char* metaballs_fshdr = GLSL(
-        uniform sampler2D diffuse;
+        //uniform sampler2D diffuse;
+        uniform usampler1D diffuse;
         in vec3 nor;
         in vec3 tex;
         in float freq;
 
+        int prn(int x) { return int(texelFetch(diffuse, x & 0xFF, 0).r); }
+        int prn2(int x, int y) { return prn(x + prn(y)); }
+        int prn3(int x, int y, int z) { return prn(x + prn(y + prn(z))); }
+
+        float bilinear1(float u, float v, float P00, float P01, float P10, float P11) {
+            float omu = 1.0 - u; return (1.0 - v)*(P00*omu + P01*u) + v*(P10*omu + P11*u);
+        }
+
+        float vnoise2(float x, float y) {
+            int xi = int(x); int yi = int(y);
+            float dx = x - xi; float dy = y - yi;
+            return bilinear1(dx, dy, prn2(xi, yi), prn2(xi+1, yi), prn2(xi, yi+1), prn2(xi+1, yi+1))/255.0;
+        }
+
+        float vnoise3(float x, float y, float z) {
+            int xi = int(floor(x)); int yi = int(floor(y)); int zi = int(floor(z));
+            float dx = x - xi; float dy = y - yi; float dz = z - zi;
+            return mix(bilinear1(dx, dy, prn3(xi, yi, zi),   prn3(xi+1, yi, zi),   prn3(xi, yi+1, zi),   prn3(xi+1, yi+1, zi)),
+                       bilinear1(dx, dy, prn3(xi, yi, zi+1), prn3(xi+1, yi, zi+1), prn3(xi, yi+1, zi+1), prn3(xi+1, yi+1, zi+1)),
+                       dz)/255.0;
+        }
+
+        float turbulence2(float x, float y, int octaves, float persistence, float lacunarity) {
+            float freq = 1.0; float ampl = 1.0; float accum = 0.0; float mag = 0.0;
+            for(int i = 0; i != octaves; ++i) {
+                accum += abs(ampl * vnoise2(freq * x, freq * y));
+                mag += ampl;
+                ampl *= persistence;
+                freq *= lacunarity;
+            }
+            return 1.0/mag*accum;
+        }
+
+        float turbulence3(float x, float y, float z, int octaves, float persistence, float lacunarity) {
+            float freq = 1.0; float ampl = 1.0; float accum = 0.0; float mag = 0.0;
+            for(int i = 0; i != octaves; ++i) {
+                accum += abs(ampl * (2.0*vnoise3(freq * x, freq * y, freq * z) - 1.0));
+                mag += ampl;
+                ampl *= persistence;
+                freq *= lacunarity;
+            }
+            return 1.0/mag*accum;
+        }
+
         out vec4 frag_colour;
         void main() {
             float s = max(dot(nor, vec3(0,0,1)), 0);
-            vec3 colour = mix(vec3(1,0,0), vec3(0,0,1), texture(diffuse, tex.xy).s);
-            frag_colour = vec4(s*colour, 0.8);
+            vec3 colour = mix(vec3(0,0.75,0), vec3(0,0,0), turbulence3(30*tex.x, 30*tex.y, 30*tex.z, 4, .5, 2.));
+            //vec3 colour = mix(vec3(1,0,0), vec3(0,0,1), texture(diffuse, tex.xy).s);
+            frag_colour = vec4(s*colour, 1.0);
         }
 );
 
@@ -82,9 +129,15 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
     s.metaballs_program.add_shader(new shader(shader_type::ST_FRAGMENT, metaballs_fshdr));
     if(!s.metaballs_program.link(true)) gl_error_check();
 
-    s.tex1.allocate();
-    s.tex1.bind();
-    s.tex1.initialise(32, 32, generators::planar<rgb332_t>::make_checker(32, 32, colour::black8, colour::white8), true);
+    //s.tex1.allocate();
+    //s.tex1.bind();
+    //s.tex1.initialise(32, 32, generators::planar<rgb332_t>::make_checker(32, 32, colour::black8, colour::white8), true);
+
+    if(!generators::noise::is_initialised()) generators::noise::initialise();
+
+    LOG("Step 0");
+    if(!s.tex1.allocate()) { LOG_ERR("Couldn't initialise noise PRN table texture"); return; }
+    s.tex1.initialise(texture_type::TT_TEX1D, 256, 1, pixel_format::PF_RED, pixel_datatype::PD_DN_UNSIGNED_BYTE, generators::noise::prn_tbl_ptr());
 
     s.metaballs_program.bind();
     auto tex_loc = s.metaballs_program.uniform_location("diffuse");
@@ -98,6 +151,7 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
     s.uniform.initialise(nullptr);
     if(s.uniform.map(buffer_access::BA_WRITE_ONLY)) {
         auto& ref = s.uniform.ref();
+        ref.scale = 0.f;
         ref.cam_projection = make_perspective<float>(45.f, 1280.f / 768.f, 1.f, 100.f);
         ref.mv_matrix = make_scale<float>(30,30,10) * make_translation<float>(-.5f, -.5f, -2.f);
         s.uniform.unmap();
@@ -143,7 +197,7 @@ void metaballs::update(double t, float dt) {
     static float mag[16];
     for(int i = 0; i < 16; ++i) {
         float theta = i*dtheta;
-        mag[i] = .4f*0.5f*(analysis_[2*i] + analysis_[2*i+1]);
+        mag[i] = .4f*0.5f*(window_[2*i] + window_[2*i+1]);
         positions[i] = vec3f(.5f + mag[i]*std::cos(theta), .5f + mag[i]*std::sin(theta), .5f + ((i%2) ? -0.05f : +0.05f));
     }
 
@@ -176,6 +230,7 @@ void metaballs::update(double t, float dt) {
                 make_rotation(vec3f(0,1,0), y_angle.value) *
                 make_rotation(vec3f(0,0,1), s.rotation) *
                 make_translation<float>(-.5f, -.5f, -.5f);
+        ref.scale += 0.005f*analysis_.estimated_beat;
         s.uniform.unmap();
     }
     s.uniform.release();

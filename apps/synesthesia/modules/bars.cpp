@@ -49,10 +49,8 @@ struct bars::state_t {
     texture checker;
 };
 
-bars::bars(application* app_ptr) : module(app_ptr, "bars") {
+bars::bars(application* app_ptr) : module(app_ptr, "bars"), state(new state_t()) {
     UNUSED(bars_fshader);
-
-    state = std::make_unique<state_t>();
 
     // The OpenGL Context should be valid here
     auto& s = *state.get();
@@ -117,7 +115,7 @@ void bars::update(double t, float dt) {
     if(s.bars_buffer.map(buffer_access::BA_WRITE_ONLY)) {
         for(size_t i = 0; i != 64; ++i) {
             size_t idx = 6*i;
-            float height = -10.f + 20.f*analysis_[i];
+            float height = -10.f + 20.f*window_[i];
             s.bars_buffer[idx+2].position.y = height;
             s.bars_buffer[idx+4].position.y = height;
             s.bars_buffer[idx+5].position.y = height;

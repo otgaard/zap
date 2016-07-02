@@ -30,7 +30,9 @@ public:
     analysis process_samples(const std::vector<float>& samples, fft_window& window);
 
 protected:
-
+    float beat_analysis(const fft_window& window);
+    float dominant_frequency(const fft_window& window);
+    float volume_analysis(const fft_window& window);
 
 private:
     struct state_t;

@@ -87,7 +87,9 @@ set(ZAP_ENGINE_FILES
         generators/noise/noise.cpp
         generators/textures/convolution.hpp
         generators/noise/perlin.hpp
-        generators/noise/noise.hpp)
+        generators/noise/noise.hpp
+        graphics2/plotter2.hpp
+        graphics2/plotter2.cpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -100,8 +102,8 @@ set(ZAP_EXAMPLE_FILES
         apps/graphic_types.hpp
         apps/zap_example/generator.hpp
         apps/zap_example/shader_src.hpp
-        apps/zap_example/plotter2.cpp
-        apps/zap_example/plotter2.hpp apps/zap_example/module.cpp apps/zap_example/module.hpp)
+        apps/zap_example/module.cpp
+        apps/zap_example/module.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp
@@ -130,7 +132,9 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/modules/bars.hpp
         apps/graphic_types.hpp
         apps/synesthesia/modules/metaballs.cpp
-        apps/synesthesia/modules/metaballs.hpp apps/synesthesia/spectral_analyser.hpp apps/synesthesia/spectral_analyser.cpp)
+        apps/synesthesia/modules/metaballs.hpp
+        apps/synesthesia/spectral_analyser.hpp
+        apps/synesthesia/spectral_analyser.cpp apps/synesthesia/modules/graphs.cpp apps/synesthesia/modules/graphs.hpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)

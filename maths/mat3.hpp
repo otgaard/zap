@@ -27,7 +27,7 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    struct mat3 {
+    struct ALIGN_DECL(16) mat3 {
         using type = T;
 
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "mat3<T>: T must be an algebraic type");
@@ -90,7 +90,13 @@ namespace zap { namespace maths {
             __m128 xmm[cols()];
 #endif //ZAP_MATHS_SSE2
         };
-	}; // __attribute__((aligned(16)));
+	} ALIGN_ATTR(16);
+
+    using mat3b = mat3<uint8_t>;
+    using mat3s = mat3<int16_t>;
+    using mat3i = mat3<int32_t>;
+    using mat3f = mat3<float>;
+    using mat3d = mat3<double>;
 }}
 
 #endif //ZAP_MAT3_HPP

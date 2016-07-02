@@ -47,4 +47,13 @@ struct is_specialisation_of : std::false_type { };
 template <template <typename...> class TYPE, typename... P>
 struct is_specialisation_of<TYPE, TYPE<P...>> : std::true_type { };
 
+/*
+ * Some necessary functions I repeatedly need
+ */
+
+template <typename T, size_t size, typename FNC>
+void shift_array(T* begin, size_t shift, FNC set_fnc) {
+    for(size_t i = size-1, end = shift-1; i != end; --i) set_fnc(begin[i], begin[i-shift]);
+}
+
 #endif //ZAP_CORE_HPP

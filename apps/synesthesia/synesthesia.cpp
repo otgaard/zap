@@ -30,6 +30,7 @@
 #include "modules/module.hpp"
 #include "modules/bars.hpp"
 #include "modules/metaballs.hpp"
+#include "modules/graphs.hpp"
 #include "spectral_analyser.hpp"
 
 using namespace zap;
@@ -41,7 +42,7 @@ using namespace zap::engine;
  **********************/
 
 constexpr float inv_s16 = 1.f/std::numeric_limits<short>::max();
-const char* mp3file = "/Users/otgaard/synesthesia_music_folder/4.mp3";
+const char* mp3file = "/Users/otgaard/synesthesia_music_folder/3.mp3";
 //const char* mp3file = "/Users/otgaard/Development/zap/output/assets/chembros4.mp3";
 //const char* mp3file = "/Users/otgaard/test.mp3";
 
@@ -53,7 +54,8 @@ struct stream_data {
     std::unique_ptr<mp3_stream> stream;
     std::atomic<bool> read_flag;
     std::atomic<bool> write_flag;
-    spectral_analyser::fft_window curr_analysis;
+    spectral_analyser::fft_window curr_window;
+    analysis curr_analysis;
     spectral_analyser analyser;
 } stream;
 
@@ -90,9 +92,10 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
 
     if(delay_count > 0) {
         std::transform(delay.begin(), delay.begin() + delay_count, samples.begin(), [](short s) { return inv_s16 * s; });
-        stream_ptr->analyser.process_samples(samples, analysis);
+        auto a = stream_ptr->analyser.process_samples(samples, analysis);
         if(stream_ptr->write_flag) {
-            std::copy(analysis.begin(), analysis.begin() + stream_ptr->curr_analysis.size(), stream_ptr->curr_analysis.begin());
+            std::copy(analysis.begin(), analysis.begin() + stream_ptr->curr_window.size(), stream_ptr->curr_window.begin());
+            stream_ptr->curr_analysis = a;
             stream_ptr->write_flag = false;
             stream_ptr->read_flag = true;
         }
@@ -141,8 +144,8 @@ void synesthesia::play() {
     if(is_stopped() && !stream_ptr_) {
         stream_ptr_ = std::make_unique<stream_data>();
         stream_ptr_->stream = std::make_unique<mp3_stream>(mp3file, 4 * 1024, nullptr);
-        state_ = audio_state::AS_PLAYING;
         play_mp3(mp3file);
+        state_ = audio_state::AS_PLAYING;
     } else if(is_paused()) {
         state_ = audio_state::AS_PLAYING;
     }
@@ -162,7 +165,8 @@ void synesthesia::initialise() {
 
     // Initialise modules...
     modules_.emplace_back(std::make_unique<bars>(this));
-    //modules_.emplace_back(std::make_unique<metaballs>(this));
+    modules_.emplace_back(std::make_unique<metaballs>(this));
+    modules_.emplace_back(std::make_unique<graphs>(this));
 
     play();
 }
@@ -213,20 +217,25 @@ bool synesthesia::play_mp3(const std::string& path) {
  ********/
 
 void synesthesia::update(double t, float dt) {
+    if(state_ != audio_state::AS_PLAYING) return;
     if(pa_stream_ && Pa_IsStreamActive(pa_stream_) <= 0) {
         if(Pa_Terminate() != paNoError) LOG_ERR("Pa_Terminate error");
         LOG("Finished mp3");
         stream_ptr_.reset(nullptr);
         pa_stream_ = nullptr;
+        state_ = audio_state::AS_STOPPED;
 
         // Zero the fft
-        module::fft_analysis_t zeros;
+        module::fft_window zeros;
         for(auto& v : zeros) v = 0.f;
-        for(auto& mod : modules_) mod->set_analysis(zeros);
+        for(auto& mod : modules_) mod->set_window(zeros);
     }
 
     if(stream_ptr_ && stream_ptr_->read_flag) {
-        for(auto& mod : modules_) mod->set_analysis(stream_ptr_->curr_analysis);
+        for(auto& mod : modules_) {
+            mod->set_window(stream_ptr_->curr_window);
+            mod->set_analysis(stream_ptr_->curr_analysis);
+        }
         stream_ptr_->read_flag = false;
         stream_ptr_->write_flag = true;
     }
@@ -239,6 +248,7 @@ void synesthesia::update(double t, float dt) {
  ******/
 
 void synesthesia::draw() {
+    if(state_ != audio_state::AS_PLAYING) return;
     for(auto& mod : modules_) mod->draw();
 }
 

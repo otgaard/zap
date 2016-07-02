@@ -18,8 +18,7 @@ void fft::run_fft(const std::vector<float>& samples, std::vector<float>& bins, s
     if(bins.size() != samples.size()) bins.resize(samples.size());
     process_samples(samples.data(), 2, bins);
 
-    // Assumes a window size of 1024 samples, stereo
-    for(int i = 0; i != 512; ++i) {
+    for(int i = 0; i != count; ++i) {
         const auto idx = 2*i;
         float mag = 20.f * std::log10f(2.f * inv_s * std::sqrt(bins[idx]*bins[idx] + bins[idx+1]*bins[idx+1]));
         for(int k = 4; k != 0; --k) smoothing_[5*i+k] = smoothing_[5*i+(k-1)];

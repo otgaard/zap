@@ -20,7 +20,7 @@
 #include <maths/curves/curves.hpp>
 #include <generators/textures/convolution.hpp>
 #include <generators/noise/perlin.hpp>
-#include "plotter2.hpp"
+#include <graphics2/plotter2.hpp>
 #include "module.hpp"
 
 using namespace zap;
@@ -73,7 +73,7 @@ protected:
     mesh_p3n3t2_tf_t cylinder;
     idx_us16_t cylinder_index;
     vbuf_p3n3t2_t cylinder_buffer;
-    plotter2 plotter;
+    graphics2::plotter2 plotter;
     noise_module mod;
 };
 

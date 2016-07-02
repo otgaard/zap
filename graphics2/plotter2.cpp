@@ -1,16 +1,29 @@
 /* Created by Darren Otgaar on 2016/06/26. http://www.github.com/otgaard/zap */
 #include "plotter2.hpp"
-#include "apps/graphic_types.hpp"
-#include <generators/noise/perlin.hpp>
+#include <engine/engine.hpp>
+#include <engine/vertex_buffer.hpp>
+#include <engine/mesh.hpp>
+#include <engine/program.hpp>
 
+using namespace zap;
+using namespace zap::maths;
+using namespace zap::engine;
+
+#define GLSL(src) "#version 330 core\n" #src
+
+namespace zap { namespace graphics2 {
+
+using pos2f_t = core::position<vec2f>;
+using vtx_p2_t = vertex<pos2f_t>;
 using vbuf_p2_t = vertex_buffer<vtx_p2_t, buffer_usage::BU_DYNAMIC_DRAW>;
-using mesh_p2_t = mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_LINE_STRIP>;
+using mesh_p2_t = mesh <vertex_stream<vbuf_p2_t>, primitive_type::PT_LINE_STRIP>;
 
 const char* plotter2_vtx_src = GLSL(
     uniform mat4 proj_matrix;
     uniform mat4 mv_matrix;
 
     in vec2 position;
+
     void main() {
         gl_Position = proj_matrix * mv_matrix * vec4(position.xy, 0, 1);
     }
@@ -18,8 +31,9 @@ const char* plotter2_vtx_src = GLSL(
 
 const char* plotter2_frg_src = GLSL(
     out vec4 frag_colour;
+
     void main() {
-        frag_colour = vec4(1,1,1,1);
+        frag_colour = vec4(1, 1, 1, 1);
     }
 );
 
@@ -27,14 +41,42 @@ struct plotter2::state_t {
     vbuf_p2_t buffer;
     mesh_p2_t plot_mesh;
     program style;
-    generators::perlin<float> noise;
 };
 
-plotter2::plotter2() : state_(nullptr) {
-    state_ = std::make_unique<state_t>();
+plotter2::plotter2() : state_(new state_t) {
 }
 
 plotter2::~plotter2() {
+}
+
+void plotter2::push_value(float value) {
+    auto& s = *state_;
+    s.buffer.bind();
+    if(s.buffer.map(buffer_access::BA_READ_WRITE)) {
+        shift_array<vtx_p2_t, 1000>(s.buffer.data(), 1, [](vtx_p2_t& a, const vtx_p2_t& b) {
+            a.position.y = b.position.y;
+        });
+        //for(size_t i = 999; i != 0; --i) s.buffer[i].position.y = s.buffer[i-1].position.y;
+        s.buffer[0].position.y = value;
+        s.buffer.unmap();
+    }
+    s.buffer.release();
+}
+
+void plotter2::set_data(const std::array<float,1000>& data) {
+    auto& s = *state_;
+    s.buffer.bind();
+    if(s.buffer.map(buffer_access::BA_WRITE_ONLY)) {
+        for(size_t i = 0; i != 1000; ++i) s.buffer[i].position.y = clamp(data[i]);
+        s.buffer.unmap();
+    }
+    s.buffer.release();
+}
+
+void plotter2::transform(const mat4f& transform) {
+    state_->style.bind();
+    state_->style.bind_uniform("mv_matrix", transform);
+    state_->style.release();
 }
 
 bool plotter2::initialise() {
@@ -48,26 +90,8 @@ bool plotter2::initialise() {
         return false;
     }
 
-
     s.style.bind();
 
-    /*
-    s.uniform.allocate();
-    s.uniform.bind();
-    gl_error_check();
-    s.uniform.initialise(nullptr);
-    if(s.uniform.map(buffer_access::BA_WRITE_ONLY)) {
-        auto& ref = s.uniform.ref();
-        ref.cam_projection = make_perspective<float>(45.f, 1280.f/768.f, 1.f, 100.f);
-        ref.mv_matrix = make_translation<float>(0, 0, -4.f);
-        s.uniform.unmap();
-    }
-
-    auto loc = s.style.uniform_block_index("transform");
-    s.uniform.bind_point(loc);
-    */
-
-    //auto proj_mat = make_perspective(45.f, 1280.f/768.f, 1.f, 100.f);
     mat4f proj_mat = {
             2.f, 0.f, 0.f, -1.f,
             0.f, 2.f, 0.f, -1.f,
@@ -75,10 +99,8 @@ bool plotter2::initialise() {
             0.f, 0.f, 0.f, 1.f
     };
 
-    //proj_mat = make_perspective<float>(45.f, 1280.f/768.f, 0.5f, 10.f);
-    auto mv_mat = make_translation<float>(0.5f, 0.5f, 0.f) * make_scale<float>(0.45f, 0.45f, 0.f);
     s.style.bind_uniform("proj_matrix", proj_mat);
-    s.style.bind_uniform("mv_matrix", mv_mat);
+    s.style.bind_uniform("mv_matrix", make_translation(0.5f, 0.5f, 0.f) * make_scale(0.45f, 0.45f, 1.f));
     gl_error_check();
 
     if(!s.plot_mesh.allocate() || !s.buffer.allocate()) {
@@ -89,18 +111,19 @@ bool plotter2::initialise() {
     s.plot_mesh.set_stream(&s.buffer);
     s.plot_mesh.bind();
     s.buffer.bind();
-    s.buffer.initialise(1005);
+    s.buffer.initialise(1004);
 
     if(s.buffer.map(buffer_access::BA_WRITE_ONLY)) {
         const float start = -1.f;
-        const float scale = 2.f/(1000-1);
+        const float scale = 2.f / (1000 - 1);
+
         for(size_t i = 0; i != 1000; ++i) s.buffer[i].position.set(start + i*scale, 0);
 
-        s.buffer[1000].position.set(-1,-1);
-        s.buffer[1001].position.set(+1,-1);
-        s.buffer[1002].position.set(+1,+1);
-        s.buffer[1003].position.set(-1,+1);
-        s.buffer[1004].position.set(-1,-1);
+        s.buffer[1000].position.set(-1, -1);
+        s.buffer[1001].position.set(+1, -1);
+        s.buffer[1002].position.set(+1, +1);
+        s.buffer[1003].position.set(-1, +1);
+
         s.buffer.unmap();
     }
 
@@ -108,25 +131,16 @@ bool plotter2::initialise() {
     return true;
 }
 
-static float angle = 0.f;
-
 void plotter2::draw() {
     if(!state_) return;
     auto& s = *state_;
 
-    s.buffer.bind();
-    if(s.buffer.map(buffer_access::BA_WRITE_ONLY)) {
-        for(size_t i = 0; i != 1000; ++i) s.buffer[i].position.y = 6*generators::noise::turbulence<generators::perlin<float>>(4, .5f, 2.f, angle + 0.001f*i) - 1.f;
-        s.buffer.unmap();
-    }
-    s.buffer.release();
-
-    angle += 0.005f;
-
     s.style.bind();
     s.plot_mesh.bind();
     s.plot_mesh.draw(primitive_type::PT_LINE_STRIP, 0, 1000);
-    s.plot_mesh.draw(primitive_type::PT_LINE_STRIP, 1000, 5);
+    s.plot_mesh.draw(primitive_type::PT_LINE_LOOP, 1000, 4);
     s.plot_mesh.release();
     s.style.release();
 }
+
+}}
