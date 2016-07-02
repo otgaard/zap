@@ -21,7 +21,7 @@ public:
     }
     virtual ~module() { }
 
-        inline void set_analysis(const fft_analysis_t& fft) { std::copy(fft.begin(), fft.end(), analysis_.begin()); }
+    inline void set_analysis(const fft_analysis_t& fft) { std::copy(fft.begin(), fft.end(), analysis_.begin()); }
     inline const fft_analysis_t& get_analysis() const { return analysis_; }
 
     virtual void update(double t, float dt) { }

@@ -2,6 +2,14 @@
 // Created by Darren Otgaar on 2016/06/10.
 //
 
+/* Task List:
+ * 1) Move mp3 I/O to separate thread with ring_buffer between mp3_callback and reader
+ * 2) Implement spectral_analyser (smoothing, hamming window, pitch detection, beat detection)
+ * 3) Add a few simple modules & a fader
+ * 4) Add playing a directory
+ * 5) Add a basic interface
+ */
+
 #include <atomic>
 #include <unordered_map>
 
@@ -22,6 +30,7 @@
 #include "modules/module.hpp"
 #include "modules/bars.hpp"
 #include "modules/metaballs.hpp"
+#include "spectral_analyser.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -44,8 +53,8 @@ struct stream_data {
     std::unique_ptr<mp3_stream> stream;
     std::atomic<bool> read_flag;
     std::atomic<bool> write_flag;
-    module::fft_analysis_t curr_analysis;
-    fft fourier;
+    spectral_analyser::fft_window curr_analysis;
+    spectral_analyser analyser;
 } stream;
 
 /**************
@@ -56,7 +65,7 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
                  PaStreamCallbackFlags status_flags, void* userdata) {
     static std::vector<short> buffer(1024, 0);
     static std::vector<float> samples(1024, 0.f);
-    static std::vector<float> analysis(1024, 0.f);
+    static spectral_analyser::fft_window analysis;
 
     // This delay syncs the FFT with the audible frame
     static std::vector<short> delay(1024, 0);
@@ -71,7 +80,6 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
     if(buffer.size() != req_frames) {
         buffer.resize(req_frames);
         samples.resize(req_frames);
-        analysis.resize(req_frames);
         delay.resize(req_frames);
     }
 
@@ -82,7 +90,7 @@ int mp3_callback(const void* input, void* output, u_long frames, const PaStreamC
 
     if(delay_count > 0) {
         std::transform(delay.begin(), delay.begin() + delay_count, samples.begin(), [](short s) { return inv_s16 * s; });
-        stream_ptr->fourier.run_fft(samples, analysis);
+        stream_ptr->analyser.process_samples(samples, analysis);
         if(stream_ptr->write_flag) {
             std::copy(analysis.begin(), analysis.begin() + stream_ptr->curr_analysis.size(), stream_ptr->curr_analysis.begin());
             stream_ptr->write_flag = false;
@@ -122,7 +130,6 @@ private:
     audio_state state_;
     PaStream* pa_stream_;
     std::vector<std::unique_ptr<module>> modules_;
-
     std::unique_ptr<stream_data> stream_ptr_;
 };
 
@@ -155,7 +162,7 @@ void synesthesia::initialise() {
 
     // Initialise modules...
     modules_.emplace_back(std::make_unique<bars>(this));
-    modules_.emplace_back(std::make_unique<metaballs>(this));
+    //modules_.emplace_back(std::make_unique<metaballs>(this));
 
     play();
 }

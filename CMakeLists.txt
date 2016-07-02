@@ -130,7 +130,7 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/modules/bars.hpp
         apps/graphic_types.hpp
         apps/synesthesia/modules/metaballs.cpp
-        apps/synesthesia/modules/metaballs.hpp)
+        apps/synesthesia/modules/metaballs.hpp apps/synesthesia/spectral_analyser.hpp apps/synesthesia/spectral_analyser.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
