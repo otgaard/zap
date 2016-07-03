@@ -22,6 +22,7 @@
 #include <generators/noise/perlin.hpp>
 #include <graphics2/plotter2.hpp>
 #include "module.hpp"
+#include <maths/curves/hermite.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -78,6 +79,28 @@ protected:
 };
 
 void zap_example::initialise() {
+    matrix<float, 3, 3> m1;
+    m1(0,0) = 3; m1(0,1) = 0; m1(0,2) = 0;
+    m1(1,0) = 0; m1(1,1) = 2; m1(1,2) = 0;
+    m1(2,0) = 0; m1(2,1) = 0; m1(2,2) = 1;
+
+    matrix<float, 3, 3> m2;
+    m2(0,0) = 1; m2(0,1) = 0; m2(0,2) = 1;
+    m2(1,0) = 0; m2(1,1) = 1; m2(1,2) = 1;
+    m2(2,0) = 0; m2(2,1) = 0; m2(2,2) = 1;
+
+    vector<float, 3> v1;
+    v1[0] = 3; v1[1] = 2; v1[2] = 1;
+
+    auto r = m1 * v1;
+    LOG(r[0], r[1], r[2]);
+
+    auto mr = m1 * m2;
+    LOG(mr(0,0), mr(0,1), mr(0,2));
+    LOG(mr(1,0), mr(1,1), mr(1,2));
+    LOG(mr(2,0), mr(2,1), mr(2,2));
+
+
     prog1.add_shader(new shader(shader_type::ST_VERTEX, vtx_src));
     prog1.add_shader(new shader(shader_type::ST_FRAGMENT, frg_src));
     if(!prog1.link(true)) {

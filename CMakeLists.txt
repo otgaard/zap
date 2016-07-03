@@ -38,7 +38,7 @@ set(ZAP_MATHS_FILES
         geometry/disc.hpp
         maths/algebra.hpp
         maths/rand_lcg.hpp
-        maths/curves/curves.hpp maths/transform.hpp)
+        maths/curves/curves.hpp maths/transform.hpp maths/curves/hermite.hpp maths/matrix.hpp maths/vector.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
