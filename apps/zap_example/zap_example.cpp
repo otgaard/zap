@@ -76,6 +76,7 @@ protected:
     vbuf_p3n3t2_t cylinder_buffer;
     graphics2::plotter2 plotter;
     noise_module mod;
+    curves::hermite<float, vec2f> curve;
 };
 
 void zap_example::initialise() {
@@ -99,6 +100,19 @@ void zap_example::initialise() {
     LOG(mr(0,0), mr(0,1), mr(0,2));
     LOG(mr(1,0), mr(1,1), mr(1,2));
     LOG(mr(2,0), mr(2,1), mr(2,2));
+
+    vector<vec2f, 3> vr = {{ vec2f(1,1), vec2f(2,2), vec2f(3,3) }};
+    auto result = m2 * vr;
+
+    LOG(result[0][0], result[0][1], result[1][0], result[1][1], result[2][0], result[2][1]);
+
+    curve.set_points(vec2f(0,0), vec2f(1,1));
+    curve.set_tangents(vec2f(1,0), vec2f(-1,0));
+
+    auto a1 = curve(0.0f);
+    auto a2 = curve(1.0f);
+
+    LOG("RESULT", a1.x, a1.y, a2.x, a2.y);
 
 
     prog1.add_shader(new shader(shader_type::ST_VERTEX, vtx_src));
@@ -260,6 +274,7 @@ void zap_example::on_resize(int width, int height) {
 }
 
 static float rot = 0.0f;
+static float value = 0.0f;
 
 void zap_example::update(double t, float dt) {
     uni1.bind();
@@ -278,6 +293,8 @@ void zap_example::update(double t, float dt) {
     }
 
     rot = wrap<float>(rot + dt, -TWO_PI, TWO_PI);
+    value = wrap(value + 0.075f*dt, 0.f, 1.f);
+    plotter.push_value(curve(value).y);
 }
 
 void zap_example::draw() {

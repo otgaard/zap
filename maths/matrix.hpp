@@ -20,9 +20,15 @@ namespace zap { namespace maths {
         using col_vector = vector<T, cols>;
 
         constexpr static size_t idx(size_t row, size_t col) { return col*rows + row; }
+        constexpr static size_t ridx(size_t row, size_t col) { return row*cols + col; }
 
         matrix() = default;
         explicit matrix(const T& init) { for(int i = 0; i != size; ++i) arr[i] = init; }
+        matrix(const static_list<T, size>& lst) {
+            for(int col = 0; col != cols; ++col)
+                for(int row = 0; row != rows; ++row)
+                    arr[idx(row,col)] = lst[ridx(row,col)];
+        }
         matrix(const matrix& rhs) { for(int i = 0; i != size; ++i) arr[i] = rhs[i]; }
 
         matrix operator=(const matrix& rhs) { if(this != &rhs) for(int i = 0; i != size; ++i) arr[i] = rhs[i]; return *this; }
@@ -44,7 +50,7 @@ namespace zap { namespace maths {
 
     template <typename LhsT, typename RhsT, size_t R, size_t CR, size_t C>
     matrix<decltype(LhsT() * RhsT()), R, C> operator*(const matrix<LhsT, R, CR>& lhs, const matrix<RhsT, CR, C>& rhs) {
-        matrix<decltype(LhsT() * RhsT()), R, C> result(decltype(LhsT()*RhsT())(0));
+        matrix<decltype(LhsT() * RhsT()), R, C> result(decltype(LhsT()*RhsT())(0.0));
         for(size_t col = 0; col != matrix<RhsT, CR, C>::cols; ++col) {
             for(size_t row = 0; row != matrix<LhsT, R, CR>::rows; ++row) {
                 for(size_t i = 0; i != matrix<RhsT, CR, C>::rows; ++i) {
@@ -57,7 +63,7 @@ namespace zap { namespace maths {
 
     template <typename LhsT, typename RhsT, size_t R, size_t C>
     vector<decltype(LhsT() * RhsT()), C> operator*(const matrix<LhsT, R, C>& lhs, const vector<RhsT, C>& rhs) {
-        vector<decltype(LhsT() * RhsT()), C> result(decltype(LhsT()*RhsT())(0));
+        vector<decltype(LhsT() * RhsT()), C> result(decltype(LhsT()*RhsT())(0.0));
         for(size_t col = 0; col != matrix<LhsT, R, C>::cols; ++col) {
             for(size_t row = 0; row != matrix<LhsT, R, C>::rows; ++row) {
                 result[row] += lhs(row,col) * rhs[row];

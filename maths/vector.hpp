@@ -17,6 +17,7 @@ struct vector {
 
     vector() = default;
     explicit vector(const T& init) { for(int i = 0; i != size; ++i) arr[i] = init; }
+    vector(const static_list<T, size>& lst) { for(int i = 0; i != size; ++i) arr[i] = lst[i]; }
     vector(const vector& rhs) { for(int i = 0; i != size; ++i) arr[i] = rhs[i]; }
 
     const T& operator[](size_t idx) const { checkidx(idx,size); return arr[idx]; }
@@ -38,8 +39,6 @@ struct vector {
     vector& operator-=(const vector& rhs) { for(int i = 0; i != size; ++i) arr[i] -= rhs[i]; return *this; }
     template <typename S> vector& operator*=(const S& scalar) { for(int i = 0; i != size; ++i) arr[i] *= scalar; return *this; }
     template <typename S> vector& operator/=(const S& scalar) { const auto inv_s = S(1)/scalar; return operator*=(inv_s); }
-
-
 
     T arr[size];
 };

@@ -43,31 +43,31 @@ namespace zap { namespace maths {
         void set(T nx, T ny) { x = nx; y = ny; }
 
         constexpr vec2<T> operator-() const { return vec2<T>(-x, -y); }
-        inline vec2<T>& operator+=(const vec2<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i]; }
+        vec2<T>& operator+=(const vec2<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i]; return *this; }
 
         vec2<T>& perp() { std::swap(x,y); x *= -1; return *this; }
 
-        inline vec2<T>& operator-=(const vec2<T>& rhs) {
+        vec2<T>& operator-=(const vec2<T>& rhs) {
             for(size_t i = 0; i != size(); ++i) arr[i] -= rhs.arr[i];
             return *this;
         }
 
-        inline vec2<T>& operator*=(const vec2<T>& rhs) {
+        vec2<T>& operator*=(const vec2<T>& rhs) {
             for(size_t i = 0; i != size(); ++i) arr[i] *= rhs.arr[i];
             return *this;
         }
 
-        inline vec2<T>& operator*=(T scalar) {
+        vec2<T>& operator*=(T scalar) {
             for(size_t i = 0; i != size(); ++i) arr[i] *= scalar;
             return *this;
         }
 
-        inline vec2<T>& operator/=(const vec2<T>& rhs) {
+        vec2<T>& operator/=(const vec2<T>& rhs) {
             for(size_t i = 0; i != size(); ++i) arr[i] /= rhs.arr[i];
             return *this;
         }
 
-        inline vec2<T>& operator/=(T scalar) {
+        vec2<T>& operator/=(T scalar) {
             for(size_t i = 0; i != size(); ++i) arr[i] /= scalar;
             return *this;
         }
@@ -75,44 +75,44 @@ namespace zap { namespace maths {
         constexpr T length_sqr() const { return x*x + y*y; }
         T length() const { return std::sqrt(length_sqr()); }
 
-        inline vec2<T>& normalise() { auto l = T(1)/length(); for(auto& v : arr) v *= l; return *this; }
+        vec2<T>& normalise() { auto l = T(1)/length(); for(auto& v : arr) v *= l; return *this; }
 
-        inline bool operator==(const vec2<T>& rhs) const {
+        bool operator==(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] != rhs.arr[i]) return false;
             return true;
         }
 
-        inline bool operator!=(const vec2<T>& rhs) const {
+        bool operator!=(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] == rhs.arr[i]) return false;
             return true;
         }
 
-        inline bool operator<(const vec2<T>& rhs) const {
+        bool operator<(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
             return true;
         }
 
-        inline bool operator<=(const vec2<T>& rhs) const {
+        bool operator<=(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] > rhs.arr[i]) return false;
             return true;
         }
 
-        inline bool operator>(const vec2<T>& rhs) const {
+        bool operator>(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] <= rhs.arr[i]) return false;
             return true;
         }
 
-        inline bool operator>=(const vec2<T>& rhs) const {
+        bool operator>=(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] < rhs.arr[i]) return false;
             return true;
         }
 
-        inline bool eq(const vec2<T>& rhs) const {
+        bool eq(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(!eq(arr[i], rhs.arr[i])) return false;
             return true;
         }
 
-        inline bool eq(const vec2<T>& rhs, T epsilon) const {
+        bool eq(const vec2<T>& rhs, T epsilon) const {
             for(size_t i = 0; i != size(); ++i) if(!maths::eq(arr[i], rhs.arr[i], epsilon)) return false;
             return true;
         }
