@@ -45,8 +45,8 @@ namespace zap { namespace maths {
     template <typename LhsT, typename RhsT, size_t R, size_t CR, size_t C>
     matrix<decltype(LhsT() * RhsT()), R, C> operator*(const matrix<LhsT, R, CR>& lhs, const matrix<RhsT, CR, C>& rhs) {
         matrix<decltype(LhsT() * RhsT()), R, C> result(decltype(LhsT()*RhsT())(0));
-        for(size_t row = 0; row != matrix<LhsT, R, CR>::rows; ++row) {
-            for(size_t col = 0; col != matrix<RhsT, CR, C>::cols; ++col) {
+        for(size_t col = 0; col != matrix<RhsT, CR, C>::cols; ++col) {
+            for(size_t row = 0; row != matrix<LhsT, R, CR>::rows; ++row) {
                 for(size_t i = 0; i != matrix<RhsT, CR, C>::rows; ++i) {
                     result(row,col) += lhs(row,i) * rhs(i,col);
                 }
@@ -58,8 +58,8 @@ namespace zap { namespace maths {
     template <typename LhsT, typename RhsT, size_t R, size_t C>
     vector<decltype(LhsT() * RhsT()), C> operator*(const matrix<LhsT, R, C>& lhs, const vector<RhsT, C>& rhs) {
         vector<decltype(LhsT() * RhsT()), C> result(decltype(LhsT()*RhsT())(0));
-        for(size_t row = 0; row != matrix<LhsT, R, C>::rows; ++row) {
-            for(size_t col = 0; col != matrix<LhsT, R, C>::cols; ++col) {
+        for(size_t col = 0; col != matrix<LhsT, R, C>::cols; ++col) {
+            for(size_t row = 0; row != matrix<LhsT, R, C>::rows; ++row) {
                 result[row] += lhs(row,col) * rhs[row];
             }
         }
