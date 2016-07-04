@@ -9,9 +9,9 @@
 #include "maths/matrix.hpp"
 
 /* Hermite Curve, uses the matrix form
- * Curve definition (via substitution of PO, T0, P1 and T1 into au^3 + bu^2 + cu + D is
- * Q(u) = (2u^3 - 3u^2 + 1)P0 + (-2u^3 + 3u^2)P1 + (u^3 - 2u^2 + u)T0 + (u^3 - u^2)T1
- *
+ * Curve definition, via substitution of PO, T0, P1 and T1 into au^3 + bu^2 + cu + D is
+ * Q(u)  = (2u^3 - 3u^2 + 1)P0 + (-2u^3 + 3u^2)P1 + (u^3 - 2u^2 + u)T0 + (u^3 - u^2)T1
+ * Q'(u) = (6u^2 - 6u)P0 + (-6u^2 + 6u)P1 + (3u^2 - 4^u + 1)T0 + (3u^2 - 2u)T1
  * Matrix Form
  *
  * U = [u^3  u^2  u  1]
@@ -40,6 +40,9 @@ namespace zap { namespace maths { namespace curves {
         hermite() { }
         hermite(const VecT& P0, const VecT& P1, const VecT& T0, const VecT& T1) : G({P0, P1, T0, T1}) { }
 
+        const VecT& position(size_t idx) const { checkidx<size_t>(idx,2); return G[idx]; }
+        const VecT& tangent(size_t idx) const { checkidx<size_t>(idx,2); return G[2+idx]; }
+
         void set_points(const VecT& P0, const VecT& P1) { G[0] = P0; G[1] = P1; }
         void set_tangents(const VecT& T0, const VecT& T1) { G[2] = T0; G[3] = T1; }
 
@@ -51,6 +54,12 @@ namespace zap { namespace maths { namespace curves {
         VecT polynomial(const T& u) const {
             const T u3 = u*u*u; const T u2 = u*u;
             return (2*u3 - 3*u2 + 1)*G[0] + (-2*u3 + 3*u2)*G[1] + (u3 - 2*u2 + u)*G[2] + (u3 - u2)*G[3];
+        }
+
+        VecT deriv1(const T& u) const {
+            const T u2 = u*u;
+            // TODO: Minimise error during multiplication
+            return (6*u2 - 6*u)*G[0] + (-6*u2 + 6*u)*G[1] + (3*u2 - 4*u +1)*G[2] + (3*u2 - 2*u)*G[3];
         }
     };
 

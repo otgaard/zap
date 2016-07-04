@@ -80,40 +80,8 @@ protected:
 };
 
 void zap_example::initialise() {
-    matrix<float, 3, 3> m1;
-    m1(0,0) = 3; m1(0,1) = 0; m1(0,2) = 0;
-    m1(1,0) = 0; m1(1,1) = 2; m1(1,2) = 0;
-    m1(2,0) = 0; m1(2,1) = 0; m1(2,2) = 1;
-
-    matrix<float, 3, 3> m2;
-    m2(0,0) = 1; m2(0,1) = 0; m2(0,2) = 1;
-    m2(1,0) = 0; m2(1,1) = 1; m2(1,2) = 1;
-    m2(2,0) = 0; m2(2,1) = 0; m2(2,2) = 1;
-
-    vector<float, 3> v1;
-    v1[0] = 3; v1[1] = 2; v1[2] = 1;
-
-    auto r = m1 * v1;
-    LOG(r[0], r[1], r[2]);
-
-    auto mr = m1 * m2;
-    LOG(mr(0,0), mr(0,1), mr(0,2));
-    LOG(mr(1,0), mr(1,1), mr(1,2));
-    LOG(mr(2,0), mr(2,1), mr(2,2));
-
-    vector<vec2f, 3> vr = {{ vec2f(1,1), vec2f(2,2), vec2f(3,3) }};
-    auto result = m2 * vr;
-
-    LOG(result[0][0], result[0][1], result[1][0], result[1][1], result[2][0], result[2][1]);
-
     curve.set_points(vec2f(0,0), vec2f(1,1));
     curve.set_tangents(vec2f(1,0), vec2f(-1,0));
-
-    auto a1 = curve(0.0f);
-    auto a2 = curve(1.0f);
-
-    LOG("RESULT", a1.x, a1.y, a2.x, a2.y);
-
 
     prog1.add_shader(new shader(shader_type::ST_VERTEX, vtx_src));
     prog1.add_shader(new shader(shader_type::ST_FRAGMENT, frg_src));
@@ -294,10 +262,12 @@ void zap_example::update(double t, float dt) {
 
     rot = wrap<float>(rot + dt, -TWO_PI, TWO_PI);
     value = wrap(value + 0.075f*dt, 0.f, 1.f);
-    plotter.push_value(curve(value).y);
+    plotter.push_value(curve.deriv1(value).normalise().y);
 }
 
 void zap_example::draw() {
+    auto col = curve(value);
+    clear(col.x, col.y, 0.5, 1.0);
     depth_test(true);
     prog3.bind();
     //cube.bind();
