@@ -35,12 +35,12 @@ using tex2f_t = core::texcoord1<vec2f>;
 using tex3f_t = core::texcoord1<vec3f>;
 using col3f_t = core::colour1<vec3f>;
 using col4f_t = core::colour1<vec4f>;
-using col3b_t = core::colour1<vec3b>;
-using col4b_t = core::colour1<vec3b>;
+using psize1_t = core::pointsize<float>;
 
 using vtx_p2_t = vertex<pos2f_t>;
 using vtx_p2t2_t = vertex<pos2f_t, tex2f_t>;
 using vtx_p3n3t2_t = vertex<pos3f_t, nor3f_t>;
+using vtx_p3c4ps1_t = vertex<pos3f_t, col4f_t, psize1_t>;
 using vtx_p3n3t2c3_t = vertex<pos3f_t, nor3f_t, tex2f_t, col3f_t>;
 
 #define GLSL(src) "#version 330 core\n" #src

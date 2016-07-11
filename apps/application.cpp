@@ -21,6 +21,12 @@ static void on_keypress_handler(GLFWwindow* window_ptr, int key, int scancode, i
     }
 }
 
+static void on_mousemove_handler(GLFWwindow* window_ptr, double x, double y) {
+    if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
+        app_ptr->on_mousemove(x, y);
+    }
+}
+
 application::application(const std::string& name, int width, int height, bool fullscreen) : sc_width_(width),
     sc_height_(height), fullscreen_(fullscreen), app_name_(name) {
 }
@@ -57,14 +63,18 @@ int application::run() {
     glfwSetWindowUserPointer(window, this);
     glfwSetWindowSizeCallback(window, ::on_resize_handler);
     glfwSetKeyCallback(window, ::on_keypress_handler);
+    glfwSetCursorPosCallback(window, ::on_mousemove_handler);
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glfwSwapInterval(1);
     glViewport(0, 0, sc_width_, sc_height_);
 
+    // TODO: Encapsulate all this state into a full stack-based state machine
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     bf_culling(true);
     glEnable(GL_PRIMITIVE_RESTART);
+    glPointSize(1.f);
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glPrimitiveRestartIndex(std::numeric_limits<uint16_t>::max());
 
     initialise();
@@ -102,6 +112,17 @@ void application::on_resize(int width, int height) {
     sc_width_ = width; sc_height_ = height;
 }
 
+void application::on_mousemove(double x, double y) {
+}
+
+void application::on_mousedown() {
+
+}
+
+void application::on_mouseup() {
+
+}
+
 void application::depth_test(bool on) {
     on ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
 }
@@ -118,6 +139,10 @@ void application::alpha_blending(bool on) {
     } else {
         glDisable(GL_BLEND);
     }
+}
+
+void application::line_width(float w) {
+    glLineWidth(w);
 }
 
 void application::clear(float r, float g, float b, float a) {

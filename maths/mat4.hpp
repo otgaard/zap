@@ -6,10 +6,8 @@
 #define ZAP_MAT4_HPP
 
 #include "maths.hpp"
+#include "vec3.hpp"
 #include "vec4.hpp"
-
-#include <iostream>
-
 
 /* Note:
  * Matrices are represented in standard mathematical notation:
@@ -38,6 +36,8 @@ namespace zap { namespace maths {
 
         using row_t = vec4<T>;
         using col_t = vec4<T>;
+        using vec_t = vec3<T>;
+        using rot_t = mat3<T>;  // The rotation matrix type
 
         constexpr static size_t size() { return 16; }
         constexpr static size_t bytesize() { return sizeof(mat4<T>); }
@@ -69,6 +69,15 @@ namespace zap { namespace maths {
                 m01(col1[0]), m11(col1[1]), m21(col1[2]), m31(col1[3]),
                 m02(col2[0]), m12(col2[1]), m22(col2[2]), m32(col2[3]),
                 m03(col3[0]), m13(col3[1]), m23(col3[2]), m33(col3[3]) { }
+        constexpr mat4(const mat4& rhs) : m00(rhs.m00), m10(rhs.m10), m20(rhs.m20), m30(rhs.m30),
+                                          m01(rhs.m01), m11(rhs.m11), m21(rhs.m21), m31(rhs.m31),
+                                          m02(rhs.m02), m12(rhs.m12), m22(rhs.m22), m32(rhs.m32),
+                                          m03(rhs.m03), m13(rhs.m13), m23(rhs.m23), m33(rhs.m33) { }
+
+        mat4& operator=(const mat4& rhs) {
+            if(this != &rhs) std::copy(rhs.begin(), rhs.end(), begin());
+            return *this;
+        }
 
         constexpr static mat4 make_row(const row_t& row0, const row_t& row1, const row_t& row2, const row_t& row3) {
             return mat4(row0[0], row0[1], row0[2], row0[3], row1[0], row1[1], row1[2], row1[3],
@@ -80,7 +89,7 @@ namespace zap { namespace maths {
         }
 
         constexpr static mat4 identity() {
-            return mat4(1,1,1,1);
+            return mat4(T(1),T(1),T(1),T(1));
         }
 
         const T& operator()(size_t row, size_t col) const {
@@ -110,9 +119,36 @@ namespace zap { namespace maths {
         inline const T* data() const { return arr; }
         inline T* data() { return arr; }
 
-        mat4<T>& operator+=(const mat4& rhs) { for(size_t i = 0; i < size(); ++i) (*this)[i] += rhs[i]; }
-        mat4<T>& operator-=(const mat4& rhs) { for(size_t i = 0; i < size(); ++i) (*this)[i] -= rhs[i]; }
+        vec4<T> col4(size_t col) const {
+            checkidx(col, cols());
+            return vec4<T>(operator()(0,col), operator()(1,col), operator()(2,col), operator()(3,col));
+        }
+        vec3<T> col3(size_t col) const {
+            checkidx(col, cols());
+            return vec3<T>(operator()(0,col), operator()(1,col), operator()(2,col));
+        }
+        void column(size_t col, const vec4<T>& v) {
+            checkidx(col, cols());
+            assert( ( ((col < 3) && eq(v.w, T(0))) || ((col == 3) && eq(v.w, T(1))) ) && "0..2 must be vectors, 3 must be a point");
+            operator()(0,col) = v[0]; operator()(1,col) = v[1]; operator()(2,col) = v[2]; operator()(3,col) = v[3];
+        }
+        void column(size_t col, const vec3<T>& v) {
+            checkidx(col, cols());
+            operator()(0,col) = v[0]; operator()(1,col) = v[1]; operator()(2,col) = v[2];
+        }
+
+        mat4<T>& operator+=(const mat4& rhs) { for(size_t i = 0; i != size(); ++i) (*this)[i] += rhs[i]; }
+        mat4<T>& operator-=(const mat4& rhs) { for(size_t i = 0; i != size(); ++i) (*this)[i] -= rhs[i]; }
         template <typename S> mat4<T>& operator*=(const S& scalar) { for(auto& v : *this) v *= scalar; return *this; }
+
+        // Not a transform, vector multiplication
+        vec3<T> operator*(const vec3<T>& v) {
+            vec3<T> r;
+            r[0] = arr[idx(0,0)]*v[0] + arr[idx(0,1)]*v[1] + arr[idx(0,2)]*v[2];
+            r[1] = arr[idx(1,0)]*v[0] + arr[idx(1,1)]*v[1] + arr[idx(1,2)]*v[2];
+            r[2] = arr[idx(2,0)]*v[0] + arr[idx(2,1)]*v[1] + arr[idx(2,2)]*v[2];
+            return r;
+        }
 
         mat4<T>& operator*=(const mat4& rhs) {
             auto& self = *this; mat4<T> lhs(self);

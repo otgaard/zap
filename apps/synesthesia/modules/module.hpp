@@ -1,6 +1,6 @@
 /* Created by Darren Otgaar on 2016/06/10. http://www.github.com/otgaard/zap */
-#ifndef ZAP_MODULE_HPP
-#define ZAP_MODULE_HPP
+#ifndef ZAP_SYNESTHESIA_MODULE_HPP
+#define ZAP_SYNESTHESIA_MODULE_HPP
 
 #include <array>
 #include <atomic>
@@ -38,4 +38,4 @@ protected:
     std::atomic<bool> updated_;
 };
 
-#endif //ZAP_MODULE_HPP
+#endif //ZAP_SYNESTHESIA_MODULE_HPP

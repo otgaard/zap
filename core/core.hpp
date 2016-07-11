@@ -56,4 +56,26 @@ void shift_array(T* begin, size_t shift, FNC set_fnc) {
     for(size_t i = size-1, end = shift-1; i != end; --i) set_fnc(begin[i], begin[i-shift]);
 }
 
+namespace details {
+
+template <typename Fnc, typename Arg, typename... Args> struct expander {
+    static void expand(Fnc fnc, Arg&& arg, Args&&... args) {
+        fnc(std::forward<Arg>(arg));
+        expander<Fnc, Args...>::expand(fnc, args...);
+    }
+};
+
+template <typename Fnc, typename Arg> struct expander<Fnc, Arg> {
+    static void expand(Fnc fnc, Arg&& arg) {
+        fnc(std::forward<Arg>(arg));
+    }
+};
+
+};
+
+template <typename Fnc, typename... Args>
+void expand(Fnc fnc, Args&&... args) {
+    details::expander<Fnc, Args...>::expand(fnc, std::forward<Args>(args)...);
+};
+
 #endif //ZAP_CORE_HPP

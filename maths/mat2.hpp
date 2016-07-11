@@ -60,6 +60,11 @@ namespace zap { namespace maths {
         constexpr static mat2 make_col(const col_t& col0, const col_t& col1) {
             return mat2(col0[0], col1[0], col0[1], col1[1]);
         }
+
+        constexpr static mat2 identity() {
+            return mat2(T(1), T(1));
+        }
+
         static mat2 make_rotation(T theta) {
             static_assert(std::is_floating_point<T>::value, ZERR_TYPE_FLOATING);
             const T cos = std::cos(theta), sin = std::sin(theta);

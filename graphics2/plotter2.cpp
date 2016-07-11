@@ -73,6 +73,16 @@ void plotter2::set_data(const std::array<float,1000>& data) {
     s.buffer.release();
 }
 
+void plotter2::set_data(const std::array<vec2f,1000>& data) {
+    auto& s = *state_;
+    s.buffer.bind();
+    if(s.buffer.map(buffer_access::BA_WRITE_ONLY)) {
+        for(size_t i = 0; i != 1000; ++i) s.buffer[i].position = data[i];
+        s.buffer.unmap();
+    }
+    s.buffer.release();
+}
+
 void plotter2::transform(const mat4f& transform) {
     state_->style.bind();
     state_->style.bind_uniform("mv_matrix", transform);
@@ -93,14 +103,14 @@ bool plotter2::initialise() {
     s.style.bind();
 
     mat4f proj_mat = {
-            2.f, 0.f, 0.f, -1.f,
-            0.f, 2.f, 0.f, -1.f,
+            2.f/1280.f, 0.f, 0.f, -1.f/1280.f,
+            0.f, 2.f/768.f, 0.f, -1.f/768.f,
             0.f, 0.f, 2.f, -1.f,
             0.f, 0.f, 0.f, 1.f
     };
 
     s.style.bind_uniform("proj_matrix", proj_mat);
-    s.style.bind_uniform("mv_matrix", make_translation(0.5f, 0.5f, 0.f) * make_scale(0.45f, 0.45f, 1.f));
+    s.style.bind_uniform("mv_matrix", make_scale(750.f/2,750.f/2,1.f));
     gl_error_check();
 
     if(!s.plot_mesh.allocate() || !s.buffer.allocate()) {
@@ -141,6 +151,18 @@ void plotter2::draw() {
     s.plot_mesh.draw(primitive_type::PT_LINE_LOOP, 1000, 4);
     s.plot_mesh.release();
     s.style.release();
+}
+
+void plotter2::set_projection_matrix(const mat4f& proj_mat) {
+    state_->style.bind();
+    state_->style.bind_uniform("proj_matrix", proj_mat);
+    state_->style.release();
+}
+
+void plotter2::set_mv_matrix(const mat4f& mv_mat) {
+    state_->style.bind();
+    state_->style.bind_uniform("mv_matrix", mv_mat);
+    state_->style.release();
 }
 
 }}

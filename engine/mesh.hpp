@@ -99,7 +99,7 @@ public:
     using vertex_stream_t = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
-    mesh() : mesh_base() { }
+    mesh() : mesh_base(), vstream(nullptr) { }
     mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
 
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
@@ -107,6 +107,7 @@ public:
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
 
     void draw(primitive_type prim=primitive, size_t start=0, size_t count=0) {
+        assert(vstream && "No vertex stream has been set for mesh draw");
         mesh_base::draw_arrays_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
     }
 

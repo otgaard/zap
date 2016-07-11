@@ -16,6 +16,9 @@ public:
 
     virtual void on_keypress(char ch);
     virtual void on_resize(int width, int height);
+    virtual void on_mousedown();
+    virtual void on_mouseup();
+    virtual void on_mousemove(double x, double y);
 
     int run();
 
@@ -23,6 +26,7 @@ public:
     void depth_test(bool on);
     void bf_culling(bool on);
     void alpha_blending(bool on);
+    void line_width(float w);
 
     void clear(float r=.15f, float g=.15f, float b=.15f, float a=1.f);
 

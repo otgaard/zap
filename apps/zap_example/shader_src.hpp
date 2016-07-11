@@ -66,13 +66,14 @@ const char* cube_vtx_src = GLSL(
 
 const char* cube_frg_src = GLSL(
     const float PI = 3.141593;
-    uniform usampler1D tex;
+    //uniform usampler1D tex;
+    uniform sampler2D tex;
     const vec3 light_dir = normalize(vec3(0,0,1));
     in vec3 pos;
     in vec3 nor;
     in vec2 tc;
     out vec4 frag_colour;
-
+    /*
     int prn(int x) { return int(texelFetch(tex, x & 0xFF, 0).r); }
     int prn2(int x, int y) { return prn(x + prn(y)); }
     int prn3(int x, int y, int z) { return prn(x + prn(y + prn(z))); }
@@ -116,12 +117,13 @@ const char* cube_frg_src = GLSL(
         }
         return 1.0/mag*accum;
     }
+    */
 
     void main() {
         float s = max(dot(nor, light_dir), 0);
-        float v = turbulence3(10*pos.x, 10*pos.y, 10*pos.z, 4, .5, 2.);
-        frag_colour = vec4(s*mix(vec3(1,1,0), vec3(1,0,0), v), 1);
-        //frag_colour = vec4(s*texture(tex, tc).rgb, 1);
+        //float v = turbulence3(10*pos.x, 10*pos.y, 10*pos.z, 4, .5, 2.);
+        //frag_colour = vec4(s*mix(vec3(1,1,0), vec3(1,0,0), v), 1);
+        frag_colour = vec4(s*texture(tex, tc).rgb, 1);
     }
 );
 

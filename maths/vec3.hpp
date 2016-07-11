@@ -194,6 +194,11 @@ namespace zap { namespace maths {
         return T(1)/v;
     }
 
+    template <typename T>
+    constexpr vec3<T> cross(const vec3<T>& u, const vec3<T>& v) {
+
+    }
+
     using vec3b = vec3<uint8_t>;
     using vec3s = vec3<int16_t>;
     using vec3i = vec3<int32_t>;

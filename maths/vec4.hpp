@@ -141,52 +141,57 @@ namespace zap { namespace maths {
         };
 	} ALIGN_ATTR(16);
 
-        template <typename T>
-        constexpr vec4<T> operator*(const vec4<T>& lhs, const vec4<T>& rhs) {
-            return vec4<T>(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
-        }
+    template <typename T>
+    constexpr vec4<T> operator+(const vec4<T>& lhs, const vec4<T>& rhs) {
+        return vec4<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
+    }
 
-        template <typename T>
-        constexpr vec4<T> operator/(const vec4<T>& lhs, const vec4<T>& rhs) {
-            return vec4<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
-        }
+    template <typename T>
+    constexpr vec4<T> operator*(const vec4<T>& lhs, const vec4<T>& rhs) {
+        return vec4<T>(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+    }
 
-        template <typename T>
-        constexpr vec4<T> operator*(T scalar, const vec4<T>& rhs) {
-            return vec4<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w);
-        }
+    template <typename T>
+    constexpr vec4<T> operator/(const vec4<T>& lhs, const vec4<T>& rhs) {
+        return vec4<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+    }
 
-        template <typename T>
-        constexpr vec4<T> operator*(const vec4<T>& rhs, T scalar) { return operator*(scalar, rhs); }
+    template <typename T>
+    constexpr vec4<T> operator*(T scalar, const vec4<T>& rhs) {
+        return vec4<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w);
+    }
 
-        template <typename T>
-        constexpr vec4<T> operator/(const vec4<T>& lhs, T scalar) {
-            const T inv_scalar = T(1) / scalar;
-            return vec4<T>(lhs.x * inv_scalar, lhs.y * inv_scalar, lhs.z * inv_scalar, lhs.w * inv_scalar);
-        }
+    template <typename T>
+    constexpr vec4<T> operator*(const vec4<T>& rhs, T scalar) { return operator*(scalar, rhs); }
 
-        template <typename T>
-        constexpr vec4<T> operator/(T scalar, const vec4<T>& rhs) {
-            return vec4<T>(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z, scalar / rhs.w);
-        }
+    template <typename T>
+    constexpr vec4<T> operator/(const vec4<T>& lhs, T scalar) {
+        const T inv_scalar = T(1) / scalar;
+        return vec4<T>(lhs.x * inv_scalar, lhs.y * inv_scalar, lhs.z * inv_scalar, lhs.w * inv_scalar);
+    }
 
-        template <typename T>
-        constexpr T dot(const vec4<T>& lhs, const vec4<T>& rhs) {
-            return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
-        }
+    template <typename T>
+    constexpr vec4<T> operator/(T scalar, const vec4<T>& rhs) {
+        return vec4<T>(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z, scalar / rhs.w);
+    }
 
-        template <typename T>
-        inline vec4<T> normalise(const vec4<T>& v) {
-            return T(1)/v.length() * v;
-        }
+    template <typename T>
+    constexpr T dot(const vec4<T>& lhs, const vec4<T>& rhs) {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+    }
 
-        template <typename T>
-        constexpr vec4<T> inverse(const vec4<T>& v) {
-            return T(1)/v;
-        }
+    template <typename T>
+    inline vec4<T> normalise(const vec4<T>& v) {
+        return T(1)/v.length() * v;
+    }
+
+    template <typename T>
+    constexpr vec4<T> inverse(const vec4<T>& v) {
+        return T(1)/v;
+    }
 
 
-        using vec4b = vec4<uint8_t>;
+    using vec4b = vec4<uint8_t>;
     using vec4s = vec4<int16_t>;
     using vec4i = vec4<int32_t>;
     using vec4f = vec4<float>;

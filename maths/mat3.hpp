@@ -6,7 +6,9 @@
 #define ZAP_MAT3_HPP
 
 #include "maths.hpp"
+#include "vec2.hpp"
 #include "vec3.hpp"
+#include "mat2.hpp"
 
 /* Note:
  * Matrices are represented in standard mathematical notation:
@@ -34,6 +36,8 @@ namespace zap { namespace maths {
 
         using row_t = vec3<T>;
         using col_t = vec3<T>;
+        using vec_t = vec2<T>;
+        using rot_t = mat2<T>;
 
         constexpr static size_t size() { return 9; }
         constexpr static size_t bytesize() { return sizeof(mat3<T>); }
@@ -58,6 +62,17 @@ namespace zap { namespace maths {
                 m00(col0[0]), m10(col0[1]), m20(col0[2]),
                 m01(col1[0]), m11(col1[1]), m21(col1[2]),
                 m02(col2[0]), m12(col2[1]), m22(col2[2]) { }
+        constexpr mat3(const mat3& rhs) : m00(rhs.m00), m10(rhs.m10), m20(rhs.m20),
+                                          m01(rhs.m01), m11(rhs.m11), m21(rhs.m21),
+                                          m02(rhs.m02), m12(rhs.m12), m22(rhs.m22) { }
+        mat3& operator=(const mat3& rhs) {
+            if(this != &rhs) {
+                m00 = rhs.m00; m10 = rhs.m10; m20 = rhs.m20;
+                m01 = rhs.m01; m11 = rhs.m11; m21 = rhs.m21;
+                m02 = rhs.m02; m12 = rhs.m12; m22 = rhs.m22;
+            }
+            return *this;
+        }
 
         constexpr static mat3 make_row(const row_t& row0, const row_t& row1, const row_t& row2) {
             return mat3(row0[0], row0[1], row0[2], row1[0], row1[1], row1[2], row2[0], row2[1], row2[2]);
@@ -66,8 +81,11 @@ namespace zap { namespace maths {
             return mat3(col0[0], col1[0], col2[0], col0[1], col1[1], col2[1], col0[2], col1[2], col2[2]);
         }
 
-        // Need to write a custom iterator for dealing with the 16 byte alignment
+        constexpr static mat3 identity() {
+            return mat3(T(1),T(1),T(1));
+        }
 
+        // Need to write a custom iterator for dealing with the 16 byte alignment
 
         const T& operator()(size_t row, size_t col) const {
             assert(row < rows() && col < cols() && ZERR_IDX_OUT_OF_RANGE);
@@ -78,6 +96,28 @@ namespace zap { namespace maths {
             assert(row < rows() && col < cols() && ZERR_IDX_OUT_OF_RANGE);
             return arr[idx(row,col)];
         }
+
+        vec3<T> col3(size_t col) const {
+            checkidx(col, cols());
+            return vec3<T>(operator()(0,col), operator()(1,col), operator()(2,col));
+        }
+        vec2<T> col2(size_t col) const {
+            checkidx(col, cols());
+            return vec2<T>(operator()(0,col), operator()(1,col));
+        }
+        void column(size_t col, const vec3<T>& v) {
+            checkidx(col, cols());
+            assert( ( ((col < 2) && eq(v.z, T(0))) || ((col == 2) && eq(v.z, T(1))) ) && "0..1 must be vectors, 2 must be a point");
+            operator()(0,col) = v[0]; operator()(1,col) = v[1]; operator()(2,col) = v[2];
+        }
+        void column(size_t col, const vec2<T>& v) {
+            checkidx(col, cols());
+            operator()(0,col) = v[0]; operator()(1,col) = v[1];
+        }
+
+        mat3<T>& operator+=(const mat3& rhs) { for(const auto& i : { 0, 1, 2, 4, 5, 6, 8, 9, 10 }) (*this)[i] += rhs[i]; }
+        mat3<T>& operator-=(const mat3& rhs) { for(const auto& i : { 0, 1, 2, 4, 5, 6, 8, 9, 10 }) (*this)[i] += rhs[i]; }
+
 
         union {
             struct {

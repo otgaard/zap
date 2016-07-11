@@ -89,7 +89,7 @@ set(ZAP_ENGINE_FILES
         generators/noise/perlin.hpp
         generators/noise/noise.hpp
         graphics2/plotter2.hpp
-        graphics2/plotter2.cpp)
+        graphics2/plotter2.cpp graphics2/curve_input.cpp graphics2/curve_input.hpp core/enumfield.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -134,7 +134,7 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/modules/metaballs.cpp
         apps/synesthesia/modules/metaballs.hpp
         apps/synesthesia/spectral_analyser.hpp
-        apps/synesthesia/spectral_analyser.cpp apps/synesthesia/modules/graphs.cpp apps/synesthesia/modules/graphs.hpp)
+        apps/synesthesia/spectral_analyser.cpp apps/synesthesia/modules/graphs.cpp apps/synesthesia/modules/graphs.hpp apps/synesthesia/modules/particles.cpp apps/synesthesia/modules/particles.hpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
