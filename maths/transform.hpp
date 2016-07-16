@@ -217,7 +217,7 @@ namespace zap { namespace maths {
                 invert_det();
             }
 
-            matrix_.col(affine_t::cols()-1, translation_);
+            matrix_.column(affine_t::cols()-1, translation_);
             constexpr auto col = affine_t::cols()-1;
             for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
                 inv_matrix_(r,col) = -dot(inv_matrix_.row(r), translation_);

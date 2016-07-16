@@ -127,6 +127,7 @@ namespace zap { namespace maths {
             checkidx(col, cols());
             return vec3<T>(operator()(0,col), operator()(1,col), operator()(2,col));
         }
+        vec3<T> col(size_t c) const { return col3(c); }
         void column(size_t col, const vec4<T>& v) {
             checkidx(col, cols());
             assert( ( ((col < 3) && eq(v.w, T(0))) || ((col == 3) && eq(v.w, T(1))) ) && "0..2 must be vectors, 3 must be a point");
@@ -144,6 +145,7 @@ namespace zap { namespace maths {
             checkidx(row, rows());
             return vec3<T>(operator()(row,0), operator()(row,1), operator()(row,2));
         }
+        vec3<T> row(size_t r) const { return row3(r); }
         void row(size_t row, const vec4<T>& v) {
             checkidx(row, rows());
             operator()(row,0) = v[0]; operator()(row,1) = v[1]; operator()(row,2) = v[2]; operator()(row,3) = v[3];
@@ -196,6 +198,7 @@ namespace zap { namespace maths {
 
         mat4& clear() { for(auto& e : arr) e = type(0); return *this; }
         mat4 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
+        vec3<T> transform(const vec3<T>& P) const;
 
         mat4<T>& transpose() {
             auto& self = *this;
@@ -217,6 +220,15 @@ namespace zap { namespace maths {
 #endif //ZAP_MATHS_SSE2
         };
 	} ALIGN_ATTR(16);
+
+    template <typename T>
+    vec3<T> mat4<T>::transform(const vec3<T>& P) const {
+        vec3<T> R;
+        R.x = arr[idx(0,0)]*P.x + arr[idx(0,1)]*P.y + arr[idx(0,2)]*P.z + arr[idx(0,3)];
+        R.y = arr[idx(1,0)]*P.x + arr[idx(1,1)]*P.y + arr[idx(1,2)]*P.z + arr[idx(1,3)];
+        R.z = arr[idx(2,0)]*P.x + arr[idx(2,1)]*P.y + arr[idx(2,2)]*P.z + arr[idx(2,3)];
+        return R;
+    }
 
     template <typename T>
     mat4<T> make_translation(T x, T y, T z) {

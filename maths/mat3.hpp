@@ -105,6 +105,7 @@ namespace zap { namespace maths {
             checkidx(col, cols());
             return vec2<T>(operator()(0,col), operator()(1,col));
         }
+        vec2<T> col(size_t c) const { return col2(c); }
         void column(size_t col, const vec3<T>& v) {
             checkidx(col, cols());
             assert( ( ((col < 2) && eq(v.z, T(0))) || ((col == 2) && eq(v.z, T(1))) ) && "0..1 must be vectors, 2 must be a point");
@@ -122,6 +123,7 @@ namespace zap { namespace maths {
             checkidx(row, rows());
             return vec2<T>(operator()(row,0), operator()(row,1));
         }
+        vec2<T> row(size_t r) const { return row2(r); }
         void row(size_t row, const vec3<T>& v) {
             checkidx(row, rows());
             operator()(row,0) = v[0]; operator()(row,1) = v[1]; operator()(row,2) = v[2];
@@ -143,6 +145,7 @@ namespace zap { namespace maths {
 
         mat3& clear() { for(auto& e : arr) e = type(0); return *this; }
         mat3 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
+        vec2<T> transform(const vec2<T>& v) const;
 
         union {
             struct {
@@ -156,6 +159,14 @@ namespace zap { namespace maths {
 #endif //ZAP_MATHS_SSE2
         };
 	} ALIGN_ATTR(16);
+
+    template <typename T>
+    vec2<T> mat3<T>::transform(const vec2<T>& v) const {
+        return vec2<T>(
+                arr[idx(0,0)]*v[0] + arr[idx(0,1)]*v[1] + arr[idx(0,2)],
+                arr[idx(1,0)]*v[0] + arr[idx(1,1)]*v[1] + arr[idx(1,2)]
+        );
+    }
 
     template <typename T>
     mat3<T> mat3<T>::inverse(T epsilon) const {
@@ -176,6 +187,30 @@ namespace zap { namespace maths {
         }
 
         return mat3((T)0);
+    }
+
+    template <typename T>
+    mat3<T> operator*(const mat3<T>& m, const mat3<T>& n) {
+        mat3<T> r;
+        r(0,0) = m(0,0)*n(0,0) + m(0,1)*n(1,0) + m(0,2)*n(2,0);
+        r(0,1) = m(0,0)*n(0,1) + m(0,1)*n(1,1) + m(0,2)*n(2,1);
+        r(0,2) = m(0,0)*n(0,2) + m(0,1)*n(1,2) + m(0,2)*n(2,2);
+        r(1,0) = m(1,0)*n(0,0) + m(1,1)*n(1,0) + m(1,2)*n(2,0);
+        r(1,1) = m(1,0)*n(0,1) + m(1,1)*n(1,1) + m(1,2)*n(2,1);
+        r(1,2) = m(1,0)*n(0,2) + m(1,1)*n(1,2) + m(1,2)*n(2,2);
+        r(2,0) = m(2,0)*n(0,0) + m(2,1)*n(1,0) + m(2,2)*n(2,0);
+        r(2,1) = m(2,0)*n(0,1) + m(2,1)*n(1,1) + m(2,2)*n(2,1);
+        r(2,2) = m(2,0)*n(0,2) + m(2,1)*n(1,2) + m(2,2)*n(2,2);
+        return r;
+    }
+
+    template <typename T>
+    vec3<T> operator*(const mat3<T>& m, const vec3<T>& v) {
+        return vec3<T>(
+                m(0,0)*v[0] + m(0,1)*v[1] + m(0,2)*v[2],
+                m(1,0)*v[0] + m(1,1)*v[1] + m(1,2)*v[2],
+                m(2,0)*v[0] + m(2,1)*v[1] + m(2,2)*v[2]
+        );
     }
 
     using mat3b = mat3<uint8_t>;

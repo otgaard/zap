@@ -46,8 +46,6 @@ void zap_example::initialise() {
     plotter.initialise();
     plotter.sample_curve(curve, 0.f, 1.f);
 
-    transform<mat3f> foo;
-
     gl_error_check();
 }
 
@@ -70,19 +68,20 @@ void zap_example::on_resize(int width, int height) {
 
 void zap_example::on_mousemove(double x, double y) {
     if(x > sc_width_ || x < 0 || y > sc_height_ || y < 0) return;
-    x -= sc_width_/2.f; y -= sc_height_/2.f;
-    x /= sc_height_/2.f; y /= -sc_height_/2.f;
-    //LOG(x,y);
 
-    curve.set_points(vec2f(x,y), vec2f(1.f, 1.f));
+    auto T = trans.inv_affine();
+    auto lP = T.transform(vec2f(x,-y) - .5f*vec2f(sc_width_, -sc_height_));
+
+    curve.set_points(lP, vec2f(1.f, 1.f));
     plotter.sample_curve(curve, 0.f, 1.f);
 }
 
 static float scale = 1.f;
 
 void zap_example::update(double t, float dt) {
-    trans.uniform_scale(768.f/scale);
-    trans.rotate(make_rotation<float>(PI*scale/30.f));
+    trans.uniform_scale(200.f);
+    trans.rotate(make_rotation<float>(PI*scale/10.f));
+    //trans.translate(vec2f(50*scale,25*scale));
     scale += dt;
     plotter.transform(trans.gl_matrix());
 }

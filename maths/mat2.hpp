@@ -219,6 +219,14 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
+    vec2<T> operator*(const mat2<T>& m, const vec2<T>& v) {
+        return vec2<T>(
+                m(0,0)*v[0] + m(0,1)*v[1],
+                m(1,0)*v[0] + m(1,1)*v[1]
+        );
+    }
+
+    template <typename T>
     constexpr mat2<T> transpose(const mat2<T>& M) {
         return mat2<T>(M.m00, M.m10, M.m01, M.m11);
     }
