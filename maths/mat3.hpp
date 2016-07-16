@@ -114,10 +114,35 @@ namespace zap { namespace maths {
             checkidx(col, cols());
             operator()(0,col) = v[0]; operator()(1,col) = v[1];
         }
+        vec3<T> row3(size_t row) const {
+            checkidx(row, rows());
+            return vec3<T>(operator()(row,0), operator()(row,1), operator()(row,2));
+        }
+        vec2<T> row2(size_t row) const {
+            checkidx(row, rows());
+            return vec2<T>(operator()(row,0), operator()(row,1));
+        }
+        void row(size_t row, const vec3<T>& v) {
+            checkidx(row, rows());
+            operator()(row,0) = v[0]; operator()(row,1) = v[1]; operator()(row,2) = v[2];
+        }
+        void row(size_t row, const vec2<T>& v) {
+            checkidx(row, rows());
+            operator()(row,0) = v[0]; operator()(row,1) = v[1];
+        }
+        void rotation(const mat2<T>& R) {
+            for(size_t c = 0, cend = cols()-1; c != cend; ++c) {
+                for(size_t r = 0, rend = rows()-1; r != rend; ++r) {
+                    operator()(r,c) = R(r,c);
+                }
+            }
+        }
 
         mat3<T>& operator+=(const mat3& rhs) { for(const auto& i : { 0, 1, 2, 4, 5, 6, 8, 9, 10 }) (*this)[i] += rhs[i]; }
         mat3<T>& operator-=(const mat3& rhs) { for(const auto& i : { 0, 1, 2, 4, 5, 6, 8, 9, 10 }) (*this)[i] += rhs[i]; }
 
+        mat3& clear() { for(auto& e : arr) e = type(0); return *this; }
+        mat3 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
 
         union {
             struct {
@@ -131,6 +156,27 @@ namespace zap { namespace maths {
 #endif //ZAP_MATHS_SSE2
         };
 	} ALIGN_ATTR(16);
+
+    template <typename T>
+    mat3<T> mat3<T>::inverse(T epsilon) const {
+        mat3 inv;
+
+        inv[0] = arr[4]*arr[8] - arr[5]*arr[7]; inv[1] = arr[2]*arr[7] - arr[1]*arr[8]; inv[2] = arr[1]*arr[5] - arr[2]*arr[4];
+        inv[3] = arr[5]*arr[6] - arr[3]*arr[8]; inv[4] = arr[0]*arr[8] - arr[2]*arr[6]; inv[5] = arr[2]*arr[3] - arr[0]*arr[5];
+        inv[6] = arr[3]*arr[7] - arr[4]*arr[6]; inv[7] = arr[1]*arr[6] - arr[0]*arr[7]; inv[8] = arr[0]*arr[4] - arr[1]*arr[3];
+
+        T det = arr[0]*inv[0] + arr[1]*inv[3] + arr[2]*inv[6];
+
+        if(std::abs(det) > epsilon) {
+            T inv_det = ((T)1)/det;
+            inv[0] *= inv_det; inv[1] *= inv_det; inv[2] *= inv_det;
+            inv[3] *= inv_det; inv[4] *= inv_det; inv[5] *= inv_det;
+            inv[6] *= inv_det; inv[7] *= inv_det; inv[8] *= inv_det;
+            return inv;
+        }
+
+        return mat3((T)0);
+    }
 
     using mat3b = mat3<uint8_t>;
     using mat3s = mat3<int16_t>;

@@ -64,6 +64,9 @@ namespace zap { namespace maths {
         mutable core::enumfield<int, transform_state> transform_state_;
     };
 
+    using transform3f = transform<mat3f>;
+    using transform4f = transform<mat4f>;
+
     template <typename AffineT>
     void transform<AffineT>::make_identity() {
         rotation_ = rot_t::identity();
@@ -164,6 +167,67 @@ namespace zap { namespace maths {
         m.column(1, vec3f(matrix_.col2(1), 0.f));
         m.column(3, vec3f(matrix_.col2(2), 0.f));
         return m;
+    }
+
+    template <typename AffineT>
+    void transform<AffineT>::update_transform() const {
+        if(transform_state_.is_set(transform_state::TS_IDENTITY)) matrix_.identity();
+        else {
+            if(transform_state_.is_set(transform_state::TS_ROTSCALE)) {
+                for(int c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
+                    for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                        matrix_(r,c) = rotation_(r,c)*scale_[c];
+                    }
+                }
+            } else {
+                matrix_.rotation(rotation_);
+            }
+
+            matrix_.column(affine_t::cols()-1, translation_);
+        }
+
+        transform_state_.set(transform_state::TS_SYNCED);
+    }
+
+    template <typename AffineT>
+    void transform<AffineT>::invert_affine() const {
+        if(!transform_state_.is_set(transform_state::TS_SYNCED)) update_transform();
+
+        if(transform_state_.is_set(transform_state::TS_IDENTITY)) {
+            inv_matrix_.identity();
+        } else {
+            if(transform_state_.is_set(transform_state::TS_ROTSCALE)) {
+                if(transform_state_.is_set(transform_state::TS_UNISCALE)) {
+                    type inv_scale = type(1)/scale_[0];
+                    for(int c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
+                        for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                            inv_matrix_(r,c) = inv_scale*rotation_(c,r);
+                        }
+                    }
+                } else {
+                    auto inv_scale = reciprocal(scale_);
+
+                    for(int c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
+                        for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                            inv_matrix_(r,c) = inv_scale[r]*rotation_(c,r);
+                        }
+                    }
+                }
+            } else {
+                invert_det();
+            }
+
+            matrix_.col(affine_t::cols()-1, translation_);
+            constexpr auto col = affine_t::cols()-1;
+            for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                inv_matrix_(r,col) = -dot(inv_matrix_.row(r), translation_);
+            }
+        }
+    }
+
+    template <typename AffineT>
+    void transform<AffineT>::invert_det() const {
+        inv_matrix_.rotation(rotation_.inverse());
     }
 
 }}

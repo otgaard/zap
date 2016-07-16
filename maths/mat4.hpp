@@ -136,6 +136,29 @@ namespace zap { namespace maths {
             checkidx(col, cols());
             operator()(0,col) = v[0]; operator()(1,col) = v[1]; operator()(2,col) = v[2];
         }
+        vec4<T> row4(size_t row) const {
+            checkidx(row, rows());
+            return vec4<T>(operator()(row,0), operator()(row,1), operator()(row,2), operator()(row,3));
+        }
+        vec3<T> row3(size_t row) const {
+            checkidx(row, rows());
+            return vec3<T>(operator()(row,0), operator()(row,1), operator()(row,2));
+        }
+        void row(size_t row, const vec4<T>& v) {
+            checkidx(row, rows());
+            operator()(row,0) = v[0]; operator()(row,1) = v[1]; operator()(row,2) = v[2]; operator()(row,3) = v[3];
+        }
+        void row(size_t row, const vec3<T>& v) {
+            checkidx(row, rows());
+            operator()(row,0) = v[0]; operator()(row,1) = v[1]; operator()(row,2) = v[2];
+        }
+        void rotation(const mat3<T>& R) {
+            for(size_t c = 0, cend = cols()-1; c != cend; ++c) {
+                for(size_t r = 0, rend = rows()-1; r != rend; ++r) {
+                    operator()(r,c) = R(r,c);
+                }
+            }
+        }
 
         mat4<T>& operator+=(const mat4& rhs) { for(size_t i = 0; i != size(); ++i) (*this)[i] += rhs[i]; }
         mat4<T>& operator-=(const mat4& rhs) { for(size_t i = 0; i != size(); ++i) (*this)[i] -= rhs[i]; }
@@ -170,6 +193,9 @@ namespace zap { namespace maths {
             self(3,3) = lhs(3,0)*rhs(0,3) + lhs(3,1)*rhs(1,3) + lhs(3,2)*rhs(2,3) + lhs(3,3)*rhs(3,3);
             return *this;
         }
+
+        mat4& clear() { for(auto& e : arr) e = type(0); return *this; }
+        mat4 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
 
         mat4<T>& transpose() {
             auto& self = *this;
@@ -283,6 +309,63 @@ namespace zap { namespace maths {
         r(3,2) = lhs(3,0)*rhs(0,2) + lhs(3,1)*rhs(1,2) + lhs(3,2)*rhs(2,2) + lhs(3,3)*rhs(3,2);
         r(3,3) = lhs(3,0)*rhs(0,3) + lhs(3,1)*rhs(1,3) + lhs(3,2)*rhs(2,3) + lhs(3,3)*rhs(3,3);
         return r;
+    }
+
+    template <typename T>
+    mat4<T> mat4<T>::inverse(T epsilon) const {
+        T a0 = arr[ 0]*arr[ 5] - arr[ 1]*arr[ 4];
+        T a1 = arr[ 0]*arr[ 6] - arr[ 2]*arr[ 4];
+        T a2 = arr[ 0]*arr[ 7] - arr[ 3]*arr[ 4];
+        T a3 = arr[ 1]*arr[ 6] - arr[ 2]*arr[ 5];
+        T a4 = arr[ 1]*arr[ 7] - arr[ 3]*arr[ 5];
+        T a5 = arr[ 2]*arr[ 7] - arr[ 3]*arr[ 6];
+        T b0 = arr[ 8]*arr[13] - arr[ 9]*arr[12];
+        T b1 = arr[ 8]*arr[14] - arr[10]*arr[12];
+        T b2 = arr[ 8]*arr[15] - arr[11]*arr[12];
+        T b3 = arr[ 9]*arr[14] - arr[10]*arr[13];
+        T b4 = arr[ 9]*arr[15] - arr[11]*arr[13];
+        T b5 = arr[10]*arr[15] - arr[11]*arr[14];
+
+        T det = a0*b5 - a1*b4 + a2*b3 + a3*b2 - a4*b1 + a5*b0;
+        if(std::abs(det) <= epsilon) return mat4((T)0);
+
+        mat4 inv;
+        inv[ 0] = + arr[ 5]*b5 - arr[ 6]*b4 + arr[ 7]*b3;
+        inv[ 4] = - arr[ 4]*b5 + arr[ 6]*b2 - arr[ 7]*b1;
+        inv[ 8] = + arr[ 4]*b4 - arr[ 5]*b2 + arr[ 7]*b0;
+        inv[12] = - arr[ 4]*b3 + arr[ 5]*b1 - arr[ 6]*b0;
+        inv[ 1] = - arr[ 1]*b5 + arr[ 2]*b4 - arr[ 3]*b3;
+        inv[ 5] = + arr[ 0]*b5 - arr[ 2]*b2 + arr[ 3]*b1;
+        inv[ 9] = - arr[ 0]*b4 + arr[ 1]*b2 - arr[ 3]*b0;
+        inv[13] = + arr[ 0]*b3 - arr[ 1]*b1 + arr[ 2]*b0;
+        inv[ 2] = + arr[13]*a5 - arr[14]*a4 + arr[15]*a3;
+        inv[ 6] = - arr[12]*a5 + arr[14]*a2 - arr[15]*a1;
+        inv[10] = + arr[12]*a4 - arr[13]*a2 + arr[15]*a0;
+        inv[14] = - arr[12]*a3 + arr[13]*a1 - arr[14]*a0;
+        inv[ 3] = - arr[ 9]*a5 + arr[10]*a4 - arr[11]*a3;
+        inv[ 7] = + arr[ 8]*a5 - arr[10]*a2 + arr[11]*a1;
+        inv[11] = - arr[ 8]*a4 + arr[ 9]*a2 - arr[11]*a0;
+        inv[15] = + arr[ 8]*a3 - arr[ 9]*a1 + arr[10]*a0;
+
+        T invDet = (T)1/det;
+        inv[ 0] *= invDet;
+        inv[ 1] *= invDet;
+        inv[ 2] *= invDet;
+        inv[ 3] *= invDet;
+        inv[ 4] *= invDet;
+        inv[ 5] *= invDet;
+        inv[ 6] *= invDet;
+        inv[ 7] *= invDet;
+        inv[ 8] *= invDet;
+        inv[ 9] *= invDet;
+        inv[10] *= invDet;
+        inv[11] *= invDet;
+        inv[12] *= invDet;
+        inv[13] *= invDet;
+        inv[14] *= invDet;
+        inv[15] *= invDet;
+
+        return inv;
     }
 
     using mat4b = mat4<uint8_t>;

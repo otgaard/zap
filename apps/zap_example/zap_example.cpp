@@ -36,6 +36,7 @@ protected:
     graphics2::plotter2 plotter;
     curves::hermite<float, vec2f> curve;
     mat4f proj_matrix;
+    transform3f trans;
 };
 
 void zap_example::initialise() {
@@ -77,7 +78,13 @@ void zap_example::on_mousemove(double x, double y) {
     plotter.sample_curve(curve, 0.f, 1.f);
 }
 
+static float scale = 1.f;
+
 void zap_example::update(double t, float dt) {
+    trans.uniform_scale(768.f/scale);
+    trans.rotate(make_rotation<float>(PI*scale/30.f));
+    scale += dt;
+    plotter.transform(trans.gl_matrix());
 }
 
 void zap_example::draw() {

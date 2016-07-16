@@ -197,6 +197,13 @@ namespace zap { namespace maths {
         return T(1)/v;
     }
 
+    template <typename T>
+    vec2<T> reciprocal(const vec2<T>& v) {
+        T s01 = v[0]*v[1];
+        T inv_s = T(1)/s01;
+        return vec2<T>(v[1]*inv_s, v[0]*inv_s);
+    }
+
     using vec2b = vec2<uint8_t>;
     using vec2s = vec2<int16_t>;
     using vec2i = vec2<int32_t>;

@@ -16,12 +16,6 @@
 #include "tools/log.hpp"
 
 namespace zap { namespace engine {
-	/*
-    using uchar = unsigned char;
-    using byte = unsigned char;
-    using uint = unsigned int;
-    using ulong = unsigned long;
-	*/
     using resource_t = std::uint32_t;
     constexpr resource_t INVALID_RESOURCE = resource_t(-1);
 

@@ -119,6 +119,9 @@ namespace zap { namespace maths {
         template <typename S> mat2& operator*=(S s);
         template <typename S> mat2& operator/=(S s);
         mat2& operator*=(const mat2& rhs);
+        mat2& clear() { for(auto& e : arr) e = type(0); return *this; }
+
+        mat2 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
 
         union {
             struct {
@@ -131,6 +134,16 @@ namespace zap { namespace maths {
 #endif
         };
 	} ALIGN_ATTR(16);
+
+    template <typename T>
+    mat2<T> make_rotation(T angle) {
+        mat2<T> mat;
+        T c_theta = cos(angle);
+        T s_theta = sin(angle);
+        mat(0,0) = +c_theta; mat(0,1) = -s_theta;
+        mat(1,0) = +s_theta; mat(1,1) = +c_theta;
+        return mat;
+    }
 
     template <typename T>
     mat2<T>& mat2<T>::operator+=(const mat2<T>& rhs) {
@@ -209,6 +222,22 @@ namespace zap { namespace maths {
     constexpr mat2<T> transpose(const mat2<T>& M) {
         return mat2<T>(M.m00, M.m10, M.m01, M.m11);
     }
+
+    template <typename T>
+    mat2<T> mat2<T>::inverse(typename mat2<T>::type epsilon) const {
+        mat2<T> inv;
+        T det = arr[0]*arr[3] - arr[1]*arr[2];
+        if(std::abs(det) > epsilon) {
+            T inv_det = type(1)/det;
+            inv[0] = arr[3]*inv_det;  inv[1] = -arr[1]*inv_det;
+            inv[2] = -arr[2]*inv_det; inv[3] = arr[0]*inv_det;
+        } else {
+            inv.clear();
+        }
+
+        return inv;
+    }
+
 }}
 
 #endif //ZAP_MAT2_HPP
