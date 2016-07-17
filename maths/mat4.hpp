@@ -64,6 +64,10 @@ namespace zap { namespace maths {
                                                      m01(T(0)), m11(m11),  m21(T(0)), m31(T(0)),
                                                      m02(T(0)), m12(T(0)), m22(m22),  m32(T(0)),
                                                      m03(T(0)), m13(T(0)), m23(T(0)), m33(m33) { }
+        constexpr mat4(const col_t& d) : m00(d.x),  m10(T(0)), m20(T(0)), m30(T(0)),
+                                         m01(T(0)), m11(d.y),  m21(T(0)), m31(T(0)),
+                                         m02(T(0)), m12(T(0)), m22(d.z),  m32(T(0)),
+                                         m03(T(0)), m13(T(0)), m23(T(0)), m33(d.w) { }
         constexpr mat4(const col_t& col0, const col_t& col1, const col_t& col2, const col_t& col3) :
                 m00(col0[0]), m10(col0[1]), m20(col0[2]), m30(col0[3]),
                 m01(col1[0]), m11(col1[1]), m21(col1[2]), m31(col1[3]),

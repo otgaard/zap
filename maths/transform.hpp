@@ -54,7 +54,6 @@ namespace zap { namespace maths {
     protected:
         void update_transform() const;
         void invert_affine() const;
-        void invert_det() const;
 
         rot_t rotation_;
         vec_t scale_;
@@ -127,7 +126,7 @@ namespace zap { namespace maths {
     typename transform<AffineT>::type transform<AffineT>::uniform_scale() const {
         assert(transform_state_.is_set(transform_state::TS_ROTSCALE) &&
                transform_state_.is_set(transform_state::TS_UNISCALE) && "Transform is not valid uniform Rotation/Scale Matrix");
-        return scale_;
+        return scale_[0];
     }
 
     template <typename AffineT>
@@ -214,7 +213,7 @@ namespace zap { namespace maths {
                     }
                 }
             } else {
-                invert_det();
+                inv_matrix_.rotation(rotation_.inverse());
             }
 
             matrix_.column(affine_t::cols()-1, translation_);
@@ -225,9 +224,34 @@ namespace zap { namespace maths {
         }
     }
 
-    template <typename AffineT>
-    void transform<AffineT>::invert_det() const {
-        inv_matrix_.rotation(rotation_.inverse());
+    template <typename AFFINE_MAT_T>
+    transform<AFFINE_MAT_T> transform<AFFINE_MAT_T>::operator*(const transform& rhs) const {
+        if(!transform_state_.is_set(transform_state::TS_SYNCED))     update_transform();
+        if(!rhs.transform_state_.is_set(transform_state::TS_SYNCED)) rhs.update_transform();
+
+        if(transform_state_.is_set(transform_state::TS_IDENTITY))     return rhs;
+        if(rhs.transform_state_.is_set(transform_state::TS_IDENTITY)) return *this;
+
+        transform P;
+        if(transform_state_.is_set(transform_state::TS_ROTSCALE) && transform_state_.is_set(transform_state::TS_ROTSCALE)) {
+            if(transform_state_.is_set(transform_state::TS_UNISCALE)) {
+                P.rotate(rotation_ * rhs.rotation_);
+                P.translate(uniform_scale()*(rotation_*rhs.translation_) + translation_);
+                if(rhs.transform_state_.is_set(transform_state::TS_UNISCALE)) P.uniform_scale(uniform_scale()*rhs.uniform_scale());
+                else                                                          P.scale(uniform_scale()*rhs.scale());
+                return P;
+            }
+        }
+
+        rot_t M_scale(scale_);
+        rot_t N_scale(rhs.scale_);
+
+        rot_t A = transform_state_.is_set(transform_state::TS_ROTSCALE)     ? rotation_     * M_scale : rotation_;
+        rot_t B = rhs.transform_state_.is_set(transform_state::TS_ROTSCALE) ? rhs.rotation_ * N_scale : rhs.rotation_;
+
+        P.matrix(A*B);
+        P.translate(A*rhs.translation_ + translation_);
+        return P;
     }
 
 }}

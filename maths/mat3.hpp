@@ -58,6 +58,9 @@ namespace zap { namespace maths {
         constexpr mat3(T m00, T m11, T m22) : m00(m00),  m10(T(0)), m20(T(0)),
                                               m01(T(0)), m11(m11),  m21(T(0)),
                                               m02(T(0)), m12(T(0)), m22(m22) { }
+        constexpr mat3(const col_t& d) : m00(d.x),  m10(T(0)), m20(T(0)),
+                                         m01(T(0)), m11(d.y),  m21(T(0)),
+                                         m02(T(0)), m12(T(0)), m22(d.z) { }
         constexpr mat3(const col_t& col0, const col_t& col1, const col_t& col2) :
                 m00(col0[0]), m10(col0[1]), m20(col0[2]),
                 m01(col1[0]), m11(col1[1]), m21(col1[2]),
