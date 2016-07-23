@@ -21,7 +21,7 @@ namespace zap { namespace maths {
         constexpr vec3(const static_list<T, 3>& lst) : x(lst[0]), y(lst[1]), z(lst[2]) { }
         constexpr vec3(const vec2<T>& rhs, T z=T(0)) : x(rhs.x), y(rhs.y), z(z) { }
         constexpr vec3(const vec3<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
-        constexpr vec3(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
+        //constexpr vec3(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
 
         inline vec3<T>& operator=(const vec3<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; }
@@ -123,6 +123,8 @@ namespace zap { namespace maths {
 
         inline bool neq(const vec3<T>& rhs) const { return !eq(rhs); }
         inline bool is_unit() const { return eq(length_sqr(), T(1)); }
+
+        vec2<T> xy() const { return vec2<T>(x, y); }
 
         union {
             struct {

@@ -22,8 +22,8 @@ namespace zap { namespace maths {
         constexpr vec2(T x, T y) : x(x), y(y) { }
         constexpr vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
         constexpr vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
-        constexpr vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
-        constexpr vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        //constexpr vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
+        //constexpr vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
 
         inline vec2<T>& operator=(const vec2<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; }

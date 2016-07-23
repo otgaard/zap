@@ -100,21 +100,6 @@ bool plotter2::initialise() {
         return false;
     }
 
-    //s.style.bind();
-
-    /*
-    mat4f proj_mat = {
-            2.f/1280.f, 0.f, 0.f, -1.f/1280.f,
-            0.f, 2.f/768.f, 0.f, -1.f/768.f,
-            0.f, 0.f, 2.f, -1.f,
-            0.f, 0.f, 0.f, 1.f
-    };
-
-    s.style.bind_uniform("proj_matrix", proj_mat);
-    s.style.bind_uniform("mv_matrix", make_scale(750.f/2,750.f/2,1.f));
-    gl_error_check();
-    */
-
     if(!s.plot_mesh.allocate() || !s.buffer.allocate()) {
         LOG_ERR("Error allocating plotter2 mesh or vertex buffer");
         return false;
@@ -157,7 +142,6 @@ void plotter2::draw() {
 
 void plotter2::set_projection_matrix(const mat4f& proj_mat) {
     state_->style.bind();
-    LOG("update");
     state_->style.bind_uniform("proj_matrix", proj_mat);
     state_->style.release();
 }
