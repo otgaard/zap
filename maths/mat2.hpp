@@ -124,6 +124,12 @@ namespace zap { namespace maths {
 
         mat2 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
 
+        mat2<T>& transpose() {
+            auto& self = *this;
+            std::swap(self(0,1), self(1,0));
+            return self;
+        }
+
         union {
             struct {
                 T m00, m10,     // Column 0

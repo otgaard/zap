@@ -84,6 +84,11 @@ namespace zap { namespace maths {
             return mat3(col0[0], col1[0], col2[0], col0[1], col1[1], col2[1], col0[2], col1[2], col2[2]);
         }
 
+        mat3& frame(const vec_t& r, const vec_t& u, const vec_t& P) {
+            column(0,r); column(1,u); column(2,P);
+            return *this;
+        }
+
         constexpr static mat3 identity() {
             return mat3(T(1),T(1),T(1));
         }
@@ -98,6 +103,16 @@ namespace zap { namespace maths {
         T& operator()(size_t row, size_t col) {
             assert(row < rows() && col < cols() && ZERR_IDX_OUT_OF_RANGE);
             return arr[idx(row,col)];
+        }
+
+        T& operator[](size_t idx) {
+            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
+            return arr[idx];
+        }
+
+        const T& operator[](size_t idx) const {
+            assert(idx < size() && ZERR_IDX_OUT_OF_RANGE);
+            return arr[idx];
         }
 
         vec3<T> col3(size_t col) const {
@@ -149,6 +164,12 @@ namespace zap { namespace maths {
         mat3& clear() { for(auto& e : arr) e = type(0); return *this; }
         mat3 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
         vec2<T> transform(const vec2<T>& v) const;
+
+        mat3<T>& transpose() {
+            auto& self = *this;
+            std::swap(self(0,1), self(1,0)); std::swap(self(0,2), self(2,0)); std::swap(self(1,2),self(2,1));
+            return self;
+        }
 
         union {
             struct {
@@ -214,6 +235,13 @@ namespace zap { namespace maths {
                 m(1,0)*v[0] + m(1,1)*v[1] + m(1,2)*v[2],
                 m(2,0)*v[0] + m(2,1)*v[1] + m(2,2)*v[2]
         );
+    }
+
+    template <typename T>
+    mat3<T> transpose(const mat3<T>& M) {
+        auto R = M;
+        std::swap(R(0,1), R(1,0)); std::swap(R(0,2),R(2,0)); std::swap(R(1,2), R(2,1));
+        return R;
     }
 
     using mat3b = mat3<uint8_t>;

@@ -123,7 +123,7 @@ namespace zap { namespace maths {
         }
 
         inline bool neq(const vec2<T>& rhs) const { return !eq(rhs); }
-        inline bool is_unit() const { return length_sqr() == T(1); }
+        inline bool is_unit() const { return eq(length_sqr(), T(1)); }
 
         union {
             struct {

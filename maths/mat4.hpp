@@ -92,6 +92,11 @@ namespace zap { namespace maths {
                         col0[2], col1[2], col2[2], col3[2], col0[3], col1[3], col2[3], col3[3]);
         }
 
+        mat4& frame(const vec_t& r, const vec_t& u, const vec_t& d, const vec_t& P) {
+            column(0,r); column(1,u); column(2,d); column(3,P);
+            return *this;
+        }
+
         constexpr static mat4 identity() {
             return mat4(T(1),T(1),T(1),T(1));
         }
@@ -266,15 +271,28 @@ namespace zap { namespace maths {
 
     // Takes degrees - force of habit
     template <typename T>
-    mat4<T> make_perspective(T fov, T ar, T dmin, T dmax) {
+    mat4<T> make_perspective(T fov, T ar, T d_min, T d_max) {
         const T ha_rad_tan = std::tan(deg_to_rad(.5 * fov));
-        mat4<T> r(0);
-        r(0,0) = T(1) / (ar * ha_rad_tan);
-        r(1,1) = T(1) / ha_rad_tan;
-        r(2,2) = -(dmax + dmin)/(dmax - dmin);
-        r(2,3) = T(-1);
-        r(3,2) = -(T(2)*(dmax * dmin))/(dmax - dmin);
-        return r;
+        mat4<T> P(0);
+        P(0,0) = T(1) / (ar * ha_rad_tan);
+        P(1,1) = T(1) / ha_rad_tan;
+        P(2,2) = -(d_max + d_min)/(d_max - d_min);
+        P(2,3) = T(-1);
+        P(3,2) = -(T(2)*(d_max * d_min))/(d_max - d_min);
+        return P;
+    }
+
+    template <typename T>
+    mat4<T> make_ortho(T r_min, T r_max, T u_min, T u_max, T d_min, T d_max) {
+        mat4<T> P(1,1,1,1);
+        P(0,0) = T(2) / (r_max - r_min);
+        P(1,1) = T(2) / (u_max - u_min);
+        P(2,2) = T(2) / (d_max - d_min);
+        P(3,2) = T(1);
+        P(3,0) = -(r_max + r_min) / (r_max - r_min);
+        P(3,1) = -(u_max + u_min) / (u_max - u_min);
+        P(3,2) = -(d_max + d_min) / (d_max - d_min);
+        return P;
     }
 
     template <typename T>
@@ -325,6 +343,14 @@ namespace zap { namespace maths {
         r(3,2) = lhs(3,0)*rhs(0,2) + lhs(3,1)*rhs(1,2) + lhs(3,2)*rhs(2,2) + lhs(3,3)*rhs(3,2);
         r(3,3) = lhs(3,0)*rhs(0,3) + lhs(3,1)*rhs(1,3) + lhs(3,2)*rhs(2,3) + lhs(3,3)*rhs(3,3);
         return r;
+    }
+
+    template <typename T>
+    mat4<T> transpose(const mat4<T>& M) {
+        auto R = M;
+        std::swap(R(0,1), R(1,0)); std::swap(R(0,2),R(2,0)); std::swap(R(0,3),R(3,0));
+        std::swap(R(1,2), R(2,1)); std::swap(R(1,3),R(3,1)); std::swap(R(2,3),R(3,2));
+        return R;
     }
 
     template <typename T>

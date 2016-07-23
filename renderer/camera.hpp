@@ -14,7 +14,16 @@
 
 namespace zap { namespace renderer {
     class camera {
+    protected:
+        enum class camera_state {
+            CS_IDENTITY = 1 << 0,        // The camera is the identity matrix
+            CS_PERSPECTIVE = 1 << 1,     // The camera is using perspective projection
+            CS_PRE_VIEW = 1 << 2,        // The camera requires a pre-view matrix multiplication
+            CS_POST_VIEW = 1 << 3        // The camera requires a post-view matrix multiplication
+        };
+
     public:
+        using vec2f = maths::vec2f;
         using vec3f = maths::vec3f;
         using vec4f = maths::vec4f;
         using mat4f = maths::mat4f;
@@ -29,28 +38,60 @@ namespace zap { namespace renderer {
         vec3f dir() const { return view_to_world_.col3(2); }
         vec3f world_pos() const { return view_to_world_.col3(3); }
         vec3f local_pos() const { return world_to_view_.col3(3); }
-        void right(const vec3f& r) { view_to_world_.column(0,r); on_view_changed(); }
-        void up(const vec3f& u) { view_to_world_.column(1,u); on_view_changed(); }
-        void dir(const vec3f& d) { view_to_world_.column(2,d); on_view_changed(); }
-        void world_pos(const vec3f& P) { view_to_world_.column(3,P); on_view_changed(); }
+        void right(const vec3f& r) { view_to_world_.column(0,r); update_view(); }
+        void up(const vec3f& u) { view_to_world_.column(1,u); update_view(); }
+        void dir(const vec3f& d) { view_to_world_.column(2,d); update_view(); }
+        void world_pos(const vec3f& P) { view_to_world_.column(3,P); update_view(); }
         void frame(const vec3f& u, const vec3f& d, const vec3f& P) {
             view_to_world_.column(1,u); view_to_world_.column(2,d), view_to_world_.column(3,P);
-            on_view_changed();
+            update_view();
         }
 
+        const mat4f& projection() const { return projection_; }
+        const mat4f& proj_view() const { return projection_view_; }
+        const mat4f& world_to_view() const { return world_to_view_; }
+        const mat4f& view_to_world() const { return view_to_world_; }
 
+        void frustum(float r_min, float r_max, float u_min, float u_max, float d_min, float d_max) {
+            cam_state_.clear(camera_state::CS_PERSPECTIVE);
+            frustum_[FP_DMIN] = d_min; frustum_[FP_DMAX] = d_max;
+            frustum_[FP_UMIN] = u_min; frustum_[FP_UMAX] = u_max;
+            frustum_[FP_RMIN] = r_min; frustum_[FP_RMAX] = r_max;
+            update_frustum();
+        }
+
+        void frustum(float fov, float ar, float d_min, float d_max) {
+            float ha_rad = .5f * maths::deg_to_rad(fov);
+            frustum_[FP_UMAX] = d_min * std::tan(ha_rad);
+            frustum_[FP_RMAX] = ar * frustum_[FP_UMAX];
+            frustum_[FP_UMIN] = -frustum_[FP_UMAX];
+            frustum_[FP_RMIN] = -frustum_[FP_RMAX];
+            frustum_[FP_DMAX] = d_max;
+            frustum_[FP_DMIN] = d_min;
+            update_frustum();
+        }
+
+        void viewport(float left, float bottom, float right, float top) {
+            viewport_[0] = left; viewport_[1] = bottom; viewport_[2] = right; viewport_[3] = top;
+        }
+        float width() const { return viewport_[2] - viewport_[0]; }
+        float height() const { return viewport_[3] - viewport_[1]; }
+        vec2f dims() const { return vec2f(width(), height()); }
+
+        bool pick_ray(int x, int y, vec3f& origin, vec3f& dir) const;
 
     protected:
-        enum class camera_state {
-            CS_IS_IDENTITY = 1 << 0,        // The camera is the identity matrix
-            CS_IS_PROJECTION = 1 << 1,      // The camera is using perspective projection
-            CS_IS_PRE_VIEW = 1 << 2,        // The camera requires a pre-view matrix multiplication
-            CS_IS_POST_VIEW = 1 << 3        // The camera requires a post-view matrix multiplication
+        enum frustum_plane {
+            FP_DMIN = 0,
+            FP_DMAX = 1,
+            FP_UMIN = 2,
+            FP_UMAX = 3,
+            FP_RMIN = 4,
+            FP_RMAX = 5
         };
 
-        void on_view_changed();
-        void on_frustum_changed();
-        void on_viewport_changed();
+        void update_view();
+        void update_frustum();
 
         mat4f world_to_view_;
         mat4f view_to_world_;

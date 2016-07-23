@@ -36,6 +36,7 @@ namespace zap { namespace maths {
 
         void translate(const vec_t& T);
         void rotate(const rot_t& R);        // An orthogonal rotation matrix
+        void rotate(const affine_t& R);     // An affine-type rotation matrix
         void matrix(const rot_t& M);        // Arbitrary Rotation Matrix
         void uniform_scale(type S);
         void scale(const vec_t& S);
@@ -88,6 +89,17 @@ namespace zap { namespace maths {
         transform_state_.clear(transform_state::TS_IDENTITY, transform_state::TS_SYNCED, transform_state::TS_SYNCEDINV);
         transform_state_.set(transform_state::TS_ROTSCALE);
         rotation_ = R;
+    }
+
+    template <typename AffineT>
+    void transform<AffineT>::rotate(const affine_t& R) {
+        transform_state_.clear(transform_state::TS_IDENTITY, transform_state::TS_SYNCED, transform_state::TS_SYNCEDINV);
+        transform_state_.set(transform_state::TS_ROTSCALE);
+        for(size_t c = 0; c != affine_t::cols()-1; ++c) {
+            for(size_t r = 0; r != affine_t::rows()-1; ++r) {
+                rotation_(r,c) = R(r,c);
+            }
+        }
     }
 
     template <typename AffineT>

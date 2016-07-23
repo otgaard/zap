@@ -8,6 +8,7 @@
 class application {
 public:
     application(const std::string& name, int width, int height, bool fullscreen);
+    virtual ~application() { }
 
     virtual void initialise() { }
     virtual void update(double t, float dt) { }
@@ -19,6 +20,7 @@ public:
     virtual void on_mousedown();
     virtual void on_mouseup();
     virtual void on_mousemove(double x, double y);
+    virtual void on_mousewheel(double xoffset, double yoffset);
 
     int run();
 
