@@ -12,6 +12,17 @@ class texture {
 public:
     texture(texture_type type=texture_type::TT_TEX2D) : type_(type), id_(INVALID_RESOURCE) { }
     ~texture() { if(is_allocated()) deallocate(); }
+    texture(const texture& rhs) = delete;
+    texture(texture&& rhs) : type_(rhs.type_), id_(rhs.id_) { rhs.id_ = INVALID_RESOURCE; }
+    texture& operator=(const texture& rhs) = delete;
+
+    texture& operator=(texture&& rhs) {
+        if(this != &rhs) {
+            std::swap(type_, rhs.type_);
+            std::swap(id_, rhs.id_);
+        }
+        return *this;
+    }
 
     bool allocate();
     bool deallocate();

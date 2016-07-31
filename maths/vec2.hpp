@@ -139,6 +139,11 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
+    constexpr T dotperp(const vec2<T>& u, const vec2<T>& v) {
+        return u.x*v.y - u.y*v.x;
+    }
+
+    template <typename T>
     constexpr vec2<T> operator+(const vec2<T>& lhs, const vec2<T>& rhs) {
         return vec2<T>(lhs.x + rhs.x, lhs.y + rhs.y);
     }

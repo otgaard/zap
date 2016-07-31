@@ -53,6 +53,8 @@ public:
         return result && configure_attributes();
     }
 
+    bool initialise(size_t vertex_count, const vertex_t* data) { return initialise(vertex_count, reinterpret_cast<const char*>(data)); }
+
     bool orphan() { return buffer::orphan(buf_type, usage); }
 
     // All sizes are in vertices, i.e src_off = 0 is the first vertex, src_off = 1 is the second and so on.

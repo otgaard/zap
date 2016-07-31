@@ -184,6 +184,16 @@ namespace zap { namespace maths {
             return r;
         }
 
+        // This is a transform
+        vec4<T> operator*(const vec4<T>& v) {
+            vec4<T> r;
+            r[0] = arr[idx(0,0)]*v[0] + arr[idx(0,1)]*v[1] + arr[idx(0,2)]*v[2] + arr[idx(0,3)*v[3]];
+            r[1] = arr[idx(1,0)]*v[0] + arr[idx(1,1)]*v[1] + arr[idx(1,2)]*v[2] + arr[idx(1,3)*v[3]];
+            r[2] = arr[idx(2,0)]*v[0] + arr[idx(2,1)]*v[1] + arr[idx(2,2)]*v[2] + arr[idx(2,3)*v[3]];
+            r[3] = arr[3];
+            return r;
+        }
+
         mat4<T>& operator*=(const mat4& rhs) {
             auto& self = *this; mat4<T> lhs(self);
             self(0,0) = lhs(0,0)*rhs(0,0) + lhs(0,1)*rhs(1,0) + lhs(0,2)*rhs(2,0) + lhs(0,3)*rhs(3,0);
@@ -322,6 +332,34 @@ namespace zap { namespace maths {
         for(size_t i = 0; i != mat4<T>::size(); ++i) r[i] = scalar*rhs[i];
         return r;
     };
+
+    template <typename T>
+    vec3<T> operator*(const mat4<T>& lhs, const vec3<T>& v) {
+        vec3<T> r;
+        r[0] = lhs(0,0)*v[0] + lhs(0,1)*v[1] + lhs(0,2)*v[2];
+        r[1] = lhs(1,0)*v[0] + lhs(1,1)*v[1] + lhs(1,2)*v[2];
+        r[2] = lhs(2,0)*v[0] + lhs(2,1)*v[1] + lhs(2,2)*v[2];
+        return r;
+    }
+
+    template <typename T>
+    vec4<T> operator*(const mat4<T>& lhs, const vec4<T>& v) {
+        vec4<T> r;
+        r[0] = lhs(0,0)*v[0] + lhs(0,1)*v[1] + lhs(0,2)*v[2] + lhs(0,3)*v[3];
+        r[1] = lhs(1,0)*v[0] + lhs(1,1)*v[1] + lhs(1,2)*v[2] + lhs(1,3)*v[3];
+        r[2] = lhs(2,0)*v[0] + lhs(2,1)*v[1] + lhs(2,2)*v[2] + lhs(2,3)*v[3];
+        r[3] = v[3];
+        return r;
+    }
+
+    template <typename T>
+    vec3<T> transform4(const mat4<T>& lhs, const vec3<T>& v) {
+        vec3<T> r;
+        r[0] = lhs(0,0)*v[0] + lhs(0,1)*v[1] + lhs(0,2)*v[2] + lhs(0,3);
+        r[1] = lhs(1,0)*v[0] + lhs(1,1)*v[1] + lhs(1,2)*v[2] + lhs(1,3);
+        r[2] = lhs(2,0)*v[0] + lhs(2,1)*v[1] + lhs(2,2)*v[2] + lhs(2,3);
+        return r;
+    }
 
     template <typename T>
     mat4<T> operator*(const mat4<T>& lhs, const mat4<T>& rhs) {

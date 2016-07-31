@@ -38,7 +38,7 @@ set(ZAP_MATHS_FILES
         geometry/disc.hpp
         maths/algebra.hpp
         maths/rand_lcg.hpp
-        maths/curves/curves.hpp maths/transform.hpp maths/curves/hermite.hpp maths/matrix.hpp maths/vector.hpp)
+        maths/curves/curves.hpp maths/transform.hpp maths/curves/hermite.hpp maths/matrix.hpp maths/vector.hpp maths/transform.cpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -103,7 +103,7 @@ set(ZAP_EXAMPLE_FILES
         apps/zap_example/generator.hpp
         apps/zap_example/shader_src.hpp
         apps/zap_example/module.cpp
-        apps/zap_example/module.hpp)
+        apps/zap_example/module.hpp apps/zap_example/quad.cpp apps/zap_example/quad.hpp apps/zap_example/simple_shdr.cpp apps/zap_example/simple_shdr.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp

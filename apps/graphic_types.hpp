@@ -11,6 +11,7 @@
 #include <maths/mat2.hpp>
 #include <maths/mat3.hpp>
 #include <maths/mat4.hpp>
+#include <maths/transform.hpp>
 #include <engine/engine.hpp>
 #include <engine/vertex_buffer.hpp>
 #include <engine/index_buffer.hpp>
@@ -23,10 +24,12 @@
 #include <engine/mesh.hpp>
 
 #include <renderer/colour.hpp>
+#include <renderer/camera.hpp>
 
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
+using namespace zap::renderer;
 
 using pos2f_t = core::position<vec2f>;
 using pos3f_t = core::position<vec3f>;
@@ -42,6 +45,11 @@ using vtx_p2t2_t = vertex<pos2f_t, tex2f_t>;
 using vtx_p3n3t2_t = vertex<pos3f_t, nor3f_t>;
 using vtx_p3c4ps1_t = vertex<pos3f_t, col4f_t, psize1_t>;
 using vtx_p3n3t2c3_t = vertex<pos3f_t, nor3f_t, tex2f_t, col3f_t>;
+
+using vbuf_p2_t = vertex_buffer<vtx_p2_t, buffer_usage::BU_STATIC_DRAW>;
+using vbuf_p2t2_t = vertex_buffer<vtx_p2t2_t, buffer_usage::BU_STATIC_DRAW>;
+
+using mesh_p2t2_trifan_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLE_FAN>;
 
 #define GLSL(src) "#version 330 core\n" #src
 
