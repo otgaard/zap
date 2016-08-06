@@ -18,7 +18,7 @@ namespace zap { namespace maths {
             TS_IDENTITY = 1 << 0,   // Transform is identity
             TS_ROTSCALE = 1 << 1,   // Transform is scale + rotation matrix
             TS_UNISCALE = 1 << 2,   // Scale is uniform
-            TS_SYNCED = 1 << 3,     // The transform (affine matrix_) has been synced, syncs on use
+            TS_SYNCED = 1 << 3,     // The transform (matrix_) has been synced, syncs on use
             TS_SYNCEDINV = 1 << 4   // The inverse transform (inv_matrix_) has been synced, syncs on use
         };
 
@@ -41,7 +41,7 @@ namespace zap { namespace maths {
         void uniform_scale(type S);
         void scale(const vec_t& S);
 
-        const vec_t& translation();
+        const vec_t& translation() const;
         const vec_t& scale() const;
         type uniform_scale() const;
         const rot_t& rotation() const;
@@ -125,7 +125,7 @@ namespace zap { namespace maths {
     }
 
     template <typename AffineT>
-    const typename transform<AffineT>::vec_t& transform<AffineT>::translation() {
+    const typename transform<AffineT>::vec_t& transform<AffineT>::translation() const {
         return translation_;
     }
 
