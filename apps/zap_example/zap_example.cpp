@@ -124,14 +124,13 @@ void zap_example::initialise() {
     mesh.set_stream(&vbo);
     mesh.bind(); vbo.bind();
 
-
     std::vector<vec2f> hull = { vec2f(-1,-1), vec2f(0,+1), vec2f(+1,-1) };
     std::vector<vec2f> points;
 
     size_t sample_size = 10000;
     vbo.initialise(sample_size);
     if(vbo.map(buffer_access::BA_WRITE_ONLY)) {
-        for(int i = 0; i != sample_size; ++i) {
+        for(size_t i = 0; i != sample_size; ++i) {
             auto v = vec2f(rnd.random_s(), rnd.random_s());
             while(!is_contained(hull, v)) v = vec2f(rnd.random_s(), rnd.random_s());
             vbo[i].position = v;

@@ -18,9 +18,9 @@ void fft::run_fft(const std::vector<float>& samples, std::vector<float>& bins, s
     if(bins.size() != samples.size()) bins.resize(samples.size());
     process_samples(samples.data(), 2, bins);
 
-    for(int i = 0; i != count; ++i) {
+    for(int i = 0; i != int(count); ++i) {
         const auto idx = 2*i;
-        float mag = 20.f * std::log10f(2.f * inv_s * std::sqrt(bins[idx]*bins[idx] + bins[idx+1]*bins[idx+1]));
+        float mag = 20.f * std::log10(2.f * inv_s * std::sqrt(bins[idx]*bins[idx] + bins[idx+1]*bins[idx+1]));
         for(int k = 4; k != 0; --k) smoothing_[5*i+k] = smoothing_[5*i+(k-1)];
         smoothing_[5*i] = mag; mag = 0;
         for(int k = 0; k != 5; ++k) mag += tri_smooth[k]*smoothing_[5*i+k];
@@ -60,7 +60,7 @@ void fft::fourier_transform(buffer_t& fft_buffer, size_t window, bool inverse) {
     float tr, ti, ur, ui;
     int p1r, p1i, p2r, p2i;
     int i, bitm, j, le, le2, k;
-    size_t fftFrameSize2 = window * 2;
+    int fftFrameSize2 = window * 2;
 
     for(i = 2; i < fftFrameSize2 - 2; i += 2) {
         for(bitm = 2, j = 0; bitm < fftFrameSize2; bitm <<= 1) {
@@ -78,15 +78,15 @@ void fft::fourier_transform(buffer_t& fft_buffer, size_t window, bool inverse) {
         }
     }
 
-    int kmax = (int)(std::logf(window) / std::logf(2.0) + 0.5);
+    int kmax = (int)(std::log(window) / std::log(2.0) + 0.5);
     for (k = 0, le = 2; k < kmax; k++) {
         le <<= 1;
         le2 = le >> 1;
         ur = 1.0f;
         ui = 0.0f;
         arg = (float)(zap::maths::PI / (le2 >> 1));
-        wr = std::cosf(arg);
-        wi = sign * std::sinf(arg);
+        wr = std::cos(arg);
+        wi = sign * std::sin(arg);
         for (j = 0; j < le2; j += 2) {
             p1r = j; p1i = p1r + 1;
             p2r = p1r + le2; p2i = p2r + 1;

@@ -21,6 +21,7 @@
 #include <engine/engine.hpp>
 #include <engine/program.hpp>
 #include <base/mp3_stream.hpp>
+#include <algorithm>
 
 /****************
  * LOCAL INCLUDES

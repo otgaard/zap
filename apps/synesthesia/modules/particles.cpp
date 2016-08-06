@@ -4,6 +4,7 @@
 #include "apps/graphic_types.hpp"
 
 #include <maths/curves/hermite.hpp>
+#include <algorithm>
 
 using namespace zap;
 using namespace zap::maths;

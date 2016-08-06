@@ -17,7 +17,7 @@ public:
 
 protected:
     inline float hamming_window(size_t n, size_t N) {
-        return 0.54f - 0.46f * std::sinf(2.0f * (float)zap::maths::TWO_PI * n)/(N - 1);
+        return 0.54f - 0.46f * std::sin(2.0f * (float)zap::maths::TWO_PI * n)/(N - 1);
     }
 
 private:
