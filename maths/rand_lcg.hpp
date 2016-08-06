@@ -21,17 +21,13 @@ namespace zap { namespace maths {
         float random() const {
             uint flt_i = 0x3f800000 | (rand() >> 9);    // [1 .. 2]
             char* ptr = (char*)&flt_i;
-            return *(float*)ptr - 1.f;
-            //return *(float*)((char*)(&flt_i)) - 1.f;
-            //return *(float*)(&flt_i) - 1.f;             // [0 .. 1]
+            return *(float*)ptr - 1.f;                  // [0 .. 1]
         }
 
         float random_s() const {        // Signed random
             uint flt_i = 0x3f800000 | (rand() >> 9);
             char* ptr = (char*)&flt_i;
-            return 2 * (*(float*)ptr - 1.5f);
-            //return 2 * ((*(float*)(char*)(&flt_i)) - 1.5f);
-            //return 2*((*(float*)(&flt_i)) - 1.5f);      // [-1 .. 1]
+            return 2 * (*(float*)ptr - 1.5f);           // [-1 .. 1]
         }
 
     private:
