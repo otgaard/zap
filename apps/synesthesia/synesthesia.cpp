@@ -163,10 +163,10 @@ void synesthesia::initialise() {
     bf_culling(true);
 
     // Initialise modules...
-    //modules_.emplace_back(std::make_unique<bars>(this));
-    //modules_.emplace_back(std::make_unique<metaballs>(this));
-    modules_.emplace_back(std::make_unique<particles>(this));
-    //modules_.emplace_back(std::make_unique<graphs>(this));
+    modules_.emplace_back(std::make_unique<bars>(this));
+    modules_.emplace_back(std::make_unique<metaballs>(this));
+    //modules_.emplace_back(std::make_unique<particles>(this));
+    modules_.emplace_back(std::make_unique<graphs>(this));
 
     play();
 }

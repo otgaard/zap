@@ -7,7 +7,7 @@
 
 #include "maths/maths.hpp"
 
-namespace zap { namespace maths {
+namespace zap { namespace maths { namespace geometry {
 
 template <typename VecType>
 struct ray {
@@ -20,6 +20,6 @@ struct ray {
     vector d;
 };
 
-}}
+}}}
 
 #endif //ZAP_RAY_HPP

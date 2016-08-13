@@ -1,6 +1,6 @@
 /* Created by Darren Otgaar on 2016/07/24. http://www.github.com/otgaard/zap */
-#ifndef ZAP_QUAD_HPP
-#define ZAP_QUAD_HPP
+#ifndef ZAP_QUADOLD_HPP
+#define ZAP_QUADOLD_HPP
 
 #include "apps/graphic_types.hpp"
 
@@ -24,4 +24,4 @@ private:
     mesh_p2t2_trifan_t mesh_;
 };
 
-#endif //ZAP_QUAD_HPP
+#endif //ZAP_QUADOLD_HPP

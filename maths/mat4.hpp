@@ -73,6 +73,11 @@ namespace zap { namespace maths {
                 m01(col1[0]), m11(col1[1]), m21(col1[2]), m31(col1[3]),
                 m02(col2[0]), m12(col2[1]), m22(col2[2]), m32(col2[3]),
                 m03(col3[0]), m13(col3[1]), m23(col3[2]), m33(col3[3]) { }
+        constexpr mat4(const vec_t& col0, const vec_t& col1, const vec_t& col2, const vec_t& col3) :
+                m00(col0[0]), m10(col0[1]), m20(col0[2]), m30(T(0)),
+                m01(col1[0]), m11(col1[1]), m21(col1[2]), m31(T(0)),
+                m02(col2[0]), m12(col2[1]), m22(col2[2]), m32(T(0)),
+                m03(col3[0]), m13(col3[1]), m23(col3[2]), m33(T(1)) { }
         constexpr mat4(const mat4& rhs) : m00(rhs.m00), m10(rhs.m10), m20(rhs.m20), m30(rhs.m30),
                                           m01(rhs.m01), m11(rhs.m11), m21(rhs.m21), m31(rhs.m31),
                                           m02(rhs.m02), m12(rhs.m12), m22(rhs.m22), m32(rhs.m32),
@@ -278,6 +283,12 @@ namespace zap { namespace maths {
         r(3,0) = 0;              r(3,1) = 0;              r(3,2) = 0;              r(3,3) = T(1);
         return r;
     };
+
+    template <typename T>
+    mat4<T> make_frame(const vec3<T>& d, const vec3<T>& u, const vec3<T>& P) {
+        auto r = normalise(cross(d, u));
+        return mat4<T>(r, u, d, P);
+    }
 
     // Takes degrees - force of habit
     template <typename T>

@@ -107,7 +107,7 @@ public:
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
 
     void draw(primitive_type prim=primitive, size_t start=0, size_t count=0) {
-        assert(vstream && "No vertex stream has been set for mesh draw");
+        assert(vstream.ptr && "No vertex stream has been set for mesh draw");
         mesh_base::draw_arrays_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
     }
 

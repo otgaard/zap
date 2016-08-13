@@ -30,7 +30,7 @@ namespace zap { namespace maths {
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }
     template <typename T> inline bool leq(const T& a, const T& b) { return a < b + std::numeric_limits<T>::epsilon(); }
-    template <typename T> inline bool is_zero(const T& a) { return std::abs(T(0) - a) < std::numeric_limits<T>::epsilon(); }
+    template <typename T> inline bool is_zero(const T& a) { return abs(T(0) - a) < std::numeric_limits<T>::epsilon(); }
     template <typename T> constexpr T sign(const T& s) { return (s > T(0)) ? T(1) : s < T(0) ? T(-1) : T(0); }
     template <typename T> constexpr T abs(const T& s) { return sign(s)*s; }
     template <typename T> inline T sgn(const T& s) { return is_zero(s) ? T(0) : sign(s); }
@@ -39,11 +39,22 @@ namespace zap { namespace maths {
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
 
-    template <typename T, typename S> T lerp(const S& u, const T& P0, const T& P1) { return (S(1) - u)*P0 + u*P1; };
+    template <typename T, typename S> T lerp(const S& u, const T& P0, const T& P1) {
+        return (S(1) - u)*P0 + u*P1;
+    };
 
     template <typename T, typename S>
     T bilinear(const S& u, const S& v, const T& P00, const T& P01, const T& P10, const T& P11) {
-        const auto omu = S(1) - u; return (S(1)-v)*(P00*omu + P01*u) + v*(P10*omu + P11*u);
+        //const auto omu = S(1) - u; return (S(1)-v)*(P00*omu + P01*u) + v*(P10*omu + P11*u);
+        return lerp(v, lerp(u, P00, P01), lerp(u, P10, P11));
+    }
+
+    template <typename T, typename S>
+    T trilinear(const S& u, const S& v, const S& w,
+                const T& P000, const T& P010, const T& P100, const T& P110,
+                const T& P001, const T& P011, const T& P101, const T& P111) {
+        return lerp(w, lerp(v, lerp(u, P000, P010), lerp(u, P100, P110)),
+                       lerp(v, lerp(u, P001, P011), lerp(u, P101, P111)));
     }
 
     template <typename T> T constexpr log2_pow2(T po2) {

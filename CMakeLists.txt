@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(zap)
 
-set(CMAKE_BUILD_TYPE "Release")
+#set(CMAKE_BUILD_TYPE "Release")
 #set(CMAKE_BUILD_TYPE "Debug")
 
 set(CMAKE_STATIC_BUILD TRUE)
@@ -32,13 +32,20 @@ set(ZAP_MATHS_FILES
         maths/mat3.hpp
         maths/mat4.hpp
         maths/functions.hpp
-        geometry/ray.hpp
+        maths/geometry/ray.hpp
         maths/io.cpp
         maths/io.hpp
-        geometry/disc.hpp
+        maths/geometry/disc.hpp
         maths/algebra.hpp
         maths/rand_lcg.hpp
-        maths/curves/curves.hpp maths/transform.hpp maths/curves/hermite.hpp maths/matrix.hpp maths/vector.hpp maths/transform.cpp)
+        maths/curves/curves.hpp
+        maths/transform.hpp
+        maths/curves/hermite.hpp
+        maths/matrix.hpp
+        maths/vector.hpp
+        maths/transform.cpp
+        maths/geometry/plane.hpp
+        maths/geometry/sphere.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -89,7 +96,21 @@ set(ZAP_ENGINE_FILES
         generators/noise/perlin.hpp
         generators/noise/noise.hpp
         graphics2/plotter2.hpp
-        graphics2/plotter2.cpp graphics2/curve_input.cpp graphics2/curve_input.hpp core/enumfield.hpp)
+        graphics2/plotter2.cpp
+        graphics2/curve_input.cpp
+        graphics2/curve_input.hpp
+        core/enumfield.hpp
+        graphics2/quad.cpp
+        graphics2/quad.hpp
+        graphics2/graphics2.hpp)
+
+set(ZAP_RAYTRACER_FILES
+        raytracer/raytracer.cpp
+        raytracer/raytracer.hpp)
+
+set(ZAP_RASTERISER_FILES
+        rasteriser/rasteriser.cpp
+        rasteriser/rasteriser.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -103,7 +124,11 @@ set(ZAP_EXAMPLE_FILES
         apps/zap_example/generator.hpp
         apps/zap_example/shader_src.hpp
         apps/zap_example/module.cpp
-        apps/zap_example/module.hpp apps/zap_example/quad.cpp apps/zap_example/quad.hpp apps/zap_example/simple_shdr.cpp apps/zap_example/simple_shdr.hpp)
+        apps/zap_example/module.hpp
+        apps/zap_example/quad.cpp
+        apps/zap_example/quad.hpp
+        apps/zap_example/simple_shdr.cpp
+        apps/zap_example/simple_shdr.hpp)
 
 set(ZAP_COMMAND_LINE
         zap_command.cpp
@@ -134,7 +159,16 @@ set(SYNESTHESIA_FILES
         apps/synesthesia/modules/metaballs.cpp
         apps/synesthesia/modules/metaballs.hpp
         apps/synesthesia/spectral_analyser.hpp
-        apps/synesthesia/spectral_analyser.cpp apps/synesthesia/modules/graphs.cpp apps/synesthesia/modules/graphs.hpp apps/synesthesia/modules/particles.cpp apps/synesthesia/modules/particles.hpp)
+        apps/synesthesia/spectral_analyser.cpp
+        apps/synesthesia/modules/graphs.cpp
+        apps/synesthesia/modules/graphs.hpp
+        apps/synesthesia/modules/particles.cpp
+        apps/synesthesia/modules/particles.hpp)
+
+set(TRACER_FILES
+        apps/application.cpp
+        apps/application.hpp
+        apps/tracer/tracer.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
@@ -170,6 +204,8 @@ endif(APPLE)
 if(CMAKE_STATIC_BUILD)
     add_library(ZapMaths STATIC ${ZAP_MATHS_FILES})
     add_library(ZapEngine STATIC ${ZAP_ENGINE_FILES})
+    add_library(ZapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
+    add_library(ZapRasteriser STATIC ${ZAP_RASTERISER_FILES})
 else(CMAKE_STATIC_BUILD)
     add_library(ZapEngine SHARED ${ZAP_ENGINE_FILES})
     target_link_libraries(ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
@@ -192,3 +228,6 @@ target_link_libraries(zap_engine_tests gtest ${GTEST_LIBS})
 add_executable(synesthesia ${SYNESTHESIA_FILES})
 target_include_directories(synesthesia PUBLIC ${CMAKE_SOURCE_DIR}/third_party/simple_mp3)
 target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame stb ${GLFW_LIBS} ${LOADER_LIBS})
+
+add_executable(tracer ${TRACER_FILES})
+target_link_libraries(tracer glfw3 ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})

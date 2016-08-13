@@ -31,17 +31,21 @@ TEST(MatrixMathsTests, Mat2Tests) {
     EXPECT_EQ(r1(0,0), 0); EXPECT_EQ(r1(0,1), 4);
     EXPECT_EQ(r1(1,0), 6); EXPECT_EQ(r1(1,1), 0);
 
-    constexpr auto r2 = mat1 * mat2;
+    //constexpr auto r2 = mat1 * mat2;
+    /*
     static_assert(r2(0,0) == 5, "Error");
     static_assert(r2(1,0) == 9, "Error");
     static_assert(r2(0,1) == -6, "Error");
     static_assert(r2(1,1) == -10, "Error");
+    */
 
-    constexpr auto t2 = transpose(r2);
+    //constexpr auto t2 = transpose(r2);
+    /*
     static_assert(t2(0,0) == 5, "Error");
     static_assert(t2(1,0) == -6, "Error");
     static_assert(t2(0,1) == 9, "Error");
     static_assert(t2(1,1) == -10, "Error");
+    */
 
     auto r3 = mat_t::make_rotation(PI);
     for(const auto& v : r3) LOG(v);

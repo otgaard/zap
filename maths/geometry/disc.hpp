@@ -7,7 +7,7 @@
 
 #include "maths/maths.hpp"
 
-namespace zap { namespace maths {
+namespace zap { namespace maths { namespace geometry {
 
 template <typename T>
 struct disc {
@@ -36,6 +36,6 @@ T distance(const disc<T>& A, const disc<T>& B) {
     return std::sqrt(distance_sq(A, B));
 }
 
-}}
+}}}
 
 #endif //ZAP_DISC_HPP
