@@ -102,7 +102,7 @@ set(ZAP_ENGINE_FILES
         core/enumfield.hpp
         graphics2/quad.cpp
         graphics2/quad.hpp
-        graphics2/graphics2.hpp)
+        graphics2/graphics2.hpp renderer/renderer.cpp renderer/renderer.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
@@ -230,4 +230,4 @@ target_include_directories(synesthesia PUBLIC ${CMAKE_SOURCE_DIR}/third_party/si
 target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(tracer ${TRACER_FILES})
-target_link_libraries(tracer glfw3 ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(tracer glfw3 ZapRaytracer ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})

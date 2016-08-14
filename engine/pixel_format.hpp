@@ -11,6 +11,7 @@
 #include <maths/vec2.hpp>
 #include <maths/vec3.hpp>
 #include <maths/vec4.hpp>
+#include "engine.hpp"
 
 namespace zap { namespace engine {
     using zap::maths::pow2;
@@ -81,6 +82,8 @@ namespace zap { namespace engine {
         using bits = typename core::generate_table<data_t::size, channels, bits_query>::result;
 
         pixel() = default;
+        pixel(const T& a, const T& b, const T& c) { set3(a,b,c); }
+        pixel(const T& a, const T& b, const T& c, const T& d) { set4(a,b,c,d); }
 
         using data_t::set;
         using data_t::get;

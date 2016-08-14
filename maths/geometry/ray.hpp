@@ -11,12 +11,18 @@ namespace zap { namespace maths { namespace geometry {
 
 template <typename VecType>
 struct ray {
+    using type = typename VecType::type;
     using vector = VecType;
 
-    ray() { }
-    ray(const vector& P, const vector& d) : P(P), d(d) { }
+    ray() = default;
+    ray(const vector& O, const vector& d) : O(O), d(d) { }
 
-    vector P;
+    inline const vector& origin() const { return O; }
+    inline const vector& dir() const { return d; }
+
+    inline vector position(const type& t) const { return O + t*d; }
+
+    vector O;
     vector d;
 };
 

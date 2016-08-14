@@ -15,16 +15,19 @@ struct plane {
     using vector = vec3<T>;
     using real = T;
 
-    plane() { }
+    plane() = default;
     plane(const vec3<T>& O, const vec3<T>& n) : O(O), n(n) { }
+
+    const vector& origin() const { return O; }
+    const vector& normal() const { return n; }
 
     vector O;
     vector n;
 };
 
 template <typename T>
-T intersection(const plane<T>& P, const ray<vec3<T>>& R) {
-    return dot((R.P - P.O), P.n)/dot(R.d, P.n);
+T intersection(const plane<T>& P, const ray<typename plane<T>::vector>& R) {
+    return dot((P.O - R.O), P.n)/dot(R.d, P.n);
 }
 
 }}}
