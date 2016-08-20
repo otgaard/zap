@@ -78,7 +78,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incE = 2*dy, incNE = 2*(dy - dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(x <= x2) {
+            while(x < x2) {
                 if(d <= 0) { d += incE;  ++x; }
                 else       { d += incNE; ++x; ++y; }
                 raster_(x,y).set3(pen_colour_);
@@ -101,7 +101,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incN = 2*dy, incNE = 2*(dy - dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(y <= y2) {
+            while(y < y2) {
                 if(d <= 0) { d += incN;  ++y; }
                 else       { d += incNE; ++y; ++x; }
                 raster_(x,y).set3(pen_colour_);
@@ -113,7 +113,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incS = 2*dy, incSE = 2*(dy + dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(y >= y2) {
+            while(y > y2) {
                 if(d <= 0) { d += incS;  --y; }
                 else       { d += incSE; --y; ++x; }
                 raster_(x,y).set3(pen_colour_);
@@ -126,7 +126,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incE = 2*dy, incNE = 2*(dy - dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(x >= x2) {
+            while(x > x2) {
                 if(d > 0) { d += incE;  --x; }
                 else      { d += incNE; --x; --y; }
                 raster_(x,y).set3(pen_colour_);
@@ -136,7 +136,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incE = 2*dy, incSE = 2*(dy + dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(x >= x2) {
+            while(x > x2) {
                 if(d < 0) { d += incE;  --x; }
                 else      { d += incSE; --x; ++y; }
                 raster_(x,y).set3(pen_colour_);
@@ -148,7 +148,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incN = 2*dy, incNE = 2*(dy - dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(y >= y2) {
+            while(y > y2) {
                 if(d > 0) { d += incN;  --y; }
                 else      { d += incNE; --y; --x; }
                 raster_(x,y).set3(pen_colour_);
@@ -160,7 +160,7 @@ void canvas::line3(int x1, int y1, int x2, int y2) {
             int incS = 2*dy, incSE = 2*(dy + dx);
             int x = x1, y = y1;
             raster_(x,y).set3(pen_colour_);
-            while(y <= y2) {
+            while(y < y2) {
                 if(d > 0) { d += incS;  ++y; }
                 else      { d += incSE; ++y; --x; }
                 raster_(x,y).set3(pen_colour_);
