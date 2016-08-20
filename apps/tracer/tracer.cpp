@@ -26,7 +26,6 @@ public:
     void on_resize(int width, int height) override final;
 
 protected:
-    transform3f world;
     quad image;
 };
 

@@ -4,7 +4,7 @@ project(zap)
 #set(CMAKE_BUILD_TYPE "Release")
 #set(CMAKE_BUILD_TYPE "Debug")
 
-set(CMAKE_STATIC_BUILD TRUE)
+set(CMAKE_STATIC_BUILD FALSE)
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
 link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
@@ -45,7 +45,7 @@ set(ZAP_MATHS_FILES
         maths/vector.hpp
         maths/transform.cpp
         maths/geometry/plane.hpp
-        maths/geometry/sphere.hpp)
+        maths/geometry/sphere.hpp maths/rect.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -102,7 +102,11 @@ set(ZAP_ENGINE_FILES
         core/enumfield.hpp
         graphics2/quad.cpp
         graphics2/quad.hpp
-        graphics2/graphics2.hpp renderer/renderer.cpp renderer/renderer.hpp)
+        graphics2/graphics2.hpp
+        renderer/renderer.cpp
+        renderer/renderer.hpp
+        engine/pixmap.cpp
+        engine/pixmap.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
@@ -110,7 +114,7 @@ set(ZAP_RAYTRACER_FILES
 
 set(ZAP_RASTERISER_FILES
         rasteriser/rasteriser.cpp
-        rasteriser/rasteriser.hpp)
+        rasteriser/rasteriser.hpp rasteriser/canvas.cpp rasteriser/canvas.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -125,8 +129,6 @@ set(ZAP_EXAMPLE_FILES
         apps/zap_example/shader_src.hpp
         apps/zap_example/module.cpp
         apps/zap_example/module.hpp
-        apps/zap_example/quad.cpp
-        apps/zap_example/quad.hpp
         apps/zap_example/simple_shdr.cpp
         apps/zap_example/simple_shdr.hpp)
 
@@ -207,14 +209,18 @@ if(CMAKE_STATIC_BUILD)
     add_library(ZapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(ZapRasteriser STATIC ${ZAP_RASTERISER_FILES})
 else(CMAKE_STATIC_BUILD)
+    add_library(ZapMaths SHARED ${ZAP_MATHS_FILES})
     add_library(ZapEngine SHARED ${ZAP_ENGINE_FILES})
+    add_library(ZapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
+    add_library(ZapRasteriser SHARED ${ZAP_RASTERISER_FILES})
     target_link_libraries(ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(ZapRasteriser ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
 endif(CMAKE_STATIC_BUILD)
 
 add_library(stb STATIC ${STB_ARCHIVE})
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example glfw3 ZapEngine ZapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example glfw3 ZapRasteriser ZapEngine ZapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(zap_cmd ${ZAP_COMMAND_LINE})
 #target_link_libraries(zap_cmd)

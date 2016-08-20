@@ -3,6 +3,7 @@
 #define ZAP_PIXEL_BUFFER_HPP
 
 #include "buffer.hpp"
+#include "pixmap.hpp"
 #include "pixel_format.hpp"
 
 namespace zap { namespace engine {
@@ -10,6 +11,7 @@ namespace zap { namespace engine {
     class pixel_buffer : public buffer {
     public:
         using pixel_t = PIX_T;
+        using pixmap_t = pixmap<pixel_t>;
     };
 }}
 

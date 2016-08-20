@@ -27,8 +27,6 @@ std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
     const float z_min = -.1f, z_max = 100.f, fov = float(PI)/2.f, ar = float(h)/w;
     const float s = -2.f * std::tan(.5f*fov);
 
-    UNUSED(z_max);
-
     const vec3f light_pos = vec3f(0,2,-4.f);
     sphere<float> sphere1(vec3f(0.f,height.value,-4.f), .2f);
     plane<float> plane1(vec3f(0,-2.f,0.f), vec3f(0,1.f,0));
@@ -44,7 +42,7 @@ std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
             ray1.O = vec3f(((c + .5f)*inv_w -.5f) * s, ((r + .5f)*inv_h - .5f) * s * ar, 1.f) * z_min;
             ray1.d = normalise(ray1.O);
 
-            if((t = intersection(plane1, ray1)) > 0.f) {
+            if((t = intersection(plane1, ray1)) > 0.f && t < z_max) {
                 auto P = ray1.position(t);
                 auto ld = normalise(light_pos - P);
                 if(intersection(sphere1, ray<vec3f>(P, ld), roots.data())) {

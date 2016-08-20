@@ -7,7 +7,6 @@
 
 namespace zap { namespace engine { namespace gl {
 #ifdef __APPLE__
-//#include <OpenGL/gl3.h>
 #include <GL/glew.h>
 #elif __linux__
 #include <GL/glew.h>

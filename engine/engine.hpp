@@ -173,6 +173,8 @@ namespace zap { namespace engine {
         TT_SIZE = 9
     };
 
+    bool init();
+
     bool _gl_error_log(const char* file, int line);
     bool _gl_error_check();
 
