@@ -52,6 +52,8 @@ namespace zap { namespace maths {
         mat4<type> gl_inverse() const;
 
         transform operator*(const transform& rhs) const;
+        vec_t vtransform(const vec_t& vec) const;
+        vec_t ptransform(const vec_t& point) const;
 
     protected:
         void update_transform() const;
@@ -250,6 +252,15 @@ namespace zap { namespace maths {
         return P;
     }
 
+    template <typename AFFINE_MAT_T>
+    typename transform<AFFINE_MAT_T>::vec_t transform<AFFINE_MAT_T>::vtransform(const typename transform<AFFINE_MAT_T>::vec_t& vec) const {
+        return affine() * vec;
+    }
+
+    template <typename AFFINE_MAT_T>
+    typename transform<AFFINE_MAT_T>::vec_t transform<AFFINE_MAT_T>::ptransform(const typename transform<AFFINE_MAT_T>::vec_t& point) const {
+        return affine().transform(point);
+    }
 }}
 
 #endif //ZAP_TRANSFORM_HPP

@@ -30,9 +30,7 @@ namespace zap { namespace rasteriser {
         void pen_colour(const vec3b& rgb) { pen_colour_ = rgb; }
         const vec3b& pen_colour() const { return pen_colour_; }
 
-        void line1(int x1, int y1, int x2, int y2);
-        void line2(int x1, int y1, int x2, int y2);
-        void line3(int x1, int y1, int x2, int y2);
+        void line(int x1, int y1, int x2, int y2);
 
         const std::vector<zap::engine::rgb888_t>& buffer() const { return raster_.buffer(); }
 
