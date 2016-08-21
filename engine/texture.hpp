@@ -5,6 +5,7 @@
 #include <vector>
 #include "engine.hpp"
 #include "pixel_format.hpp"
+#include "pixel_buffer.hpp"
 
 namespace zap { namespace engine {
 
@@ -34,12 +35,24 @@ public:
     void release() const;
     bool is_bound() const;
 
+    bool copy(size_t col, size_t row, size_t width, size_t height, int level, bool update_mipmaps, pixel_format format,
+        pixel_datatype datatype, const char* data=nullptr);
+
     // Test Function
     template <typename Pixel>
     bool initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps=false);
-    /*bool initialise(size_t width, size_t height, pixel_format format, pixel_datatype datatype);*/
     bool initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                     const void* data=nullptr);
+    template <typename PixelT, buffer_usage USAGE>
+    bool initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, bool generate_mipmaps=false);
+
+    template <typename PixelT, buffer_usage USAGE>
+    void copy(const pixel_buffer<PixelT,USAGE>& pixbuf, size_t col, size_t row, size_t width, size_t height,
+                int level=0, bool update_mipmaps=false) {
+        pixbuf.bind(true);
+        copy(col, row, width, height, level, update_mipmaps, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype, 0);
+        pixbuf.release();
+    };
 
     static size_t query_max_units();
 

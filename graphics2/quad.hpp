@@ -16,6 +16,7 @@ public:
     ~quad();
 
     void set_texture(engine::texture&& tex);
+    engine::texture& get_texture() { return texture_; }
 
     bool initialise();
     void update(double t, float dt);

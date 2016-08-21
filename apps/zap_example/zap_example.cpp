@@ -36,17 +36,28 @@ protected:
 };
 
 void zap_example::initialise() {
-    img_.initialise();
     angle_ = 0.f;
+    img_.initialise();
+
+    canvas_.resize(1280,768);
+    canvas_.clear();
+
+    img_.get_texture().allocate();
+    img_.get_texture().initialise(1280,768,canvas_.buffer());
 }
 
 void zap_example::on_resize(int width, int height) {
     application::on_resize(width, height);
 
-    img_.resize(width, height);
-    canvas_.resize(width, height);
-    canvas_.clear();
+    if(canvas_.width() != width || canvas_.height() != height) {
+        img_.resize(width, height);
+        canvas_.resize(width, height);
+        canvas_.clear();
+        img_.get_texture().initialise(width, height, canvas_.buffer());
+    }
 
+    canvas_.map();
+    canvas_.clear();
     canvas_.pen_colour(colour::black8);
 
     transform3f T;
@@ -62,18 +73,15 @@ void zap_example::on_resize(int width, int height) {
 
     auto start = T.ptransform(vertices[0]);
     for(int i = 0; i != 4; ++i) {
-        auto lP = T.ptransform(vertices[i%3]);
-        canvas_.line(start.x, start.y, lP.x, lP.y);
-        start = lP;
+        auto wP = T.ptransform(vertices[i%3]);
+        canvas_.line(start.x, start.y, wP.x, wP.y);
+        start = wP;
     }
 
+    canvas_.unmap();
+    canvas_.update(img_.get_texture());
+
     angle_ += 0.01f;
-
-    texture tex;
-    tex.allocate();
-    tex.initialise(canvas_.width(), canvas_.height(), canvas_.buffer(), false);
-
-    img_.set_texture(std::move(tex));
 }
 
 void zap_example::on_mousemove(double x, double y) {

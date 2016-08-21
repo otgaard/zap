@@ -2,36 +2,95 @@
 #include <renderer/colour.hpp>
 #include "canvas.hpp"
 
+using namespace zap::engine;
 using namespace zap::rasteriser;
 
-canvas::canvas() {
-    initialise();
+canvas::canvas() : is_mapped_(false) {
 }
 
-canvas::canvas(int width, int height) : raster_(width, height) {
+canvas::canvas(int width, int height) : is_mapped_(false) {
+    raster_.resize(width, height);
     initialise();
 }
 
 canvas::~canvas() {
 }
 
+void canvas::map() {
+    if(is_mapped_) return;
+    min_.x = width(); min_.y = height();
+    max_.x = 0;       max_.y = 0;
+    is_mapped_ = true;
+}
+
+void canvas::unmap() {
+    is_mapped_ = false;
+}
+
 void canvas::initialise() {
     pen_colour_ = colour::black8;
+    cmin_.set(0,0); cmax_.set(width(),height());
+}
+
+void canvas::update(texture& tex) {
+    if(is_mapped_) { LOG("Error, unmap canvas to update texture"); return; }
+
+    max_.x += 1; max_.y += 1;
+    auto w = max_.x - min_.x, h = max_.y - min_.y;
+    if(w > 0 && h > 0) {
+        std::vector<rgb888_t> subwindow(w * h);
+        for(int r = 0; r != h; ++r) {
+            std::copy(raster_.data(raster_.offset(min_.x, min_.y+r)), raster_.data(raster_.offset(max_.x, min_.y+r)),
+                      subwindow.begin()+(r*w));
+        }
+
+        if(!pbo_.is_allocated()) pbo_.allocate();
+        pbo_.bind(true);
+        pbo_.initialise(w, h, subwindow.data());
+        tex.copy(pbo_, min_.x, min_.y, w, h, 0);
+    }
+}
+
+inline void canvas::update_region(int x, int y) {
+    if(x < min_.x)  min_.x = x;
+    if(x < cmin_.x) cmin_.x = x;
+    if(x > max_.x)  max_.x = x;
+    if(x > cmax_.x) cmax_.x = x;
+    if(y < min_.y)  min_.y = y;
+    if(y < cmin_.y) cmin_.y = y;
+    if(y > max_.y)  max_.y = y;
+    if(y > cmax_.y) cmax_.y = y;
 }
 
 void canvas::resize(int width, int height) {
     raster_.resize(width, height);
+    cmin_.set(0,0); cmax_.set(width-1,height-1);
+    clear();
 }
 
 void canvas::clear(byte r, byte g, byte b) {
-    for(auto i = 0, end = raster_.size(); i != end; ++i) raster_[i].set3(r,g,b);
+    for(int y = cmin_.y, yend = std::min(cmax_.y,height()-1); y <= yend; ++y) {
+        for(int x = cmin_.x, xend = std::min(cmax_.x,width()-1); x <= xend; ++x) {
+            raster_[raster_.offset(x,y)].set3(r,g,b);
+        }
+    }
+    min_ = cmin_; max_ = cmax_;
+    cmin_.set(width(), height()); cmax_.set(0,0);
 }
 
 void canvas::clear(const vec3b& rgb) {
-    for(auto i = 0, end = raster_.size(); i != end; ++i) raster_[i].set3(rgb);
+    for(int y = cmin_.y, yend = std::min(cmax_.y,height()-1); y <= yend; ++y) {
+        for(int x = cmin_.x, xend = std::min(cmax_.x,width()-1); x <= xend; ++x) {
+            raster_[raster_.offset(x,y)].set3(rgb);
+        }
+    }
+    min_ = cmin_; max_ = cmax_;
+    cmin_.set(width(), height()); cmax_.set(0,0);
 }
 
 void canvas::line(int x1, int y1, int x2, int y2) {
+    update_region(x1,y1); update_region(x2,y2);
+
     int dx = x2 - x1, dy = y2 - y1;
 
     // Horizontal or Vertical Case

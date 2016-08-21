@@ -95,6 +95,7 @@ char* buffer::map(buffer_type type, buffer_access access, size_t offset, size_t 
 bool buffer::unmap(buffer_type type) const {
     assert(is_allocated() && is_mapped() && "Buffer unallocated or unmapped");
     glUnmapBuffer(gl_type(type));
+    mapped_ptr_ = nullptr;
     return !gl_error_check();
 }
 

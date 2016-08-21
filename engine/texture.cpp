@@ -57,11 +57,43 @@ bool zap::engine::texture::initialise(size_t width, size_t height, const std::ve
     return !gl_error_check();
 }
 
+template <typename PixelT, zap::engine::buffer_usage USAGE>
+bool zap::engine::texture::initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, bool generate_mipmaps) {
+    using namespace gl;
+
+    bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, generate_mipmaps ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    const auto format =  gl_type(pixel_type<PixelT>::format);
+    const auto datatype = gl_type(pixel_type<PixelT>::datatype);
+
+    // TODO: Fix texture alignment (let float use 4 for now)
+    int pixel_alignment = 0;
+    if(pixel_type<PixelT>::datatype == pixel_datatype::PD_UNSIGNED_BYTE) {
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    }
+
+    pixbuf.bind(true);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, pixbuf.width(), pixbuf.height(), 0, format, datatype, 0);
+    pixbuf.release();
+
+    if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+
+    release();
+    if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
+    return !gl_error_check();
+};
+
 // Explicitly instantiate so we can avoid regenerating these functions
 namespace zap { namespace engine {
     template bool texture::initialise<rgb888_t>(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb32f_t>(size_t width, size_t height, const std::vector<rgb32f_t>& buffer, bool generate_mipmaps);
+    template bool texture::initialise<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
 }}
 
 using namespace zap::engine;
@@ -135,6 +167,29 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
             glTexImage2D(gltype, 0, GL_RGB32F, width, height, 0, GL_RGB, gl_type(datatype), data);
         else
             glTexImage2D(gltype, 0, gl_type(format), width, height, 0, gl_type(format), gl_type(datatype), data);
+    } else {
+        LOG_ERR("This function is incomplete and the texture you've just initialised isn't gonna work.");
+    }
+
+    release();
+    if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
+    return !gl_error_check();
+}
+
+bool texture::copy(size_t col, size_t row, size_t width, size_t height, int level, bool update_mipmaps, pixel_format format,
+        pixel_datatype datatype, const char* data) {
+    using namespace gl;
+    auto gltype = gl_type(type_);
+
+    bind();
+    // TODO: Fix texture alignment (let float use 4 for now)
+    int pixel_alignment = 0;
+    if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) {
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    }
+    if(type_ == texture_type::TT_TEX2D) {
+        glTexSubImage2D(gltype, level, col, row, width, height, gl_type(format), gl_type(datatype), data);
     } else {
         LOG_ERR("This function is incomplete and the texture you've just initialised isn't gonna work.");
     }
