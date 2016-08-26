@@ -105,6 +105,10 @@ namespace zap { namespace engine {
         template <typename S> maths::vec2<S> get2v() const { return maths::vec2<S>(get(0), get(1)); }
         template <typename S> maths::vec3<S> get3v() const { return maths::vec3<S>(get(0), get(1), get(2)); }
         template <typename S> maths::vec4<S> get4v() const { return maths::vec4<S>(get(0), get(1), get(2), get(3)); }
+
+        pixel& operator+=(const pixel& rhs) { for(size_t i = 0; i != size; ++i) set(i, get(i) + rhs.get(i)); return *this; }
+        pixel& operator-=(const pixel& rhs) { for(size_t i = 0; i != size; ++i) set(i, get(i) - rhs.get(i)); return *this; }
+        template <typename S> pixel& operator*(const S& scalar) { for(size_t i = 0; i != size; ++i) set(i, get(i)*scalar); return *this; }
     };
 
     using red3_t = channel<channel_type::CT_RED, 3>;

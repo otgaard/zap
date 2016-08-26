@@ -114,7 +114,7 @@ set(ZAP_RAYTRACER_FILES
 
 set(ZAP_RASTERISER_FILES
         rasteriser/rasteriser.cpp
-        rasteriser/rasteriser.hpp rasteriser/canvas.cpp rasteriser/canvas.hpp)
+        rasteriser/raster.hpp rasteriser/canvas.cpp rasteriser/canvas.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -171,6 +171,11 @@ set(TRACER_FILES
         apps/application.cpp
         apps/application.hpp
         apps/tracer/tracer.cpp)
+
+set(RASTERISER_FILES
+        apps/application.cpp
+        apps/application.hpp
+        apps/raster/raster.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
@@ -237,3 +242,6 @@ target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame stb ${GLFW_L
 
 add_executable(tracer ${TRACER_FILES})
 target_link_libraries(tracer glfw3 ZapRaytracer ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
+add_executable(raster ${RASTERISER_FILES})
+target_link_libraries(raster glfw3 ZapRasteriser ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})

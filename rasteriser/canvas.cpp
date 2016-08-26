@@ -29,7 +29,6 @@ void canvas::unmap() {
 
 void canvas::initialise() {
     pen_colour_ = colour::black8;
-    cmin_.set(0,0); cmax_.set(width(),height());
 }
 
 void canvas::update(texture& tex) {
@@ -53,39 +52,32 @@ void canvas::update(texture& tex) {
 
 inline void canvas::update_region(int x, int y) {
     if(x < min_.x)  min_.x = x;
-    if(x < cmin_.x) cmin_.x = x;
     if(x > max_.x)  max_.x = x;
-    if(x > cmax_.x) cmax_.x = x;
     if(y < min_.y)  min_.y = y;
-    if(y < cmin_.y) cmin_.y = y;
     if(y > max_.y)  max_.y = y;
-    if(y > cmax_.y) cmax_.y = y;
 }
 
 void canvas::resize(int width, int height) {
     raster_.resize(width, height);
-    cmin_.set(0,0); cmax_.set(width-1,height-1);
     clear();
 }
 
 void canvas::clear(byte r, byte g, byte b) {
-    for(int y = cmin_.y, yend = std::min(cmax_.y,height()-1); y <= yend; ++y) {
-        for(int x = cmin_.x, xend = std::min(cmax_.x,width()-1); x <= xend; ++x) {
+    for(int y = 0, yend = height()-1; y <= yend; ++y) {
+        for(int x = 0, xend = width()-1; x <= xend; ++x) {
             raster_[raster_.offset(x,y)].set3(r,g,b);
         }
     }
-    min_ = cmin_; max_ = cmax_;
-    cmin_.set(width(), height()); cmax_.set(0,0);
+    min_.set(0,0), max_.set(width()-1,height()-1);
 }
 
 void canvas::clear(const vec3b& rgb) {
-    for(int y = cmin_.y, yend = std::min(cmax_.y,height()-1); y <= yend; ++y) {
-        for(int x = cmin_.x, xend = std::min(cmax_.x,width()-1); x <= xend; ++x) {
+    for(int y = 0, yend = height()-1; y <= yend; ++y) {
+        for(int x = 0, xend = width()-1; x <= xend; ++x) {
             raster_[raster_.offset(x,y)].set3(rgb);
         }
     }
-    min_ = cmin_; max_ = cmax_;
-    cmin_.set(width(), height()); cmax_.set(0,0);
+    min_.set(0,0), max_.set(width()-1,height()-1);
 }
 
 void canvas::line(int x1, int y1, int x2, int y2) {
@@ -197,6 +189,22 @@ void canvas::line(int x1, int y1, int x2, int y2) {
     }
 }
 
+void canvas::circle(int cx, int cy, int r) {
+    int x = 0, y = r, d = 1 - r;
+    int incE = 3, incSE = -2 * r + 5;
+    circle_points(cx, cy, x, y);
+
+    while(y > x) {
+        if(d < 0) {
+            d += incE; incE += 2; incSE += 2;
+        } else {
+            d += incSE; incE += 2; incSE += 4; y--;
+        }
+        ++x;
+        circle_points(cx, cy, x, y);
+    }
+}
+
 void canvas::vertical_line(int x1, int y1, int y2) {
     assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
@@ -225,6 +233,13 @@ void canvas::diagonal_line(int x1, int y1, int x2, int y2) {
             y += yd;
         }
     }
+}
+
+void canvas::circle_points(int cx, int cy, int x, int y) {
+    raster_(cx + x, cy + y).set3(pen_colour_); raster_(cx + x, cy - y).set3(pen_colour_);
+    raster_(cx - x, cy + y).set3(pen_colour_); raster_(cx - x, cy - y).set3(pen_colour_);
+    raster_(cx + y, cy + x).set3(pen_colour_); raster_(cx + y, cy - x).set3(pen_colour_);
+    raster_(cx - y, cy + x).set3(pen_colour_); raster_(cx - y, cy - x).set3(pen_colour_);
 }
 
 /*

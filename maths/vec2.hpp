@@ -14,7 +14,7 @@ namespace zap { namespace maths {
         using type = T;
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec2<T>: T must be an algebraic type");
         constexpr static size_t size() { return 2; }
-        constexpr static size_t memsize() { return sizeof(vec2<T>); }
+        constexpr static size_t bytesize() { return sizeof(vec2<T>); }
 
         vec2() { }
         constexpr explicit vec2(T init) : x(init), y(init) { }
@@ -22,8 +22,6 @@ namespace zap { namespace maths {
         constexpr vec2(T x, T y) : x(x), y(y) { }
         constexpr vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
         constexpr vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
-        //constexpr vec2(const vec3<T>& rhs) : x(rhs.x), y(rhs.y) { }
-        //constexpr vec2(const vec4<T>& rhs) : x(rhs.x), y(rhs.y) { }
 
         inline vec2<T>& operator=(const vec2<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; }

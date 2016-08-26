@@ -12,7 +12,7 @@ namespace zap { namespace maths {
         using type = T;
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec3<T>: T must be an algebraic type");
         constexpr static size_t size() { return 3; }
-        constexpr static size_t memsize() { return sizeof(vec3<T>); }
+        constexpr static size_t bytesize() { return sizeof(vec3<T>); }
 
         vec3() { }
         constexpr explicit vec3(T init) : x(init), y(init), z(init) { }
@@ -21,7 +21,6 @@ namespace zap { namespace maths {
         constexpr vec3(const static_list<T, 3>& lst) : x(lst[0]), y(lst[1]), z(lst[2]) { }
         constexpr vec3(const vec2<T>& rhs, T z=T(0)) : x(rhs.x), y(rhs.y), z(z) { }
         constexpr vec3(const vec3<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
-        //constexpr vec3(const vec4<T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
 
         inline vec3<T>& operator=(const vec3<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; }

@@ -42,7 +42,7 @@ void tracer::initialise() {
 }
 
 void tracer::update(double t, float dt) {
-    on_resize(sc_width_, sc_height_);
+    //on_resize(sc_width_, sc_height_);
 }
 
 void tracer::draw() {

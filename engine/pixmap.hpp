@@ -41,7 +41,8 @@ namespace zap { namespace engine {
         PixelT& operator()(int c, int r, int d) { return buffer_[width_*(d*height_ + r) + c]; }
         const PixelT& operator()(int c, int r, int d) const { return buffer_[width_*(d*height_ + r) + c]; }
 
-        int offset(int c, int r, int d=0) const { return width_*(d*height_ + r) + c; }
+        int offset(int c, int r) const { return width_*r + c; }
+        int offset(int c, int r, int d) const { return width_*(d*height_ + r) + c; }
 
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         const buffer_t& buffer() const { return buffer_; }
