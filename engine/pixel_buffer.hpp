@@ -39,13 +39,10 @@ namespace zap { namespace engine {
         }
 
         bool resize(size_t width, size_t height) {
-            LOG("resizing");
             if(buffer::initialise(write_type, usage, width*height*pixel_t::bytesize)) {
                 pixel_count_ = width*height; width_ = width; height_ = height; depth_ = 1;
                 return true;
             }
-            LOG("Error Occurred");
-            gl_error_check();
             return false;
         }
 
@@ -91,6 +88,9 @@ namespace zap { namespace engine {
             assert(idx(col,row) < pixel_count_ && ZERR_IDX_OUT_OF_RANGE);
             return *(reinterpret_cast<pixel_t*>(mapped_ptr_) + idx(col,row));
         }
+
+        const pixel_t* data() const { return *(reinterpret_cast<pixel_t*>(mapped_ptr_)); }
+        pixel_t* data() { return *(reinterpret_cast<pixel_t*>(mapped_ptr_)); }
 
     private:
         size_t pixel_count_, width_, height_, depth_;

@@ -14,8 +14,6 @@ namespace zap { namespace rasteriser {
     using vec2i = maths::vec2i;
     using vec3b = maths::vec3b;
 
-    namespace ze = zap::engine;
-
     class canvas {
     public:
         canvas();
@@ -31,11 +29,15 @@ namespace zap { namespace rasteriser {
 
         void resize(int width, int height);
 
-        void clear(byte r=255, byte g=255, byte b=255);
+        void clear(byte r, byte g, byte b);
         void clear(const vec3b& rgb);
+        void clear();
 
         void pen_colour(const vec3b& rgb) { pen_colour_ = rgb; }
         const vec3b& pen_colour() const { return pen_colour_; }
+        void clear_colour(const vec3b& rgb) { clear_colour_ = rgb; }
+        const vec3b& clear_colour() const { return clear_colour_; }
+
 
         // Lines
         void line(int x1, int y1, int x2, int y2);
@@ -44,12 +46,11 @@ namespace zap { namespace rasteriser {
         // Circles
         void circle(int cx, int cy, int r);
 
-        //const std::vector<zap::engine::rgb888_t>& buffer() const { return raster_.buffer(); }
-        const ze::pixel_buffer<ze::rgb888_t,ze::buffer_usage::BU_STREAM_DRAW>& buffer() const { return raster_; }
-
         void update(zap::engine::texture& tex);
 
     protected:
+        using rgb888_t = zap::engine::rgb888_t;
+        using pbuf_t = zap::engine::pixel_buffer<rgb888_t,zap::engine::buffer_usage::BU_DYNAMIC_DRAW>;
 
         void initialise();
         void update_region(int x, int y);
@@ -60,15 +61,12 @@ namespace zap { namespace rasteriser {
 
         void circle_points(int cx, int cy, int x, int y);
 
-        ze::rgb888_t* mapped_ptr_;
+        rgb888_t* mapped_ptr_;
         vec2i min_, max_;
-        vec3b pen_colour_;
-
-        //bool is_mapped_;
-        //zap::engine::pixmap<zap::engine::rgb888_t> raster_;
-
-        ze::pixel_buffer<ze::rgb888_t,ze::buffer_usage::BU_STREAM_DRAW> raster_;
-        ze::pixel_buffer<ze::rgb888_t,ze::buffer_usage::BU_DYNAMIC_DRAW> pbo_;
+        vec3b pen_colour_, clear_colour_;
+        int block_width_;
+        pbuf_t raster_;
+        pbuf_t pbo_;
     };
 }}
 

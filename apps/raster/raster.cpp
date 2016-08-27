@@ -36,7 +36,7 @@ protected:
 
 void raster::initialise() {
     img_.initialise();
-    canvas_.clear(0,0,0);
+    canvas_.clear_colour(vec3b(0,0,0));
 }
 
 void raster::update(double t, float dt) {
@@ -54,25 +54,22 @@ void raster::on_resize(int width, int height) {
     application::on_resize(width,height);
 
     if(canvas_.width() != width || canvas_.height() != height) {
-        LOG("RESIZING", width, height);
         canvas_.resize(width, height);
         canvas_.map();
-        canvas_.clear(0,0,0);
+        canvas_.clear();
         img_.resize(width, height);
     }
 
     if(!canvas_.map()) return;
 
-    //canvas_.clear(0,0,0);
-
     canvas_.pen_colour(colour::white8);
 
-    timer t(true);
+    //timer t(true);
     for(int i = 0; i < 1000; ++i) {
         canvas_.pen_colour(vec3b(rand()&255,rand()&255,rand()&255));
         canvas_.circle(width/2, height/2, rand()%300);
     }
-    LOG(t.getf(), "seconds");
+    //LOG(t.getf(), "seconds");
 
     canvas_.unmap();
     canvas_.update(img_.get_texture());
