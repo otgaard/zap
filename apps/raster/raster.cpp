@@ -54,20 +54,25 @@ void raster::on_resize(int width, int height) {
     application::on_resize(width,height);
 
     if(canvas_.width() != width || canvas_.height() != height) {
+        LOG("RESIZING", width, height);
         canvas_.resize(width, height);
+        canvas_.map();
+        canvas_.clear(0,0,0);
         img_.resize(width, height);
-        img_.get_texture().initialise(width, height, canvas_.buffer());
     }
 
-    canvas_.map();
-    canvas_.clear(0,0,0);
+    if(!canvas_.map()) return;
+
+    //canvas_.clear(0,0,0);
 
     canvas_.pen_colour(colour::white8);
-    canvas_.line(0,0,width-1,height-1);
 
-    for(int i = 0; i < 10; ++i) {
-        canvas_.circle(width / 2 + 4*i, height / 2 + 4 * i, 20);
+    timer t(true);
+    for(int i = 0; i < 1000; ++i) {
+        canvas_.pen_colour(vec3b(rand()&255,rand()&255,rand()&255));
+        canvas_.circle(width/2, height/2, rand()%300);
     }
+    LOG(t.getf(), "seconds");
 
     canvas_.unmap();
     canvas_.update(img_.get_texture());

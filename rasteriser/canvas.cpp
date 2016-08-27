@@ -5,26 +5,35 @@
 using namespace zap::engine;
 using namespace zap::rasteriser;
 
-canvas::canvas() : is_mapped_(false) {
+canvas::canvas() : mapped_ptr_(nullptr) /*is_mapped_(false)*/ {
 }
 
-canvas::canvas(int width, int height) : is_mapped_(false) {
-    raster_.resize(width, height);
+canvas::canvas(int width, int height) : mapped_ptr_(nullptr) /*is_mapped_(false)*/ {
+    //raster_.resize(width, height);
     initialise();
 }
 
 canvas::~canvas() {
 }
 
-void canvas::map() {
-    if(is_mapped_) return;
+bool canvas::map() {
+    if(mapped_ptr_) return true;
+
+    //if(is_mapped_) return;
     min_.x = width(); min_.y = height();
     max_.x = 0;       max_.y = 0;
-    is_mapped_ = true;
+    //is_mapped_ = true;
+    raster_.bind();
+    mapped_ptr_ = reinterpret_cast<rgb888_t*>(raster_.map(buffer_access::BA_WRITE_ONLY, true));
+    //LOG("mapped", mapped_ptr_);
+    return mapped_ptr_ != nullptr;
 }
 
 void canvas::unmap() {
-    is_mapped_ = false;
+    raster_.unmap(true);
+    raster_.release();
+    //is_mapped_ = false;
+    mapped_ptr_ = nullptr;
 }
 
 void canvas::initialise() {
@@ -32,21 +41,50 @@ void canvas::initialise() {
 }
 
 void canvas::update(texture& tex) {
-    if(is_mapped_) { LOG("Error, unmap canvas to update texture"); return; }
+    if(mapped_ptr_) { LOG("Error, unmap canvas to update texture"); return; }
 
     max_.x += 1; max_.y += 1;
     auto w = max_.x - min_.x, h = max_.y - min_.y;
+    LOG(min_.x, min_.y, w, h);
     if(w > 0 && h > 0) {
-        std::vector<rgb888_t> subwindow(w * h);
-        for(int r = 0; r != h; ++r) {
-            std::copy(raster_.data(raster_.offset(min_.x, min_.y+r)), raster_.data(raster_.offset(max_.x, min_.y+r)),
-                      subwindow.begin()+(r*w));
+        if(tex.width() != width() || tex.height() != height()) {
+            tex.initialise(texture_type::TT_TEX2D,width(),height(),pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE);
         }
 
-        if(!pbo_.is_allocated()) pbo_.allocate();
-        pbo_.bind(true);
-        pbo_.initialise(w, h, subwindow.data());
-        tex.copy(pbo_, min_.x, min_.y, w, h, 0);
+        if(w == width() && h == height()) {
+            LOG("A");
+            raster_.bind();
+            tex.copy(raster_, 0, 0, w, h, 0);
+            raster_.release();
+        } else if(w > width()-int(0.1f*width())) { // Perhaps calculate some percentage width of the scan line over which we just copy the block
+            LOG("B");
+            if(!pbo_.is_allocated()) pbo_.allocate();
+            pbo_.bind();
+            pbo_.initialise(width(), h);
+            raster_.bind(buffer_type::BT_COPY_READ);
+            pbo_.copy_buffer(buffer_type::BT_COPY_READ, buffer_type::BT_PIXEL_UNPACK,
+                             raster_.idx(0, min_.y) * raster_.pixel_size(), 0,
+                             h * width() * raster_.pixel_size());
+            raster_.release(buffer_type::BT_COPY_READ);
+            pbo_.bind();
+            tex.copy(pbo_, 0, min_.y, width(), h, 0);
+            pbo_.release();
+        } else {
+            LOG("C");
+            if(!pbo_.is_allocated()) pbo_.allocate();
+            pbo_.bind();
+            pbo_.initialise(w, h);
+            raster_.bind(buffer_type::BT_COPY_READ);
+            for(int r = 0; r != h; ++r) {
+                pbo_.copy_buffer(buffer_type::BT_COPY_READ, buffer_type::BT_PIXEL_UNPACK,
+                                 raster_.idx(min_.x, min_.y + r) * raster_.pixel_size(), r * w * raster_.pixel_size(),
+                                 w * raster_.pixel_size());
+            }
+            raster_.release(buffer_type::BT_COPY_READ);
+            pbo_.bind();
+            tex.copy(pbo_, min_.x, min_.y, w, h, 0);
+            pbo_.release();
+        }
     }
 }
 
@@ -58,14 +96,26 @@ inline void canvas::update_region(int x, int y) {
 }
 
 void canvas::resize(int width, int height) {
-    raster_.resize(width, height);
-    clear();
+    if(raster_.is_mapped()) { LOG_ERR("Cannot resize canvas while raster is mapped"); return; }
+
+    if(!raster_.is_allocated()) {
+        //LOG("Allocated", width, height);
+        raster_.allocate();
+        raster_.bind();
+        raster_.initialise(width, height);
+        raster_.release();
+    } else {
+        raster_.bind();
+        raster_.resize(width, height);
+        if(map()) clear();
+        unmap();
+    }
 }
 
 void canvas::clear(byte r, byte g, byte b) {
     for(int y = 0, yend = height()-1; y <= yend; ++y) {
         for(int x = 0, xend = width()-1; x <= xend; ++x) {
-            raster_[raster_.offset(x,y)].set3(r,g,b);
+            raster_(x,y).set3(r,g,b);
         }
     }
     min_.set(0,0), max_.set(width()-1,height()-1);
@@ -74,7 +124,7 @@ void canvas::clear(byte r, byte g, byte b) {
 void canvas::clear(const vec3b& rgb) {
     for(int y = 0, yend = height()-1; y <= yend; ++y) {
         for(int x = 0, xend = width()-1; x <= xend; ++x) {
-            raster_[raster_.offset(x,y)].set3(rgb);
+            raster_(x,y).set3(rgb);
         }
     }
     min_.set(0,0), max_.set(width()-1,height()-1);
@@ -190,6 +240,8 @@ void canvas::line(int x1, int y1, int x2, int y2) {
 }
 
 void canvas::circle(int cx, int cy, int r) {
+    update_region(cx-r,cy-r); update_region(cx+r,cy+r);
+
     int x = 0, y = r, d = 1 - r;
     int incE = 3, incSE = -2 * r + 5;
     circle_points(cx, cy, x, y);

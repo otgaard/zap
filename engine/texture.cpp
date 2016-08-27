@@ -52,6 +52,8 @@ bool zap::engine::texture::initialise(size_t width, size_t height, const std::ve
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, datatype, buffer.data());
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
 
+    w_ = width; h_ = height; d_ = 1;
+
     release();
     if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
     return !gl_error_check();
@@ -77,11 +79,13 @@ bool zap::engine::texture::initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 
-    pixbuf.bind(true);
+    pixbuf.bind();
     glTexImage2D(GL_TEXTURE_2D, 0, format, pixbuf.width(), pixbuf.height(), 0, format, datatype, 0);
     pixbuf.release();
 
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+
+    w_ = pixbuf.width(); h_ = pixbuf.height(); d_ = 1;
 
     release();
     if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
@@ -170,6 +174,8 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
     } else {
         LOG_ERR("This function is incomplete and the texture you've just initialised isn't gonna work.");
     }
+
+    w_ = width; h_ = height; d_ = 1;
 
     release();
     if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);

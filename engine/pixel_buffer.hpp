@@ -25,9 +25,10 @@ namespace zap { namespace engine {
         inline size_t height() const { return height_; }
         inline size_t depth() const { return depth_; }
         inline size_t pixel_count() const { return pixel_count_; }
+        inline size_t pixel_size() const { return sizeof(pixel_t); }
 
-        void bind(bool write) const { buffer::bind(write ? write_type : read_type); write_bound_ = write; }
-        void release() const { buffer::release(write_bound_ ? write_type : read_type); write_bound_ = false; }
+        void bind(buffer_type type=write_type) const { buffer::bind(type); }
+        void release(buffer_type type=write_type) const { buffer::release(type); }
 
         bool initialise(size_t width, size_t height, const pixel_t* data=nullptr) {
             if(buffer::initialise(write_type, usage, width*height*pixel_t::bytesize, reinterpret_cast<const char*>(data))) {
@@ -38,10 +39,13 @@ namespace zap { namespace engine {
         }
 
         bool resize(size_t width, size_t height) {
+            LOG("resizing");
             if(buffer::initialise(write_type, usage, width*height*pixel_t::bytesize)) {
                 pixel_count_ = width*height; width_ = width; height_ = height; depth_ = 1;
                 return true;
             }
+            LOG("Error Occurred");
+            gl_error_check();
             return false;
         }
 
@@ -56,7 +60,7 @@ namespace zap { namespace engine {
             const size_t src_offset = src_off * pixel_t::bytesize;
             const size_t trg_offset = trg_off * pixel_t::bytesize;
             if(src_offset + length <= buffer.size()*pixel_t::bytesize && trg_offset + length <= size_) {
-                bind(true);
+                bind();
                 buffer::copy(write_type, trg_offset, length, reinterpret_cast<const char*>(buffer.data())+src_offset);
                 release();
                 return pixel_count;

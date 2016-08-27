@@ -14,13 +14,15 @@ namespace zap { namespace rasteriser {
     using vec2i = maths::vec2i;
     using vec3b = maths::vec3b;
 
+    namespace ze = zap::engine;
+
     class canvas {
     public:
         canvas();
         canvas(int width, int height);
         ~canvas();
 
-        void map();
+        bool map();
         void unmap();
 
         inline int width() const { return raster_.width(); }
@@ -42,11 +44,13 @@ namespace zap { namespace rasteriser {
         // Circles
         void circle(int cx, int cy, int r);
 
-        const std::vector<zap::engine::rgb888_t>& buffer() const { return raster_.buffer(); }
+        //const std::vector<zap::engine::rgb888_t>& buffer() const { return raster_.buffer(); }
+        const ze::pixel_buffer<ze::rgb888_t,ze::buffer_usage::BU_STREAM_DRAW>& buffer() const { return raster_; }
 
         void update(zap::engine::texture& tex);
 
     protected:
+
         void initialise();
         void update_region(int x, int y);
 
@@ -56,11 +60,15 @@ namespace zap { namespace rasteriser {
 
         void circle_points(int cx, int cy, int x, int y);
 
-        bool is_mapped_;
+        ze::rgb888_t* mapped_ptr_;
         vec2i min_, max_;
         vec3b pen_colour_;
-        zap::engine::pixmap<zap::engine::rgb888_t> raster_;
-        zap::engine::pixel_buffer<zap::engine::rgb888_t,zap::engine::buffer_usage::BU_DYNAMIC_DRAW> pbo_;
+
+        //bool is_mapped_;
+        //zap::engine::pixmap<zap::engine::rgb888_t> raster_;
+
+        ze::pixel_buffer<ze::rgb888_t,ze::buffer_usage::BU_STREAM_DRAW> raster_;
+        ze::pixel_buffer<ze::rgb888_t,ze::buffer_usage::BU_DYNAMIC_DRAW> pbo_;
     };
 }}
 
