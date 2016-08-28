@@ -126,6 +126,7 @@ size_t texture::query_max_units() {
 
 void texture::bind(size_t unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
+    gl_error_check();
     glBindTexture(gl_type(type_), id_);
     gl_error_check();
 }
@@ -140,7 +141,6 @@ bool texture::is_bound() const {
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound);   // TODO: Generic for tex type
     return id_ == (resource_t)bound;
 }
-
 
 bool texture::initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype, const void* data) {
     using namespace gl;
@@ -162,10 +162,13 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
     }
 
     if(type_ == texture_type::TT_TEX1D) {
-        if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE)
+        if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE) {
+            LOG("This one");
             glTexImage1D(gltype, 0, GL_R8UI, width, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
-        else
+        } else {
+            LOG("That one");
             glTexImage1D(gltype, 0, gl_type(format), width, 0, gl_type(format), gl_type(datatype), data);
+        }
     } else if(type_ == texture_type::TT_TEX2D) {
         if(datatype == pixel_datatype::PD_FLOAT)
             glTexImage2D(gltype, 0, GL_RGB32F, width, height, 0, GL_RGB, gl_type(datatype), data);

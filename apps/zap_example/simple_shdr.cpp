@@ -6,10 +6,10 @@ using namespace zap;
 using namespace engine;
 
 const char* const vtx_shdr = GLSL(
-    in vec2 position;
+    in vec3 position;
     uniform mat4 pvm_matrix;
     void main() {
-        gl_Position = pvm_matrix * vec4(position,0,1);
+        gl_Position = pvm_matrix * vec4(position,1);
     }
 );
 
@@ -27,10 +27,10 @@ simple_shdr::~simple_shdr() {
 }
 
 bool simple_shdr::initialise() {
-    add_shader(new shader(shader_type::ST_VERTEX, vtx_shdr));
-    add_shader(new shader(shader_type::ST_FRAGMENT, frg_shdr));
+    add_shader(shader_type::ST_VERTEX, vtx_shdr);
+    add_shader(shader_type::ST_FRAGMENT, frg_shdr);
     if(!link()) {
-        LOG("Error creating simple_shdr class");
+        LOG_ERR("Error creating simple_shdr class");
         return false;
     }
 

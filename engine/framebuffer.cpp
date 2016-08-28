@@ -12,7 +12,11 @@ bool framebuffer::allocate() {
 }
 
 void framebuffer::deallocate() {
-
+    for(int i = 0, end = target_count_ + (depthstencil_ ? 1 : 0); i != end; ++i) attachments_[i].deallocate();
+    glDeleteFramebuffers(1, &framebuffer_);
+    LOG("Framebuffer Deallocated:", framebuffer_);
+    framebuffer_ = INVALID_IDX;
+    gl_error_check();
 }
 
 void framebuffer::bind() const {

@@ -20,12 +20,15 @@ public:
 
     bool initialise();
     void update(double t, float dt);
-    void draw();
+    void draw(bool default_bind=true);
+
+    void set_program(program* prog);
 
     void resize(int w, int h) { screen_.set(w,h); }
 
 private:
     engine::program program_;
+    engine::program* override_;
     engine::texture texture_;
     vbuf_p2t2_t vbuf_;
     mesh_p2t2_trifan_t mesh_;

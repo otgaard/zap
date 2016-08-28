@@ -14,6 +14,9 @@ public:
                 bool mipmaps, bool depthstencil);
     ~framebuffer() { if(is_allocated()) deallocate(); }
 
+    inline size_t width() const { return width_; }
+    inline size_t height() const { return height_; }
+
     bool allocate();
     void deallocate();
     bool is_allocated() const { return framebuffer_ != INVALID_RESOURCE; }

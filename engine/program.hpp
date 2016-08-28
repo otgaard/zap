@@ -30,6 +30,7 @@ namespace zap { namespace engine {
         void bind();
         void release();
 
+        void add_shader(shader_type type, const std::string& src) { add_shader(std::make_shared<shader>(type,src)); }
         void add_shader(shader* shdr) { add_shader(std::shared_ptr<shader>(shdr)); }
         void add_shader(shader_ptr shdr) { shaders_.push_back(shdr); }
         size_t shader_count() const { return shaders_.size(); }

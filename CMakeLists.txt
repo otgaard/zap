@@ -121,14 +121,9 @@ set(STB_ARCHIVE
 
 set(ZAP_EXAMPLE_FILES
         apps/zap_example/zap_example.cpp
-        apps/zap_example/generator.cpp
         apps/application.cpp
         apps/application.hpp
         apps/graphic_types.hpp
-        apps/zap_example/generator.hpp
-        apps/zap_example/shader_src.hpp
-        apps/zap_example/module.cpp
-        apps/zap_example/module.hpp
         apps/zap_example/simple_shdr.cpp
         apps/zap_example/simple_shdr.hpp)
 

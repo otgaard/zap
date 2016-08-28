@@ -28,7 +28,7 @@ const char* const quadfshdr_source = GLSL(
     }
 );
 
-quad::quad() : screen_(0,0) {
+quad::quad() : override_(nullptr), screen_(0,0) {
 }
 
 quad::~quad() {
@@ -89,17 +89,23 @@ bool quad::initialise() {
     return true;
 }
 
+void quad::set_program(program* prog) {
+    override_ = prog;
+}
+
 void quad::update(double t, float dt) {
 }
 
-void quad::draw() {
+void quad::draw(bool default_bind) {
     if(!texture_.is_allocated() || screen_.is_zero()) return;
 
-    program_.bind();
-    texture_.bind(0);
+    if(override_) override_->bind();
+    else          program_.bind();
+    if(default_bind) texture_.bind(0);
     mesh_.bind();
     mesh_.draw();
     mesh_.release();
-    texture_.release();
-    program_.release();
+    if(default_bind) texture_.release();
+    if(override_) override_->release();
+    else          program_.release();
 }
