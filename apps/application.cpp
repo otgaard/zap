@@ -27,6 +27,13 @@ static void on_mousemove_handler(GLFWwindow* window_ptr, double x, double y) {
     }
 }
 
+static void on_mousebutton_handler(GLFWwindow* window_ptr, int button, int action, int mods) {
+    if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
+        if(action == GLFW_PRESS) app_ptr->on_mousedown(button);
+        else                     app_ptr->on_mouseup(button);
+    }
+}
+
 static void on_scroll_handler(GLFWwindow* window_ptr, double xinc, double yinc) {
     if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
         app_ptr->on_mousewheel(xinc, yinc);
@@ -71,6 +78,7 @@ int application::run() {
     glfwSetWindowSizeCallback(window, ::on_resize_handler);
     glfwSetKeyCallback(window, ::on_keypress_handler);
     glfwSetCursorPosCallback(window, ::on_mousemove_handler);
+    glfwSetMouseButtonCallback(window, ::on_mousebutton_handler);
     glfwSetScrollCallback(window, ::on_scroll_handler);
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
@@ -126,13 +134,14 @@ void application::on_resize(int width, int height) {
 }
 
 void application::on_mousemove(double x, double y) {
+    mouse_.x = int(x); mouse_.y = sc_height_ - int(y);
 }
 
-void application::on_mousedown() {
+void application::on_mousedown(int button) {
 
 }
 
-void application::on_mouseup() {
+void application::on_mouseup(int button) {
 
 }
 

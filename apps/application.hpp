@@ -4,6 +4,7 @@
 
 #include <string>
 #include <maths/functions.hpp>
+#include <maths/vec2.hpp>
 
 class application {
 public:
@@ -17,12 +18,14 @@ public:
 
     virtual void on_keypress(char ch);
     virtual void on_resize(int width, int height);
-    virtual void on_mousedown();
-    virtual void on_mouseup();
+    virtual void on_mousedown(int button);
+    virtual void on_mouseup(int button);
     virtual void on_mousemove(double x, double y);
     virtual void on_mousewheel(double xoffset, double yoffset);
 
     int run();
+
+    inline zap::maths::vec2i mouse_pos() const { return mouse_; }
 
     // TODO: Remove and replace with render_state.
     void depth_test(bool on);
@@ -36,6 +39,7 @@ protected:
     int sc_width_;
     int sc_height_;
     bool fullscreen_;
+    zap::maths::vec2i mouse_;
 
 private:
     std::string app_name_;
