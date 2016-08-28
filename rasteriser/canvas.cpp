@@ -266,6 +266,23 @@ void canvas::circle(int cx, int cy, int r) {
     }
 }
 
+void canvas::ellipse(int cx, int cy, int major, int minor) {
+    update_region(cx-major,cy-minor); update_region(cx+major,cy+minor);
+
+    const int major2 = 2*major*major, minor2 = 2*minor*minor;
+    int x = -major, y = 0;
+    int e2 = minor, dx = (1+2*x)*e2*e2;
+    int dy = x*x, err = dx+dy;
+    do {
+        ellipse_points(cx, cy, x, y);
+        e2 = 2*err;
+        if(e2 >= dx) { x++; err += dx += minor2; }
+        if(e2 <= dy) { y++; err += dy += major2; }
+    } while(x <= 0);
+
+    while(y++ < minor) ellipse_points(cx, cy, x, y);
+}
+
 void canvas::vertical_line(int x1, int y1, int y2) {
     assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
@@ -301,4 +318,9 @@ void canvas::circle_points(int cx, int cy, int x, int y) {
     raster_(cx - x, cy + y).set3(pen_colour_); raster_(cx - x, cy - y).set3(pen_colour_);
     raster_(cx + y, cy + x).set3(pen_colour_); raster_(cx + y, cy - x).set3(pen_colour_);
     raster_(cx - y, cy + x).set3(pen_colour_); raster_(cx - y, cy - x).set3(pen_colour_);
+}
+
+void canvas::ellipse_points(int cx, int cy, int x, int y) {
+    raster_(cx + x, cy + y).set3(pen_colour_); raster_(cx - x, cy + y).set3(pen_colour_);
+    raster_(cx + x, cy - y).set3(pen_colour_); raster_(cx - x, cy - y).set3(pen_colour_);
 }

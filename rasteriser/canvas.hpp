@@ -38,13 +38,15 @@ namespace zap { namespace rasteriser {
         void clear_colour(const vec3b& rgb) { clear_colour_ = rgb; }
         const vec3b& clear_colour() const { return clear_colour_; }
 
-
         // Lines
         void line(int x1, int y1, int x2, int y2);
         inline void line(const vec2i& A, const vec2i& B) { line(A.x,A.y,B.x,B.y); }
 
         // Circles
         void circle(int cx, int cy, int r);
+
+        // Ellipses
+        void ellipse(int cx, int cy, int major, int minor);
 
         void update(zap::engine::texture& tex);
 
@@ -60,6 +62,7 @@ namespace zap { namespace rasteriser {
         void diagonal_line(int x1, int y1, int x2, int y2);
 
         void circle_points(int cx, int cy, int x, int y);
+        void ellipse_points(int cx, int cy, int x, int y);
 
         rgb888_t* mapped_ptr_;
         vec2i min_, max_;

@@ -113,8 +113,7 @@ set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.hpp)
 
 set(ZAP_RASTERISER_FILES
-        rasteriser/rasteriser.cpp
-        rasteriser/raster.hpp rasteriser/canvas.cpp rasteriser/canvas.hpp)
+        rasteriser/canvas.cpp rasteriser/canvas.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)

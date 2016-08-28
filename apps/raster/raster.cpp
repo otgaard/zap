@@ -65,12 +65,12 @@ void raster::on_resize(int width, int height) {
 
     canvas_.pen_colour(colour::white8);
 
-    //timer t(true);
+    timer t(true);
     for(int i = 0; i < 1000; ++i) {
         canvas_.pen_colour(vec3b(rand()&255,rand()&255,rand()&255));
-        canvas_.circle(width/2, height/2, rand()%300);
+        canvas_.ellipse(width/2, height/2, rand()%200, rand()%200);
     }
-    //LOG(t.getf(), "seconds");
+    LOG(t.getf(), "seconds");
 
     canvas_.unmap();
     canvas_.update(img_.get_texture());

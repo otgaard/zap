@@ -1,13 +1,12 @@
 /* Created by Darren Otgaar on 2016/03/05. http://www.github.com/otgaard/zap */
+#include <map>
+
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
-#include <third_party/include/GL/glew.h>
-#include <map>
 #include "apps/application.hpp"
 #include "apps/graphic_types.hpp"
 #include "generators/geometry/geometry3.hpp"
-#include "simple_shdr.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -55,8 +54,8 @@ const char* const frg_shdr = GLSL(
     in vec3 normal;
     out vec4 frag_colour;
     void main() {
-        float s = max(dot(normal,ld),0);
-        frag_colour = vec4(s,s,s,1);
+        float s = max(dot(normal,ld),0) + .2;
+        frag_colour = vec4(s, s, s, 1);
     }
 );
 
@@ -65,8 +64,6 @@ bool zap_example::initialise() {
         LOG_ERR("Couldn't allocate stuff");
         return false;
     }
-
-    LOG(normalise(vec2f(1,1)));
 
     prog_.add_shader(shader_type::ST_VERTEX, vtx_shdr);
     prog_.add_shader(shader_type::ST_FRAGMENT, frg_shdr);
@@ -95,8 +92,15 @@ void zap_example::on_mousemove(double x, double y) {
 void zap_example::on_mousewheel(double xinc, double yinc) {
 }
 
-void zap_example::update(double t, float dt) {
+float inc = 0;
 
+void zap_example::update(double t, float dt) {
+    prog_.bind();
+    auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
+    auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
+    auto rot = make_rotation(vec3f(0,1,0), inc);
+    prog_.bind_uniform("pvm",proj*mv*rot);
+    inc += 0.01f;
 }
 
 void zap_example::draw() {
