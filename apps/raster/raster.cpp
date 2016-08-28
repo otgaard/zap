@@ -63,12 +63,15 @@ void raster::on_resize(int width, int height) {
 
     if(!canvas_.map()) return;
 
-    canvas_.pen_colour(colour::white8);
+    canvas_.pen_colour(colour::red8);
+    canvas_.fill_colour(colour::yellow8);
 
     timer t(true);
-    for(int i = 0; i < 1000; ++i) {
+    for(int i = 0; i < 100; ++i) {
         canvas_.pen_colour(vec3b(rand()&255,rand()&255,rand()&255));
+        canvas_.fill_colour(vec3b(rand()&255, rand()&255, rand()&255));
         canvas_.ellipse(width/2, height/2, rand()%200, rand()%200);
+        canvas_.filled_rect(width/2-rand()%200, height/2-rand()%200, width/2+rand()%200,height/2+rand()%200);
     }
     LOG(t.getf(), "seconds");
 

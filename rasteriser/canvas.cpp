@@ -36,6 +36,7 @@ void canvas::unmap() {
 
 void canvas::initialise() {
     pen_colour_ = colour::black8;
+    fill_colour_ = colour::white8;
     clear_colour_ = colour::white8;
 }
 
@@ -281,6 +282,23 @@ void canvas::ellipse(int cx, int cy, int major, int minor) {
     } while(x <= 0);
 
     while(y++ < minor) ellipse_points(cx, cy, x, y);
+}
+
+void canvas::filled_rect(int x1, int y1, int x2, int y2) {
+    update_region(x1,y1); update_region(x2,y2);
+    int left, bottom, right, top;
+    if(x1 < x2) { left = x1; right = x2; }
+    else        { left = x2; right = x1; }
+    if(y1 < y2) { bottom = y1; top = y2; }
+    else        { bottom = y2; top = y1; }
+
+    line(left,bottom,right,bottom);
+    for(int r = bottom+1; r < top; ++r) {
+        raster_(left,r).set3(pen_colour_);
+        for(int c = left+1; c < right; ++c) raster_(c,r).set3(fill_colour_);
+        raster_(right,r).set3(pen_colour_);
+    }
+    line(left,top,right,top);
 }
 
 void canvas::vertical_line(int x1, int y1, int y2) {

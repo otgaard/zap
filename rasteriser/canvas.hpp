@@ -37,16 +37,20 @@ namespace zap { namespace rasteriser {
         const vec3b& pen_colour() const { return pen_colour_; }
         void clear_colour(const vec3b& rgb) { clear_colour_ = rgb; }
         const vec3b& clear_colour() const { return clear_colour_; }
+        void fill_colour(const vec3b& rgb) { fill_colour_ = rgb; }
+        const vec3b& fill_colour() const { return fill_colour_; }
 
-        // Lines
         void line(int x1, int y1, int x2, int y2);
         inline void line(const vec2i& A, const vec2i& B) { line(A.x,A.y,B.x,B.y); }
 
-        // Circles
         void circle(int cx, int cy, int r);
+        inline void circle(const vec2i& C, int r) { circle(C.x, C.y, r); }
 
-        // Ellipses
         void ellipse(int cx, int cy, int major, int minor);
+        inline void ellipse(const vec2i& C, int major, int minor) { ellipse(C.x, C.y, major, minor); }
+
+        void rect(int x1, int y1, int x2, int y2);
+        void filled_rect(int x1, int y1, int x2, int y2);
 
         void update(zap::engine::texture& tex);
 
@@ -66,7 +70,7 @@ namespace zap { namespace rasteriser {
 
         rgb888_t* mapped_ptr_;
         vec2i min_, max_;
-        vec3b pen_colour_, clear_colour_;
+        vec3b pen_colour_, clear_colour_, fill_colour_;
         int block_width_;
         pbuf_t raster_;
         pbuf_t pbo_;
