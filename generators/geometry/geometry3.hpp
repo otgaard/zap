@@ -13,6 +13,7 @@
 namespace zap { namespace generators {
     using prim_t = zap::engine::primitive_type;
     using maths::vec3;
+    using maths::vec2;
 
     template <typename VertexT, prim_t Primitive>
     class geometry3 {
@@ -188,58 +189,38 @@ namespace zap { namespace generators {
             return std::make_tuple(vertices, indices);
         }
 
-        template <typename IndexT=uint16_t>
-        static std::tuple<std::vector<VertexT>,std::vector<IndexT>> make_icosahedron() {
-            float t = .5f*(1.f + std::sqrt(5.f));
+        template <typename T, typename IndexT=uint16_t>
+        static std::tuple<std::vector<VertexT>,std::vector<IndexT>> make_icosahedron(T size=1.f) {
+            static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_icosahedron expects PT_TRIANGLES");
+
+            const float t = .5f*(1.f + std::sqrt(5.f));
+            const vec2<T> N = maths::normalise(vec2<T>(t,1));
 
             std::vector<VertexT> vertices(12);
-            std::vector<IndexT> indices(20);
 
             // plane 1
-            vertices[0].position(vec3(-1, +t, 0).normalise());
-            vertices[1].position(vec3(+1, +t, 0).normalise());
-            vertices[2].position(vec3(-1, -t, 0).normalise());
-            vertices[3].position(vec3(+1, -t, 0).normalise());
+            vertices[0].position.set(-N.y, +N.x, 0);
+            vertices[1].position.set(+N.y, +N.x, 0);
+            vertices[2].position.set(-N.y, -N.x, 0);
+            vertices[3].position.set(+N.y, -N.x, 0);
 
             // plane 2
-            vertices[4].position(vec3(0, -1, +t).normalise());
-            vertices[5].position(vec3(0, +1, +t).normalise());
-            vertices[6].position(vec3(0, -1, -t).normalise());
-            vertices[7].position(vec3(0, +1, -t).normalise());
+            vertices[4].position.set(0, -N.y, +N.x);
+            vertices[5].position.set(0, +N.y, +N.x);
+            vertices[6].position.set(0, -N.y, -N.x);
+            vertices[7].position.set(0, +N.y, -N.x);
 
             // plane 3
-            vertices[8].position(vec3(+t, 0, -1).normalise());
-            vertices[9].position(vec3(+t, 0, +1).normalise());
-            vertices[10].position(vec3(-t, 0, -1).normalise());
-            vertices[11].position(vec3(-t, 0, +1).normalise());
+            vertices[8].position.set(+N.x, 0, -N.y);
+            vertices[9].position.set(+N.x, 0, +N.y);
+            vertices[10].position.set(-N.x, 0, -N.y);
+            vertices[11].position.set(-N.x, 0, +N.y);
 
-            indices[0].set(0,11,5);
-            indices[1].set(0,5,1);
-            indices[2].set(0,1,7);
-            indices[3].set(0,7,10);
-            indices[4].set(0,10,11);
+            std::vector<IndexT> indices = { 0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11, 1, 5, 9, 5, 11, 4,
+                                            11, 10, 2, 10, 7, 6, 7, 1, 8, 3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3,
+                                            8, 9, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1 };
 
-            indices[5].set(1,5,9);
-            indices[6].set(5,11,4);
-            indices[7].set(11,10,2);
-            indices[8].set(10,7,6);
-            indices[9].set(7,1,8);
-
-            indices[10].set(3,9,4);
-            indices[11].set(3,4,2);
-            indices[12].set(3,2,6);
-            indices[13].set(3,6,8);
-            indices[14].set(3,8,9);
-
-            indices[15].set(4,9,5);
-            indices[16].set(2,4,11);
-            indices[17].set(6,2,10);
-            indices[18].set(8,6,7);
-            indices[19].set(9,8,1);
-
-            auto mesh = mesh_t(::xi::primitive_type::PT_TRI, vbuf_ptr, ibuf_ptr);
-            build_normals(mesh);
-            return mesh;
+            return std::make_tuple(vertices, indices);
         }
     };
 }}

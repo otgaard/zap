@@ -84,7 +84,11 @@ int application::run() {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glPrimitiveRestartIndex(std::numeric_limits<uint16_t>::max());
 
-    initialise();
+    if(!initialise()) {
+        LOG_ERR("Initialisation of this application failed.  Terminating.");
+        return -1;
+    }
+
     glViewport(0, 0, sc_width_, sc_height_);
     on_resize(sc_width_, sc_height_);
 

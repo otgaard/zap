@@ -10,7 +10,7 @@ public:
     application(const std::string& name, int width, int height, bool fullscreen);
     virtual ~application() { }
 
-    virtual void initialise() { }
+    virtual bool initialise() { return true; }
     virtual void update(double t, float dt) { }
     virtual void draw() { }
     virtual void shutdown() { }

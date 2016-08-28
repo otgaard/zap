@@ -22,7 +22,7 @@ public:
     raster() : application("raster", 600, 1024, false) { }
     virtual ~raster() { }
 
-    void initialise() override final;
+    bool initialise() override final;
     void update(double t, float dt) override final;
     void draw() override final;
     void shutdown() override final;
@@ -34,9 +34,10 @@ protected:
     canvas canvas_;
 };
 
-void raster::initialise() {
+bool raster::initialise() {
     img_.initialise();
     canvas_.clear_colour(vec3b(0,0,0));
+    return true;
 }
 
 void raster::update(double t, float dt) {
