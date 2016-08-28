@@ -37,9 +37,28 @@ protected:
     vbuf_t ico_vb_;
     ibuf_t ico_ib_;
     mesh_t ico_mesh_;
-
-    simple_shdr shdr_;
+    program prog_;
 };
+
+const char* const vtx_shdr = GLSL(
+    uniform mat4 pvm;
+    in vec3 position;
+    out vec3 normal;
+    void main() {
+        normal = position;
+        gl_Position = pvm*vec4(position,1);
+    }
+);
+
+const char* const frg_shdr = GLSL(
+    const vec3 ld = vec3(0,0.707,0.707);
+    in vec3 normal;
+    out vec4 frag_colour;
+    void main() {
+        float s = max(dot(normal,ld),0);
+        frag_colour = vec4(s,s,s,1);
+    }
+);
 
 bool zap_example::initialise() {
     if(!ico_vb_.allocate() || !ico_ib_.allocate() || !ico_mesh_.allocate()) {
@@ -47,14 +66,22 @@ bool zap_example::initialise() {
         return false;
     }
 
-    ico_mesh_.set_stream(&ico_vb_); ico_mesh_.set_index(&ico_ib_);
-    make_isosphere(1);
+    LOG(normalise(vec2f(1,1)));
 
-    shdr_.initialise();
-    auto proj = make_perspective(120.f, 1280/768.f, .5f, 100.f);
+    prog_.add_shader(shader_type::ST_VERTEX, vtx_shdr);
+    prog_.add_shader(shader_type::ST_FRAGMENT, frg_shdr);
+    if(!prog_.link(true)) {
+        LOG_ERR("Error linking shader");
+        return false;
+    }
+
+    ico_mesh_.set_stream(&ico_vb_); ico_mesh_.set_index(&ico_ib_);
+    make_isosphere(3);
+
+    prog_.bind();
+    auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
     auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
-    auto rot = make_rotation(vec3f(0,1,0), 0.3f);
-    shdr_.pvm_matrix(proj*mv*rot);
+    prog_.bind_uniform("pvm",proj*mv);
 
     return true;
 }
@@ -68,24 +95,16 @@ void zap_example::on_mousemove(double x, double y) {
 void zap_example::on_mousewheel(double xinc, double yinc) {
 }
 
-float inc = 0.f;
-
 void zap_example::update(double t, float dt) {
-    auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
-    auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
-    auto rot = make_rotation(vec3f(0,1,0), inc);
-    shdr_.pvm_matrix(proj*mv*rot);
-    inc += 0.01f;
+
 }
 
 void zap_example::draw() {
-    shdr_.bind();
+    prog_.bind();
     ico_mesh_.bind();
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    bf_culling(false);
     ico_mesh_.draw();
     ico_mesh_.release();
-    shdr_.release();
+    prog_.release();
 }
 
 void zap_example::shutdown() {
@@ -133,7 +152,7 @@ void zap_example::make_isosphere(int subdivision_levels) {
             new_ibuf.push_back(nA); new_ibuf.push_back(nB), new_ibuf.push_back(nC);
         }
 
-        ibuf = new_ibuf;
+        ibuf = std::move(new_ibuf);
     }
 
     ico_mesh_.bind();
