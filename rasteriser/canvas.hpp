@@ -41,7 +41,7 @@ namespace zap { namespace rasteriser {
         const vec3b& fill_colour() const { return fill_colour_; }
 
         void line(int x1, int y1, int x2, int y2);
-        inline void line(const vec2i& A, const vec2i& B) { line(A.x,A.y,B.x,B.y); }
+        inline void line(const vec2i& A, const vec2i& B) { line(A.x, A.y, B.x, B.y); }
 
         void circle(int cx, int cy, int r);
         inline void circle(const vec2i& C, int r) { circle(C.x, C.y, r); }

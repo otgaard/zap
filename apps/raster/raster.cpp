@@ -71,13 +71,15 @@ void raster::on_resize(int width, int height) {
         canvas_.update(img_.get_texture());
     }
 
-    //if(!canvas_.map()) return;
+    if(!canvas_.map()) return;
 
-    //canvas_.pen_colour(colour::white8);
-    //canvas_.fill_colour(colour::cyan8);
+    canvas_.pen_colour(colour::red8);
+    canvas_.fill_colour(colour::blue8);
 
-    /*
     int hw = (width-1)/2, hh = (height-1)/2;
+
+    canvas_.filled_rect(100,100,200,200);
+    canvas_.filled_rect(200,150,400,300);
 
     timer t(true);
     for(int i = 0; i < 100; ++i) {
@@ -87,33 +89,30 @@ void raster::on_resize(int width, int height) {
         canvas_.filled_rect(width/2-rand()%hw, height/2-rand()%hh, width/2+rand()%hw,height/2+rand()%hh);
     }
     LOG(t.getf(), "seconds");
-    */
 
-    //canvas_.unmap();
-    //canvas_.update(img_.get_texture());
+    UNUSED(hh); UNUSED(hw);
+
+    canvas_.unmap();
+    canvas_.update(img_.get_texture());
 }
 
 void raster::on_mousedown(int button) {
-    LOG("MouseDown", button);
     if(button == 0 && !start_rect_) {
         start_rect_ = true;
         start_pos_ = mouse_pos();
-    }
+    } else start_rect_ = false;
 }
 
 void raster::on_mouseup(int button) {
-    LOG("MouseUp", button);
 }
 
 void raster::on_mousemove(double x, double y) {
     application::on_mousemove(x,y);
     if(start_rect_) {
-        LOG("FILLING");
         if(!canvas_.map()) return;
         canvas_.pen_colour(colour::white8);
         canvas_.fill_colour(colour::cyan8);
 
-        LOG(start_pos_, mouse_pos());
         canvas_.filled_rect(start_pos_.x, start_pos_.y, mouse_pos().x, mouse_pos().y);
         canvas_.unmap();
         canvas_.update(img_.get_texture());
@@ -121,7 +120,6 @@ void raster::on_mousemove(double x, double y) {
 }
 
 void raster::on_mousewheel(double xoffset, double yoffset) {
-    LOG("MouseWheel");
 }
 
 int main(int argc, char* argv[]) {

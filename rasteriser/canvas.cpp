@@ -277,8 +277,8 @@ void canvas::ellipse(int cx, int cy, int major, int minor) {
     do {
         ellipse_points(cx, cy, x, y);
         e2 = 2*err;
-        if(e2 >= dx) { x++; err += dx += minor2; }
-        if(e2 <= dy) { y++; err += dy += major2; }
+        if(e2 >= dx) { x++; dx += minor2; err += dx; }
+        if(e2 <= dy) { y++; dy += major2; err += dy; }
     } while(x <= 0);
 
     while(y++ < minor) ellipse_points(cx, cy, x, y);
@@ -292,13 +292,11 @@ void canvas::filled_rect(int x1, int y1, int x2, int y2) {
     if(y1 < y2) { bottom = y1; top = y2; }
     else        { bottom = y2; top = y1; }
 
-    line(left,bottom,right,bottom);
-    for(int r = bottom+1; r < top; ++r) {
+    // Use principle of bottom and left being part of primitive, top and right, not.
+    for(int r = bottom; r < top; ++r) {
         raster_(left,r).set3(pen_colour_);
-        for(int c = left+1; c < right; ++c) raster_(c,r).set3(fill_colour_);
-        raster_(right,r).set3(pen_colour_);
+        for(int c = left; c < right; ++c) raster_(c,r).set3(fill_colour_);
     }
-    line(left,top,right,top);
 }
 
 void canvas::vertical_line(int x1, int y1, int y2) {
