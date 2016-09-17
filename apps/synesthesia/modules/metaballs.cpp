@@ -158,6 +158,7 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
     }
 
     const size_t max_tris = 50000;
+    gl_error_check();
 
     s.metaballs_mesh.allocate();
     s.metaballs_mesh.bind();

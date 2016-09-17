@@ -8,7 +8,7 @@ namespace zap { namespace maths {
     template <typename T> constexpr T dot(const vec3<T>& lhs, const vec3<T>& rhs);
 
     template <typename T>
-    struct ALIGN_DECL(16) vec3 {
+    struct /*ALIGN_DECL(16)*/ vec3 {
         using type = T;
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec3<T>: T must be an algebraic type");
         constexpr static size_t size() { return 3; }
@@ -121,7 +121,7 @@ namespace zap { namespace maths {
         }
 
         inline bool neq(const vec3<T>& rhs) const { return !eq(rhs); }
-        inline bool is_unit() const { return eq(length_sqr(), T(1)); }
+        inline bool is_unit() const { return maths::eq(length_sqr(), T(1)); }
 
         vec2<T> xy() const { return vec2<T>(x, y); }
 
@@ -134,7 +134,7 @@ namespace zap { namespace maths {
             __m128 xmm;
 #endif
         };
-    } ALIGN_ATTR(16);
+    } /*ALIGN_ATTR(16)*/;
 
     template <typename T>
     constexpr vec3<T> operator+(const vec3<T>& lhs, const vec3<T>& rhs) {

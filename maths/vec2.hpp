@@ -9,7 +9,7 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    struct ALIGN_DECL(8) vec2 {
+    struct /*ALIGN_DECL(8)*/ vec2 {
     public:
         using type = T;
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "vec2<T>: T must be an algebraic type");
@@ -129,7 +129,7 @@ namespace zap { namespace maths {
             };
             T arr[2];
         };
-	} ALIGN_ATTR(8);
+	} /*ALIGN_ATTR(8)*/;
 
     template <typename T>
     constexpr vec2<T> perp(const vec2<T>& v) {

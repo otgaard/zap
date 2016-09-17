@@ -90,6 +90,7 @@ int application::run() {
     glEnable(GL_PRIMITIVE_RESTART);
     glPointSize(1.f);
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glEnable(GL_PROGRAM_POINT_SIZE);
     glPrimitiveRestartIndex(std::numeric_limits<uint16_t>::max());
 
     if(!initialise()) {

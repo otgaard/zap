@@ -9,7 +9,6 @@ canvas::canvas() : mapped_ptr_(nullptr) {
 }
 
 canvas::canvas(int width, int height) : mapped_ptr_(nullptr) {
-    //raster_.resize(width, height);
     initialise();
 }
 

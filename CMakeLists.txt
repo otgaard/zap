@@ -45,7 +45,7 @@ set(ZAP_MATHS_FILES
         maths/vector.hpp
         maths/transform.cpp
         maths/geometry/plane.hpp
-        maths/geometry/sphere.hpp maths/rect.hpp)
+        maths/geometry/sphere.hpp maths/rect.hpp maths/geometry/hull.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -106,7 +106,9 @@ set(ZAP_ENGINE_FILES
         renderer/renderer.cpp
         renderer/renderer.hpp
         engine/pixmap.cpp
-        engine/pixmap.hpp)
+        engine/pixmap.hpp
+        graphics2/quad.cpp
+        graphics2/quad.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp

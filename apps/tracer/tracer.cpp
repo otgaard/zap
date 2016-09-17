@@ -18,7 +18,7 @@ public:
     tracer() : application("tracer", 1280, 768, false) { }
     virtual ~tracer() { }
 
-    void initialise() override final;
+    bool initialise() override final;
     void update(double t, float dt) override final;
     void draw() override final;
     void shutdown() override final;
@@ -29,7 +29,7 @@ protected:
     quad image;
 };
 
-void tracer::initialise() {
+bool tracer::initialise() {
     image.initialise();
 
     auto tex = texture();
@@ -39,6 +39,7 @@ void tracer::initialise() {
     auto pixels = rndr.render(1280, 768);
     tex.initialise(1280, 768, pixels, false);
     image.set_texture(std::move(tex));
+    return true;
 }
 
 void tracer::update(double t, float dt) {

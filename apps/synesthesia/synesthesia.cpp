@@ -113,7 +113,7 @@ enum class audio_state {
 class synesthesia : public application {
 public:
     synesthesia() : application("synesthesia", 1280, 768, false), state_(audio_state::AS_STOPPED), pa_stream_(nullptr) { }
-    void initialise() final;
+    bool initialise() final;
     void update(double t, float dt) final;
     void draw() final;
     void shutdown() final;
@@ -158,17 +158,19 @@ void synesthesia::stop() {
     state_ = audio_state::AS_STOPPED;
 }
 
-void synesthesia::initialise() {
+bool synesthesia::initialise() {
     // Initialise state...
     bf_culling(true);
 
     // Initialise modules...
-    modules_.emplace_back(std::make_unique<bars>(this));
+   // modules_.emplace_back(std::make_unique<bars>(this));
     modules_.emplace_back(std::make_unique<metaballs>(this));
     //modules_.emplace_back(std::make_unique<particles>(this));
-    modules_.emplace_back(std::make_unique<graphs>(this));
+    //modules_.emplace_back(std::make_unique<graphs>(this));
 
     play();
+
+    return true;
 }
 
 /**********
