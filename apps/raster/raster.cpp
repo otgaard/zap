@@ -53,6 +53,27 @@ void raster::update(double t, float dt) {
 }
 
 void raster::draw() {
+    const int cx = sc_width_/2, cy = sc_height_/2;
+
+    if(!canvas_.map()) return;
+
+    canvas_.fill_colour(vec3b(255,0,0));
+    canvas_.filled_rect(cx-200,cy-200,cx+200,cy+200);
+    canvas_.pen_colour(vec3b(255,255,255));
+    canvas_.rect(cx-200,cy-200,cx+200,cy+200);
+    canvas_.line(cx-200,cy-200,cx+200,cy+200);
+    canvas_.line(cx-200,cy+200,cx+200,cy-200);
+
+    canvas_.circle(cx,cy,200);
+
+    const float inc = float(PI/30);
+    for(int i = 0; i != 60; ++i) {
+        canvas_.line(cx,cy,cx + std::round(200*std::cos(i*inc)), cy + std::round(200*std::sin(i*inc)));
+    }
+
+    canvas_.unmap();
+    canvas_.update(img_.get_texture());
+
     img_.draw();
 }
 
@@ -71,12 +92,13 @@ void raster::on_resize(int width, int height) {
         canvas_.update(img_.get_texture());
     }
 
+    /*
     if(!canvas_.map()) return;
 
     canvas_.pen_colour(colour::red8);
     canvas_.fill_colour(colour::blue8);
 
-    int hw = (width-1)/2, hh = (height-1)/2;
+    int hw = (width)/2, hh = (height)/2;
 
     canvas_.filled_rect(100,100,200,200);
     canvas_.filled_rect(200,150,400,300);
@@ -95,6 +117,7 @@ void raster::on_resize(int width, int height) {
 
     canvas_.unmap();
     canvas_.update(img_.get_texture());
+    */
 }
 
 void raster::on_mousedown(int button) {

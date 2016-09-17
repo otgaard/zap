@@ -14,7 +14,7 @@
 namespace zap { namespace rasteriser {
     using vec2i = maths::vec2i;
     using vec3b = maths::vec3b;
-    using recti = zap::maths::geometry::recti;
+    using recti = maths::geometry::recti;
 
     class canvas {
     public:

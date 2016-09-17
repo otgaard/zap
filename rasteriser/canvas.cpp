@@ -292,15 +292,11 @@ void canvas::rect(int x1, int y1, int x2, int y2) {
     if(y1 < y2) { bottom = y1; top = y2; }
     else        { bottom = y2; top = y1; }
 
-    if(right - left < 2 || top - bottom < 2) return;
-
-    right -= 1; top -= 1;   // Top right not part of primitive so primitive lies in open domain [x1,x2), [y1,y2)
-
     // Use principle of bottom and left being part of primitive, top and right, not.
     line_impl(left, bottom, right, bottom);
-    line_impl(right, bottom + 1, right, top);
-    line_impl(left, top, right - 1, top);
-    line_impl(left, bottom + 1, left, top - 1);
+    line_impl(right, bottom, right, top);
+    line_impl(left, top, right, top);
+    line_impl(left, bottom, left, top);
 }
 
 void canvas::filled_rect(int x1, int y1, int x2, int y2) {
@@ -311,26 +307,27 @@ void canvas::filled_rect(int x1, int y1, int x2, int y2) {
     if(y1 < y2) { bottom = y1; top = y2; }
     else        { bottom = y2; top = y1; }
 
-    if(right-left-1 <= 0) return;
+    if(right-left <= 0) return;
 
     // Use principle of bottom and left being part of primitive, top and right, not.
-    for(int c = left; c < right; ++c) raster_(c,bottom).set3(fill_colour_);
+    for(int c = left; c <= right; ++c) raster_(c,bottom).set3(fill_colour_);
 
+    const auto diff = right - left;
     for(int r = bottom+1; r < top; ++r) {
-        raster_.copy(raster_.idx(left,bottom), raster_.idx(left,r), right-left-1);
+        raster_.copy(raster_.idx(left,bottom), raster_.idx(left,r), diff);
     }
 }
 
 void canvas::vertical_line(int x1, int y1, int y2) {
     assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
-    while(y < y2) raster_(x1,y++).set3(pen_colour_);
+    while(y <= y2) raster_(x1,y++).set3(pen_colour_);
 }
 
 void canvas::horizontal_line(int x1, int x2, int y1) {
     assert(x1 < x2 && "horizontal_line requires x1 < x2");
     int x = x1;
-    while(x < x2) raster_(x++,y1).set3(pen_colour_);
+    while(x <= x2) raster_(x++,y1).set3(pen_colour_);
 }
 
 void canvas::diagonal_line(int x1, int y1, int x2, int y2) {
