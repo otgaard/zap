@@ -65,6 +65,12 @@ namespace zap { namespace engine {
             return 0;
         }
 
+        size_t copy(const size_t src_off, const size_t trg_off, size_t length) {
+            assert(is_mapped() && "Pixel Buffer must be mapped!");
+            std::copy(data()+src_off, data()+src_off+length, data()+trg_off);
+            return length;
+        }
+
         const pixel_t& operator[](size_t idx) const {
             assert(is_mapped() && "Pixel Buffer must be mapped!");
             assert(idx < pixel_count_ && ZERR_IDX_OUT_OF_RANGE);
@@ -89,8 +95,8 @@ namespace zap { namespace engine {
             return *(reinterpret_cast<pixel_t*>(mapped_ptr_) + idx(col,row));
         }
 
-        const pixel_t* data() const { return *(reinterpret_cast<pixel_t*>(mapped_ptr_)); }
-        pixel_t* data() { return *(reinterpret_cast<pixel_t*>(mapped_ptr_)); }
+        const pixel_t* data() const { return (reinterpret_cast<pixel_t*>(mapped_ptr_)); }
+        pixel_t* data() { return (reinterpret_cast<pixel_t*>(mapped_ptr_)); }
 
     private:
         size_t pixel_count_, width_, height_, depth_;

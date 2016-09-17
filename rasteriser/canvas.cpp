@@ -283,6 +283,25 @@ void canvas::ellipse(int cx, int cy, int major, int minor) {
     while(y++ < minor) ellipse_points(cx, cy, x, y);
 }
 
+void canvas::rect(int x1, int y1, int x2, int y2) {
+    update_region(x1,y1); update_region(x2,y2);
+    int left, bottom, right, top;
+    if(x1 < x2) { left = x1; right = x2; }
+    else        { left = x2; right = x1; }
+    if(y1 < y2) { bottom = y1; top = y2; }
+    else        { bottom = y2; top = y1; }
+
+    if(right - left < 2 || top - bottom < 2) return;
+
+    right -= 1; top -= 1;   // Top right not part of primitive so primitive lies in open domain [x1,x2), [y1,y2)
+
+    // Use principle of bottom and left being part of primitive, top and right, not.
+    line(left, bottom, right, bottom);
+    line(right, bottom+1, right, top);
+    line(left, top, right-1, top);
+    line(left, bottom+1, left, top-1);
+}
+
 void canvas::filled_rect(int x1, int y1, int x2, int y2) {
     update_region(x1,y1); update_region(x2,y2);
     int left, bottom, right, top;
@@ -291,36 +310,39 @@ void canvas::filled_rect(int x1, int y1, int x2, int y2) {
     if(y1 < y2) { bottom = y1; top = y2; }
     else        { bottom = y2; top = y1; }
 
+    if(right-left-1 <= 0) return;
+
     // Use principle of bottom and left being part of primitive, top and right, not.
-    for(int r = bottom; r < top; ++r) {
-        raster_(left,r).set3(pen_colour_);
-        for(int c = left; c < right; ++c) raster_(c,r).set3(fill_colour_);
+    for(int c = left; c < right; ++c) raster_(c,bottom).set3(fill_colour_);
+
+    for(int r = bottom+1; r < top; ++r) {
+        raster_.copy(raster_.idx(left,bottom), raster_.idx(left,r), right-left-1);
     }
 }
 
 void canvas::vertical_line(int x1, int y1, int y2) {
     assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
-    while(y <= y2) raster_(x1,y++).set3(pen_colour_);
+    while(y < y2) raster_(x1,y++).set3(pen_colour_);
 }
 
 void canvas::horizontal_line(int x1, int x2, int y1) {
     assert(x1 < x2 && "horizontal_line requires x1 < x2");
     int x = x1;
-    while(x <= x2) raster_(x++,y1).set3(pen_colour_);
+    while(x < x2) raster_(x++,y1).set3(pen_colour_);
 }
 
 void canvas::diagonal_line(int x1, int y1, int x2, int y2) {
     int xd = maths::sign(x2 - x1), yd = maths::sign(y2 - y1);
     int x = x1, y = y1;
     if(xd > 0) {
-        while(x <= x2) {
+        while(x < x2) {
             raster_(x, y).set3(pen_colour_);
             x += xd;
             y += yd;
         }
     } else {
-        while(x >= x2) {
+        while(x > x2) {
             raster_(x, y).set3(pen_colour_);
             x += xd;
             y += yd;
