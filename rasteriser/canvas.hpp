@@ -9,10 +9,12 @@
 #include <maths/vec3.hpp>
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
+#include <maths/geometry/rect.hpp>
 
 namespace zap { namespace rasteriser {
     using vec2i = maths::vec2i;
     using vec3b = maths::vec3b;
+    using recti = zap::maths::geometry::recti;
 
     class canvas {
     public:
@@ -61,6 +63,8 @@ namespace zap { namespace rasteriser {
         void initialise();
         void update_region(int x, int y);
 
+        void line_impl(int x1, int y1, int x2, int y2);
+
         void vertical_line(int x1, int y1, int y2);
         void horizontal_line(int x1, int x2, int y1);
         void diagonal_line(int x1, int y1, int x2, int y2);
@@ -71,6 +75,7 @@ namespace zap { namespace rasteriser {
         rgb888_t* mapped_ptr_;
         vec2i min_, max_;
         vec3b pen_colour_, clear_colour_, fill_colour_;
+        recti clip_region_;
         int block_width_;
         pbuf_t raster_;
         pbuf_t pbo_;

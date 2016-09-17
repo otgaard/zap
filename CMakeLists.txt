@@ -45,7 +45,7 @@ set(ZAP_MATHS_FILES
         maths/vector.hpp
         maths/transform.cpp
         maths/geometry/plane.hpp
-        maths/geometry/sphere.hpp maths/rect.hpp maths/geometry/hull.hpp)
+        maths/geometry/sphere.hpp maths/geometry/hull.hpp maths/geometry/rect.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp

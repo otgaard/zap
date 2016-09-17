@@ -8,7 +8,7 @@ using namespace zap::rasteriser;
 canvas::canvas() : mapped_ptr_(nullptr) {
 }
 
-canvas::canvas(int width, int height) : mapped_ptr_(nullptr) {
+canvas::canvas(int width, int height) : mapped_ptr_(nullptr), clip_region_(0, width-1, 0, height-1) {
     initialise();
 }
 
@@ -109,7 +109,8 @@ void canvas::resize(int width, int height) {
         }
     }
 
-    block_width_ = int(.8f*width);
+    block_width_ = int(.8f*width);      // Update width over which we copy an entire block of memory
+    clip_region_.set(0, width-1, 0, height-1);
 }
 
 void canvas::clear(byte r, byte g, byte b) {
@@ -139,7 +140,7 @@ void canvas::clear() {
     min_.set(0,0), max_.set(width()-1,height()-1);
 }
 
-void canvas::line(int x1, int y1, int x2, int y2) {
+void canvas::line_impl(int x1, int y1, int x2, int y2) {
     update_region(x1,y1); update_region(x2,y2);
 
     int dx = x2 - x1, dy = y2 - y1;
@@ -296,10 +297,10 @@ void canvas::rect(int x1, int y1, int x2, int y2) {
     right -= 1; top -= 1;   // Top right not part of primitive so primitive lies in open domain [x1,x2), [y1,y2)
 
     // Use principle of bottom and left being part of primitive, top and right, not.
-    line(left, bottom, right, bottom);
-    line(right, bottom+1, right, top);
-    line(left, top, right-1, top);
-    line(left, bottom+1, left, top-1);
+    line_impl(left, bottom, right, bottom);
+    line_impl(right, bottom + 1, right, top);
+    line_impl(left, top, right - 1, top);
+    line_impl(left, bottom + 1, left, top - 1);
 }
 
 void canvas::filled_rect(int x1, int y1, int x2, int y2) {
@@ -360,4 +361,59 @@ void canvas::circle_points(int cx, int cy, int x, int y) {
 void canvas::ellipse_points(int cx, int cy, int x, int y) {
     raster_(cx + x, cy + y).set3(pen_colour_); raster_(cx - x, cy + y).set3(pen_colour_);
     raster_(cx + x, cy - y).set3(pen_colour_); raster_(cx - x, cy - y).set3(pen_colour_);
+}
+
+enum clip_plane {
+    CP_TOP    = 1 << 0,
+    CP_BOTTOM = 1 << 1,
+    CP_RIGHT  = 1 << 2,
+    CP_LEFT   = 1 << 3
+};
+
+// Cohen-Sutherland line clipper
+void canvas::line(int x1, int y1, int x2, int y2) {
+    auto region = [](int x, int y, int xmin, int xmax, int ymin, int ymax) {
+        int code = 0;
+        if(y > ymax)      code |= clip_plane::CP_TOP;
+        else if(y < ymin) code |= clip_plane::CP_BOTTOM;
+        if(x > xmax)      code |= clip_plane::CP_RIGHT;
+        else if(x < xmin) code |= clip_plane::CP_LEFT;
+        return code;
+    };
+
+    int code1, code2, codeOut;
+    bool accept = false, done = false;
+    code1 = region(x1, y1, clip_region_.left, clip_region_.right, clip_region_.bottom, clip_region_.top);
+    code2 = region(x2, y2, clip_region_.left, clip_region_.right, clip_region_.bottom, clip_region_.top);
+    do {
+        if(!(code1 | code2)) { accept = true; done = true; }        // Whole line contained
+        else if(code1 & code2) done = true;                         // Whole line rejected
+        else {
+            int x, y;
+            codeOut = code1 ? code1 : code2;
+            if(codeOut & CP_TOP) {
+                x = x1 + (x2 - x1) * (clip_region_.top - y1) / (y2 - y1);
+                y = clip_region_.top;
+            } else if(codeOut & CP_BOTTOM) {
+                x = x1 + (x2 - x1) * (clip_region_.bottom - y1) / (y2 - y1);
+                y = clip_region_.bottom;
+            } else if(codeOut & CP_RIGHT) {
+                y = y1 + (y2 - y1) * (clip_region_.right - x1) / (x2 - x1);
+                x = clip_region_.right;
+            } else if(codeOut & CP_LEFT) {
+                y = y1 + (y2 - y1) * (clip_region_.left - x1) / (x2 - x1);
+                x = clip_region_.left;
+            }
+
+            if(codeOut == code1) {
+                x1 = x; y1 = y;
+                code1 = region(x1, y1, clip_region_.left, clip_region_.right, clip_region_.bottom, clip_region_.top);
+            } else {
+                x2 = x; y2 = y;
+                code2 = region(x2, y2, clip_region_.left, clip_region_.right, clip_region_.bottom, clip_region_.top);
+            }
+        }
+    } while(!done);
+
+    if(accept) line_impl(x1, y1, x2, y2);
 }

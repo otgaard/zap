@@ -3,7 +3,7 @@
 #define ZAP_PIXMAP_HPP
 
 #include "pixel_format.hpp"
-#include <maths/rect.hpp>
+#include <maths/geometry/rect.hpp>
 #include <vector>
 
 namespace zap { namespace engine {

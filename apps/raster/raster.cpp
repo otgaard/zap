@@ -87,6 +87,7 @@ void raster::on_resize(int width, int height) {
         canvas_.fill_colour(vec3b(rand()&255, rand()&255, rand()&255));
         canvas_.ellipse(width/2, height/2, rand()%200, rand()%200);
         canvas_.filled_rect(width/2-rand()%hw, height/2-rand()%hh, width/2+rand()%hw,height/2+rand()%hh);
+        canvas_.line(rand()%(width+100),rand()%(height+100),rand()%(width+100),rand()%(height+100));
     }
     LOG(t.getf(), "seconds");
 
