@@ -121,16 +121,19 @@ void raster::on_resize(int width, int height) {
 }
 
 void raster::on_mousedown(int button) {
+    /*
     if(button == 0 && !start_rect_) {
         start_rect_ = true;
         start_pos_ = mouse_pos();
     } else start_rect_ = false;
+    */
 }
 
 void raster::on_mouseup(int button) {
 }
 
 void raster::on_mousemove(double x, double y) {
+    /*
     application::on_mousemove(x,y);
     if(start_rect_) {
         if(!canvas_.map()) return;
@@ -141,6 +144,7 @@ void raster::on_mousemove(double x, double y) {
         canvas_.unmap();
         canvas_.update(img_.get_texture());
     }
+    */
 }
 
 void raster::on_mousewheel(double xoffset, double yoffset) {

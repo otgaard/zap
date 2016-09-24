@@ -222,6 +222,136 @@ namespace zap { namespace generators {
 
             return std::make_tuple(vertices, indices);
         }
+
+        template <typename T, typename IndexT=uint16_t>
+        static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_UVsphere(int z_samples, int radial_samples, T radius, bool inside) {
+            int zsm1 = z_samples-1, zsm2 = z_samples-2, zsm3 = z_samples-3;
+            int rsp1 = radial_samples+1;
+            int vertex_count = zsm2*rsp1 + 2;
+            int tri_count = 2*zsm2*radial_samples;
+            int index_count = 3*tri_count;
+
+            const auto texcoord = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
+            auto vbuf = std::vector<VertexT>(vertex_count);
+
+            T invRS = T(1)/radial_samples;
+            T zFactor = T(2)/zsm1;
+            int r, z, zStart, i;
+            vec2<T> tcoord;
+
+            std::vector<T> sn(rsp1);
+            std::vector<T> cs(rsp1);
+
+            for(r = 0; r < radial_samples; ++r) {
+                T angle = T(2.0*PI)*invRS*r;
+                cs[r] = std::cos(angle); sn[r] = std::sin(angle);
+            }
+
+            sn[radial_samples] = sn[0];
+            cs[radial_samples] = cs[0];
+
+            for(z = 1, i = 0; z < zsm1; ++z) {
+                T zFraction = -1.0f + zFactor*z;
+                T zValue = radius*zFraction;
+
+                vec3<T> sliceCenter(0, 0, zValue);
+
+                T sliceRadius = std::sqrt(std::abs(radius*radius - zValue*zValue));
+
+                vec3<T> normal;
+                int save = i;
+                for(r = 0; r < radial_samples; ++r) {
+                    T radial_fraction = r*invRS;
+                    vec3f radial(cs[r], sn[r], 0.0f);
+
+                    vbuf[i].position = sliceCenter + sliceRadius*radial;
+
+                    normal = vbuf[i].position;
+                    normal.normalise();
+                    if(inside) vbuf[i].normal = -normal;
+                    else       vbuf[i].normal = normal;
+
+                    if(texcoord != INVALID_IDX) {
+                        tcoord[0] = radial_fraction;
+                        tcoord[1] = T(0.5) * (zFraction + T(1));
+                        vbuf[i].set(texcoord, tcoord);
+                    }
+
+                    ++i;
+                }
+
+                vbuf[i].position = vbuf[save].position;
+                vbuf[i].normal   = vbuf[save].normal;
+
+                if(texcoord != INVALID_IDX) {
+                    tcoord[0] = T(1);
+                    tcoord[1] = T(0.5) * (zFraction + T(1));
+                    vbuf[i].set(texcoord, tcoord);
+                }
+
+                ++i;
+            }
+
+            vbuf[i].position = vec3<T>(0, 0, -radius);
+            if(inside) vbuf[i].normal = vec3<T>(0, 0, T(1));
+            else       vbuf[i].normal = vec3<T>(0, 0, T(-1));
+
+            if(texcoord != INVALID_IDX) {
+                tcoord = vec2<T>(T(0.5), T(0.5));
+                vbuf[i].set(texcoord, tcoord);
+            }
+
+            ++i;
+
+            vbuf[i].position = vec3<T>(0, 0, radius);
+            if(inside) vbuf[i].normal = vec3<T>(0, 0, T(-1));
+            else       vbuf[i].normal = vec3<T>(0, 0, T(1));
+
+            if(texcoord != INVALID_IDX) {
+                tcoord = vec2<T>(T(0.5), T(1));
+                vbuf[i].set(texcoord, tcoord);
+            }
+
+            ++i;
+
+            std::vector<IndexT> ibuf(index_count);
+            auto* indices = ibuf.data();
+
+            for(z = 0, zStart = 0; z < zsm3; ++z) {
+                int i0 = zStart, i1 = i0 + 1;
+                zStart += rsp1;
+                int i2 = zStart, i3 = i2 + 1;
+                for(i = 0; i < radial_samples; ++i, indices += 6) {
+                    if(inside) {
+                        indices[0] = i0++; indices[1] = i2;   indices[2] = i1;
+                        indices[3] = i1++; indices[4] = i2++; indices[5] = i3++;
+                    } else {
+                        indices[0] = i0++; indices[1] = i1;   indices[2] = i2;
+                        indices[3] = i1++; indices[4] = i3++; indices[5] = i2++;
+                    }
+                }
+            }
+
+            int numVerticesM2 = vertex_count - 2;
+            for(i = 0; i < radial_samples; ++i, indices += 3) {
+                if(inside) {
+                    indices[0] = i; indices[1] = i + 1; indices[2] = numVerticesM2;
+                } else {
+                    indices[0] = i; indices[1] = numVerticesM2; indices[2] = i + 1;
+                }
+            }
+
+            int numVerticesM1 = vertex_count-1, offset = zsm3*rsp1;
+            for(i = 0; i < radial_samples; ++i, indices += 3) {
+                if(inside) {
+                    indices[0] = i + offset; indices[1] = numVerticesM1; indices[2] = i + 1 + offset;
+                } else {
+                    indices[0] = i + offset; indices[1] = i + 1 + offset; indices[2] = numVerticesM1;
+                }
+            }
+
+            return std::make_tuple(vbuf, ibuf);
+        }
     };
 }}
 

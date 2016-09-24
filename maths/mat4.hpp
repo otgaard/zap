@@ -175,6 +175,15 @@ namespace zap { namespace maths {
                 }
             }
         }
+        mat3<T> rotation() const {
+            mat3<T> R;
+            for(size_t c = 0, cend = cols()-1; c != cend; ++c) {
+                for(size_t r = 0, rend = rows()-1; r != rend; ++r) {
+                    R(r,c) = operator()(r,c);
+                }
+            }
+            return R;
+        }
 
         mat4<T>& operator+=(const mat4& rhs) { for(size_t i = 0; i != size(); ++i) (*this)[i] += rhs[i]; }
         mat4<T>& operator-=(const mat4& rhs) { for(size_t i = 0; i != size(); ++i) (*this)[i] -= rhs[i]; }

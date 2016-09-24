@@ -108,7 +108,7 @@ set(ZAP_ENGINE_FILES
         engine/pixmap.cpp
         engine/pixmap.hpp
         graphics2/quad.cpp
-        graphics2/quad.hpp)
+        graphics2/quad.hpp renderer/material.cpp renderer/material.hpp renderer/light.cpp renderer/light.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
@@ -234,7 +234,7 @@ target_link_libraries(zap_engine_tests gtest ${GTEST_LIBS})
 
 add_executable(synesthesia ${SYNESTHESIA_FILES})
 target_include_directories(synesthesia PUBLIC ${CMAKE_SOURCE_DIR}/third_party/simple_mp3)
-target_link_libraries(synesthesia glfw3 portaudio ZapEngine mp3lame stb ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(synesthesia glfw3 portaudio ZapEngine ZapMaths mp3lame stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(tracer ${TRACER_FILES})
 target_link_libraries(tracer glfw3 ZapRaytracer ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})

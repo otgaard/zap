@@ -334,13 +334,13 @@ void canvas::diagonal_line(int x1, int y1, int x2, int y2) {
     int xd = maths::sign(x2 - x1), yd = maths::sign(y2 - y1);
     int x = x1, y = y1;
     if(xd > 0) {
-        while(x < x2) {
+        while(x <= x2) {
             raster_(x, y).set3(pen_colour_);
             x += xd;
             y += yd;
         }
     } else {
-        while(x > x2) {
+        while(x >= x2) {
             raster_(x, y).set3(pen_colour_);
             x += xd;
             y += yd;

@@ -29,7 +29,7 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    struct /*ALIGN_DECL(16)*/ mat3 {
+    struct mat3 {
         using type = T;
 
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "mat3<T>: T must be an algebraic type");
@@ -43,7 +43,7 @@ namespace zap { namespace maths {
         constexpr static size_t bytesize() { return sizeof(mat3<T>); }
         constexpr static size_t cols() { return 3; }
         constexpr static size_t rows() { return 3; }
-        constexpr static size_t idx(size_t row, size_t col) { return col*(rows()+1) + row; }
+        constexpr static size_t idx(size_t row, size_t col) { return col*rows() + row; }
 
         mat3() { }
         constexpr explicit mat3(T init) : m00(init), m10(init), m20(init),
@@ -115,6 +115,13 @@ namespace zap { namespace maths {
             return arr[idx];
         }
 
+        inline T* begin() { return arr; }
+        inline T* end() { return arr + size(); }
+        inline const T* begin() const { return arr; }
+        inline const T* end() const { return arr + size(); }
+        inline const T* data() const { return arr; }
+        inline T* data() { return arr; }
+
         vec3<T> col3(size_t col) const {
             checkidx(col, cols());
             return vec3<T>(operator()(0,col), operator()(1,col), operator()(2,col));
@@ -158,8 +165,8 @@ namespace zap { namespace maths {
             }
         }
 
-        mat3<T>& operator+=(const mat3& rhs) { for(const auto& i : { 0, 1, 2, 4, 5, 6, 8, 9, 10 }) (*this)[i] += rhs[i]; }
-        mat3<T>& operator-=(const mat3& rhs) { for(const auto& i : { 0, 1, 2, 4, 5, 6, 8, 9, 10 }) (*this)[i] += rhs[i]; }
+        mat3<T>& operator+=(const mat3& rhs) { for(int i = 0; i != size(); ++i) (*this)[i] += rhs[i]; }
+        mat3<T>& operator-=(const mat3& rhs) { for(int i = 0; i != size(); ++i) (*this)[i] += rhs[i]; }
 
         mat3& clear() { for(auto& e : arr) e = type(0); return *this; }
         mat3 inverse(type epsilon=std::numeric_limits<type>::epsilon()) const;
@@ -173,16 +180,16 @@ namespace zap { namespace maths {
 
         union {
             struct {
-                T m00, m10, m20, __m30,     // Column 0
-                  m01, m11, m21, __m31,     // Column 1
-                  m02, m12, m22, __m32;     // Column 2
+                T m00, m10, m20,     // Column 0
+                  m01, m11, m21,     // Column 1
+                  m02, m12, m22;     // Column 2
             };
-            T arr[cols()*(rows()+1)];
+            T arr[cols()*rows()];
 #ifdef ZAP_MATHS_SSE2
             __m128 xmm[cols()];
 #endif //ZAP_MATHS_SSE2
         };
-	} /*ALIGN_ATTR(16)*/;
+	};
 
     template <typename T>
     vec2<T> mat3<T>::transform(const vec2<T>& v) const {
