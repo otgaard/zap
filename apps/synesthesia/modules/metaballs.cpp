@@ -145,7 +145,6 @@ metaballs::metaballs(application* app_ptr) : module(app_ptr, "metaballs") {
         auto& ref = s.uniform.ref();
         ref.cam_projection = make_perspective<float>(45.f, 1280.f / 768.f, .5f, 100.f);
         ref.mv_matrix = make_scale<float>(30,30,10) * make_translation<float>(-.5f, -.5f, -2.f);
-        //ref.normal_matrix = ref.mv_matrix.rotation().inverse().transpose();
         ref.scale = 1.f;
         s.uniform.unmap();
     }
