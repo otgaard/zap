@@ -16,7 +16,10 @@ struct plane {
     using real = T;
 
     plane() = default;
+    plane(const plane& rhs) = default;
     plane(const vec3<T>& O, const vec3<T>& n) : O(O), n(n) { }
+
+    plane& operator=(const plane& rhs) = default;
 
     const vector& origin() const { return O; }
     const vector& normal() const { return n; }

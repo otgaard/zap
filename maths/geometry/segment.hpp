@@ -15,7 +15,10 @@ struct segment {
     using vector = VecType;
 
     segment() = default;
+    segment(const segment& rhs) = default;
     segment(const vector& P0, const vector& P1) : P0(P0), P1(P1) { }
+
+    segment& operator=(const segment& rhs) = default;
 
     inline const vector& origin() const { return P0; }
     inline const vector dir() const { return normalise(P1 - P0); }

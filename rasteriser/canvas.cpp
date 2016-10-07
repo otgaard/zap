@@ -434,3 +434,11 @@ void canvas::polyloop(const std::vector<vec2i>& polyloop) {
     size--;
     line(polyloop[size], polyloop[0]);
 }
+
+void canvas::polygon(const std::vector<vec2i>& polygon) {
+    auto size = polygon.size();
+    if(size < 3) return;
+    for(int i = 0, j = 1; j != size; i = j, ++j) {
+
+    }
+}

@@ -14,8 +14,11 @@ struct disc {
     using vector = vec2<T>;
     using real = T;
 
-    disc() { }
+    disc() = default;
+    disc(const disc& rhs) = default;
     disc(const vec2<T>& P, T radius) : P(P), r(radius) { }
+
+    disc& operator=(const disc& rhs) = default;
 
     vector P;
     real r;

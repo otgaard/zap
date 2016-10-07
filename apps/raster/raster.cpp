@@ -71,6 +71,9 @@ void raster::draw() {
     std::vector<vec2i> polyline = { {100,100}, {200,100}, {150, 150}, {200, 50}, {75, 5} };
     canvas_.polyline(polyline);
 
+    std::vector<vec2i> polyloop = { {480,800}, {420,900}, {380,750}, {550,890} };
+    canvas_.polyloop(polyloop);
+
     canvas_.unmap();
     canvas_.update(img_.get_texture());
 

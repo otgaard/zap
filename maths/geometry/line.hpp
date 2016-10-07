@@ -15,7 +15,10 @@ struct line {
     using vector = VecType;
 
     line() = default;
+    line(const line& rhs) = default;
     line(const vector& O, const vector& d) : O(O), d(d) { }
+
+    line& operator=(const line& rhs) = default;
 
     inline const vector& origin() const { return O; }
     inline const vector& dir() const { return d; }

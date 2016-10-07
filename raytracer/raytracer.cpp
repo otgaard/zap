@@ -12,14 +12,10 @@ using namespace zap::renderer;
 using namespace zap::maths::geometry;
 
 raytracer::raytracer() {
-
 }
 
 raytracer::~raytracer() {
-
 }
-
-static zap::maths::loop<float> height(-1.8f, 1.6f, -1.f);
 
 std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
     const float inv_w = 1.f/w, inv_h = 1.f/h;
@@ -28,7 +24,7 @@ std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
     const float s = -2.f * std::tan(.5f*fov);
 
     const vec3f light_pos = vec3f(0,2,-4.f);
-    sphere<float> sphere1(vec3f(0.f,height.value,-4.f), .2f);
+    sphere<float> sphere1(vec3f(0.f,-1.6f,-4.f), .2f);
     plane<float> plane1(vec3f(0,-2.f,0.f), vec3f(0,1.f,0));
     ray<vec3f> ray1(vec3f(0,0,0), vec3f(0,0,-1.f));
     vec2f roots;
@@ -69,8 +65,6 @@ std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
             pixels[row_offset+c].set3(pixel*.25f);
         }
     }
-
-    height += 0.1f;
 
     return pixels;
 }

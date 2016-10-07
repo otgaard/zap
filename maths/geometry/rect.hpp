@@ -11,11 +11,13 @@ namespace zap { namespace maths { namespace geometry {
 
 template <typename T>
 struct rect {
-    T left, right, bottom, top;
     rect() = default;
+    rect(const rect& rhs) = default;
     rect(const T& left, const T& right, const T& bottom, const T& top) : left(left), right(right), bottom(bottom),
                                                                          top(top) { }
     rect(const vec2<T> horz, const vec2<T> vert) : left(horz.x), right(horz.y), bottom(vert.x), top(vert.y) { }
+
+    rect& operator=(const rect& rhs) = default;
 
     void set(const T& left, const T& right, const T& bottom, const T& top) {
         this->left = left; this->right = right; this->bottom = bottom; this->top = top;
@@ -30,6 +32,8 @@ struct rect {
     vec2<T> tl() const { return vec2<T>(left, top); }
     vec2<T> br() const { return vec2<T>(right, bottom); }
     vec2<T> tr() const { return vec2<T>(right, top); }
+
+    T left, right, bottom, top;
 };
 
 using recti = rect<int>;

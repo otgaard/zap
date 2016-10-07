@@ -15,7 +15,10 @@ struct ray {
     using vector = VecType;
 
     ray() = default;
+    ray(const ray& rhs) = default;
     ray(const vector& O, const vector& d) : O(O), d(d) { }
+
+    ray& operator=(const ray& rhs) = default;
 
     inline const vector& origin() const { return O; }
     inline const vector& dir() const { return d; }
