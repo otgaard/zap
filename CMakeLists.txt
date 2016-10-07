@@ -112,7 +112,7 @@ set(ZAP_ENGINE_FILES
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
-        raytracer/raytracer.hpp)
+        raytracer/raytracer.hpp raytracer/hit_record.hpp)
 
 set(ZAP_RASTERISER_FILES
         rasteriser/canvas.cpp rasteriser/canvas.hpp)
