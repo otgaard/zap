@@ -416,5 +416,21 @@ void canvas::line(int x1, int y1, int x2, int y2) {
 }
 
 void canvas::polyline(const std::vector<segment2i>& polyline) {
+    for(const auto& l : polyline) {
+        line(l.P0, l.P1);
+    }
+}
 
+void canvas::polyline(const std::vector<vec2i>& polyline) {
+    auto size = polyline.size();
+    if(size < 2) return;
+    for(int i = 0, j = 1; j != size; i = j, ++j) line(polyline[i], polyline[j]);
+}
+
+void canvas::polyloop(const std::vector<vec2i>& polyloop) {
+    auto size = polyloop.size();
+    if(size < 2) return;
+    for(int i = 0, j = 1; j != size; i = j, ++j) line(polyloop[i], polyloop[j]);
+    size--;
+    line(polyloop[size], polyloop[0]);
 }

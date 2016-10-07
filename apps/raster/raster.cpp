@@ -68,6 +68,9 @@ void raster::draw() {
         canvas_.line(cx,cy,cx + std::round(200*std::cos(i*inc)), cy + std::round(200*std::sin(i*inc)));
     }
 
+    std::vector<vec2i> polyline = { {100,100}, {200,100}, {150, 150}, {200, 50}, {75, 5} };
+    canvas_.polyline(polyline);
+
     canvas_.unmap();
     canvas_.update(img_.get_texture());
 

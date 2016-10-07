@@ -48,6 +48,8 @@ namespace zap { namespace rasteriser {
         inline void line(const vec2i& A, const vec2i& B) { line(A.x, A.y, B.x, B.y); }
 
         void polyline(const std::vector<segment2i>& polyline);
+        void polyline(const std::vector<vec2i>& polyline);
+        void polyloop(const std::vector<vec2i>& polyloop);
 
         void circle(int cx, int cy, int r);
         inline void circle(const vec2i& C, int r) { circle(C.x, C.y, r); }
