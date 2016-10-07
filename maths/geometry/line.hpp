@@ -1,21 +1,21 @@
 //
-// Created by Darren Otgaar on 2016/05/22.
+// Created by Darren Otgaar on 2016/10/07.
 //
 
-#ifndef ZAP_RAY_HPP
-#define ZAP_RAY_HPP
+#ifndef ZAP_LINE_HPP
+#define ZAP_LINE_HPP
 
 #include "maths/algebra.hpp"
 
 namespace zap { namespace maths { namespace geometry {
 
 template <typename VecType>
-struct ray {
+struct line {
     using type = typename VecType::type;
     using vector = VecType;
 
-    ray() = default;
-    ray(const vector& O, const vector& d) : O(O), d(d) { }
+    line() = default;
+    line(const vector& O, const vector& d) : O(O), d(d) { }
 
     inline const vector& origin() const { return O; }
     inline const vector& dir() const { return d; }
@@ -26,13 +26,13 @@ struct ray {
     vector d;
 };
 
-using ray2i = ray<vec2i>;
-using ray2f = ray<vec2f>;
-using ray2d = ray<vec2d>;
-using ray3i = ray<vec3i>;
-using ray3f = ray<vec3f>;
-using ray3d = ray<vec3d>;
+using line2i = line<vec2i>;
+using line2f = line<vec2f>;
+using line2d = line<vec2d>;
+using line3i = line<vec3i>;
+using line3f = line<vec3f>;
+using line3d = line<vec3d>;
 
 }}}
 
-#endif //ZAP_RAY_HPP
+#endif //ZAP_LINE_HPP
