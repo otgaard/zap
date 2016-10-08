@@ -119,7 +119,7 @@ namespace zap { namespace maths {
     template <typename T>
     struct range_finder {
         T min, max;
-        range_finder() : min(std::numeric_limits<T>::lowest()), max(std::numeric_limits<T>::max()) { }
+        range_finder() : min(std::numeric_limits<T>::max()), max(std::numeric_limits<T>::lowest()) { }
         void operator()(const T& value) {
             if(value < min) min = value;
             if(value > max) max = value;

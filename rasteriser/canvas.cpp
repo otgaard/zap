@@ -475,18 +475,55 @@ struct edge_table {
         zap::maths::range_finder<int> yrange;
         for(const auto& P : polygon) yrange(P.y);
 
+        LOG("minmax:", yrange.min, yrange.max);
+
         std::sort(vl.begin(), vl.end(), [](const vec2i& A, const vec2i& B) {
             return (A.y < B.y) || (A.y == B.y && A.x < B.x);
         });
 
+        int counter = 0;
+        while(counter != vl.size()) {
+            auto it = std::find(polygon.begin(), polygon.end(), vl[counter]);
+            if(it->y == yrange.max) break; // We must be at the last vertex or one of the last vertices
 
-        while(!vl.empty()) {
-            auto it = std::find(polygon.begin(), polygon.end(), vl.begin());
+            LOG("S:", *it);
+
             auto i = it - polygon.begin();
             auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == polygon.size()-1 ? 0 : i+1;
             if(polygon[left].x > polygon[right].x) std::swap(left,right);
 
+            LOG(polygon[left], polygon[right]);
+            if(polygon[left].y < it->y && polygon[right].y < it->y) continue;
+            bucket nb;
+            nb.y = it->y;
+            if(polygon[left].y > nb.y) {
+                auto& l = polygon[left];
+                edge e1;
+                e1.ymax = l.y;
+                e1.numerator = l.x - it->x;
+                e1.denominator = l.y - it->y;
+                e1.xmin = it->x;
+                nb.edges.emplace_back(std::move(e1));
+            }
 
+            if(polygon[right].y > nb.y) {
+                auto& r = polygon[right];
+                edge e2;
+                e2.ymax = r.y;
+                e2.numerator = r.x - it->x;
+                e2.denominator = r.y - it->y;
+                e2.xmin = it->x;
+                nb.edges.emplace_back(std::move(e2));
+            }
+            buckets.push_back(nb);
+            ++counter;
+        }
+
+        for(auto& b : buckets) {
+            LOG("LINE:", b.y);
+            for(auto& e : b.edges) {
+                LOG("   EDGE:", e.ymax, e.xmin, e.numerator, e.denominator);
+            }
         }
     }
 };
