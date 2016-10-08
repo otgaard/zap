@@ -439,21 +439,6 @@ void canvas::polyloop(const std::vector<vec2i>& polyloop) {
 
 // Global Edge Table for Polygon Filling (see page 98 in CGPAP 2nd)
 
-void canvas::left_edge_scan(int xmin, int ymin, int xmax, int ymax, int value) {
-    int x = xmin;
-    int numerator = xmax - xmin;
-    int denominator = ymax - ymin;
-    int increment = denominator;
-
-    for(int y = ymin; y <= ymax; ++y) {
-        raster_(x,y).set3(fill_colour_);
-        increment += numerator;
-        if(increment > denominator) {
-            ++x; increment -= denominator;
-        }
-    }
-}
-
 struct edge_table {
     struct edge {
         int ymax;
@@ -461,7 +446,6 @@ struct edge_table {
         int numerator;
         int denominator;
     };
-
     struct bucket {
         int y;
         std::vector<edge> edges;
@@ -528,13 +512,25 @@ struct edge_table {
     }
 };
 
+void canvas::left_edge_scan(int xmin, int ymin, int xmax, int ymax) {
+    int x = xmin;
+    int numerator = xmax - xmin;
+    int denominator = ymax - ymin;
+    int increment = denominator;
+
+    for(int y = ymin; y <= ymax; ++y) {
+        for(int c = x; c != xmax; ++c) raster_(c,y).set3(fill_colour_);
+        increment += numerator;
+        if(increment > denominator) {
+            ++x; increment -= denominator;
+        }
+    }
+}
+
 void canvas::polygon(const std::vector<vec2i>& polygon) {
     auto size = polygon.size();
     if(size < 3) return;
 
     edge_table global_et(polygon);
-
-    for(int i = 0, j = 1; j != size; i = j, ++j) {
-
-    }
+    left_edge_scan(global_et.buckets[0].edges[0].xmin, global_et.buckets[0].y, global_et.buckets[0].edges[0].xmin+100, global_et.buckets[0].edges[0].ymax);
 }

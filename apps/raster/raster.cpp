@@ -59,9 +59,9 @@ void raster::draw() {
     canvas_.pen_colour(vec3b(255,255,255));
 
     std::vector<vec2i> polygon = { {300,612}, {350,700}, {320,800} };
+    canvas_.polygon(polygon);
     canvas_.polyloop(polygon);
 
-    canvas_.polygon(polygon);
 
     /*
     canvas_.fill_colour(vec3b(255,0,0));

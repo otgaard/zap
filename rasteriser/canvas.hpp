@@ -78,8 +78,7 @@ namespace zap { namespace rasteriser {
 
         void circle_points(int cx, int cy, int x, int y);
         void ellipse_points(int cx, int cy, int x, int y);
-
-        void left_edge_scan(int xmin, int ymin, int xmax, int ymax, int value);
+        void left_edge_scan(int xmin, int ymin, int xmax, int ymax);
 
         rgb888_t* mapped_ptr_;
         vec2i min_, max_;
