@@ -116,6 +116,16 @@ namespace zap { namespace maths {
         T min, max, value, dir;
     };
 
+    template <typename T>
+    struct range_finder {
+        T min, max;
+        range_finder() : min(std::numeric_limits<T>::lowest()), max(std::numeric_limits<T>::max()) { }
+        void operator()(const T& value) {
+            if(value < min) min = value;
+            if(value > max) max = value;
+        }
+    };
+
     // Forward Declarations
     template <typename T> struct vec2;
     template <typename T> struct vec3;

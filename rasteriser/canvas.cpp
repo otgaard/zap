@@ -2,6 +2,8 @@
 #include <renderer/colour.hpp>
 #include "canvas.hpp"
 
+#include <maths/io.hpp>
+
 using namespace zap::engine;
 using namespace zap::rasteriser;
 
@@ -435,9 +437,66 @@ void canvas::polyloop(const std::vector<vec2i>& polyloop) {
     line(polyloop[size], polyloop[0]);
 }
 
+// Global Edge Table for Polygon Filling (see page 98 in CGPAP 2nd)
+
+void canvas::left_edge_scan(int xmin, int ymin, int xmax, int ymax, int value) {
+    int x = xmin;
+    int numerator = xmax - xmin;
+    int denominator = ymax - ymin;
+    int increment = denominator;
+
+    for(int y = ymin; y <= ymax; ++y) {
+        raster_(x,y).set3(fill_colour_);
+        increment += numerator;
+        if(increment > denominator) {
+            ++x; increment -= denominator;
+        }
+    }
+}
+
+struct edge_table {
+    struct edge {
+        int ymax;
+        int xmin;
+        int numerator;
+        int denominator;
+    };
+
+    struct bucket {
+        int y;
+        std::vector<edge> edges;
+    };
+
+    std::vector<bucket> buckets;
+
+    edge_table(const std::vector<vec2i>& polygon) {
+        auto vl = polygon;
+
+        zap::maths::range_finder<int> yrange;
+        for(const auto& P : polygon) yrange(P.y);
+
+        std::sort(vl.begin(), vl.end(), [](const vec2i& A, const vec2i& B) {
+            return (A.y < B.y) || (A.y == B.y && A.x < B.x);
+        });
+
+
+        while(!vl.empty()) {
+            auto it = std::find(polygon.begin(), polygon.end(), vl.begin());
+            auto i = it - polygon.begin();
+            auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == polygon.size()-1 ? 0 : i+1;
+            if(polygon[left].x > polygon[right].x) std::swap(left,right);
+
+
+        }
+    }
+};
+
 void canvas::polygon(const std::vector<vec2i>& polygon) {
     auto size = polygon.size();
     if(size < 3) return;
+
+    edge_table global_et(polygon);
+
     for(int i = 0, j = 1; j != size; i = j, ++j) {
 
     }

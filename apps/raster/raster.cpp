@@ -50,10 +50,20 @@ void raster::update(double t, float dt) {
 }
 
 void raster::draw() {
-    const int cx = sc_width_/2, cy = sc_height_/2;
+    //const int cx = sc_width_/2, cy = sc_height_/2;
 
     if(!canvas_.map()) return;
 
+    //canvas_.clear();
+    canvas_.fill_colour(vec3b(0,0,255));
+    canvas_.pen_colour(vec3b(255,255,255));
+
+    std::vector<vec2i> polygon = { {300,612}, {350,700}, {320,800} };
+    canvas_.polyloop(polygon);
+
+    canvas_.polygon(polygon);
+
+    /*
     canvas_.fill_colour(vec3b(255,0,0));
     canvas_.filled_rect(cx-200,cy-200,cx+200,cy+200);
     canvas_.pen_colour(vec3b(255,255,255));
@@ -73,6 +83,8 @@ void raster::draw() {
 
     std::vector<vec2i> polyloop = { {480,800}, {420,900}, {380,750}, {550,890} };
     canvas_.polyloop(polyloop);
+
+    */
 
     canvas_.unmap();
     canvas_.update(img_.get_texture());
