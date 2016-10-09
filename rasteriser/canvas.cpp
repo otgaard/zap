@@ -479,7 +479,7 @@ struct edge_table {
             auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == polygon.size()-1 ? 0 : i+1;
             if(polygon[left].x > polygon[right].x) std::swap(left,right);
 
-            if(polygon[left].y < it->y && polygon[right].y < it->y) continue;
+            if(polygon[left].y < it->y && polygon[right].y < it->y) { counter++; continue; }
             bucket nb;
             nb.y = it->y;
             if(polygon[left].y > nb.y) {
@@ -488,7 +488,7 @@ struct edge_table {
                 e1.ymax = l.y;
                 e1.numerator = l.x - it->x;
                 e1.denominator = l.y - it->y;
-                e1.sign = zap::maths::sign(e1.numerator*e1.denominator);
+                e1.sign = zap::maths::sign(e1.numerator);
                 e1.numerator = std::abs(e1.numerator);  // Make the numerator positive, the sign stores inc/dec
                 e1.increment = e1.denominator;          // Denominator is always positive
                 e1.xmin = it->x;
@@ -501,7 +501,7 @@ struct edge_table {
                 e2.ymax = r.y;
                 e2.numerator = r.x - it->x;
                 e2.denominator = r.y - it->y;
-                e2.sign = zap::maths::sign(e2.numerator*e2.denominator);
+                e2.sign = zap::maths::sign(e2.numerator);
                 e2.numerator = std::abs(e2.numerator);  // Make the numerator positive, the sign stores inc/dec
                 e2.increment = e2.denominator;          // Denominator is always positive
                 e2.xmin = it->x;
@@ -544,7 +544,9 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
 
         for(int i = 0, end = (int)AET.size(); i != end; i += 2) {
             auto& se = AET[2*i]; auto& ee = AET[2*i+1];
-            for(int x = se.xmin, xend = ee.xmin; x <= xend; ++x) raster_(x,curr_y).set3(fill_colour_);
+            for(int x = se.xmin, xend = ee.xmin; x <= xend; ++x) {
+                raster_(x,curr_y).set3(fill_colour_);
+            }
             if(se.denominator != 0) {
                 se.increment += se.numerator;
                 while(se.increment > se.denominator) {

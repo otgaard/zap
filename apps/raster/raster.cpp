@@ -49,7 +49,54 @@ void raster::update(double t, float dt) {
     on_resize(sc_width_,sc_height_);
 }
 
-float angle = 0.6f;
+std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
+    std::vector<vec2f> points(5);
+
+    float dt = float(TWO_PI/5.f);
+    for(int i = 0; i != 5; ++i) {
+        auto theta = dt*i;
+        auto ct = std::cos(theta), st = std::sin(theta);
+        points[i] = vec2f(100*ct, 100*st);
+    }
+
+    std::vector<vec2f> poly(5);
+
+    poly[0] = points[0];
+    poly[1] = points[2];
+    poly[2] = points[4];
+    poly[3] = points[1];
+    poly[4] = points[3];
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(vec2f(sw/2, sh/2));
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
+        auto nP = transform.ptransform(P);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    return polygon;
+}
+
+std::vector<vec2i> draw_diamond(int sw, int sh, float angle) {
+    std::vector<vec2f> poly = { {50,0}, {0,100}, {-50,0}, {0,-100} };
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(vec2f(sw/2, sh/2));
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
+        auto nP = transform.ptransform(P);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    return polygon;
+}
+
+float angle = 0.01f;
 
 void raster::draw() {
     //const int cx = sc_width_/2, cy = sc_height_/2;
@@ -60,20 +107,8 @@ void raster::draw() {
     canvas_.fill_colour(vec3b(0,0,255));
     canvas_.pen_colour(vec3b(255,255,255));
 
-    static std::vector<vec2f> poly = { {300.f,612.f}, {350.f,700.f}, {320.f,800.f} };
-
-    auto centre = std::accumulate(poly.begin(), poly.end(), vec2f(0,0));
-    centre *= 1/3.f;
-
-    transform3f transform;
-    transform.rotate(make_rotation(angle));
-    transform.translate(centre);
-
-    std::vector<vec2i> polygon;
-    std::for_each(poly.begin(), poly.end(), [&polygon, &transform, &centre](const vec2f& P) {
-        auto nP = transform.ptransform(P-centre);
-        polygon.push_back(vec2i(nP.x, nP.y));
-    });
+    // Build a pentagram for testing even-odd fill rule
+    auto polygon = draw_diamond(sc_width_, sc_height_, angle);
 
     canvas_.polygon(polygon);
     canvas_.polyloop(polygon);
