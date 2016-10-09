@@ -516,7 +516,7 @@ struct edge_table {
         for(auto& b : buckets) {
             LOG("LINE:", b.y);
             for(auto& e : b.edges) {
-                LOG("   EDGE:", e.ymax, e.xmin, e.numerator, e.denominator);
+                LOG("   EDGE:", e.ymax, e.xmin, e.sign, e.numerator, e.denominator);
             }
         }
     }
@@ -548,8 +548,9 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
     int curr_y = global_et.min_y;
     while(curr_y != global_et.max_y) {
         if(global_et.buckets[curr_bucket].y == curr_y) {
-            std::copy(global_et.buckets[0].edges.begin(), global_et.buckets[0].edges.end(),
+            std::copy(global_et.buckets[curr_bucket].edges.begin(), global_et.buckets[curr_bucket].edges.end(),
                       std::back_inserter(AET));
+            ++curr_bucket;
         }
 
         auto it = std::remove_if(std::begin(AET), std::end(AET),
@@ -564,8 +565,10 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
                   });
 
         if(AET.size() % 2 != 0) {
-
-
+            LOG(AET.size());
+            for(const auto& e : AET) {
+                LOG(e.xmin, e.ymax, e.denominator, e.numerator, e.sign, e.increment);
+            }
 
             LOG_ERR("AET contains non-even number of edges");
             return;
@@ -574,11 +577,11 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
         for(int i = 0, end = (int)AET.size(); i != end; i += 2) {
             auto& se = AET[2*i]; auto& ee = AET[2*i+1];
             for(int x = se.xmin, xend = ee.xmin; x <= xend; ++x) raster_(x,curr_y).set3(fill_colour_);
-            se.increment += se.numerator;
+            se.increment += se.sign*se.numerator;
             if(se.increment > se.denominator) {
                 se.xmin += se.sign; se.increment -= se.denominator;
             }
-            ee.increment += ee.numerator;
+            ee.increment += ee.sign*ee.numerator;
             if(ee.increment > ee.denominator) {
                 ee.xmin += ee.sign; ee.increment -= ee.denominator;
             }
