@@ -437,7 +437,7 @@ void canvas::polyloop(const std::vector<vec2i>& polyloop) {
     line(polyloop[size], polyloop[0]);
 }
 
-// Global Edge Table for Polygon Filling (see page 98 in CGPAP 2nd)
+// Algorithm based on Computer Graphics - Principles and Practice (2nd) [91 - 99]
 
 struct edge_table {
     int min_y, max_y;
@@ -465,7 +465,6 @@ struct edge_table {
         for(const auto& P : polygon) yrange(P.y);
         min_y = yrange.min; max_y = yrange.max;
         assert(min_y < max_y && "Min must be less than Max");
-        LOG("minmax:", yrange.min, yrange.max);
 
         std::sort(vl.begin(), vl.end(), [](const vec2i& A, const vec2i& B) {
             return (A.y < B.y) || (A.y == B.y && A.x < B.x);
@@ -476,13 +475,10 @@ struct edge_table {
             auto it = std::find(polygon.begin(), polygon.end(), vl[counter]);
             if(it->y == yrange.max) break; // We must be at the last vertex or one of the last vertices
 
-            LOG("S:", *it);
-
             auto i = it - polygon.begin();
             auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == polygon.size()-1 ? 0 : i+1;
             if(polygon[left].x > polygon[right].x) std::swap(left,right);
 
-            LOG(polygon[left], polygon[right]);
             if(polygon[left].y < it->y && polygon[right].y < it->y) continue;
             bucket nb;
             nb.y = it->y;
@@ -493,7 +489,8 @@ struct edge_table {
                 e1.numerator = l.x - it->x;
                 e1.denominator = l.y - it->y;
                 e1.sign = zap::maths::sign(e1.numerator*e1.denominator);
-                e1.increment = std::abs(e1.denominator);
+                e1.numerator = std::abs(e1.numerator);  // Make the numerator positive, the sign stores inc/dec
+                e1.increment = e1.denominator;          // Denominator is always positive
                 e1.xmin = it->x;
                 nb.edges.emplace_back(std::move(e1));
             }
@@ -505,37 +502,16 @@ struct edge_table {
                 e2.numerator = r.x - it->x;
                 e2.denominator = r.y - it->y;
                 e2.sign = zap::maths::sign(e2.numerator*e2.denominator);
-                e2.increment = std::abs(e2.denominator);
+                e2.numerator = std::abs(e2.numerator);  // Make the numerator positive, the sign stores inc/dec
+                e2.increment = e2.denominator;          // Denominator is always positive
                 e2.xmin = it->x;
                 nb.edges.emplace_back(std::move(e2));
             }
-            buckets.push_back(nb);
+            buckets.emplace_back(std::move(nb));
             ++counter;
-        }
-
-        for(auto& b : buckets) {
-            LOG("LINE:", b.y);
-            for(auto& e : b.edges) {
-                LOG("   EDGE:", e.ymax, e.xmin, e.sign, e.numerator, e.denominator);
-            }
         }
     }
 };
-
-void canvas::left_edge_scan(int xmin, int ymin, int xmax, int ymax) {
-    int x = xmin;
-    int numerator = xmax - xmin;
-    int denominator = ymax - ymin;
-    int increment = denominator;
-
-    for(int y = ymin; y <= ymax; ++y) {
-        for(int c = x; c != xmax; ++c) raster_(c,y).set3(fill_colour_);
-        increment += numerator;
-        if(increment > denominator) {
-            ++x; increment -= denominator;
-        }
-    }
-}
 
 void canvas::polygon(const std::vector<vec2i>& polygon) {
     if(polygon.size() < 3) { LOG_ERR("Polygon must consist of at least three vertices"); return; }
@@ -564,26 +540,22 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
                       return A.xmin < B.xmin;
                   });
 
-        if(AET.size() % 2 != 0) {
-            LOG(AET.size());
-            for(const auto& e : AET) {
-                LOG(e.xmin, e.ymax, e.denominator, e.numerator, e.sign, e.increment);
-            }
-
-            LOG_ERR("AET contains non-even number of edges");
-            return;
-        }
+        if(AET.size() % 2 != 0) { LOG_ERR("AET contains non-even number of edges"); return; }
 
         for(int i = 0, end = (int)AET.size(); i != end; i += 2) {
             auto& se = AET[2*i]; auto& ee = AET[2*i+1];
             for(int x = se.xmin, xend = ee.xmin; x <= xend; ++x) raster_(x,curr_y).set3(fill_colour_);
-            se.increment += se.sign*se.numerator;
-            if(se.increment > se.denominator) {
-                se.xmin += se.sign; se.increment -= se.denominator;
+            if(se.denominator != 0) {
+                se.increment += se.numerator;
+                if(se.increment > se.denominator) {
+                    se.xmin += se.sign; se.increment -= se.denominator;
+                }
             }
-            ee.increment += ee.sign*ee.numerator;
-            if(ee.increment > ee.denominator) {
-                ee.xmin += ee.sign; ee.increment -= ee.denominator;
+            if(ee.denominator != 0) {
+                ee.increment += ee.numerator;
+                if(ee.increment > ee.denominator) {
+                    ee.xmin += ee.sign; ee.increment -= ee.denominator;
+                }
             }
         }
 

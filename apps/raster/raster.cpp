@@ -49,20 +49,42 @@ void raster::update(double t, float dt) {
     on_resize(sc_width_,sc_height_);
 }
 
+float angle = 0.f;
+
 void raster::draw() {
     //const int cx = sc_width_/2, cy = sc_height_/2;
 
     if(!canvas_.map()) return;
 
-    //canvas_.clear();
+    canvas_.clear();
     canvas_.fill_colour(vec3b(0,0,255));
     canvas_.pen_colour(vec3b(255,255,255));
 
-    std::vector<vec2i> polygon = { {300,612}, {350,700}, {320,800} };
+    static std::vector<vec2f> poly = { {300.f,612.f}, {350.f,700.f}, {320.f,800.f} };
+
+    auto centre = std::accumulate(poly.begin(), poly.end(), vec2f(0,0));
+    centre *= 1/3.f;
+    LOG(centre);
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(centre);
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform, &centre](const vec2f& P) {
+        auto nP = transform.ptransform(P-centre);
+        LOG(nP);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    // Rotate the polygon so we can check the fill algorithm
+
+
     canvas_.polygon(polygon);
     canvas_.polyloop(polygon);
 
 
+    angle += 0.01f;
     /*
     canvas_.fill_colour(vec3b(255,0,0));
     canvas_.filled_rect(cx-200,cy-200,cx+200,cy+200);
