@@ -547,13 +547,13 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
             for(int x = se.xmin, xend = ee.xmin; x <= xend; ++x) raster_(x,curr_y).set3(fill_colour_);
             if(se.denominator != 0) {
                 se.increment += se.numerator;
-                if(se.increment > se.denominator) {
+                while(se.increment > se.denominator) {
                     se.xmin += se.sign; se.increment -= se.denominator;
                 }
             }
             if(ee.denominator != 0) {
                 ee.increment += ee.numerator;
-                if(ee.increment > ee.denominator) {
+                while(ee.increment > ee.denominator) {
                     ee.xmin += ee.sign; ee.increment -= ee.denominator;
                 }
             }

@@ -49,7 +49,7 @@ void raster::update(double t, float dt) {
     on_resize(sc_width_,sc_height_);
 }
 
-float angle = 0.f;
+float angle = 0.6f;
 
 void raster::draw() {
     //const int cx = sc_width_/2, cy = sc_height_/2;
@@ -64,7 +64,6 @@ void raster::draw() {
 
     auto centre = std::accumulate(poly.begin(), poly.end(), vec2f(0,0));
     centre *= 1/3.f;
-    LOG(centre);
 
     transform3f transform;
     transform.rotate(make_rotation(angle));
@@ -73,18 +72,14 @@ void raster::draw() {
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform, &centre](const vec2f& P) {
         auto nP = transform.ptransform(P-centre);
-        LOG(nP);
         polygon.push_back(vec2i(nP.x, nP.y));
     });
-
-    // Rotate the polygon so we can check the fill algorithm
-
 
     canvas_.polygon(polygon);
     canvas_.polyloop(polygon);
 
-
     angle += 0.01f;
+
     /*
     canvas_.fill_colour(vec3b(255,0,0));
     canvas_.filled_rect(cx-200,cy-200,cx+200,cy+200);
