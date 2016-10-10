@@ -112,7 +112,17 @@ set(ZAP_ENGINE_FILES
         engine/pixmap.cpp
         engine/pixmap.hpp
         graphics2/quad.cpp
-        graphics2/quad.hpp renderer/material.cpp renderer/material.hpp renderer/light.cpp renderer/light.hpp)
+        graphics2/quad.hpp
+        renderer/material.cpp
+        renderer/material.hpp
+        renderer/light.cpp
+        renderer/light.hpp
+        scenegraph/spatial.hpp
+        scenegraph/node.hpp
+        scenegraph/visual.hpp
+        scenegraph/bounds/disc.hpp
+        scenegraph/bounds/AABB.hpp
+        scenegraph/bounds/sphere.hpp scenegraph/bounds/bound.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
