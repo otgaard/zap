@@ -49,7 +49,7 @@ set(ZAP_MATHS_FILES
         maths/geometry/hull.hpp
         maths/geometry/rect.hpp
         maths/geometry/line.hpp
-        maths/geometry/segment.hpp)
+        maths/geometry/segment.hpp maths/geometry/AABB.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -120,9 +120,7 @@ set(ZAP_ENGINE_FILES
         scenegraph/spatial.hpp
         scenegraph/node.hpp
         scenegraph/visual.hpp
-        scenegraph/bounds/disc.hpp
-        scenegraph/bounds/AABB.hpp
-        scenegraph/bounds/sphere.hpp scenegraph/bounds/bound.hpp)
+        scenegraph/bounds/bound.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
