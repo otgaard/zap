@@ -4,6 +4,7 @@
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
+#include <maths/geometry/AABB.hpp>
 #include "apps/application.hpp"
 #include "apps/graphic_types.hpp"
 #include "generators/geometry/geometry3.hpp"
@@ -11,6 +12,7 @@
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::generators;
+using namespace zap::maths::geometry;
 
 using vertex_t = vertex<pos3f_t>;
 using vbuf_t = vertex_buffer<vertex_t, buffer_usage::BU_STATIC_DRAW>;
@@ -64,6 +66,9 @@ bool zap_example::initialise() {
         LOG_ERR("Couldn't allocate stuff");
         return false;
     }
+
+    AABB<float, vec2> aabb;
+
 
     prog_.add_shader(shader_type::ST_VERTEX, vtx_shdr);
     prog_.add_shader(shader_type::ST_FRAGMENT, frg_shdr);

@@ -8,10 +8,10 @@
 #include <maths/algebra.hpp>
 
 namespace zap { namespace maths { namespace geometry {
-    template <typename T, typename VecT> struct AABB;
+    template <typename T, template <typename> class VecT> struct AABB;
 
     template <typename T>
-    struct AABB<T, vec2<T>> {
+    struct AABB<T, vec2> {
         using type = T;
         using vector = vec2<T>;
 
@@ -39,7 +39,7 @@ namespace zap { namespace maths { namespace geometry {
     };
 
     template <typename T>
-    struct AABB<T, vec3<T>> {
+    struct AABB<T, vec3> {
         using type = T;
         using vector = vec3<T>;
 
