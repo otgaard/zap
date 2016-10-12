@@ -32,6 +32,7 @@ namespace zap { namespace engine { namespace scene_graph {
         using rot_t = typename transform_t::rot_t;
 
         spatial(const spatial& rhs) = delete;
+        virtual ~spatial() = default;
         spatial& operator=(const spatial& rhs) = delete;
 
         inline void translate(const vec_t& T);
@@ -54,7 +55,7 @@ namespace zap { namespace engine { namespace scene_graph {
 
         const spatial* parent() const { return parent_; }
 
-        virtual void update(double t, float dt) { }
+        virtual void update(double t, float dt) = 0;
 
     protected:
         friend class node<spatial>;

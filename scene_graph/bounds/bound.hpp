@@ -45,7 +45,6 @@ namespace zap { namespace engine {
         geo_t geometry_;
     };
 
-    template <typename T> bound<maths::disc<T>>
 }}
 
 #endif //ZAP_BOUND_HPP
