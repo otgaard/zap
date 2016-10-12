@@ -3,6 +3,7 @@
 #define ZAP_RENDER_STATE_HPP
 
 #include <maths/algebra.hpp>
+#include <vector>
 
 namespace zap { namespace engine { namespace renderer {
     class render_state {
@@ -16,7 +17,14 @@ namespace zap { namespace engine { namespace renderer {
         struct wire_state { };
 
     protected:
-
+        std::vector<char> state_storage_;
+        alpha_state* alpha_state_;
+        cull_state* cull_state_;
+        scissor_state* scissor_state_;
+        depth_state* depth_state_;
+        stencil_state* stencil_state_;
+        multisample_state* multisample_state_;
+        wire_state* wire_state_;
     };
 }}}
 
