@@ -38,6 +38,10 @@ namespace zap { namespace maths { namespace geometry {
         vector hextent;
     };
 
+    using AABB2i = AABB<int, vec2>;
+    using AABB2f = AABB<float, vec2>;
+    using AABB2d = AABB<double, vec2>;
+
     template <typename T>
     struct AABB<T, vec3> {
         using type = T;
@@ -69,6 +73,10 @@ namespace zap { namespace maths { namespace geometry {
         vector centre;
         vector hextent;
     };
+
+    using AABB3i = AABB<int, vec3>;
+    using AABB3f = AABB<float, vec3>;
+    using AABB3d = AABB<double, vec3>;
 }}}
 
 #endif //ZAP_AABB_HPP

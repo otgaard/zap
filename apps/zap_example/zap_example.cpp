@@ -69,7 +69,6 @@ bool zap_example::initialise() {
 
     AABB<float, vec2> aabb;
 
-
     prog_.add_shader(shader_type::ST_VERTEX, vtx_shdr);
     prog_.add_shader(shader_type::ST_FRAGMENT, frg_shdr);
     if(!prog_.link(true)) {

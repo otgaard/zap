@@ -37,7 +37,7 @@ namespace zap { namespace maths {
         void translate(const vec_t& T);
         void rotate(const rot_t& R);        // An orthogonal rotation matrix
         void rotate(const affine_t& R);     // An affine-type rotation matrix
-        void matrix(const rot_t& M);        // Arbitrary Rotation Matrix
+        void matrix(const rot_t& M);        // Arbitrary Matrix
         void uniform_scale(type S);
         void scale(const vec_t& S);
 

@@ -117,10 +117,10 @@ set(ZAP_ENGINE_FILES
         renderer/material.hpp
         renderer/light.cpp
         renderer/light.hpp
-        scenegraph/spatial.hpp
-        scenegraph/node.hpp
-        scenegraph/visual.hpp
-        scenegraph/bounds/bound.hpp)
+        scene_graph/spatial.hpp
+        scene_graph/node.hpp
+        scene_graph/visual.hpp
+        scene_graph/bounds/bound.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
