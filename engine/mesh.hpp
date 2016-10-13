@@ -11,7 +11,7 @@ namespace zap { namespace engine {
 class mesh_base {
 public:
     mesh_base() : vao_(INVALID_RESOURCE) { }
-    ~mesh_base() { deallocate(); vao_ = INVALID_RESOURCE; }
+    ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
 
     bool is_allocated() const { return vao_ != INVALID_RESOURCE; }
 
