@@ -162,16 +162,16 @@ namespace zap { namespace maths {
     }
 
     template <typename T, typename S>
-    constexpr vec3<T> operator*(const vec3<T>& rhs, S scalar) { return operator*(scalar, rhs); }
+    constexpr vec3<T> operator*(const vec3<T>& rhs, const S& scalar) { return operator*(scalar, rhs); }
 
     template <typename T>
-    constexpr vec3<T> operator/(const vec3<T>& lhs, T scalar) {
+    constexpr vec3<T> operator/(const vec3<T>& lhs, const T& scalar) {
         const T inv_scalar = T(1) / scalar;
         return vec3<T>(lhs.x * inv_scalar, lhs.y * inv_scalar, lhs.z * inv_scalar);
     }
 
     template <typename T>
-    constexpr vec3<T> operator/(T scalar, const vec3<T>& rhs) {
+    constexpr vec3<T> operator/(const T& scalar, const vec3<T>& rhs) {
         return vec3<T>(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z);
     }
 
@@ -181,7 +181,7 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
-    constexpr T dot(const vec3<T>& lhs, T x, T y, T z) {
+    constexpr T dot(const vec3<T>& lhs, const T& x, const T& y, const T& z) {
         return lhs.x * x + lhs.y * y + lhs.z * z;
     }
 

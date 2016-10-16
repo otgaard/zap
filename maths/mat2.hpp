@@ -253,6 +253,11 @@ namespace zap { namespace maths {
         return inv;
     }
 
+    using mat2b = mat2<uint8_t>;
+    using mat2s = mat2<int16_t>;
+    using mat2i = mat2<int32_t>;
+    using mat2f = mat2<float>;
+    using mat2d = mat2<double>;
 }}
 
 #endif //ZAP_MAT2_HPP

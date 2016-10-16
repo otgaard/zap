@@ -54,6 +54,12 @@ public:
         return *(reinterpret_cast<T*>(mapped_ptr_) + idx);
     }
 
+    T& operator[](size_t idx) {
+        assert(is_mapped() && "Index Buffer must be mapped!");
+        assert(idx < index_count_ && ZERR_IDX_OUT_OF_RANGE);
+        return *(reinterpret_cast<T*>(mapped_ptr_) + idx);
+    }
+
     const size_t index_count() const { return index_count_; }
 
 protected:
