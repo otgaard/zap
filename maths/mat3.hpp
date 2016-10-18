@@ -192,6 +192,18 @@ namespace zap { namespace maths {
 	};
 
     template <typename T>
+    mat3<T> make_scale(const T& x, const T& y) {
+        return mat3<T>(x, y, T(1));
+    }
+
+    template <typename T>
+    mat3<T> make_translation(const T& x, const T& y) {
+        return mat3<T>(T(1), T(0), x,
+                       T(0), T(1), y,
+                       T(0), T(0), T(1));
+    }
+
+    template <typename T>
     vec2<T> mat3<T>::transform(const vec2<T>& v) const {
         return vec2<T>(
                 arr[idx(0,0)]*v[0] + arr[idx(0,1)]*v[1] + arr[idx(0,2)],
