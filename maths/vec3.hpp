@@ -81,8 +81,7 @@ namespace zap { namespace maths {
         }
 
         inline bool operator!=(const vec3<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] == rhs.arr[i]) return false;
-            return true;
+            return !operator==(rhs);
         }
 
         inline bool operator<(const vec3<T>& rhs) const {
