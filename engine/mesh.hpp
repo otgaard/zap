@@ -99,7 +99,7 @@ public:
     using vertex_stream_t = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
-    mesh() : mesh_base(), vstream(nullptr) { }
+    mesh() : mesh_base(), vstream() { }
     mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
 
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
