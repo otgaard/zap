@@ -84,6 +84,8 @@ bool zap_example::initialise() {
     auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
     prog_.bind_uniform("pvm",proj*mv);
 
+    ico_mesh_.bind();
+
     return true;
 }
 
@@ -99,20 +101,16 @@ void zap_example::on_mousewheel(double xinc, double yinc) {
 float inc = 0;
 
 void zap_example::update(double t, float dt) {
-    prog_.bind();
     auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
     auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
     auto rot = make_rotation(vec3f(0,1,0), inc);
+
     prog_.bind_uniform("pvm",proj*mv*rot);
     inc += 0.01f;
 }
 
 void zap_example::draw() {
-    prog_.bind();
-    ico_mesh_.bind();
     ico_mesh_.draw();
-    ico_mesh_.release();
-    prog_.release();
 }
 
 void zap_example::shutdown() {
