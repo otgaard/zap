@@ -92,8 +92,6 @@ set(ZAP_ENGINE_FILES
         generators/geometry/geometry3.hpp
         renderer/colour.hpp
         renderer/colour.cpp
-        generators/particles/particle_engine.hpp
-        generators/particles/particle_engine.cpp
         generators/noise/value_noise.hpp
         generators/noise/noise.cpp
         generators/textures/convolution.hpp
@@ -126,7 +124,7 @@ set(ZAP_ENGINE_FILES
         renderer/render_state.cpp
         renderer/render_state.hpp
         tools/os.hpp
-        tools/os.cpp)
+        tools/os.cpp effects/particle_engine.cpp effects/particle_engine.hpp renderer/renderer_fwd.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
