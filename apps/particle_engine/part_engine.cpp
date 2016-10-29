@@ -41,7 +41,7 @@ bool part_engine::initialise() {
     cam_.viewport(0, 0, 1280, 768);
     cam_.frustum(45.f, 1280.f/768.f, .5f, 10.f);
 
-    vec3f starting_pos = vec3f(0.f, 3.f, 5.f);
+    vec3f starting_pos = vec3f(0.f, 2.f, 5.f);
     cam_.orthogonolise(normalise(-starting_pos));
     cam_.world_pos(starting_pos);
 

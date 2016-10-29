@@ -1,13 +1,8 @@
 /* Created by Darren Otgaar on 2016/10/28. http://www.github.com/otgaard/zap */
+
 #include <apps/graphic_types.hpp>
 #include <maths/rand_lcg.hpp>
 #include "part_engine.hpp"
-#include "engine/framebuffer.hpp"
-#include "engine/vertex_buffer.hpp"
-#include "engine/mesh.hpp"
-#include "engine/texture.hpp"
-#include "renderer/camera.hpp"
-#include "maths/algebra.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -22,7 +17,7 @@ using quad_mesh_t = mesh<vertex_stream<quad_vbuf_t>, primitive_type::PT_TRIANGLE
 
 using vec3_pbuf_t = pixel_buffer<rgb32f_t, buffer_usage::BU_DYNAMIC_DRAW>;
 
-using particle_vbuf_t = vertex_buffer<pos3f_t, buffer_usage::BU_STREAM_COPY>;
+using particle_vbuf_t = vertex_buffer<vertex<pos3f_t>, buffer_usage::BU_STREAM_COPY>;
 using particle_mesh_t = mesh<vertex_stream<particle_vbuf_t>, primitive_type::PT_POINTS>;
 
 extern const char* const particle_sim_vshdr;
@@ -38,6 +33,7 @@ struct particle_engine::state_t {
     quad_vbuf_t quad_vbuf;
     quad_mesh_t quad_mesh;
 
+    particle_vbuf_t particle_vbuf;          // Attributes...
     particle_mesh_t particle_mesh;          // Only need the mesh.  Poor design.  Adapter for pixel buffers? Any buffer?
 
     size_t allocated;                       // Number of active particles in simulation
@@ -114,15 +110,21 @@ bool particle_engine::initialise() {
 
     s.quad_mesh.release();
 
-    if(!s.particle_mesh.allocate()) {
+    if(!s.particle_vbuf.allocate() || !s.particle_mesh.allocate()) {
         LOG_ERR("Failed to initialise particle mesh");
         return false;
     }
 
-    s.particle_mesh.bind();
-    s.copy_buffer.bind(buffer_type::BT_ARRAY);      // Use this pixel buffer as a vertex buffer in particle_mesh (needs an adapter)
+    s.copy_buffer.bind();
 
+    s.particle_mesh.set_stream(&s.particle_vbuf);
+    s.particle_mesh.bind();
+    s.particle_vbuf.bind();
+    s.particle_vbuf.initialise(s.particle_count);
+    s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
     s.particle_mesh.release();
+
+    s.copy_buffer.release();
 
     s.sim_pass.add_shader(shader_type::ST_VERTEX, particle_sim_vshdr);
     s.sim_pass.add_shader(shader_type::ST_FRAGMENT, particle_sim_fshdr);
@@ -163,12 +165,10 @@ void particle_engine::draw(const renderer::camera& cam) {
     s.buffers[0].release();
 
     s.rndr_pass.bind();
-    s.rndr_pass.bind_texture_unit(s.rndr_pass.uniform_location("particle_tex"), 0);
-    s.buffers[0].get_attachment(0).bind(0);
-    s.quad_mesh.bind();
-    s.quad_mesh.draw();
-    s.quad_mesh.release();
-    s.buffers[0].get_attachment(0).release();
+    s.rndr_pass.bind_uniform("PVM", cam.proj_view());
+    s.particle_mesh.bind();
+    s.particle_mesh.draw();
+    s.particle_mesh.release();
     s.rndr_pass.release();
 }
 
@@ -197,25 +197,19 @@ const char* const particle_sim_fshdr = GLSL(
 );
 
 const char* const particle_rndr_vshdr = GLSL(
-    in vec2 position;
-    in vec2 texcoord1;
+    uniform mat4 PVM;
 
-    out vec2 texcoord;
+    in vec3 position;
 
     void main() {
-        texcoord = texcoord1;
-        gl_Position = vec4(position.xy, 0.f, 1.f);
+        gl_Position = PVM * vec4(position, 1.f);
     }
 );
 
 const char* const particle_rndr_fshdr = GLSL(
-    uniform sampler2D particle_tex;
-
-    in vec2 texcoord;
-
     out vec4 frag_colour;
 
     void main() {
-        frag_colour = texture(particle_tex, texcoord);
+        frag_colour = vec4(1,1,1,1);
     }
 );
