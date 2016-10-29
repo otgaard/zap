@@ -2,14 +2,7 @@
 #ifndef ZAP_CAMERA_HPP
 #define ZAP_CAMERA_HPP
 
-#include <maths/maths.hpp>
-#include <maths/vector.hpp>
-#include <maths/vec2.hpp>
-#include <maths/vec3.hpp>
-#include <maths/vec4.hpp>
-#include <maths/mat2.hpp>
-#include <maths/mat3.hpp>
-#include <maths/mat4.hpp>
+#include <maths/algebra.hpp>
 #include <core/enumfield.hpp>
 
 namespace zap { namespace renderer {
@@ -86,8 +79,11 @@ namespace zap { namespace renderer {
         }
 
         void viewport(float left, float bottom, float right, float top) {
-            viewport_[0] = left; viewport_[1] = bottom; viewport_[2] = right; viewport_[3] = top;
+            viewport(viewport_t({{left, bottom, right, top}}));
         }
+        void viewport(const viewport_t& vp);
+        viewport_t viewport() const { return viewport_; }
+
         float width() const { return viewport_[2] - viewport_[0]; }
         float height() const { return viewport_[3] - viewport_[1]; }
         vec2f dims() const { return vec2f(width(), height()); }

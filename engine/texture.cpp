@@ -98,6 +98,7 @@ namespace zap { namespace engine {
     template bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb32f_t>(size_t width, size_t height, const std::vector<rgb32f_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgb32f_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb32f_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
 }}
 
 using namespace zap::engine;

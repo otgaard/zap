@@ -25,6 +25,8 @@ public:
     void draw(const renderer::camera& cam);
 
 protected:
+    bool setup_buffers();
+    bool setup_shaders();
 
 private:
     struct state_t;

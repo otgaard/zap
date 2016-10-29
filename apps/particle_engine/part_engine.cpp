@@ -42,7 +42,6 @@ bool part_engine::initialise() {
     cam_.frustum(45.f, 1280.f/768.f, .5f, 10.f);
 
     vec3f starting_pos = vec3f(0.f, 3.f, 5.f);
-
     cam_.orthogonolise(normalise(-starting_pos));
     cam_.world_pos(starting_pos);
 
@@ -62,6 +61,7 @@ void part_engine::update(double t, float dt) {
 }
 
 void part_engine::draw() {
+    engine_.draw(cam_);
 }
 
 void part_engine::shutdown() {

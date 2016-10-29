@@ -16,11 +16,11 @@ using namespace zap::effects;
 
 // We need a "quad" of dims [particle_count,1] for rendering
 
-using quad_vertex_t = vertex<pos2f_t>;
+using quad_vertex_t = vertex<pos2f_t, tex2f_t>;
 using quad_vbuf_t = vertex_buffer<quad_vertex_t, buffer_usage::BU_STATIC_DRAW>;
 using quad_mesh_t = mesh<vertex_stream<quad_vbuf_t>, primitive_type::PT_TRIANGLE_FAN>;
 
-using vec3_pbuf_t = pixel_buffer<rgb32f_t, buffer_usage::BU_STREAM_COPY>;
+using vec3_pbuf_t = pixel_buffer<rgb32f_t, buffer_usage::BU_DYNAMIC_DRAW>;
 
 using particle_vbuf_t = vertex_buffer<pos3f_t, buffer_usage::BU_STREAM_COPY>;
 using particle_mesh_t = mesh<vertex_stream<particle_vbuf_t>, primitive_type::PT_POINTS>;
@@ -32,7 +32,7 @@ extern const char* const particle_rndr_vshdr;
 extern const char* const particle_rndr_fshdr;
 
 struct particle_engine::state_t {
-    const size_t particle_count = 100000;
+    const size_t particle_count = 250000;   // 1/4 million to start
     size_t dim;
 
     quad_vbuf_t quad_vbuf;
@@ -51,6 +51,9 @@ struct particle_engine::state_t {
 
     program sim_pass;                       // Simulation Shader Pass
     program rndr_pass;                      // Render Shader Pass
+
+    // Temporary texture
+    texture init_tex;
 };
 
 particle_engine::particle_engine() : state_(new state_t()), s(*state_.get()) {
@@ -62,11 +65,10 @@ particle_engine::~particle_engine() {
 bool particle_engine::initialise() {
     s.allocated = 0;
 
-    s.dim = (size_t)pow(2, std::ceil(log2(sqrt(s.particle_count))));
-    LOG("dim", s.dim, s.dim*s.dim, s.particle_count);
+    s.dim = (size_t)std::pow(2, std::ceil(std::log2(std::sqrt(s.particle_count))));
+    LOG("PARTICLE ENGINE DIMENSIONS:", s.dim, s.dim*s.dim, s.particle_count);
 
     for(auto& buf : s.buffers) {
-
         if(!buf.allocate() || !buf.initialise(3, s.dim, s.dim, pixel_format::PF_RGB, pixel_datatype::PD_FLOAT, false, false)) {
             LOG_ERR("Failure allocating/initialising framebuffers");
             return false;
@@ -77,7 +79,7 @@ bool particle_engine::initialise() {
     initial_conditions.reserve(s.dim*s.dim);
     rand_lcg rand;
 
-    for(int i = 0; i != s.dim*s.dim; ++i) {
+    for(int i = 0, end = s.dim*s.dim; i != end; ++i) {
         initial_conditions.push_back(rgb32f_t(rand.random_s(), rand.random_s(), rand.random_s()));
     }
 
@@ -102,10 +104,10 @@ bool particle_engine::initialise() {
     s.quad_mesh.bind(); s.quad_vbuf.bind();
 
     std::vector<quad_vertex_t> quad_vertices = {{
-            {{ vec2f(0.f,              0.f) }},
-            {{ vec2f(s.particle_count, 0.f) }},
-            {{ vec2f(s.particle_count, 1.f) }},
-            {{ vec2f(0.f,              1.f) }}
+            { { vec2f(-1.f, -1.f) }, { vec2f(0.f, 0.f) } },
+            { { vec2f(+1.f, -1.f) }, { vec2f(1.f, 0.f) } },
+            { { vec2f(+1.f, +1.f) }, { vec2f(1.f, 1.f) } },
+            { { vec2f(-1.f, +1.f) }, { vec2f(0.f, 1.f) } }
     }};
 
     s.quad_vbuf.initialise(quad_vertices);
@@ -117,6 +119,30 @@ bool particle_engine::initialise() {
         return false;
     }
 
+    s.particle_mesh.bind();
+    s.copy_buffer.bind(buffer_type::BT_ARRAY);      // Use this pixel buffer as a vertex buffer in particle_mesh (needs an adapter)
+
+    s.particle_mesh.release();
+
+    s.sim_pass.add_shader(shader_type::ST_VERTEX, particle_sim_vshdr);
+    s.sim_pass.add_shader(shader_type::ST_FRAGMENT, particle_sim_fshdr);
+    if(!s.sim_pass.link()) {
+        LOG_ERR("Particle Simulation Pass shader failed to compile");
+        return false;
+    }
+
+    s.rndr_pass.add_shader(shader_type::ST_VERTEX, particle_rndr_vshdr);
+    s.rndr_pass.add_shader(shader_type::ST_FRAGMENT, particle_rndr_fshdr);
+    if(!s.rndr_pass.link()) {
+        LOG_ERR("Particle Render Pass shader failed to compile");
+        return false;
+    }
+
+    if(!s.init_tex.allocate() || !s.init_tex.initialise(s.copy_buffer)) {
+        LOG_ERR("Initialisation Texture failed to initialise");
+        return false;
+    }
+
     return true;
 }
 
@@ -125,21 +151,71 @@ void particle_engine::update(double t, float dt) {
 }
 
 void particle_engine::draw(const renderer::camera& cam) {
+    s.buffers[0].bind();
+    s.sim_pass.bind();
+    s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("particle_tex"), 0);
+    s.init_tex.bind(0);
+    s.quad_mesh.bind();
+    s.quad_mesh.draw();
+    s.quad_mesh.release();
+    s.init_tex.release();
+    s.sim_pass.release();
+    s.buffers[0].release();
 
+    s.rndr_pass.bind();
+    s.rndr_pass.bind_texture_unit(s.rndr_pass.uniform_location("particle_tex"), 0);
+    s.buffers[0].get_attachment(0).bind(0);
+    s.quad_mesh.bind();
+    s.quad_mesh.draw();
+    s.quad_mesh.release();
+    s.buffers[0].get_attachment(0).release();
+    s.rndr_pass.release();
 }
 
 const char* const particle_sim_vshdr = GLSL(
+    in vec2 position;
+    in vec2 texcoord1;
 
+    out vec2 texcoord;
+
+    void main() {
+        texcoord = texcoord1;
+        gl_Position = vec4(position.xy, 0.f, 1.f);
+    }
 );
 
 const char* const particle_sim_fshdr = GLSL(
+    uniform sampler2D particle_tex;
 
+    in vec2 texcoord;
+
+    out vec3 frag_colour;
+
+    void main() {
+        frag_colour = texture(particle_tex, texcoord).rgb;
+    }
 );
 
 const char* const particle_rndr_vshdr = GLSL(
+    in vec2 position;
+    in vec2 texcoord1;
 
+    out vec2 texcoord;
+
+    void main() {
+        texcoord = texcoord1;
+        gl_Position = vec4(position.xy, 0.f, 1.f);
+    }
 );
 
 const char* const particle_rndr_fshdr = GLSL(
+    uniform sampler2D particle_tex;
 
+    in vec2 texcoord;
+
+    out vec4 frag_colour;
+
+    void main() {
+        frag_colour = texture(particle_tex, texcoord);
+    }
 );
