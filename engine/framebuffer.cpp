@@ -60,6 +60,7 @@ bool framebuffer::initialise(size_t target_count, size_t width, size_t height, p
 }
 
 bool framebuffer::initialise() {
+    assert(is_allocated() && "Framebuffer is not allocated");
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
     attachments_.reserve(target_count_ + (depthstencil_ ? 1 : 0));
@@ -79,6 +80,7 @@ bool framebuffer::initialise() {
         }
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, draw_buffers_[i], GL_TEXTURE_2D, attachments_[i].resource(), 0);
+        gl_error_check();
     }
 
     if(depthstencil_) {

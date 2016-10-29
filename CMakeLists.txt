@@ -124,14 +124,20 @@ set(ZAP_ENGINE_FILES
         renderer/render_state.cpp
         renderer/render_state.hpp
         tools/os.hpp
-        tools/os.cpp effects/particle_engine.cpp effects/particle_engine.hpp renderer/renderer_fwd.hpp)
+        tools/os.cpp effects/particle_engine.cpp
+        effects/part_engine.hpp
+        renderer/renderer_fwd.hpp
+        engine/sampler.cpp
+        engine/sampler.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
-        raytracer/raytracer.hpp raytracer/hit_record.hpp)
+        raytracer/raytracer.hpp
+        raytracer/hit_record.hpp)
 
 set(ZAP_RASTERISER_FILES
-        rasteriser/canvas.cpp rasteriser/canvas.hpp)
+        rasteriser/canvas.cpp
+        rasteriser/canvas.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -188,6 +194,11 @@ set(RASTERISER_FILES
         apps/application.cpp
         apps/application.hpp
         apps/raster/raster.cpp)
+
+set(PART_ENGINE_FILES
+        apps/application.cpp
+        apps/application.hpp
+        apps/particle_engine/part_engine.cpp)
 
 if(APPLE)
     find_library(COCOA Cocoa)
@@ -257,3 +268,6 @@ target_link_libraries(tracer glfw3 ZapRaytracer ZapEngine ZapMaths ${GLFW_LIBS} 
 
 add_executable(raster ${RASTERISER_FILES})
 target_link_libraries(raster glfw3 ZapRasteriser ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
+add_executable(particle_engine ${PART_ENGINE_FILES})
+target_link_libraries(particle_engine glfw3 ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})

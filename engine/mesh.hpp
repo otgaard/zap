@@ -76,7 +76,6 @@ public:
     mesh() : mesh_base(), idx_buffer_ptr(nullptr) { }
     mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr) : mesh_base(),
                                                                       vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
-
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
     void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
