@@ -4,6 +4,9 @@
 #include <maths/rand_lcg.hpp>
 #include "part_engine.hpp"
 
+#include <tools/log.hpp>
+#include <maths/io.hpp>
+
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
@@ -119,7 +122,6 @@ bool particle_engine::initialise() {
     s.particle_mesh.bind();
     s.particle_vbuf.bind();
     s.particle_vbuf.initialise(s.particle_count);
-    //s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
     s.particle_mesh.release();
 
     if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {
@@ -146,8 +148,8 @@ bool particle_engine::initialise() {
 
     // Set up shaders
     s.sim_pass.bind();
-    // Particle Tex uses Unit 0
     s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("particle_tex"), 0);
+    s.sim_pass.release();
 
     return true;
 }
@@ -157,25 +159,7 @@ void particle_engine::update(double t, float dt) {
 }
 
 void particle_engine::draw(const renderer::camera& cam) {
-    if(s.active_buffer == -1) {
-        /*
-        s.buffers[0].bind();
-
-        s.sim_pass.bind();
-        s.init_tex.bind(0);
-
-        s.quad_mesh.bind();
-        s.quad_mesh.draw();
-        s.quad_mesh.release();
-        s.init_tex.release();
-        s.sim_pass.release();
-        s.buffers[0].release();
-
-        // We don't need the initialisation texture anymore
-        s.init_tex.deallocate();
-        s.active_buffer = 0;
-        */
-    } else if(s.active_buffer == 0) {   // Framebuffer 0 target was previously active (so we write to 1 & read from 0)
+    if(s.active_buffer == 0) {   // Framebuffer 0 target was previously active (so we write to 1 & read from 0)
         s.buffers[1].bind();
         s.sim_pass.bind();
         s.buffers[0].get_attachment(0).bind(0);
@@ -183,6 +167,10 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.quad_mesh.bind();
         s.quad_mesh.draw();
         s.quad_mesh.release();
+
+        s.buffers[0].get_attachment(0).release();
+        s.sim_pass.release();
+
         s.buffers[1].release();
 
         s.buffers[0].bind();
@@ -195,7 +183,7 @@ void particle_engine::draw(const renderer::camera& cam) {
         // TODO: This step is unnecessary - bind pixel_buffer as vertex buffer directly, refactor
         s.particle_vbuf.bind();
         s.copy_buffer.bind(buffer_type::BT_PIXEL_UNPACK);
-        s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
+        s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count*sizeof(rgb32f_t));
         s.copy_buffer.release(buffer_type::BT_PIXEL_UNPACK);
         s.particle_vbuf.release();
 
@@ -208,6 +196,10 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.quad_mesh.bind();
         s.quad_mesh.draw();
         s.quad_mesh.release();
+
+        s.buffers[1].get_attachment(0).release();
+        s.sim_pass.release();
+
         s.buffers[0].release();
 
         s.buffers[1].bind();
@@ -219,7 +211,7 @@ void particle_engine::draw(const renderer::camera& cam) {
 
         s.particle_vbuf.bind();
         s.copy_buffer.bind(buffer_type::BT_PIXEL_UNPACK);
-        s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
+        s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count*sizeof(rgb32f_t));
         s.copy_buffer.release(buffer_type::BT_PIXEL_UNPACK);
         s.particle_vbuf.release();
 
@@ -254,7 +246,7 @@ const char* const particle_sim_fshdr = GLSL(
     out vec3 frag_colour;
 
     void main() {
-        frag_colour = texture(particle_tex, texcoord).rgb + vec3(0.01,0.0,0.0);
+        frag_colour = texture(particle_tex, texcoord).rgb + vec3(0.001, 0.0, 0.0);
     }
 );
 
@@ -272,6 +264,6 @@ const char* const particle_rndr_fshdr = GLSL(
     out vec4 frag_colour;
 
     void main() {
-        frag_colour = vec4(1,1,1,1);
+        frag_colour = vec4(1, 1, 1, 1);
     }
 );

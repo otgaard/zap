@@ -241,7 +241,7 @@ else(CMAKE_STATIC_BUILD)
     add_library(ZapEngine SHARED ${ZAP_ENGINE_FILES})
     add_library(ZapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
     add_library(ZapRasteriser SHARED ${ZAP_RASTERISER_FILES})
-    target_link_libraries(ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(ZapEngine ZapMaths ${LOADER_LIBS} ${GLFW_LIBS})
     target_link_libraries(ZapRasteriser ZapEngine ZapMaths ${LOADER_LIBS} ${GLFW_LIBS})
 endif(CMAKE_STATIC_BUILD)
 
