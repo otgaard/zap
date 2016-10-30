@@ -9,8 +9,6 @@ using namespace zap::maths;
 using namespace zap::engine;
 using namespace zap::effects;
 
-// We need a "quad" of dims [particle_count,1] for rendering
-
 using quad_vertex_t = vertex<pos2f_t, tex2f_t>;
 using quad_vbuf_t = vertex_buffer<quad_vertex_t, buffer_usage::BU_STATIC_DRAW>;
 using quad_mesh_t = mesh<vertex_stream<quad_vbuf_t>, primitive_type::PT_TRIANGLE_FAN>;
@@ -47,9 +45,6 @@ struct particle_engine::state_t {
 
     program sim_pass;                       // Simulation Shader Pass
     program rndr_pass;                      // Render Shader Pass
-
-    // Temporary texture
-    texture init_tex;
 };
 
 particle_engine::particle_engine() : state_(new state_t()), s(*state_.get()) {
@@ -76,7 +71,10 @@ bool particle_engine::initialise() {
     rand_lcg rand;
 
     for(int i = 0, end = s.dim*s.dim; i != end; ++i) {
-        initial_conditions.push_back(rgb32f_t(rand.random_s(), rand.random_s(), rand.random_s()));
+        auto P = vec3f(rand.random_s(), rand.random_s(), rand.random_s());
+        while(P.length_sqr() > 1.) P.set(rand.random_s(), rand.random_s(), rand.random_s());
+
+        initial_conditions.push_back(rgb32f_t(P.x, P.y, P.z));
     }
 
     if(!s.copy_buffer.allocate()) {
@@ -121,10 +119,16 @@ bool particle_engine::initialise() {
     s.particle_mesh.bind();
     s.particle_vbuf.bind();
     s.particle_vbuf.initialise(s.particle_count);
-    s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
+    //s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
     s.particle_mesh.release();
 
+    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {
+        LOG_ERR("Error during initialisation of particle system from pixel buffer");
+        return false;
+    }
+
     s.copy_buffer.release();
+    s.active_buffer = 0;
 
     s.sim_pass.add_shader(shader_type::ST_VERTEX, particle_sim_vshdr);
     s.sim_pass.add_shader(shader_type::ST_FRAGMENT, particle_sim_fshdr);
@@ -140,10 +144,10 @@ bool particle_engine::initialise() {
         return false;
     }
 
-    if(!s.init_tex.allocate() || !s.init_tex.initialise(s.copy_buffer)) {
-        LOG_ERR("Initialisation Texture failed to initialise");
-        return false;
-    }
+    // Set up shaders
+    s.sim_pass.bind();
+    // Particle Tex uses Unit 0
+    s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("particle_tex"), 0);
 
     return true;
 }
@@ -153,16 +157,74 @@ void particle_engine::update(double t, float dt) {
 }
 
 void particle_engine::draw(const renderer::camera& cam) {
-    s.buffers[0].bind();
-    s.sim_pass.bind();
-    s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("particle_tex"), 0);
-    s.init_tex.bind(0);
-    s.quad_mesh.bind();
-    s.quad_mesh.draw();
-    s.quad_mesh.release();
-    s.init_tex.release();
-    s.sim_pass.release();
-    s.buffers[0].release();
+    if(s.active_buffer == -1) {
+        /*
+        s.buffers[0].bind();
+
+        s.sim_pass.bind();
+        s.init_tex.bind(0);
+
+        s.quad_mesh.bind();
+        s.quad_mesh.draw();
+        s.quad_mesh.release();
+        s.init_tex.release();
+        s.sim_pass.release();
+        s.buffers[0].release();
+
+        // We don't need the initialisation texture anymore
+        s.init_tex.deallocate();
+        s.active_buffer = 0;
+        */
+    } else if(s.active_buffer == 0) {   // Framebuffer 0 target was previously active (so we write to 1 & read from 0)
+        s.buffers[1].bind();
+        s.sim_pass.bind();
+        s.buffers[0].get_attachment(0).bind(0);
+
+        s.quad_mesh.bind();
+        s.quad_mesh.draw();
+        s.quad_mesh.release();
+        s.buffers[1].release();
+
+        s.buffers[0].bind();
+        if(!s.buffers[0].read_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {    // Read from 0
+            LOG("Error reading framebuffer (0, 0)");
+            return;
+        }
+        s.buffers[0].release();
+
+        // TODO: This step is unnecessary - bind pixel_buffer as vertex buffer directly, refactor
+        s.particle_vbuf.bind();
+        s.copy_buffer.bind(buffer_type::BT_PIXEL_UNPACK);
+        s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
+        s.copy_buffer.release(buffer_type::BT_PIXEL_UNPACK);
+        s.particle_vbuf.release();
+
+        s.active_buffer = 1;
+    } else if(s.active_buffer == 1) {   // Framebuffer 1 target was previously active (so we write to 0 & read from 1)
+        s.buffers[0].bind();
+        s.sim_pass.bind();
+        s.buffers[1].get_attachment(0).bind(0);
+
+        s.quad_mesh.bind();
+        s.quad_mesh.draw();
+        s.quad_mesh.release();
+        s.buffers[0].release();
+
+        s.buffers[1].bind();
+        if(!s.buffers[1].read_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {    // Read from 1
+            LOG("Error reading framebuffer (1, 0)");
+            return;
+        }
+        s.buffers[1].release();
+
+        s.particle_vbuf.bind();
+        s.copy_buffer.bind(buffer_type::BT_PIXEL_UNPACK);
+        s.particle_vbuf.copy_buffer(buffer_type::BT_PIXEL_UNPACK, buffer_type::BT_ARRAY, 0, 0, s.particle_count);
+        s.copy_buffer.release(buffer_type::BT_PIXEL_UNPACK);
+        s.particle_vbuf.release();
+
+        s.active_buffer = 0;
+    }
 
     s.rndr_pass.bind();
     s.rndr_pass.bind_uniform("PVM", cam.proj_view());
@@ -192,7 +254,7 @@ const char* const particle_sim_fshdr = GLSL(
     out vec3 frag_colour;
 
     void main() {
-        frag_colour = texture(particle_tex, texcoord).rgb;
+        frag_colour = texture(particle_tex, texcoord).rgb + vec3(0.01,0.0,0.0);
     }
 );
 
