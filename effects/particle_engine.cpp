@@ -69,15 +69,15 @@ bool particle_engine::initialise() {
         }
     }
 
-    std::vector<rgb32f_t> initial_conditions;
-    initial_conditions.reserve(s.dim*s.dim);
+    std::vector<rgb32f_t> initial_position;
+    initial_position.reserve(s.dim*s.dim);
     rand_lcg rand;
 
     for(int i = 0, end = s.dim*s.dim; i != end; ++i) {
         auto P = vec3f(rand.random_s(), rand.random_s(), rand.random_s());
         while(P.length_sqr() > 1.) P.set(rand.random_s(), rand.random_s(), rand.random_s());
 
-        initial_conditions.push_back(rgb32f_t(P.x, P.y, P.z));
+        initial_position.push_back(rgb32f_t(P.x, P.y, P.z));
     }
 
     if(!s.copy_buffer.allocate()) {
@@ -86,7 +86,7 @@ bool particle_engine::initialise() {
     }
 
     s.copy_buffer.bind();
-    if(!s.copy_buffer.initialise(s.dim, s.dim, initial_conditions.data())) {
+    if(!s.copy_buffer.initialise(s.dim, s.dim, initial_position.data())) {
         LOG_ERR("Failed to initialise pixel copy buffer");
         return false;
     }
@@ -129,6 +129,11 @@ bool particle_engine::initialise() {
         return false;
     }
 
+    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 1)) {
+        LOG_ERR("Error during initialisation of particle system from pixel buffer");
+        return false;
+    }
+
     s.copy_buffer.release();
     s.active_buffer = 0;
 
@@ -148,7 +153,8 @@ bool particle_engine::initialise() {
 
     // Set up shaders
     s.sim_pass.bind();
-    s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("particle_tex"), 0);
+    s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("position_tex"), 0);
+    s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("velocity_tex"), 1);
     s.sim_pass.release();
 
     return true;
@@ -163,12 +169,14 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.buffers[1].bind();
         s.sim_pass.bind();
         s.buffers[0].get_attachment(0).bind(0);
+        s.buffers[0].get_attachment(1).bind(1);
 
         s.quad_mesh.bind();
         s.quad_mesh.draw();
         s.quad_mesh.release();
 
         s.buffers[0].get_attachment(0).release();
+        s.buffers[0].get_attachment(1).release();
         s.sim_pass.release();
 
         s.buffers[1].release();
@@ -192,12 +200,14 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.buffers[0].bind();
         s.sim_pass.bind();
         s.buffers[1].get_attachment(0).bind(0);
+        s.buffers[1].get_attachment(1).bind(1);
 
         s.quad_mesh.bind();
         s.quad_mesh.draw();
         s.quad_mesh.release();
 
         s.buffers[1].get_attachment(0).release();
+        s.buffers[1].get_attachment(1).release();
         s.sim_pass.release();
 
         s.buffers[0].release();
@@ -239,14 +249,18 @@ const char* const particle_sim_vshdr = GLSL(
 );
 
 const char* const particle_sim_fshdr = GLSL(
-    uniform sampler2D particle_tex;
+    uniform sampler2D position_tex;
+    uniform sampler2D velocity_tex;
 
     in vec2 texcoord;
 
-    out vec3 frag_colour;
+    out vec3 frag_colour[2];
 
     void main() {
-        frag_colour = texture(particle_tex, texcoord).rgb + vec3(0.001, 0.0, 0.0);
+        vec3 vel = texture(velocity_tex, texcoord).rgb;
+        vec3 pos = texture(position_tex, texcoord).rgb + .01*vel;
+        frag_colour[0] = length(pos) > 3.+(length(vel)) ? vec3(0., 0., 0.) : pos;
+        frag_colour[1] = .99995*texture(velocity_tex, texcoord).rgb;
     }
 );
 
