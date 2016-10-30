@@ -4,11 +4,14 @@
 
 #include "engine.hpp"
 #include "texture.hpp"
+#include <maths/vec4.hpp>
 
 namespace zap { namespace engine {
 
 class framebuffer {
 public:
+    using vec4i = maths::vec4i;
+
     framebuffer() : framebuffer_(INVALID_IDX), target_count_(0) { }
     framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                 bool mipmaps, bool depthstencil);
@@ -25,7 +28,44 @@ public:
     void release() const;
     bool is_bound() const;
 
-    const texture& get_attachment(size_t idx) const { checkidx(idx, target_count_); return attachments_[idx]; }
+    const texture& get_attachment(size_t idx) const {
+        checkidx(idx, target_count_ + depthstencil_);
+        return attachments_[idx];
+    }
+
+    // Framebuffer must be bound for read/write operations to succeed
+    // Note: viewport = [x, y, width, height]
+    template <typename PixelT, buffer_usage BU>
+    bool read_attachment(pixel_buffer<PixelT, BU>& pbuf, const vec4i& viewport, size_t idx) {
+        checkidx(idx, target_count_ + depthstencil_);
+
+        // Check type is compatible
+        if(pixel_type<PixelT>::format != pix_format_ || pixel_type<PixelT>::datatype != pix_dtype_) {
+            LOG_ERR("Cannot copy framebuffer attachment with mismatched pixel format to data type");
+            return false;
+        }
+
+        pbuf.bind(pbuf.read_type);
+        auto err = read_attachment(viewport, idx);
+        pbuf.release(pbuf.read_type);
+        return err;
+    }
+
+    template <typename PixelT, buffer_usage BU>
+    bool write_attachment(const pixel_buffer<PixelT, BU>& pbuf, const vec4i& viewport, size_t idx) {
+        checkidx(idx, target_count_ + depthstencil_);
+
+        // Check type is compatible
+        if(pixel_type<PixelT>::format != pix_format_ || pixel_type<PixelT>::datatype != pix_dtype_) {
+            LOG_ERR("Cannot copy framebuffer attachment with mismatched pixel format to data type");
+            return false;
+        }
+
+        pbuf.bind(pbuf.write_type);
+        auto err = attachments_[idx].copy(pbuf, viewport[0], viewport[1], viewport[2], viewport[3], 0, false);
+        pbuf.release(pbuf.write_type);
+        return err;
+    }
 
     bool initialise();
     bool initialise(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
@@ -38,6 +78,9 @@ public:
     bool is_initialised() const { return attachments_.size() > 0; }
 
 protected:
+    // viewport = [x, y, width, height]
+    bool read_attachment(const vec4i& viewport, size_t idx);
+
     resource_t framebuffer_;
     size_t target_count_;
     size_t width_;

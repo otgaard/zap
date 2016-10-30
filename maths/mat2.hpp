@@ -79,6 +79,22 @@ namespace zap { namespace maths {
         const T* data() const { return arr; }
         T* data() { return arr; }
 
+        T col(size_t c) { return operator()(c,c); }
+        vec2<T> col2(size_t c) { return vec2<T>(operator()(0,c), operator()(1,c)); }
+        void column(size_t c, const T& col) { operator()(c,c) = c; }
+        void column2(size_t c, const vec2<T>& col) {
+            checkidx(c, cols());
+            operator()(0,c) = col[0]; operator()(1,c) = col[1];
+        }
+
+        T row(size_t r) { return operator()(r,r); }
+        vec2<T> row2(size_t r) { return vec2<T>(operator()(r,0), operator()(r,1)); }
+        void row(size_t r, const T& row) { operator()(r,r) = r; }
+        void row(size_t r, const vec2<T>& row) {
+            checkidx(r, rows());
+            operator()(r,0) = row[0]; operator()(r,1) = row[1];
+        }
+
         void clean() {
             for(auto& v : (*this)) {
                 if(is_zero(v)) v = T(0);
@@ -253,6 +269,11 @@ namespace zap { namespace maths {
         return inv;
     }
 
+    using mat2b = mat2<uint8_t>;
+    using mat2s = mat2<int16_t>;
+    using mat2i = mat2<int32_t>;
+    using mat2f = mat2<float>;
+    using mat2d = mat2<double>;
 }}
 
 #endif //ZAP_MAT2_HPP

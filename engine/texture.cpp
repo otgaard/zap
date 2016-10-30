@@ -98,6 +98,7 @@ namespace zap { namespace engine {
     template bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb32f_t>(size_t width, size_t height, const std::vector<rgb32f_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgb32f_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb32f_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
 }}
 
 using namespace zap::engine;
@@ -162,13 +163,11 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
     }
 
     if(type_ == texture_type::TT_TEX1D) {
-        if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE) {
-            LOG("This one");
+        if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE)
             glTexImage1D(gltype, 0, GL_R8UI, width, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
-        } else {
-            LOG("That one");
+        else
             glTexImage1D(gltype, 0, gl_type(format), width, 0, gl_type(format), gl_type(datatype), data);
-        }
+
     } else if(type_ == texture_type::TT_TEX2D) {
         if(datatype == pixel_datatype::PD_FLOAT)
             glTexImage2D(gltype, 0, GL_RGB32F, width, height, 0, GL_RGB, gl_type(datatype), data);

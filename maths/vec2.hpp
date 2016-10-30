@@ -81,8 +81,7 @@ namespace zap { namespace maths {
         }
 
         bool operator!=(const vec2<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] == rhs.arr[i]) return false;
-            return true;
+            return !operator==(rhs);
         }
 
         bool operator<(const vec2<T>& rhs) const {
@@ -153,30 +152,40 @@ namespace zap { namespace maths {
 
     template <typename T>
     constexpr vec2<T> operator*(const vec2<T>& lhs, const vec2<T>& rhs) {
-        return vec3<T>(lhs.x * rhs.x, lhs.y * rhs.y);
+        return vec2<T>(lhs.x * rhs.x, lhs.y * rhs.y);
     }
 
     template <typename T>
     constexpr vec2<T> operator/(const vec2<T>& lhs, const vec2<T>& rhs) {
-        return vec3<T>(lhs.x / rhs.x, lhs.y / rhs.y);
+        return vec2<T>(lhs.x / rhs.x, lhs.y / rhs.y);
     }
 
     template <typename T>
-    constexpr vec2<T> operator*(T scalar, const vec2<T>& rhs) {
+    constexpr vec2<T> operator*(const T& scalar, const vec2<T>& rhs) {
         return vec2<T>(scalar * rhs.x, scalar * rhs.y);
     }
 
     template <typename T>
-    constexpr vec2<T> operator*(const vec2<T>& rhs, T scalar) { return operator*(scalar, rhs); }
+    constexpr vec2<T> operator*(const vec2<T>& rhs, const T& scalar) { return operator*(scalar, rhs); }
+
+    template <typename S, typename T>
+    constexpr vec2<T> operator*(const S& scalar, const vec2<T>& rhs) {
+        return vec2<T>(scalar * rhs.x, scalar * rhs.y);
+    };
+
+    template <typename S, typename T>
+    constexpr vec2<T> operator*(const vec2<T>& rhs, const S& scalar) {
+        return operator*(scalar, rhs);
+    };
 
     template <typename T>
-    constexpr vec2<T> operator/(const vec2<T>& lhs, T scalar) {
+    constexpr vec2<T> operator/(const vec2<T>& lhs, const T& scalar) {
         const T inv_scalar = T(1) / scalar;
         return vec2<T>(lhs.x * inv_scalar, lhs.y * inv_scalar);
     }
 
     template <typename T>
-    constexpr vec2<T> operator/(T scalar, const vec2<T>& rhs) {
+    constexpr vec2<T> operator/(const T& scalar, const vec2<T>& rhs) {
         return vec2<T>(scalar / rhs.x, scalar / rhs.y);
     }
 
@@ -186,7 +195,7 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
-    constexpr T dot(const vec2<T>& lhs, T x, T y) {
+    constexpr T dot(const vec2<T>& lhs, const T& x, const T& y) {
         return lhs.x * x + lhs.y * y;
     }
 

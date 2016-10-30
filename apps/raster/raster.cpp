@@ -37,14 +37,11 @@ public:
 protected:
     quad img_;
     canvas canvas_;
-    bool start_rect_;
-    vec2i start_pos_;
 };
 
 bool raster::initialise() {
     img_.initialise();
     canvas_.clear_colour(vec3b(0,0,0));
-    start_rect_ = false;
     return true;
 }
 
@@ -52,11 +49,73 @@ void raster::update(double t, float dt) {
     on_resize(sc_width_,sc_height_);
 }
 
+std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
+    std::vector<vec2f> points(5);
+
+    float dt = float(TWO_PI/5.f);
+    for(int i = 0; i != 5; ++i) {
+        auto theta = dt*i;
+        auto ct = std::cos(theta), st = std::sin(theta);
+        points[i] = vec2f(100*ct, 100*st);
+    }
+
+    std::vector<vec2f> poly(5);
+
+    poly[0] = points[0];
+    poly[1] = points[2];
+    poly[2] = points[4];
+    poly[3] = points[1];
+    poly[4] = points[3];
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(vec2f(sw/2, sh/2));
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
+        auto nP = transform.ptransform(P);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    return polygon;
+}
+
+std::vector<vec2i> draw_diamond(int sw, int sh, float angle) {
+    std::vector<vec2f> poly = { {50,0}, {0,100}, {-50,0}, {0,-100} };
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(vec2f(sw/2, sh/2));
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
+        auto nP = transform.ptransform(P);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    return polygon;
+}
+
+float angle = 0.01f;
+
 void raster::draw() {
-    const int cx = sc_width_/2, cy = sc_height_/2;
+    //const int cx = sc_width_/2, cy = sc_height_/2;
 
     if(!canvas_.map()) return;
 
+    canvas_.clear();
+    canvas_.fill_colour(vec3b(0,0,255));
+    canvas_.pen_colour(vec3b(255,255,255));
+
+    // Build a pentagram for testing even-odd fill rule
+    auto polygon = draw_diamond(sc_width_, sc_height_, angle);
+
+    canvas_.polygon(polygon);
+    canvas_.polyloop(polygon);
+
+    angle += 0.01f;
+
+    /*
     canvas_.fill_colour(vec3b(255,0,0));
     canvas_.filled_rect(cx-200,cy-200,cx+200,cy+200);
     canvas_.pen_colour(vec3b(255,255,255));
@@ -70,6 +129,14 @@ void raster::draw() {
     for(int i = 0; i != 60; ++i) {
         canvas_.line(cx,cy,cx + std::round(200*std::cos(i*inc)), cy + std::round(200*std::sin(i*inc)));
     }
+
+    std::vector<vec2i> polyline = { {100,100}, {200,100}, {150, 150}, {200, 50}, {75, 5} };
+    canvas_.polyline(polyline);
+
+    std::vector<vec2i> polyloop = { {480,800}, {420,900}, {380,750}, {550,890} };
+    canvas_.polyloop(polyloop);
+
+    */
 
     canvas_.unmap();
     canvas_.update(img_.get_texture());
@@ -91,60 +158,15 @@ void raster::on_resize(int width, int height) {
         canvas_.unmap();
         canvas_.update(img_.get_texture());
     }
-
-    /*
-    if(!canvas_.map()) return;
-
-    canvas_.pen_colour(colour::red8);
-    canvas_.fill_colour(colour::blue8);
-
-    int hw = (width)/2, hh = (height)/2;
-
-    canvas_.filled_rect(100,100,200,200);
-    canvas_.filled_rect(200,150,400,300);
-
-    timer t(true);
-    for(int i = 0; i < 100; ++i) {
-        canvas_.pen_colour(vec3b(rand()&255,rand()&255,rand()&255));
-        canvas_.fill_colour(vec3b(rand()&255, rand()&255, rand()&255));
-        canvas_.ellipse(width/2, height/2, rand()%200, rand()%200);
-        canvas_.filled_rect(width/2-rand()%hw, height/2-rand()%hh, width/2+rand()%hw,height/2+rand()%hh);
-        canvas_.line(rand()%(width+100),rand()%(height+100),rand()%(width+100),rand()%(height+100));
-    }
-    LOG(t.getf(), "seconds");
-
-    UNUSED(hh); UNUSED(hw);
-
-    canvas_.unmap();
-    canvas_.update(img_.get_texture());
-    */
 }
 
 void raster::on_mousedown(int button) {
-    /*
-    if(button == 0 && !start_rect_) {
-        start_rect_ = true;
-        start_pos_ = mouse_pos();
-    } else start_rect_ = false;
-    */
 }
 
 void raster::on_mouseup(int button) {
 }
 
 void raster::on_mousemove(double x, double y) {
-    /*
-    application::on_mousemove(x,y);
-    if(start_rect_) {
-        if(!canvas_.map()) return;
-        canvas_.pen_colour(colour::white8);
-        canvas_.fill_colour(colour::cyan8);
-
-        canvas_.filled_rect(start_pos_.x, start_pos_.y, mouse_pos().x, mouse_pos().y);
-        canvas_.unmap();
-        canvas_.update(img_.get_texture());
-    }
-    */
 }
 
 void raster::on_mousewheel(double xoffset, double yoffset) {

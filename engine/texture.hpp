@@ -52,11 +52,12 @@ public:
     bool initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, bool generate_mipmaps=false);
 
     template <typename PixelT, buffer_usage USAGE>
-    void copy(const pixel_buffer<PixelT,USAGE>& pixbuf, size_t col, size_t row, size_t width, size_t height,
+    bool copy(const pixel_buffer<PixelT,USAGE>& pixbuf, size_t col, size_t row, size_t width, size_t height,
                 int level=0, bool update_mipmaps=false) {
         pixbuf.bind();
-        copy(col, row, width, height, level, update_mipmaps, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype, 0);
+        auto err = copy(col, row, width, height, level, update_mipmaps, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype, 0);
         pixbuf.release();
+        return err;
     };
 
     static size_t query_max_units();

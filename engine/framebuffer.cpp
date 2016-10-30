@@ -60,9 +60,10 @@ bool framebuffer::initialise(size_t target_count, size_t width, size_t height, p
 }
 
 bool framebuffer::initialise() {
+    assert(is_allocated() && "Framebuffer is not allocated");
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
-    attachments_.reserve(target_count_ + (depthstencil_ ? 1 : 0));
+    attachments_.reserve(target_count_ + depthstencil_);
     draw_buffers_.reserve(target_count_);
     for(size_t i = 0; i != target_count_; ++i) {
         attachments_.emplace_back(texture());
@@ -79,6 +80,7 @@ bool framebuffer::initialise() {
         }
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, draw_buffers_[i], GL_TEXTURE_2D, attachments_[i].resource(), 0);
+        gl_error_check();
     }
 
     if(depthstencil_) {
@@ -125,5 +127,16 @@ bool framebuffer::initialise() {
             break;
     }
 
+    return !gl_error_check();
+}
+
+bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) {
+    if(viewport[2] > width() || viewport[3] > height()) {
+        LOG_ERR("Invalid viewport specified for framebuffer attachment copy");
+        return false;
+    }
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + idx);
+    glReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], gl_type(pix_format_), gl_type(pix_dtype_), 0);
     return !gl_error_check();
 }

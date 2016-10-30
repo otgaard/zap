@@ -9,16 +9,20 @@ namespace zap { namespace maths { namespace geometry {
 
 template <typename T>
 struct sphere {
-    using vector = vec3<T>;
+    using type = T;
+    using vector = vec3<type>;
 
     sphere() = default;
-    sphere(const vector& C, const T& r) : C(C), r(r) { }
+    sphere(const sphere& rhs) = default;
+    sphere(const vector& C, const type& r) : C(C), r(r) { }
+
+    sphere& operator=(const sphere& rhs) = default;
 
     inline const vector& centre() const { return C; }
-    inline const T& radius() const { return r; }
+    inline const type& radius() const { return r; }
 
     vector C;
-    T r;
+    type r;
 };
 
 template <typename T>

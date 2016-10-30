@@ -1,13 +1,16 @@
 /* Created by Darren Otgaar on 2016/05/24. http://www.github.com/otgaard/zap */
 #include "camera.hpp"
-#include <maths/mat3.hpp>
 
 #define LOGGING_ENABLED
 #include <tools/log.hpp>
 #include <maths/io.hpp>
 
+#include "engine/gl_api.hpp"
+
 using namespace zap::maths;
+using namespace zap::engine;
 using namespace zap::renderer;
+using namespace zap::engine::gl;
 
 constexpr zap::maths::mat4f default_frame = {
         1.f, 0.f,  0.f, 0.f,
@@ -16,7 +19,7 @@ constexpr zap::maths::mat4f default_frame = {
         0.f, 0.f,  0.f, 1.f
 };
 
-camera::camera(bool perspective) : world_to_view_(1,1,1,1), view_to_world_(default_frame) {
+camera::camera(bool perspective) : world_to_view_(1,1,-1,1), view_to_world_(default_frame) {
     cam_state_.set(camera_state::CS_IDENTITY);
     if(perspective) {
         cam_state_.set(camera_state::CS_PERSPECTIVE);
@@ -27,10 +30,15 @@ camera::camera(bool perspective) : world_to_view_(1,1,1,1), view_to_world_(defau
     update_view();
 }
 
-camera::camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective) : world_to_view_(1,1,1,1) {
+camera::camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective) : world_to_view_(1,1,-1,1) {
     view_to_world_.frame(maths::cross(dir,up).normalise(), up, dir, pos);
     frustum(90.f, 1.f, 1.f, 100.f);
     update_view();
+}
+
+void camera::viewport(const viewport_t& vp) {
+    viewport_ = vp;
+    glViewport(vp[0], vp[1], vp[2], vp[3]);
 }
 
 void camera::update_view() {

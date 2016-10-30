@@ -11,7 +11,7 @@ namespace zap { namespace engine {
 class mesh_base {
 public:
     mesh_base() : vao_(INVALID_RESOURCE) { }
-    ~mesh_base() { deallocate(); vao_ = INVALID_RESOURCE; }
+    ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
 
     bool is_allocated() const { return vao_ != INVALID_RESOURCE; }
 
@@ -76,7 +76,6 @@ public:
     mesh() : mesh_base(), idx_buffer_ptr(nullptr) { }
     mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr) : mesh_base(),
                                                                       vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
-
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
     void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
@@ -99,15 +98,15 @@ public:
     using vertex_stream_t = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
-    mesh() : mesh_base(), vstream(nullptr) { }
+    mesh() : mesh_base(), vstream() { }
     mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
 
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
 
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
 
-    void draw(primitive_type prim=primitive, size_t start=0, size_t count=0) {
-        assert(vstream.ptr && "No vertex stream has been set for mesh draw");
+    void draw(primitive_type prim=primitive, size_t start=0, size_t count=0, bool no_null_stream=true) {
+        if(no_null_stream && !vstream.ptr) { LOG("No vertex stream specified"); return; }
         mesh_base::draw_arrays_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
     }
 

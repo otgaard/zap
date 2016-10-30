@@ -20,6 +20,9 @@ namespace zap { namespace engine {
         program& operator=(program&& rhs);
         ~program();
 
+        program(const program&) = delete;
+        program& operator=(const program&) = delete;
+
         std::int32_t uniform_location(const char* name);
         std::int32_t uniform_block_index(const char* name);
 
@@ -48,10 +51,6 @@ namespace zap { namespace engine {
         resource_t id_;
         bool linked_;
         std::vector<shader_ptr> shaders_;
-
-    private:
-        program(const program&);
-        program& operator=(const program&);
     };
 
     using program_ptr = std::shared_ptr<program>;
@@ -75,12 +74,15 @@ namespace zap { namespace engine {
     template <> void program::bind_uniform<int>(int location, const int& value);
     template <> void program::bind_uniform<float>(int location, const float& value);
     template <> void program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type);
+    template <> void program::bind_uniform<zap::maths::vec4f>(int location, const zap::maths::vec4f& type);
+
     template <> void program::bind_uniform<zap::maths::mat3f>(int location, const zap::maths::mat3f& type);
     template <> void program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type);
 
     template <> void program::bind_uniform<int>(const char* name, const int& value);
     template <> void program::bind_uniform<float>(const char* name, const float& value);
     template <> void program::bind_uniform<zap::maths::vec3f>(const char* name, const zap::maths::vec3f& type);
+    template <> void program::bind_uniform<zap::maths::vec4f>(const char* name, const zap::maths::vec4f& type);
     template <> void program::bind_uniform<zap::maths::mat3f>(const char* name, const zap::maths::mat3f& type);
     template <> void program::bind_uniform<zap::maths::mat4f>(const char* name, const zap::maths::mat4f& type);
 

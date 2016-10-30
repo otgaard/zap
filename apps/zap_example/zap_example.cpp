@@ -4,6 +4,7 @@
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
+#include <maths/geometry/AABB.hpp>
 #include "apps/application.hpp"
 #include "apps/graphic_types.hpp"
 #include "generators/geometry/geometry3.hpp"
@@ -11,6 +12,7 @@
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::generators;
+using namespace zap::maths::geometry;
 
 using vertex_t = vertex<pos3f_t>;
 using vbuf_t = vertex_buffer<vertex_t, buffer_usage::BU_STATIC_DRAW>;
@@ -65,6 +67,8 @@ bool zap_example::initialise() {
         return false;
     }
 
+    AABB<float, vec2> aabb;
+
     prog_.add_shader(shader_type::ST_VERTEX, vtx_shdr);
     prog_.add_shader(shader_type::ST_FRAGMENT, frg_shdr);
     if(!prog_.link(true)) {
@@ -79,6 +83,8 @@ bool zap_example::initialise() {
     auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
     auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
     prog_.bind_uniform("pvm",proj*mv);
+
+    ico_mesh_.bind();
 
     return true;
 }
@@ -95,20 +101,16 @@ void zap_example::on_mousewheel(double xinc, double yinc) {
 float inc = 0;
 
 void zap_example::update(double t, float dt) {
-    prog_.bind();
     auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
     auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
     auto rot = make_rotation(vec3f(0,1,0), inc);
+
     prog_.bind_uniform("pvm",proj*mv*rot);
     inc += 0.01f;
 }
 
 void zap_example::draw() {
-    prog_.bind();
-    ico_mesh_.bind();
     ico_mesh_.draw();
-    ico_mesh_.release();
-    prog_.release();
 }
 
 void zap_example::shutdown() {

@@ -10,11 +10,13 @@
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
 #include <maths/geometry/rect.hpp>
+#include <maths/geometry/segment.hpp>
 
 namespace zap { namespace rasteriser {
     using vec2i = maths::vec2i;
     using vec3b = maths::vec3b;
     using recti = maths::geometry::recti;
+    using segment2i = maths::geometry::segment2i;
 
     class canvas {
     public:
@@ -44,6 +46,11 @@ namespace zap { namespace rasteriser {
 
         void line(int x1, int y1, int x2, int y2);
         inline void line(const vec2i& A, const vec2i& B) { line(A.x, A.y, B.x, B.y); }
+
+        void polyline(const std::vector<segment2i>& polyline);
+        void polyline(const std::vector<vec2i>& polyline);
+        void polyloop(const std::vector<vec2i>& polyloop);
+        void polygon(const std::vector<vec2i>& polygon);
 
         void circle(int cx, int cy, int r);
         inline void circle(const vec2i& C, int r) { circle(C.x, C.y, r); }

@@ -2,14 +2,7 @@
 #ifndef ZAP_CAMERA_HPP
 #define ZAP_CAMERA_HPP
 
-#include <maths/maths.hpp>
-#include <maths/vector.hpp>
-#include <maths/vec2.hpp>
-#include <maths/vec3.hpp>
-#include <maths/vec4.hpp>
-#include <maths/mat2.hpp>
-#include <maths/mat3.hpp>
-#include <maths/mat4.hpp>
+#include <maths/algebra.hpp>
 #include <core/enumfield.hpp>
 
 namespace zap { namespace renderer {
@@ -42,8 +35,22 @@ namespace zap { namespace renderer {
         void up(const vec3f& u) { view_to_world_.column(1,u); update_view(); }
         void dir(const vec3f& d) { view_to_world_.column(2,d); update_view(); }
         void world_pos(const vec3f& P) { view_to_world_.column(3,P); update_view(); }
+
         void frame(const vec3f& u, const vec3f& d, const vec3f& P) {
-            view_to_world_.column(1,u); view_to_world_.column(2,d), view_to_world_.column(3,P);
+            assert(maths::is_zero(maths::dot(u, d), 2*std::numeric_limits<float>::epsilon()) && "Frame requires orthogonal vectors");
+            view_to_world_.column(0, maths::cross(d, u));
+            view_to_world_.column(1,u);
+            view_to_world_.column(2,d);
+            view_to_world_.column(3,P);
+            update_view();
+        }
+
+        void orthogonolise(const vec3f& d, const vec3f& world_up=vec3f(0.f, 1.f, 0.f)) {
+            assert(maths::eq(d.length_sqr(), 1.f, 2*std::numeric_limits<float>::epsilon()) && "Direction vector must be unit length");
+            auto up = maths::normalise(world_up - maths::dot(world_up, d)*d);
+            view_to_world_.column(2, d);
+            view_to_world_.column(1, up);
+            view_to_world_.column(0, maths::cross(d, up));
             update_view();
         }
 
@@ -72,8 +79,11 @@ namespace zap { namespace renderer {
         }
 
         void viewport(float left, float bottom, float right, float top) {
-            viewport_[0] = left; viewport_[1] = bottom; viewport_[2] = right; viewport_[3] = top;
+            viewport(viewport_t({{left, bottom, right, top}}));
         }
+        void viewport(const viewport_t& vp);
+        viewport_t viewport() const { return viewport_; }
+
         float width() const { return viewport_[2] - viewport_[0]; }
         float height() const { return viewport_[3] - viewport_[1]; }
         vec2f dims() const { return vec2f(width(), height()); }

@@ -14,11 +14,11 @@ namespace zap { namespace core {
     struct enumfield {
         enumfield(FieldT f=FieldT(0)) : field(f) { }
         // TODO: Rewrite as a single OR or AND and store
-        template <typename... Enums> void set(Enums... enums) { expand([=](const EnumT& e) { set(e); }, enums...); }
-        template <typename... Enums> void clear(Enums... enums) { expand([=](const EnumT& e) { clear(e); }, enums...); }
-        void set(EnumT v) { field |= (FieldT)v; }
-        void clear(EnumT v) { field &= ~(FieldT)v; }
-        bool is_set(EnumT v) const { return (field & (FieldT)v) != 0; }
+        template <typename... Enums> void set(const Enums&... enums) { expand([=](const EnumT& e) { set(e); }, enums...); }
+        template <typename... Enums> void clear(const Enums&... enums) { expand([=](const EnumT& e) { clear(e); }, enums...); }
+        void set(const EnumT& v) { field |= (FieldT)v; }
+        void clear(const EnumT& v) { field &= ~(FieldT)v; }
+        bool is_set(const EnumT& v) const { return (field & (FieldT)v) != 0; }
 
         FieldT field;
     };

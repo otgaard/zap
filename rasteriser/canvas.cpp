@@ -2,6 +2,8 @@
 #include <renderer/colour.hpp>
 #include "canvas.hpp"
 
+#include <maths/io.hpp>
+
 using namespace zap::engine;
 using namespace zap::rasteriser;
 
@@ -413,4 +415,152 @@ void canvas::line(int x1, int y1, int x2, int y2) {
     } while(!done);
 
     if(accept) line_impl(x1, y1, x2, y2);
+}
+
+void canvas::polyline(const std::vector<segment2i>& polyline) {
+    for(const auto& l : polyline) {
+        line(l.P0, l.P1);
+    }
+}
+
+void canvas::polyline(const std::vector<vec2i>& polyline) {
+    auto size = polyline.size();
+    if(size < 2) return;
+    for(int i = 0, j = 1; j != size; i = j, ++j) line(polyline[i], polyline[j]);
+}
+
+void canvas::polyloop(const std::vector<vec2i>& polyloop) {
+    auto size = polyloop.size();
+    if(size < 2) return;
+    for(int i = 0, j = 1; j != size; i = j, ++j) line(polyloop[i], polyloop[j]);
+    size--;
+    line(polyloop[size], polyloop[0]);
+}
+
+// Algorithm based on Computer Graphics - Principles and Practice (2nd) [91 - 99]
+
+struct edge_table {
+    int min_y, max_y;
+
+    struct edge {
+        int ymax;
+        int xmin;
+        int sign;
+        int numerator;
+        int denominator;
+        int increment;
+    };
+
+    struct bucket {
+        int y;
+        std::vector<edge> edges;
+    };
+
+    std::vector<bucket> buckets;
+
+    edge_table(const std::vector<vec2i>& polygon) {
+        auto vl = polygon;
+
+        zap::maths::range_finder<int> yrange;
+        for(const auto& P : polygon) yrange(P.y);
+        min_y = yrange.min; max_y = yrange.max;
+        assert(min_y < max_y && "Min must be less than Max");
+
+        std::sort(vl.begin(), vl.end(), [](const vec2i& A, const vec2i& B) {
+            return (A.y < B.y) || (A.y == B.y && A.x < B.x);
+        });
+
+        int counter = 0;
+        while(counter != vl.size()) {
+            auto it = std::find(polygon.begin(), polygon.end(), vl[counter]);
+            if(it->y == yrange.max) break; // We must be at the last vertex or one of the last vertices
+
+            auto i = it - polygon.begin();
+            auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == polygon.size()-1 ? 0 : i+1;
+            if(polygon[left].x > polygon[right].x) std::swap(left,right);
+
+            if(polygon[left].y < it->y && polygon[right].y < it->y) { counter++; continue; }
+            bucket nb;
+            nb.y = it->y;
+            if(polygon[left].y > nb.y) {
+                auto& l = polygon[left];
+                edge e1;
+                e1.ymax = l.y;
+                e1.numerator = l.x - it->x;
+                e1.denominator = l.y - it->y;
+                e1.sign = zap::maths::sign(e1.numerator);
+                e1.numerator = std::abs(e1.numerator);  // Make the numerator positive, the sign stores inc/dec
+                e1.increment = e1.denominator;          // Denominator is always positive
+                e1.xmin = it->x;
+                nb.edges.emplace_back(std::move(e1));
+            }
+
+            if(polygon[right].y > nb.y) {
+                auto& r = polygon[right];
+                edge e2;
+                e2.ymax = r.y;
+                e2.numerator = r.x - it->x;
+                e2.denominator = r.y - it->y;
+                e2.sign = zap::maths::sign(e2.numerator);
+                e2.numerator = std::abs(e2.numerator);  // Make the numerator positive, the sign stores inc/dec
+                e2.increment = e2.denominator;          // Denominator is always positive
+                e2.xmin = it->x;
+                nb.edges.emplace_back(std::move(e2));
+            }
+            buckets.emplace_back(std::move(nb));
+            ++counter;
+        }
+    }
+};
+
+void canvas::polygon(const std::vector<vec2i>& polygon) {
+    if(polygon.size() < 3) { LOG_ERR("Polygon must consist of at least three vertices"); return; }
+    edge_table global_et(polygon);
+    if(global_et.buckets.size() == 0) { LOG_ERR("Edge Table empty"); return; }
+
+    std::vector<edge_table::edge> AET;
+
+    int curr_bucket = 0;
+    int curr_y = global_et.min_y;
+    while(curr_y != global_et.max_y) {
+        if(global_et.buckets[curr_bucket].y == curr_y) {
+            std::copy(global_et.buckets[curr_bucket].edges.begin(), global_et.buckets[curr_bucket].edges.end(),
+                      std::back_inserter(AET));
+            ++curr_bucket;
+        }
+
+        auto it = std::remove_if(std::begin(AET), std::end(AET),
+                                 [&curr_y](const edge_table::edge& ed) {
+                                    return ed.ymax == curr_y;
+                                 });
+        if(it != std::end(AET)) AET.erase(it);
+
+        std::sort(std::begin(AET), std::end(AET),
+                  [](const edge_table::edge& A, const edge_table::edge& B) {
+                      return A.xmin < B.xmin;
+                  });
+
+        if(AET.size() % 2 != 0) { LOG_ERR("AET contains non-even number of edges"); return; }
+
+        for(int i = 0, end = (int)AET.size(); i != end; i += 2) {
+            auto& se = AET[2*i]; auto& ee = AET[2*i+1];
+            for(int x = se.xmin, xend = ee.xmin; x <= xend; ++x) {
+                raster_(x,curr_y).set3(fill_colour_);
+            }
+            if(se.denominator != 0) {
+                se.increment += se.numerator;
+                while(se.increment > se.denominator) {
+                    se.xmin += se.sign; se.increment -= se.denominator;
+                }
+            }
+            if(ee.denominator != 0) {
+                ee.increment += ee.numerator;
+                while(ee.increment > ee.denominator) {
+                    ee.xmin += ee.sign; ee.increment -= ee.denominator;
+                }
+            }
+        }
+
+        ++curr_y;
+    }
 }

@@ -15,6 +15,12 @@ struct hull {
     using type = typename VecT::type;
     using vector = VecT;
 
+    hull() = default;
+    hull(const hull& rhs) = default;
+    hull(const std::vector<vector>& vertices) : vertices(vertices) { }
+
+    hull& operator=(const hull& rhs) = default;
+
     std::vector<vector> vertices;
 };
 

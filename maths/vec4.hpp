@@ -93,8 +93,7 @@ namespace zap { namespace maths {
         }
 
         inline bool operator<(const vec4<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
-            return true;
+            return !operator==(rhs);
         }
 
         inline bool operator<=(const vec4<T>& rhs) const {
@@ -156,22 +155,32 @@ namespace zap { namespace maths {
         return vec4<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
     }
 
+    template <typename S, typename T>
+    constexpr vec4<T> operator*(const S& scalar, const vec4<T>& rhs) {
+        return vec4<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w);
+    };
+
+    template <typename S, typename T>
+    constexpr vec4<T> operator*(const vec4<T>& rhs, const S& scalar) {
+        return operator*(scalar, rhs);
+    };
+
     template <typename T>
-    constexpr vec4<T> operator*(T scalar, const vec4<T>& rhs) {
+    constexpr vec4<T> operator*(const T& scalar, const vec4<T>& rhs) {
         return vec4<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w);
     }
 
     template <typename T>
-    constexpr vec4<T> operator*(const vec4<T>& rhs, T scalar) { return operator*(scalar, rhs); }
+    constexpr vec4<T> operator*(const vec4<T>& rhs, const T& scalar) { return operator*(scalar, rhs); }
 
     template <typename T>
-    constexpr vec4<T> operator/(const vec4<T>& lhs, T scalar) {
+    constexpr vec4<T> operator/(const vec4<T>& lhs, const T& scalar) {
         const T inv_scalar = T(1) / scalar;
         return vec4<T>(lhs.x * inv_scalar, lhs.y * inv_scalar, lhs.z * inv_scalar, lhs.w * inv_scalar);
     }
 
     template <typename T>
-    constexpr vec4<T> operator/(T scalar, const vec4<T>& rhs) {
+    constexpr vec4<T> operator/(const T& scalar, const vec4<T>& rhs) {
         return vec4<T>(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z, scalar / rhs.w);
     }
 

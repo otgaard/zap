@@ -45,7 +45,11 @@ set(ZAP_MATHS_FILES
         maths/vector.hpp
         maths/transform.cpp
         maths/geometry/plane.hpp
-        maths/geometry/sphere.hpp maths/geometry/hull.hpp maths/geometry/rect.hpp)
+        maths/geometry/sphere.hpp
+        maths/geometry/hull.hpp
+        maths/geometry/rect.hpp
+        maths/geometry/line.hpp
+        maths/geometry/segment.hpp maths/geometry/AABB.hpp)
 
 set(ZAP_ENGINE_FILES
         tools/log.hpp
@@ -88,8 +92,6 @@ set(ZAP_ENGINE_FILES
         generators/geometry/geometry3.hpp
         renderer/colour.hpp
         renderer/colour.cpp
-        generators/particles/particle_engine.hpp
-        generators/particles/particle_engine.cpp
         generators/noise/value_noise.hpp
         generators/noise/noise.cpp
         generators/textures/convolution.hpp
@@ -108,14 +110,34 @@ set(ZAP_ENGINE_FILES
         engine/pixmap.cpp
         engine/pixmap.hpp
         graphics2/quad.cpp
-        graphics2/quad.hpp renderer/material.cpp renderer/material.hpp renderer/light.cpp renderer/light.hpp)
+        graphics2/quad.hpp
+        renderer/material.cpp
+        renderer/material.hpp
+        renderer/light.cpp
+        renderer/light.hpp
+        scene_graph/spatial.hpp
+        scene_graph/node.hpp
+        scene_graph/visual.hpp
+        scene_graph/bounds/bound.hpp
+        renderer/style.cpp
+        renderer/style.hpp
+        renderer/render_state.cpp
+        renderer/render_state.hpp
+        tools/os.hpp
+        tools/os.cpp effects/particle_engine.cpp
+        effects/part_engine.hpp
+        renderer/renderer_fwd.hpp
+        engine/sampler.cpp
+        engine/sampler.hpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
-        raytracer/raytracer.hpp)
+        raytracer/raytracer.hpp
+        raytracer/hit_record.hpp)
 
 set(ZAP_RASTERISER_FILES
-        rasteriser/canvas.cpp rasteriser/canvas.hpp)
+        rasteriser/canvas.cpp
+        rasteriser/canvas.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -173,6 +195,11 @@ set(RASTERISER_FILES
         apps/application.hpp
         apps/raster/raster.cpp)
 
+set(PART_ENGINE_FILES
+        apps/application.cpp
+        apps/application.hpp
+        apps/particle_engine/part_engine.cpp)
+
 if(APPLE)
     find_library(COCOA Cocoa)
     find_library(IOKIT IOKit)
@@ -214,8 +241,8 @@ else(CMAKE_STATIC_BUILD)
     add_library(ZapEngine SHARED ${ZAP_ENGINE_FILES})
     add_library(ZapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
     add_library(ZapRasteriser SHARED ${ZAP_RASTERISER_FILES})
-    target_link_libraries(ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
-    target_link_libraries(ZapRasteriser ZapEngine ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(ZapEngine ZapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(ZapRasteriser ZapEngine ZapMaths ${LOADER_LIBS} ${GLFW_LIBS})
 endif(CMAKE_STATIC_BUILD)
 
 add_library(stb STATIC ${STB_ARCHIVE})
@@ -241,3 +268,6 @@ target_link_libraries(tracer glfw3 ZapRaytracer ZapEngine ZapMaths ${GLFW_LIBS} 
 
 add_executable(raster ${RASTERISER_FILES})
 target_link_libraries(raster glfw3 ZapRasteriser ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
+add_executable(particle_engine ${PART_ENGINE_FILES})
+target_link_libraries(particle_engine glfw3 ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})

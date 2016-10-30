@@ -30,9 +30,10 @@ namespace zap { namespace maths {
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }
     template <typename T> inline bool leq(const T& a, const T& b) { return a < b + std::numeric_limits<T>::epsilon(); }
-    template <typename T> inline bool is_zero(const T& a) { return abs(T(0) - a) < std::numeric_limits<T>::epsilon(); }
     template <typename T> constexpr T sign(const T& s) { return (s > T(0)) ? T(1) : s < T(0) ? T(-1) : T(0); }
     template <typename T> constexpr T abs(const T& s) { return sign(s)*s; }
+    template <typename T> inline bool is_zero(const T& a) { return abs(T(0) - a) < std::numeric_limits<T>::epsilon(); }
+    template <typename T> inline bool is_zero(const T& a, const T& epsilon) { return abs(T(0) - a) < epsilon; }
     template <typename T> inline T sgn(const T& s) { return is_zero(s) ? T(0) : sign(s); }
     template <typename T> constexpr T clamp(const T& v, const T& min, const T& max) { return (v < min) ? min : (v > max) ? max : v; }
     template <typename T> constexpr T clamp(const T& v) { return clamp(v, T(0), T(1)); }
@@ -114,6 +115,16 @@ namespace zap { namespace maths {
             return value;
         }
         T min, max, value, dir;
+    };
+
+    template <typename T>
+    struct range_finder {
+        T min, max;
+        range_finder() : min(std::numeric_limits<T>::max()), max(std::numeric_limits<T>::lowest()) { }
+        void operator()(const T& value) {
+            if(value < min) min = value;
+            if(value > max) max = value;
+        }
     };
 
     // Forward Declarations
