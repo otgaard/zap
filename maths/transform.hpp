@@ -112,7 +112,7 @@ namespace zap { namespace maths {
     }
 
     template <typename AffineT>
-    void transform<AffineT>::uniform_scale(transform::type S) {
+    void transform<AffineT>::uniform_scale(typename transform::type S) {
         assert(transform_state_.is_set(transform_state::TS_ROTSCALE) && "Transform must be Rotation/Scale Matrix");
         transform_state_.clear(transform_state::TS_IDENTITY, transform_state::TS_SYNCED, transform_state::TS_SYNCEDINV);
         transform_state_.set(transform_state::TS_UNISCALE);

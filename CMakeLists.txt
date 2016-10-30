@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.4)
 project(zap)
 
 #set(CMAKE_BUILD_TYPE "Release")
 #set(CMAKE_BUILD_TYPE "Debug")
 
-set(CMAKE_STATIC_BUILD FALSE)
+set(CMAKE_STATIC_BUILD TRUE)
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
 link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
@@ -199,7 +199,7 @@ elseif(UNIX)
     set(GTEST_LIBS ${PTHREAD})
     set(LOADER_LIBS libGLEW.a)
 elseif(WIN32)
-    set(GLFW_LIBS opengl32.lib ${CMAKE_SOURCE_DIR}/third_party/lib/Release/Win32/glew32s.lib)
+    set(GLFW_LIBS opengl32.lib ${CMAKE_SOURCE_DIR}/third_party/lib/Release/x64/glew32s.lib)
     set(GTEST_LIBS )
     set(LOADER_LIBS )
 endif(APPLE)
