@@ -193,7 +193,7 @@ void particle_engine::draw(const renderer::camera& cam) {
     if(s.active_buffer == 0) {   // Framebuffer 0 target was previously active (so we write to 1 & read from 0)
         s.buffers[1].bind();
         s.sim_pass.bind();
-        s.sim_pass.bind_uniform("angle", s.angle);
+        s.sim_pass.bind_uniform("dir", vec2f(std::cos(s.angle), std::sin(s.angle)));
         s.buffers[0].get_attachment(0).bind(0);
         s.buffers[0].get_attachment(1).bind(1);
         s.buffers[0].get_attachment(2).bind(2);
@@ -228,7 +228,7 @@ void particle_engine::draw(const renderer::camera& cam) {
     } else if(s.active_buffer == 1) {   // Framebuffer 1 target was previously active (so we write to 0 & read from 1)
         s.buffers[0].bind();
         s.sim_pass.bind();
-        s.sim_pass.bind_uniform("angle", s.angle);
+        s.sim_pass.bind_uniform("dir", vec2f(std::cos(s.angle), std::sin(s.angle)));
         s.buffers[1].get_attachment(0).bind(0);
         s.buffers[1].get_attachment(1).bind(1);
         s.buffers[1].get_attachment(2).bind(2);
@@ -288,7 +288,7 @@ const char* const particle_sim_vshdr = GLSL(
 );
 
 const char* const particle_sim_fshdr = GLSL(
-    uniform float angle;
+    uniform vec2 dir;
 
     uniform sampler2D position_tex;
     uniform sampler2D velocity_tex;
@@ -304,7 +304,7 @@ const char* const particle_sim_fshdr = GLSL(
         bool renew = length(pos) > 3.+(length(vel));
         frag_colour[0] = renew ? vec3(0., 0., 0.) : pos;
         frag_colour[1] = .99995*vel;
-        frag_colour[2] = renew ? max(dot(normalize(vel.xy), vec2(cos(angle), sin(angle))), 0.3)*vec3(1,0,0) : texture(colour_tex, texcoord).rgb;
+        frag_colour[2] = renew ? max(dot(normalize(vel.xy), dir), 0.3)*vec3(1,0,0) : texture(colour_tex, texcoord).rgb;
     }
 );
 
