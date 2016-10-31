@@ -22,7 +22,7 @@ public:
     void release() const;
 
     void draw_arrays_impl(primitive_type type, size_t first, size_t count);
-    void draw_elements_impl(primitive_type type, data_type index_type, size_t count);
+    void draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count);
 
 private:
     resource_t vao_;
@@ -85,7 +85,8 @@ public:
 
         mesh_base::draw_elements_impl(primitive,
                                       (data_type)dt_descriptor<typename index_buffer_t::type>::value,
-                                      idx_buffer_ptr->index_count());
+                                      start,
+                                      count == 0 ? idx_buffer_ptr->index_count() : count);
     }
 
     vertex_stream_t vstream;

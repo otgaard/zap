@@ -109,6 +109,35 @@ namespace zap { namespace engine {
     template <> struct dt_descriptor<float> { enum { value = int(data_type::DT_FLOAT) }; };
     template <> struct dt_descriptor<double> { enum { value = int(data_type::DT_DOUBLE) }; };
 
+    template <data_type DT> struct dt_type { using type = void; };
+    template <> struct dt_type<data_type::DT_UBYTE> { using type = unsigned char; };
+    template <> struct dt_type<data_type::DT_BYTE> { using type = char; };
+    template <> struct dt_type<data_type::DT_USHORT> { using type = unsigned short; };
+    template <> struct dt_type<data_type::DT_SHORT> { using type = short; };
+    template <> struct dt_type<data_type::DT_UINT> { using type = unsigned int; };
+    template <> struct dt_type<data_type::DT_INT> { using type = int; };
+    template <> struct dt_type<data_type::DT_HALF_FLOAT> { using type = void; };
+    template <> struct dt_type<data_type::DT_FIXED> { using type = void; };
+    template <> struct dt_type<data_type::DT_FLOAT> { using type = float; };
+    template <> struct dt_type<data_type::DT_DOUBLE> { using type = double; };
+    template <> struct dt_type<data_type::DT_SIZE> { using type = void; };
+
+    inline size_t dt_bytesize(data_type dt) {
+        switch(dt) {
+            case data_type::DT_VOID: return 0;
+            case data_type::DT_UBYTE: return sizeof(dt_type<data_type::DT_UBYTE>);
+            case data_type::DT_BYTE: return sizeof(dt_type<data_type::DT_BYTE>);
+            case data_type::DT_USHORT: return sizeof(dt_type<data_type::DT_USHORT>);
+            case data_type::DT_SHORT: return sizeof(dt_type<data_type::DT_SHORT>);
+            case data_type::DT_UINT: return sizeof(dt_type<data_type::DT_UINT>);
+            case data_type::DT_INT: return sizeof(dt_type<data_type::DT_INT>);
+            case data_type::DT_HALF_FLOAT: return sizeof(dt_type<data_type::DT_HALF_FLOAT>);
+            case data_type::DT_FIXED: return sizeof(dt_type<data_type::DT_FIXED>);
+            case data_type::DT_FLOAT: return sizeof(dt_type<data_type::DT_FLOAT>);
+            case data_type::DT_DOUBLE: return sizeof(dt_type<data_type::DT_DOUBLE>);
+            case data_type::DT_SIZE: return sizeof(dt_type<data_type::DT_SIZE>);
+        }
+    }
     enum class attribute_type : size_t {
         AT_POSITION = 1 << 0,
         AT_NORMAL = 1 << 1,

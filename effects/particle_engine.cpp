@@ -56,12 +56,7 @@ particle_engine::particle_engine() : state_(new state_t()), s(*state_.get()) {
 particle_engine::~particle_engine() {
 }
 
-bool particle_engine::initialise() {
-    s.allocated = 0;
-
-    s.dim = (size_t)std::pow(2, std::ceil(std::log2(std::sqrt(s.particle_count))));
-    LOG("PARTICLE ENGINE DIMENSIONS:", s.dim, s.dim*s.dim, s.particle_count);
-
+bool particle_engine::setup_buffers() {
     for(auto& buf : s.buffers) {
         if(!buf.allocate() || !buf.initialise(3, s.dim, s.dim, pixel_format::PF_RGB, pixel_datatype::PD_FLOAT, false, false)) {
             LOG_ERR("Failure allocating/initialising framebuffers");
@@ -101,11 +96,11 @@ bool particle_engine::initialise() {
     s.quad_mesh.bind(); s.quad_vbuf.bind();
 
     std::vector<quad_vertex_t> quad_vertices = {{
-            { { vec2f(-1.f, -1.f) }, { vec2f(0.f, 0.f) } },
-            { { vec2f(+1.f, -1.f) }, { vec2f(1.f, 0.f) } },
-            { { vec2f(+1.f, +1.f) }, { vec2f(1.f, 1.f) } },
-            { { vec2f(-1.f, +1.f) }, { vec2f(0.f, 1.f) } }
-    }};
+                                                        { { vec2f(-1.f, -1.f) }, { vec2f(0.f, 0.f) } },
+                                                        { { vec2f(+1.f, -1.f) }, { vec2f(1.f, 0.f) } },
+                                                        { { vec2f(+1.f, +1.f) }, { vec2f(1.f, 1.f) } },
+                                                        { { vec2f(-1.f, +1.f) }, { vec2f(0.f, 1.f) } }
+                                                }};
 
     s.quad_vbuf.initialise(quad_vertices);
 
@@ -136,7 +131,10 @@ bool particle_engine::initialise() {
 
     s.copy_buffer.release();
     s.active_buffer = 0;
+    return true;
+}
 
+bool particle_engine::setup_shaders() {
     s.sim_pass.add_shader(shader_type::ST_VERTEX, particle_sim_vshdr);
     s.sim_pass.add_shader(shader_type::ST_FRAGMENT, particle_sim_fshdr);
     if(!s.sim_pass.link()) {
@@ -156,6 +154,18 @@ bool particle_engine::initialise() {
     s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("position_tex"), 0);
     s.sim_pass.bind_texture_unit(s.sim_pass.uniform_location("velocity_tex"), 1);
     s.sim_pass.release();
+    return true;
+}
+
+bool particle_engine::initialise() {
+    s.allocated = 0;
+    s.dim = (size_t)std::pow(2, std::ceil(std::log2(std::sqrt(s.particle_count))));
+    LOG("PARTICLE ENGINE DIMENSIONS:", s.dim, s.dim*s.dim, s.particle_count);
+
+    if(!setup_buffers() || !setup_shaders()) {
+        LOG_ERR("Failed to setup Particle Engine");
+        return false;
+    }
 
     return true;
 }
@@ -260,7 +270,7 @@ const char* const particle_sim_fshdr = GLSL(
         vec3 vel = texture(velocity_tex, texcoord).rgb;
         vec3 pos = texture(position_tex, texcoord).rgb + .01*vel;
         frag_colour[0] = length(pos) > 3.+(length(vel)) ? vec3(0., 0., 0.) : pos;
-        frag_colour[1] = .99995*texture(velocity_tex, texcoord).rgb;
+        frag_colour[1] = .99995*vel;
     }
 );
 
