@@ -13,6 +13,7 @@ namespace zap { namespace core {
     template <typename FieldT, typename EnumT>
     struct enumfield {
         enumfield(FieldT f=FieldT(0)) : field(f) { }
+        enumfield(const EnumT& e) : field((FieldT)e) { }
         // TODO: Rewrite as a single OR or AND and store
         template <typename... Enums> void set(const Enums&... enums) { expand([=](const EnumT& e) { set(e); }, enums...); }
         template <typename... Enums> void clear(const Enums&... enums) { expand([=](const EnumT& e) { clear(e); }, enums...); }
