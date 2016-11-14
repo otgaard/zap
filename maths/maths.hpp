@@ -24,8 +24,8 @@ namespace zap { namespace maths {
     constexpr double degrees_to_radians = PI/180;
     constexpr double radians_to_degrees = 180/PI;
 
-    template <typename T> constexpr T deg_to_rad(T v) { return v * degrees_to_radians; }
-    template <typename T> constexpr T rad_to_deg(T v) { return v * radians_to_degrees; }
+    template <typename T> constexpr T deg_to_rad(T v) { return T(v * degrees_to_radians); }
+    template <typename T> constexpr T rad_to_deg(T v) { return T(v * radians_to_degrees); }
 
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }

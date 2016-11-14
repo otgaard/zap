@@ -38,7 +38,7 @@ camera::camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspec
 
 void camera::viewport(const viewport_t& vp) {
     viewport_ = vp;
-    glViewport(vp[0], vp[1], vp[2], vp[3]);
+    glViewport((size_t)vp[0], (size_t)vp[1], (size_t)vp[2], (size_t)vp[3]);
 }
 
 void camera::update_view() {

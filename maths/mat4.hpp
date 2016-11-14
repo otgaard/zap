@@ -84,7 +84,7 @@ namespace zap { namespace maths {
                                           m03(rhs.m03), m13(rhs.m13), m23(rhs.m23), m33(rhs.m33) { }
 
         mat4& operator=(const mat4& rhs) {
-            if(this != &rhs) std::copy(rhs.begin(), rhs.end(), begin());
+			if (this != &rhs) for(int i = 0; i != size(); ++i) arr[i] = rhs[i];
             return *this;
         }
 

@@ -245,6 +245,7 @@ target_link_libraries(particle_engine glfw3 zapEngine zapMaths ${GLFW_LIBS} ${LO
 #########################################
 # INSTALL
 
+if(APPLE)
 install(TARGETS zapMaths LIBRARY DESTINATION lib)
 install(TARGETS zapEngine LIBRARY DESTINATION lib)
 install(TARGETS zapRaytracer LIBRARY DESTINATION lib)
@@ -253,6 +254,16 @@ install(TARGETS zap_example RUNTIME DESTINATION bin)
 install(TARGETS tracer RUNTIME DESTINATION bin)
 install(TARGETS raster RUNTIME DESTINATION bin)
 install(TARGETS particle_engine RUNTIME DESTINATION bin)
+elseif(WIN32)
+install(TARGETS zapMaths DESTINATION lib)
+install(TARGETS zapEngine DESTINATION lib)
+install(TARGETS zapRaytracer DESTINATION lib)
+install(TARGETS zapRasteriser DESTINATION lib)
+install(TARGETS zap_example DESTINATION bin)
+install(TARGETS tracer DESTINATION bin)
+install(TARGETS raster DESTINATION bin)
+install(TARGETS particle_engine DESTINATION bin)
+endif(APPLE)
 
 foreach(file ${ZAP_MATHS_PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)

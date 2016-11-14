@@ -131,7 +131,7 @@ bool framebuffer::initialise() {
 }
 
 bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) {
-    if(viewport[2] > width() || viewport[3] > height()) {
+    if(viewport[2] > (int)width() || viewport[3] > (int)height()) {
         LOG_ERR("Invalid viewport specified for framebuffer attachment copy");
         return false;
     }

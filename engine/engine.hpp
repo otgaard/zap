@@ -136,6 +136,7 @@ namespace zap { namespace engine {
             case data_type::DT_FLOAT: return sizeof(dt_type<data_type::DT_FLOAT>::type);
             case data_type::DT_DOUBLE: return sizeof(dt_type<data_type::DT_DOUBLE>::type);
             case data_type::DT_SIZE: return 0;
+			default: return 0;
         }
     }
     enum class attribute_type : size_t {
