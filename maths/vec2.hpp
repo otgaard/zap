@@ -85,24 +85,48 @@ namespace zap { namespace maths {
         }
 
         bool operator<(const vec2<T>& rhs) const {
+            return y < rhs.y || x < rhs.x;
+        }
+
+        /*
+        bool operator<(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
             return true;
         }
+        */
 
+        bool operator<=(const vec2<T>& rhs) const {
+            return y <= rhs.y || x <= rhs.x;
+        }
+
+        /*
         bool operator<=(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] > rhs.arr[i]) return false;
             return true;
         }
+        */
 
+        bool operator>(const vec2<T>& rhs) const {
+            return y > rhs.y || x > rhs.x;
+        }
+
+        /*
         bool operator>(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] <= rhs.arr[i]) return false;
             return true;
         }
+        */
 
+        bool operator>=(const vec2<T>& rhs) const {
+            return y >= rhs.y || x >= rhs.x;
+        }
+
+        /*
         bool operator>=(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(arr[i] < rhs.arr[i]) return false;
             return true;
         }
+        */
 
         bool eq(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(!eq(arr[i], rhs.arr[i])) return false;
