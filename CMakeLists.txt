@@ -58,84 +58,87 @@ set(ZAP_MATHS_FILES
         maths/io.cpp
         maths/transform.cpp)
 
-set(ZAP_ENGINE_FILES
+set(ZAP_ENGINE_PUBLIC_HEADERS
         tools/log.hpp
         core/core.hpp
         engine/shader.hpp
         engine/engine.hpp
         engine/program.hpp
-        engine/shader.cpp
-        engine/gl_api.cpp
-        engine/gl_api.hpp
-        engine/program.cpp
-        engine/buffer.cpp
         engine/buffer.hpp
         engine/vertex_format.hpp
         engine/vertex_buffer.hpp
         engine/index_buffer.hpp
         engine/pixel_buffer.hpp
-        engine/vertex_buffer.cpp
         engine/vertex_attribute.hpp
-        engine/mesh.cpp
         engine/mesh.hpp
         engine/export.hpp
         engine/pixel_format.hpp
         core/pod.hpp
         core/bitfield.hpp
         core/meta.hpp
-        engine/texture.cpp
-        engine/texture.hpp
         engine/uniform_buffer.hpp
+        engine/texture.hpp
         engine/uniform_block.hpp
         generators/textures/spectral.hpp
-        renderer/camera.cpp
-        renderer/camera.hpp
-        engine/framebuffer.cpp
         engine/framebuffer.hpp
-        generators/geometry/surface.cpp
         generators/geometry/surface.hpp
         generators/geometry/geometry2.hpp
         generators/textures/planar.hpp
         generators/geometry/geometry3.hpp
         renderer/colour.hpp
-        renderer/colour.cpp
         generators/noise/value_noise.hpp
-        generators/noise/noise.cpp
         generators/textures/convolution.hpp
         generators/noise/perlin.hpp
         generators/noise/noise.hpp
         graphics2/plotter2.hpp
-        graphics2/plotter2.cpp
-        graphics2/curve_input.cpp
         graphics2/curve_input.hpp
         core/enumfield.hpp
-        graphics2/quad.cpp
         graphics2/quad.hpp
         graphics2/graphics2.hpp
-        renderer/renderer.cpp
-        renderer/renderer.hpp
-        engine/pixmap.cpp
-        engine/pixmap.hpp
-        graphics2/quad.cpp
         graphics2/quad.hpp
-        renderer/material.cpp
+        renderer/renderer.hpp
+        engine/pixmap.hpp
+        renderer/camera.hpp
         renderer/material.hpp
-        renderer/light.cpp
         renderer/light.hpp
         scene_graph/spatial.hpp
         scene_graph/node.hpp
         scene_graph/visual.hpp
         scene_graph/bounds/bound.hpp
-        renderer/style.cpp
         renderer/style.hpp
-        renderer/render_state.cpp
         renderer/render_state.hpp
         tools/os.hpp
-        tools/os.cpp effects/particle_engine.cpp
-        effects/part_engine.hpp
         renderer/renderer_fwd.hpp
-        engine/sampler.cpp
+        effects/part_engine.hpp
         engine/sampler.hpp)
+
+set(ZAP_ENGINE_FILES
+        engine/shader.cpp
+        engine/gl_api.cpp
+        engine/gl_api.hpp
+        engine/program.cpp
+        engine/buffer.cpp
+        engine/vertex_buffer.cpp
+        engine/mesh.cpp
+        engine/texture.cpp
+        renderer/camera.cpp
+        engine/framebuffer.cpp
+        generators/geometry/surface.cpp
+        renderer/colour.cpp
+        generators/noise/noise.cpp
+        graphics2/plotter2.cpp
+        graphics2/curve_input.cpp
+        graphics2/quad.cpp
+        renderer/renderer.cpp
+        engine/pixmap.cpp
+        graphics2/quad.cpp
+        renderer/material.cpp
+        renderer/light.cpp
+        renderer/style.cpp
+        renderer/render_state.cpp
+        tools/os.cpp
+        effects/particle_engine.cpp
+        engine/sampler.cpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
@@ -209,39 +212,51 @@ endif(APPLE)
 # TARGETS & LINKAGE
 
 if(CMAKE_STATIC_BUILD)
-    add_library(ZapMaths STATIC ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
-    add_library(ZapEngine STATIC ${ZAP_ENGINE_FILES})
-    add_library(ZapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
-    add_library(ZapRasteriser STATIC ${ZAP_RASTERISER_FILES})
+    add_library(zapMaths STATIC ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
+    add_library(zapEngine STATIC ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS})
+    add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
+    add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
 else(CMAKE_STATIC_BUILD)
-    add_library(ZapMaths SHARED ${ZAP_MATHS_FILES})
-    add_library(ZapEngine SHARED ${ZAP_ENGINE_FILES})
-    add_library(ZapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
-    add_library(ZapRasteriser SHARED ${ZAP_RASTERISER_FILES})
-    target_link_libraries(ZapEngine ZapMaths ${LOADER_LIBS} ${GLFW_LIBS})
-    target_link_libraries(ZapRasteriser ZapEngine ZapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+    add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
+    add_library(zapEngine SHARED ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS})
+    add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
+    add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES})
+    target_link_libraries(zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
 endif(CMAKE_STATIC_BUILD)
 
 add_library(stb STATIC ${STB_ARCHIVE})
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example glfw3 ZapRasteriser ZapEngine ZapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example glfw3 zapEngine zapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(tracer ${TRACER_FILES})
-target_link_libraries(tracer glfw3 ZapRaytracer ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(tracer glfw3 zapRaytracer zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(raster ${RASTERISER_FILES})
-target_link_libraries(raster glfw3 ZapRasteriser ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(raster glfw3 zapRasteriser zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(particle_engine ${PART_ENGINE_FILES})
-target_link_libraries(particle_engine glfw3 ZapEngine ZapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(particle_engine glfw3 zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 #########################################
 # INSTALL
 
-install(TARGETS ZapMaths DESTINATION lib)
+install(TARGETS zapMaths DESTINATION lib)
+install(TARGETS zapEngine DESTINATION lib)
+install(TARGETS zapRaytracer DESTINATION lib)
+install(TARGETS zapRasteriser DESTINATION lib)
+install(TARGETS zap_example DESTINATION bin)
+install(TARGETS tracer DESTINATION bin)
+install(TARGETS raster DESTINATION bin)
+install(TARGETS particle_engine DESTINATION bin)
 
 foreach(file ${ZAP_MATHS_PUBLIC_HEADERS})
+    get_filename_component(dir ${file} DIRECTORY)
+    install(FILES ${file} DESTINATION include/zap/${dir})
+endforeach()
+
+foreach(file ${ZAP_ENGINE_PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)
     install(FILES ${file} DESTINATION include/zap/${dir})
 endforeach()
