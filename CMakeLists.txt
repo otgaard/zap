@@ -10,8 +10,14 @@ project(zap)
 set(CMAKE_STATIC_BUILD FALSE)
 
 # Default to third_party lib for dependencies
-include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/third_party/include)
-link_directories(${CMAKE_SOURCE_DIR}/third_party/lib)
+
+include_directories(
+	${CMAKE_SOURCE_DIR} 
+	${CMAKE_SOURCE_DIR}/third_party/include
+	${CMAKE_SOURCE_DIR}/third_party/glew/include)
+
+link_directories(
+	${CMAKE_SOURCE_DIR}/third_party/lib)
 
 if(APPLE)
 set(CMAKE_CXX_STANDARD 14)
@@ -178,6 +184,15 @@ set(PART_ENGINE_FILES
 #########################################
 # DEPENDENCIES
 
+# GLEW
+if(APPLE)
+set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
+elseif(UNIX)
+set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
+elseif(WIN32)
+set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/lib/Release/x64/glew32s.lib)
+endif(APPLE)
+
 if(APPLE)
     find_library(COCOA Cocoa REQUIRED)
     find_library(IOKIT IOKit)
@@ -187,7 +202,7 @@ if(APPLE)
     find_library(OPENGL OpenGL)
     set(GLFW_LIBS ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL})
     set(GTEST_LIBS )
-    set(LOADER_LIBS GLEW)
+    set(LOADER_LIBS ${GLEW_LIB})
 elseif(UNIX)
     find_library(OPENGL GL)
     find_library(M m)
@@ -201,9 +216,9 @@ elseif(UNIX)
     find_library(PTHREAD pthread)
     set(GLFW_LIBS ${OPENGL} ${M} ${DYNLINK} ${XINERAMA} ${XRANDR} ${XI} ${XCURSOR} ${X11} ${XXF86VM} ${PTHREAD})
     set(GTEST_LIBS ${PTHREAD})
-    set(LOADER_LIBS libGLEW.a)
+    set(LOADER_LIBS ${GLEW_LIB})
 elseif(WIN32)
-    set(GLFW_LIBS opengl32.lib ${CMAKE_SOURCE_DIR}/third_party/lib/Release/x64/glew32s.lib)
+    set(GLFW_LIBS opengl32.lib ${GLEW_LIB})
     set(GTEST_LIBS )
     set(LOADER_LIBS )
 endif(APPLE)
