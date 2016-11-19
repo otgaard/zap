@@ -102,9 +102,11 @@ void quad::draw(bool default_bind) {
     if(override_) override_->bind();
     else          program_.bind();
     if(default_bind) texture_.bind(0);
+
     mesh_.bind();
     mesh_.draw();
     mesh_.release();
+
     if(default_bind) texture_.release();
     if(override_) override_->release();
     else          program_.release();
