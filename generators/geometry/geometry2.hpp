@@ -5,6 +5,7 @@
 #ifndef ZAP_GEOMETRY2_HPP
 #define ZAP_GEOMETRY2_HPP
 
+#include <vector>
 #include <maths/vec2.hpp>
 #include <engine/engine.hpp>
 

@@ -39,6 +39,7 @@ protected:
     ibuf_t ico_ib_;
     mesh_t ico_mesh_;
     program prog_;
+    mat4f pv_;
 };
 
 const char* const vtx_shdr = GLSL(
@@ -67,7 +68,8 @@ bool zap_example::initialise() {
         return false;
     }
 
-    AABB<float, vec2> aabb;
+    pv_ = make_perspective(45.f, 1280/768.f, .5f, 100.f) *
+          make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
 
     prog_.add_shader(shader_type::ST_VERTEX, vtx_shdr);
     prog_.add_shader(shader_type::ST_FRAGMENT, frg_shdr);
@@ -101,11 +103,10 @@ void zap_example::on_mousewheel(double xinc, double yinc) {
 float inc = 0;
 
 void zap_example::update(double t, float dt) {
-    auto proj = make_perspective(45.f, 1280/768.f, .5f, 100.f);
-    auto mv = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,-5));
     auto rot = make_rotation(vec3f(0,1,0), inc);
 
-    prog_.bind_uniform("pvm",proj*mv*rot);
+    prog_.bind();
+    prog_.bind_uniform("pvm", pv_ * rot);
     inc += 0.01f;
 }
 

@@ -160,8 +160,7 @@ set(ZAP_EXAMPLE_FILES
         apps/application.cpp
         apps/application.hpp
         apps/graphic_types.hpp
-        apps/zap_example/simple_shdr.cpp
-        apps/zap_example/simple_shdr.hpp)
+        )
 
 set(TRACER_FILES
         apps/application.cpp
