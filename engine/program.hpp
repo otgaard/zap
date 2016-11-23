@@ -46,6 +46,7 @@ namespace zap { namespace engine {
         template <typename T> void bind_uniform(int location, const T& type);
         template <typename T> void bind_uniform(const char* name, const T& type);
         void bind_texture_unit(int location, int unit);
+        void bind_texture_unit(const char* name, int unit);
 
     protected:
         resource_t id_;

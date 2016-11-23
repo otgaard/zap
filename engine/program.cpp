@@ -71,6 +71,12 @@ void program::bind_texture_unit(int location, int unit) {
     gl::glUniform1i(location, unit);
 }
 
+void program::bind_texture_unit(const char* name, int unit) {
+    auto loc = uniform_location(name);
+    assert(loc != -1 && "Invalid sampler uniform specified");
+    if(loc != -1) gl::glUniform1i(loc, unit);
+}
+
 template <> void zap::engine::program::bind_uniform<int>(int location, const int& value) {
     gl::glUniform1i(location, value);
 }

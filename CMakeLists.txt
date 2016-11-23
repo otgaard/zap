@@ -4,9 +4,6 @@ project(zap)
 #########################################
 # PROJECT CONFIG
 
-#set(CMAKE_BUILD_TYPE "Release")
-#set(CMAKE_BUILD_TYPE "Debug")
-
 set(CMAKE_STATIC_BUILD FALSE)
 
 # Default to third_party lib for dependencies
@@ -24,7 +21,7 @@ set(CMAKE_CXX_STANDARD 14)
 add_definitions(-Wall -Werror -DGLEW_STATIC)
 elseif(UNIX)
 set(CMAKE_CXX_STANDARD 14)
-add_definitions(-Wall -Werror)
+add_definitions(-Wall -Werror -DGLEW_STATIC)
 elseif(WIN32)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS )
