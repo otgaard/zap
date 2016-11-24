@@ -223,6 +223,58 @@ namespace zap { namespace generators {
             return std::make_tuple(vertices, indices);
         }
 
+        template <typename IndexT=uint16_t>
+        static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_isosphere(int subdivision_levels) {
+            if(subdivision_levels > 10) return std::make_tuple(std::vector<VertexT>(), std::vector<IndexT>());
+            const size_t vertex_exp[10] = { 58, 263, 1104, 4476, 18002, 72135, 282864, 889383, 2995613, 10982403 };
+            //const size_t index_exp[10] = { 240, 960, 3840, 15360, 61440, 245760, 983040, 3932160, 15728640, 62914560 };
+
+            size_t vertex_count = std::accumulate(vertex_exp, vertex_exp+subdivision_levels, size_t(0));
+            //size_t index_count = std::accumulate(index_exp, index_exp+subdivision_levels, size_t(0));
+
+            using edge_midpoint_tbl = std::map<std::tuple<int,int>, int>;
+            std::vector<VertexT> vbuf;
+            std::vector<IndexT> ibuf;
+
+            std::tie(vbuf, ibuf) = generators::geometry3<VertexT, Primitive>::template make_icosahedron<float>();
+
+            vbuf.reserve(vertex_count);   // TODO: Work out formula to calculate number of vertices & faces
+
+            edge_midpoint_tbl midpoints;
+
+            auto get_centre = [&vbuf, &midpoints](int p1, int p2)->int {
+                auto key = p1 < p2 ? std::make_tuple(p1,p2) : std::make_tuple(p2,p1);
+                auto it = midpoints.find(key);
+                if(it != midpoints.end()) return it->second;
+
+                auto& pnt1 = vbuf[p1].position;
+                auto& pnt2 = vbuf[p2].position;
+
+                int idx = int(vbuf.size());
+                vbuf.push_back({{normalise(.5f*(pnt1+pnt2))}});
+                midpoints.insert(std::make_pair(std::make_tuple(p1,p2), idx));
+                return idx;
+            };
+
+            for(size_t sub = 0; sub != subdivision_levels; ++sub) {
+                std::vector<uint16_t> new_ibuf;
+                new_ibuf.reserve(ibuf.size()*4*3);
+
+                for(size_t idx = 0, iend = ibuf.size()/3; idx != iend; ++idx) {
+                    int offset = 3*idx, oA = ibuf[offset], oB = ibuf[offset+1], oC = ibuf[offset+2];
+                    int nA = get_centre(oA,oB), nB = get_centre(oB,oC), nC = get_centre(oC,oA);
+                    new_ibuf.push_back(oA); new_ibuf.push_back(nA), new_ibuf.push_back(nC);
+                    new_ibuf.push_back(oB); new_ibuf.push_back(nB), new_ibuf.push_back(nA);
+                    new_ibuf.push_back(oC); new_ibuf.push_back(nC), new_ibuf.push_back(nB);
+                    new_ibuf.push_back(nA); new_ibuf.push_back(nB), new_ibuf.push_back(nC);
+                }
+
+                ibuf = std::move(new_ibuf);
+            }
+
+            return std::make_tuple(vbuf, ibuf);
+        }
+
         template <typename T, typename IndexT=uint16_t>
         static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_UVsphere(int z_samples, int radial_samples, T radius, bool inside) {
             int zsm1 = z_samples-1, zsm2 = z_samples-2, zsm3 = z_samples-3;

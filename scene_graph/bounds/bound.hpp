@@ -44,7 +44,6 @@ namespace zap { namespace engine {
     protected:
         geo_t geometry_;
     };
-
 }}
 
 #endif //ZAP_BOUND_HPP
