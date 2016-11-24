@@ -13,7 +13,7 @@
 
 using namespace zap;
 
-bool is_file(const std::string& filename) {
+bool zap::is_file(const std::string& filename) {
 #ifndef WIN32
     struct stat buf;
     return stat(filename.c_str(), &buf) == 0 && S_ISREG(buf.st_mode);
@@ -22,7 +22,7 @@ bool is_file(const std::string& filename) {
 #endif
 }
 
-bool is_dir(const std::string& path) {
+bool zap::is_dir(const std::string& path) {
 #ifndef WIN32
     struct stat buf;
     return stat(path.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode);
@@ -31,7 +31,7 @@ bool is_dir(const std::string& path) {
 #endif
 }
 
-std::vector<std::string> get_files(const std::string& path) {
+std::vector<std::string> zap::get_files(const std::string& path) {
     std::vector<std::string> out;
 
 #ifdef WIN32
