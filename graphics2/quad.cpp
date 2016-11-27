@@ -5,7 +5,7 @@
 
 #define GLSL(src) "#version 330 core\n" #src
 
-using namespace zap::graphics2;
+using namespace zap::graphics;
 
 const char* const quadvshdr_source = GLSL(
     in vec2 position;

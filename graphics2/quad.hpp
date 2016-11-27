@@ -2,13 +2,13 @@
 #ifndef ZAP_QUAD_HPP
 #define ZAP_QUAD_HPP
 
-#include "graphics2.hpp"
+#include "graphics2_types.hpp"
 #include "engine/program.hpp"
 #include "engine/texture.hpp"
 #include "maths/transform.hpp"
 #include "renderer/camera.hpp"
 
-namespace zap { namespace graphics2 {
+namespace zap { namespace graphics {
 
 class quad {
 public:
@@ -31,7 +31,7 @@ private:
     engine::program* override_;
     engine::texture texture_;
     vbuf_p2t2_t vbuf_;
-    mesh_p2t2_trifan_t mesh_;
+    mesh_p2t2_tfan_t mesh_;
     vec2i screen_;
 };
 

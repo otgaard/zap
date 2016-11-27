@@ -5,6 +5,7 @@
 #ifndef ZAP_CONVOLUTION_HPP
 #define ZAP_CONVOLUTION_HPP
 
+#include <vector>
 #include <maths/maths.hpp>
 
 namespace zap { namespace generators {

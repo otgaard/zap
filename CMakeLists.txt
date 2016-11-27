@@ -25,6 +25,7 @@ add_definitions(-Wall -Werror -DGLEW_STATIC)
 elseif(WIN32)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS )
+add_definitions(-DGLEW_STATIC)
 endif(APPLE)
 
 #########################################
@@ -93,12 +94,7 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         generators/textures/convolution.hpp
         generators/noise/perlin.hpp
         generators/noise/noise.hpp
-        graphics2/plotter2.hpp
-        graphics2/curve_input.hpp
         core/enumfield.hpp
-        graphics2/quad.hpp
-        graphics2/graphics2.hpp
-        graphics2/quad.hpp
         renderer/renderer.hpp
         engine/pixmap.hpp
         renderer/camera.hpp
@@ -112,7 +108,6 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         renderer/render_state.hpp
         tools/os.hpp
         renderer/renderer_fwd.hpp
-        effects/part_engine.hpp
         engine/sampler.hpp)
 
 set(ZAP_ENGINE_FILES
@@ -129,19 +124,33 @@ set(ZAP_ENGINE_FILES
         generators/geometry/surface.cpp
         renderer/colour.cpp
         generators/noise/noise.cpp
-        graphics2/plotter2.cpp
-        graphics2/curve_input.cpp
-        graphics2/quad.cpp
         renderer/renderer.cpp
         engine/pixmap.cpp
-        graphics2/quad.cpp
         renderer/material.cpp
         renderer/light.cpp
         renderer/style.cpp
         renderer/render_state.cpp
         tools/os.cpp
-        effects/particle_engine.cpp
         engine/sampler.cpp)
+
+set(ZAP_GRAPHICS_PUBLIC_HEADERS
+        graphics2/quad.hpp
+        graphics2/graphics2_types.hpp
+        graphics2/plotter/plotter.hpp
+        graphics2/curve_input.hpp
+        effects/particle_engine.hpp graphics2/plotter/plot_sampler.hpp)
+
+set(ZAP_GRAPHICS_FILES
+        graphics2/curve_input.cpp
+        graphics2/quad.cpp
+        effects/particle_engine.cpp
+        graphics2/plotter/plotter.cpp graphics2/plotter/plot_grid.cpp graphics2/plotter/plot_grid.hpp)
+
+set(ZAP_HOST_PUBLIC_HEADERS
+        host/GLFW/application.hpp)
+
+set(ZAP_HOST_FILES
+        host/GLFW/application.cpp)
 
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
@@ -156,26 +165,20 @@ set(STB_ARCHIVE
         third_party/stb/stb.c)
 
 set(ZAP_EXAMPLE_FILES
-        apps/zap_example/zap_example.cpp
-        apps/application.cpp
-        apps/application.hpp
-        apps/graphic_types.hpp
-        )
+        examples/zap_example/zap_example.cpp
+        examples/graphic_types.hpp)
 
 set(TRACER_FILES
-        apps/application.cpp
-        apps/application.hpp
-        apps/tracer/tracer.cpp)
+        examples/tracer/tracer.cpp)
 
 set(RASTERISER_FILES
-        apps/application.cpp
-        apps/application.hpp
-        apps/raster/raster.cpp)
+        examples/raster/raster.cpp)
 
 set(PART_ENGINE_FILES
-        apps/application.cpp
-        apps/application.hpp
-        apps/particle_engine/part_engine.cpp)
+        examples/particle_engine/particle_engine.cpp)
+
+set(PLOTTER_FILES
+        examples/plotter/plotter.cpp)
 
 #########################################
 # DEPENDENCIES
@@ -196,9 +199,9 @@ if(APPLE)
     find_library(COREVIDEO CoreVideo)
     find_library(QUARTZ QuartzCore)
     find_library(OPENGL OpenGL)
-    set(GLFW_LIBS ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL})
+    set(GLFW_LIBS ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL} glfw3)
     set(GTEST_LIBS )
-    set(LOADER_LIBS ${GLEW_LIB})
+    set(LOADER_LIBS ${GLEW_LIB} ${OPENGL})
 elseif(UNIX)
     find_library(OPENGL GL)
     find_library(M m)
@@ -210,13 +213,11 @@ elseif(UNIX)
     find_library(X11 X11)
     find_library(XXF86VM Xxf86vm)
     find_library(PTHREAD pthread)
-    set(GLFW_LIBS ${OPENGL} ${M} ${DYNLINK} ${XINERAMA} ${XRANDR} ${XI} ${XCURSOR} ${X11} ${XXF86VM} ${PTHREAD})
-    set(GTEST_LIBS ${PTHREAD})
+    set(GLFW_LIBS ${OPENGL} ${M} ${DYNLINK} ${XINERAMA} ${XRANDR} ${XI} ${XCURSOR} ${X11} ${XXF86VM} ${PTHREAD} glfw3)
     set(LOADER_LIBS ${GLEW_LIB})
 elseif(WIN32)
-    set(GLFW_LIBS opengl32.lib ${GLEW_LIB})
-    set(GTEST_LIBS )
-    set(LOADER_LIBS )
+    set(GLFW_LIBS glfw3)
+    set(LOADER_LIBS opengl32.lib ${GLEW_LIB})
 endif(APPLE)
 
 #########################################
@@ -228,30 +229,39 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 if(CMAKE_STATIC_BUILD)
     add_library(zapMaths STATIC ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
     add_library(zapEngine STATIC ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS})
+    add_library(zapGraphics STATIC ${ZAP_GRAPHICS_FILES} ${ZAP_GRAPHICS_PUBLIC_HEADERS})
+    add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
 else(CMAKE_STATIC_BUILD)
     add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
     add_library(zapEngine SHARED ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS})
+    add_library(zapGraphics SHARED ${ZAP_GRAPHICS_FILES} ${ZAP_GRAPHICS_PUBLIC_HEADERS})
+    add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES})
-    target_link_libraries(zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
-    target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(zapEngine zapMaths ${LOADER_LIBS})
+    target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS})
+    target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS})
 endif(CMAKE_STATIC_BUILD)
 
 add_library(stb STATIC ${STB_ARCHIVE})
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example glfw3 zapEngine zapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example zapHost zapEngine zapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(tracer ${TRACER_FILES})
-target_link_libraries(tracer glfw3 zapRaytracer zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(tracer zapRaytracer zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(raster ${RASTERISER_FILES})
-target_link_libraries(raster glfw3 zapRasteriser zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(raster zapRasteriser zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(particle_engine ${PART_ENGINE_FILES})
-target_link_libraries(particle_engine glfw3 zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(particle_engine zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
+add_executable(plotter ${PLOTTER_FILES})
+target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
 
 #########################################
 # INSTALL
@@ -259,6 +269,8 @@ target_link_libraries(particle_engine glfw3 zapEngine zapMaths ${GLFW_LIBS} ${LO
 if(APPLE)
 install(TARGETS zapMaths LIBRARY DESTINATION lib)
 install(TARGETS zapEngine LIBRARY DESTINATION lib)
+install(TARGETS zapGraphics LIBRARY DESTINATION lib)
+install(TARGETS zapHost ARCHIVE DESTINATION lib)
 install(TARGETS zapRaytracer LIBRARY DESTINATION lib)
 install(TARGETS zapRasteriser LIBRARY DESTINATION lib)
 install(TARGETS zap_example RUNTIME DESTINATION bin)
@@ -268,6 +280,8 @@ install(TARGETS particle_engine RUNTIME DESTINATION bin)
 elseif(WIN32)
 install(TARGETS zapMaths DESTINATION lib)
 install(TARGETS zapEngine DESTINATION lib)
+install(TARGETS zapGraphics DESTINATION lib)
+install(TARGETS zapHost LIBRARY DESTINATION lib)
 install(TARGETS zapRaytracer DESTINATION lib)
 install(TARGETS zapRasteriser DESTINATION lib)
 install(TARGETS zap_example DESTINATION bin)

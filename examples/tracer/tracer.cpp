@@ -3,7 +3,7 @@
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
-#include "apps/application.hpp"
+#include "host/GLFW/application.hpp"
 #include "graphics2/quad.hpp"
 #include "raytracer/raytracer.hpp"
 

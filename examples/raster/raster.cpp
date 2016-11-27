@@ -6,7 +6,7 @@
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include <renderer/colour.hpp>
-#include "apps/application.hpp"
+#include "host/GLFW/application.hpp"
 #include "graphics2/quad.hpp"
 #include "rasteriser/canvas.hpp"
 

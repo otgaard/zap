@@ -4,8 +4,8 @@
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include <engine/texture.hpp>
-#include "apps/application.hpp"
-#include "effects/part_engine.hpp"
+#include "host/GLFW/application.hpp"
+#include "effects/particle_engine.hpp"
 #include "renderer/camera.hpp"
 
 using namespace zap;

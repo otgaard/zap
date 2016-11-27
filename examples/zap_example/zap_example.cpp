@@ -6,8 +6,8 @@
 #include <tools/log.hpp>
 #include <maths/geometry/AABB.hpp>
 #include <generators/textures/planar.hpp>
-#include "apps/application.hpp"
-#include "apps/graphic_types.hpp"
+#include "host/GLFW/application.hpp"
+#include "examples/graphic_types.hpp"
 #include "generators/geometry/geometry3.hpp"
 
 using namespace zap;

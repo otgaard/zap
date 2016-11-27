@@ -103,7 +103,7 @@ int application::run() {
 
     timer_.start();
     double curr_time = timer_.getd();
-    double prev_time = curr_time;
+    double prev_time;
 
     while(!glfwWindowShouldClose(window)) {
         prev_time = curr_time;
