@@ -224,7 +224,7 @@ namespace zap { namespace generators {
         }
 
         template <typename IndexT=uint16_t>
-        static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_isosphere(int subdivision_levels) {
+        static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_isosphere(size_t subdivision_levels) {
             if(subdivision_levels > 10) return std::make_tuple(std::vector<VertexT>(), std::vector<IndexT>());
             const size_t vertex_exp[10] = { 58, 263, 1104, 4476, 18002, 72135, 282864, 889383, 2995613, 10982403 };
             //const size_t index_exp[10] = { 240, 960, 3840, 15360, 61440, 245760, 983040, 3932160, 15728640, 62914560 };

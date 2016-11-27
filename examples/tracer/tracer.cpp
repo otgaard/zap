@@ -11,7 +11,7 @@ using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
 using namespace zap::renderer;
-using namespace zap::graphics2;
+using namespace zap::graphics;
 
 class tracer : public application {
 public:

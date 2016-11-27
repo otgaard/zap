@@ -2,6 +2,7 @@
 // Created by Darren Otgaar on 2016/08/26.
 //
 
+#include <algorithm>
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
@@ -14,7 +15,7 @@ using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
 using namespace zap::renderer;
-using namespace zap::graphics2;
+using namespace zap::graphics;
 using namespace zap::rasteriser;
 
 class raster : public application {

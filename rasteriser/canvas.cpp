@@ -1,7 +1,9 @@
 /* Created by Darren Otgaar on 2016/08/20. http://www.github.com/otgaard/zap */
+
 #include <renderer/colour.hpp>
 #include "canvas.hpp"
 
+#include <algorithm>
 #include <maths/io.hpp>
 
 using namespace zap::engine;
@@ -388,7 +390,7 @@ void canvas::line(int x1, int y1, int x2, int y2) {
         if(!(code1 | code2)) { accept = true; done = true; }        // Whole line contained
         else if(code1 & code2) done = true;                         // Whole line rejected
         else {
-            int x, y;
+            int x=0, y=0;
             codeOut = code1 ? code1 : code2;
             if(codeOut & CP_TOP) {
                 x = x1 + (x2 - x1) * (clip_region_.top - y1) / (y2 - y1);
@@ -426,13 +428,13 @@ void canvas::polyline(const std::vector<segment2i>& polyline) {
 void canvas::polyline(const std::vector<vec2i>& polyline) {
     auto size = polyline.size();
     if(size < 2) return;
-    for(int i = 0, j = 1; j != size; i = j, ++j) line(polyline[i], polyline[j]);
+    for(size_t i = 0, j = 1; j != size; i = j, ++j) line(polyline[i], polyline[j]);
 }
 
 void canvas::polyloop(const std::vector<vec2i>& polyloop) {
     auto size = polyloop.size();
     if(size < 2) return;
-    for(int i = 0, j = 1; j != size; i = j, ++j) line(polyloop[i], polyloop[j]);
+    for(size_t i = 0, j = 1; j != size; i = j, ++j) line(polyloop[i], polyloop[j]);
     size--;
     line(polyloop[size], polyloop[0]);
 }
@@ -470,13 +472,13 @@ struct edge_table {
             return (A.y < B.y) || (A.y == B.y && A.x < B.x);
         });
 
-        int counter = 0;
+        size_t counter = 0;
         while(counter != vl.size()) {
             auto it = std::find(polygon.begin(), polygon.end(), vl[counter]);
             if(it->y == yrange.max) break; // We must be at the last vertex or one of the last vertices
 
             auto i = it - polygon.begin();
-            auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == polygon.size()-1 ? 0 : i+1;
+            auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == int(polygon.size())-1 ? 0 : i+1;
             if(polygon[left].x > polygon[right].x) std::swap(left,right);
 
             if(polygon[left].y < it->y && polygon[right].y < it->y) { counter++; continue; }
