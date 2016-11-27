@@ -266,7 +266,7 @@ target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS
 #########################################
 # INSTALL
 
-if(APPLE)
+if(APPLE OR UNIX)
 install(TARGETS zapMaths LIBRARY DESTINATION lib)
 install(TARGETS zapEngine LIBRARY DESTINATION lib)
 install(TARGETS zapGraphics LIBRARY DESTINATION lib)
@@ -288,7 +288,7 @@ install(TARGETS zap_example DESTINATION bin)
 install(TARGETS tracer DESTINATION bin)
 install(TARGETS raster DESTINATION bin)
 install(TARGETS particle_engine DESTINATION bin)
-endif(APPLE)
+endif(APPLE OR UNIX)
 
 foreach(file ${ZAP_MATHS_PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)
