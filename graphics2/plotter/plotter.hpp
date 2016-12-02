@@ -9,8 +9,9 @@
 /*
  * This class is intended for rendering simple plots of piecewise-linearly sampled functions.
  */
+
 namespace zap { namespace graphics {
-    using namespace maths;
+    using vec2f = maths::vec2f;
 
     class plotter {
     public:
@@ -26,6 +27,7 @@ namespace zap { namespace graphics {
             inline void set_domain_grid(float majors, float minors=0.f) { domain_maj_min.set(majors, minors); }
             inline void set_range_grid(float majors, float minors=0.f) { domain_maj_min.set(majors, minors); }
 
+            grid() = default;
             grid(const vec2f& domain, const vec2f& domain_maj_min, const vec2f& range, const vec2f& range_maj_min,
                  bool keep_aspect_ratio=true) : domain(domain), domain_maj_min(domain_maj_min), range(range),
                                                 range_maj_min(range_maj_min), keep_aspect_ratio(keep_aspect_ratio) { }
@@ -35,12 +37,15 @@ namespace zap { namespace graphics {
         plotter(const vec2f& domain, const vec2f& range, const float majors=1.f);
         ~plotter();
 
+        void set_grid(const grid& g);
+
         bool initialise();
 
         void update(double t, float dt);
         void draw(const renderer::camera& cam);
 
     protected:
+        bool build_grid();
 
     private:
         struct state_t;

@@ -138,13 +138,14 @@ set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/graphics2_types.hpp
         graphics2/plotter/plotter.hpp
         graphics2/curve_input.hpp
-        effects/particle_engine.hpp graphics2/plotter/plot_sampler.hpp)
+        effects/particle_engine.hpp
+        graphics2/plotter/plot_sampler.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp
         graphics2/quad.cpp
         effects/particle_engine.cpp
-        graphics2/plotter/plotter.cpp graphics2/plotter/plot_grid.cpp graphics2/plotter/plot_grid.hpp)
+        graphics2/plotter/plotter.cpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)

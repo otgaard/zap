@@ -14,7 +14,7 @@ namespace gl {
     void vertex_attrib_lptr(uint32_t index, int32_t size, data_type type, uint32_t stride, const void* ptr);
 }
 
-template <typename VTX_T, buffer_usage USAGE>
+template <typename VTX_T, buffer_usage USAGE=buffer_usage::BU_STATIC_DRAW>
 class vertex_buffer : public buffer {
     static_assert(is_specialisation_of<vertex, VTX_T>::value, "VTX_T must be a specialisation of vertex<>");
 

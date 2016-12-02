@@ -32,6 +32,8 @@ bool plotter::initialise() {
     cam_.frustum(0, 1280, 0, 768, 0, 1);
     cam_.frame(vec3f(0, 1, 0), vec3f(0, 0, -1), vec3f(0, 0, 0));
 
+    plot_.set_grid(graphics::plotter::grid(vec2f(-400,400), vec2f(1.f, .5f), vec2f(-400,400), vec2f(1.f, .5f)));
+
     if(!plot_.initialise()) {
         LOG_ERR("Failed to initialise graphics::plotter");
         return false;
