@@ -48,8 +48,8 @@ bool plotter::initialise() {
     plot_.world_transform.uniform_scale(500.f);
 
     // Set up a sampler & and plot
-    std::vector<float> data(10);
-    for(int i = 0; i != data.size(); ++i) data[i] = rand()/float(RAND_MAX);
+    std::vector<float> data(20);
+    for(int i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/19))*.45f;
 
     auto sampler2 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::cosine<float>);
     plot_.add_plot(sampler2, 1000, vec3b(255, 0, 255));
@@ -63,6 +63,10 @@ bool plotter::initialise() {
     auto sampler1 = graphics::sampler1D<float, decltype(graphics::interpolators::cubic<float>)>(data, graphics::interpolators::cubic<float>);
     plot_.add_plot(sampler1, 1000, vec3b(255, 255, 0));
 
+    data.resize(1000);
+    for(int i = 0; i != 1000; ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/999))*.45f;
+    auto sampler3 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::linear<float>);
+    plot_.add_plot(sampler3, 1000, vec3b(255,255,255));
 
     return true;
 }
