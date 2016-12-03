@@ -43,7 +43,7 @@ struct plotter::state_t {
     std::vector<size_t> lines;
 
     // A single live-plot for now
-    sampler1D<float>* sampler_ptr;
+    sampler1D<float, decltype(graphics::interpolators::cosine<float>)>* sampler_ptr;
     size_t live_samples;
     vec3b live_colour;
 };
@@ -159,36 +159,32 @@ bool plotter::build_grid() {
     return success && !gl_error_check();
 }
 
-bool plotter::build_plot(const sampler1D<float>& sampler, size_t start, size_t samples, const vec3b& colour) {
-    const float inv_x = 1.f/(samples-1);
-
-    bool success = false;
-
+bool plotter::map_buffer() {
     s.vbuf.bind();
-    if(s.vbuf.map(buffer_access::BA_WRITE_ONLY)) {
-        for(int i = 0; i != samples; ++i) {
-            auto idx = start + i;
+    return s.vbuf.map(buffer_access::BA_READ_WRITE) != nullptr;
+}
 
-            s.vbuf[idx].position.set(inv_x * i, sampler(inv_x * i));
-            s.vbuf[idx].colour1 = colour;
-        }
-        s.vbuf.unmap();
-        success = true;
+void plotter::unmap_buffer() {
+    s.vbuf.unmap();
+}
+
+void plotter::set_position(size_t idx, const vec2f& P) {
+    if(s.vbuf.is_mapped()) {
+        s.vbuf[idx].position = P;
     }
-    s.vbuf.release();
-    return success && !gl_error_check();
 }
 
+void plotter::set_colour(size_t idx, const vec3b& C) {
+    if(s.vbuf.is_mapped()) {
+        s.vbuf[idx].colour1 = C;
+    }
+}
 
-void plotter::add_plot(const sampler1D<float>& sampler, size_t samples, const vec3b& colour) {
-    build_plot(sampler, s.vtx_offset, samples, colour);
-    s.lines.push_back(s.vtx_offset + samples);
+size_t plotter::vertex_offset() const {
+    return s.vtx_offset;
+}
+
+void plotter::add_plot_vertices(size_t samples) {
     s.vtx_offset += samples;
-}
-
-void plotter::add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour) {
-    s.sampler_ptr = sampler_ptr;
-    s.live_samples = samples;
-    s.live_colour = colour;
-    build_plot(*sampler_ptr, s.vtx_offset, samples, colour);
+    s.lines.push_back(s.vtx_offset);
 }

@@ -42,9 +42,20 @@ namespace zap { namespace graphics {
 
         void set_grid(const grid& g);
 
-        void add_plot(const sampler1D<float>& sampler, size_t samples, const vec3b& colour);
-        void add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour);
+        template <typename T, typename Interpolator>
+        void add_plot(const sampler1D<T, Interpolator>& sampler, size_t samples, const vec3b& colour) {
+            build_plot(sampler, vertex_offset(), samples, colour);
+            add_plot_vertices(samples);
+        }
 
+        /*
+        void plotter::add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour) {
+            s.sampler_ptr = sampler_ptr;
+            s.live_samples = samples;
+            s.live_colour = colour;
+            build_plot(*sampler_ptr, s.vtx_offset, samples, colour);
+        }
+        */
         bool initialise();
 
         void update(double t, float dt);
@@ -52,9 +63,32 @@ namespace zap { namespace graphics {
 
         maths::transform3f world_transform;
 
+
+
     protected:
+        size_t vertex_offset() const;
+        void add_plot_vertices(size_t samples);
+
+        bool map_buffer();
+        void unmap_buffer();
+        void set_position(size_t idx, const vec2f& P);
+        void set_colour(size_t idx, const vec3b& C);
+
         bool build_grid();
-        bool build_plot(const sampler1D<float>& sampler, size_t start, size_t samples, const vec3b& colour);
+        template <typename T, typename Interpolator>
+        void build_plot(const sampler1D<T, Interpolator>& sampler, size_t start, size_t samples, const vec3b& colour) {
+            const float inv_x = 1.f/(samples-1);
+
+            if(map_buffer()) {
+                for(int i = 0; i != samples; ++i) {
+                    auto idx = start + i;
+
+                    set_position(idx, vec2f(inv_x * i, sampler(inv_x * i)));
+                    set_colour(idx, colour);
+                }
+            }
+            unmap_buffer();
+        }
 
     private:
         struct state_t;
