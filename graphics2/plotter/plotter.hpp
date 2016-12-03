@@ -4,7 +4,9 @@
 
 #include <memory>
 #include <maths/algebra.hpp>
+#include <maths/transform.hpp>
 #include <renderer/renderer_fwd.hpp>
+#include "plot_sampler.hpp"
 
 /*
  * This class is intended for rendering simple plots of piecewise-linearly sampled functions.
@@ -12,6 +14,7 @@
 
 namespace zap { namespace graphics {
     using vec2f = maths::vec2f;
+    using vec3b = maths::vec3b;
 
     class plotter {
     public:
@@ -39,10 +42,14 @@ namespace zap { namespace graphics {
 
         void set_grid(const grid& g);
 
+        void add_plot(const sampler1D<float>& obj, size_t samples, const vec3b& colour);
+
         bool initialise();
 
         void update(double t, float dt);
         void draw(const renderer::camera& cam);
+
+        maths::transform3f world_transform;
 
     protected:
         bool build_grid();

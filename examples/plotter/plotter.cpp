@@ -1,6 +1,7 @@
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
+#include <maths/algebra.hpp>
 #include "host/GLFW/application.hpp"
 #include <graphics2/plotter/plotter.hpp>
 #include <renderer/camera.hpp>
@@ -32,12 +33,30 @@ bool plotter::initialise() {
     cam_.frustum(0, 1280, 0, 768, 0, 1);
     cam_.frame(vec3f(0, 1, 0), vec3f(0, 0, -1), vec3f(0, 0, 0));
 
-    plot_.set_grid(graphics::plotter::grid(vec2f(-400,400), vec2f(1.f, .5f), vec2f(-400,400), vec2f(1.f, .5f)));
+    line_width(.5f);
+
+    plot_.set_grid(graphics::plotter::grid(vec2f(0,1.f), vec2f(.1f, .05f), vec2f(0,1.f), vec2f(.1f, .05f)));
 
     if(!plot_.initialise()) {
         LOG_ERR("Failed to initialise graphics::plotter");
         return false;
     }
+
+    plot_.world_transform.translate(vec2f(1280/2.f - 350/2.f, 768/2.f - 350/2.f));
+    plot_.world_transform.uniform_scale(350.f);
+
+    // Set up a sampler & and plot
+    std::vector<float> data(4);
+    for(int i = 0; i != data.size(); ++i) data[i] = rand()/float(RAND_MAX);
+
+    auto sampler = graphics::sampler1D<float>(data, graphics::interpolators::cubic<float>);
+    plot_.add_plot(sampler, 1000, vec3b(255, 255, -0));
+
+    sampler = graphics::sampler1D<float>(data, graphics::interpolators::linear<float>);
+    plot_.add_plot(sampler, 1000, vec3b(0, 0, 255));
+
+    sampler = graphics::sampler1D<float>(data, graphics::interpolators::nearest<float>);
+    plot_.add_plot(sampler, 1000, vec3b(255, 0, 0));
 
     return true;
 }

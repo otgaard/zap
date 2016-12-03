@@ -18,27 +18,62 @@ namespace detail {
     struct attribute_info {
         using type = typename T::type;
         constexpr static size_t size = T::size();
+        constexpr static bool is_int_type = attribute_info<type>::is_int_type;
     };
 
     template <> struct attribute_info<byte> {
         using type = byte;
         constexpr static size_t size = 1;
+        constexpr static bool is_int_type = true;
     };
 
     template <> struct attribute_info<short> {
         using type = short;
         constexpr static size_t size = 1;
+        constexpr static bool is_int_type = true;
+    };
+
+    template <> struct attribute_info<unsigned short> {
+        using type = unsigned short;
+        constexpr static size_t size = 1;
+        constexpr static bool is_int_type = true;
+    };
+
+    template <> struct attribute_info<int> {
+        using type = unsigned short;
+        constexpr static size_t size = 1;
+        constexpr static bool is_int_type = true;
+    };
+
+    template <> struct attribute_info<unsigned int> {
+        using type = unsigned int;
+        constexpr static size_t size = 1;
+        constexpr static bool is_int_type = true;
     };
 
     template <> struct attribute_info<float> {
         using type = float;
         constexpr static size_t size = 1;
+        constexpr static bool is_int_type = false;
+    };
+
+    template <> struct attribute_info<double> {
+        using type = double;
+        constexpr static size_t size = 1;
+        constexpr static bool is_double_type = true;    // This is meant to generate an error, no support for double types yet
     };
 
     template <size_t k, typename Vertex>
     struct vattrib_count {
         enum {
             value = attribute_info<typename core::pod_query<k, Vertex>::type::type>::size
+        };
+    };
+
+    template <size_t k, typename Vertex>
+    struct vattrib_is_int {
+        enum {
+            value = attribute_info<typename core::pod_query<k, Vertex>::type::type>::is_int_type
         };
     };
 
@@ -59,6 +94,7 @@ struct vertex : core::pod<Args...> {
     using offsets = typename core::generate_table<size, pod_t, core::pod_offset>::result;
     using types = typename core::generate_table<size, pod_t, core::pod_id>::result;
     using counts = typename core::generate_table<size, pod_t, detail::vattrib_count>::result;
+    using is_int = typename core::generate_table<size, pod_t, detail::vattrib_is_int>::result;
     using datatypes = typename core::generate_table<size, pod_t, detail::vattrib_datatype>::result;
     using fieldsizes = typename core::generate_table<size, pod_t, core::pod_size>::result;
     constexpr static size_t bytesize() { return sizeof(vertex); }
@@ -103,7 +139,7 @@ public:
     template <typename T> friend vertex_iterator<T> operator+(size_t lhs, const vertex_iterator<T>& rhs);
     vertex_iterator& operator-=(size_t v) { ptr_ -= v; return *this; }
     template <typename T> friend vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs);
-    template <typename T> friend int operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs);
+    template <typename T> friend ptrdiff_t operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs);
 
 private:
     vertex_t* ptr_;
@@ -145,7 +181,7 @@ vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs) {
 }
 
 template <typename T>
-int operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+ptrdiff_t operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
     return lhs.ptr_ - rhs.ptr_;
 }
 
