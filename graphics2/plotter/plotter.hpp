@@ -48,6 +48,12 @@ namespace zap { namespace graphics {
             add_plot_vertices(samples);
         }
 
+        template <typename T, typename Interpolator>
+        void live_plot(const sampler1D<T, Interpolator>& sampler, size_t samples, const vec3b& colour) {
+            build_plot(sampler, vertex_offset(), samples, colour);
+            live_ = true;
+        }
+
         /*
         void plotter::add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour) {
             s.sampler_ptr = sampler_ptr;
@@ -62,8 +68,6 @@ namespace zap { namespace graphics {
         void draw(const renderer::camera& cam);
 
         maths::transform3f world_transform;
-
-
 
     protected:
         size_t vertex_offset() const;
@@ -91,6 +95,7 @@ namespace zap { namespace graphics {
         }
 
     private:
+        bool live_;
         struct state_t;
         std::unique_ptr<state_t> state_;
         state_t& s;

@@ -41,11 +41,6 @@ struct plotter::state_t {
     size_t grid_offset;
     size_t vtx_offset;
     std::vector<size_t> lines;
-
-    // A single live-plot for now
-    sampler1D<float, decltype(graphics::interpolators::cosine<float>)>* sampler_ptr;
-    size_t live_samples;
-    vec3b live_colour;
 };
 
 plotter::plotter() : state_(new state_t()), s(*state_.get()) {
@@ -57,9 +52,7 @@ plotter::plotter(const vec2f& domain, const vec2f& range, const float majors) : 
     s.grid.domain_maj_min.x = majors;
     s.grid.range_maj_min.x = majors;
     s.grid_offset = 0;
-    s.sampler_ptr = nullptr;
-    s.live_samples = 0;
-    s.live_colour = vec3b(255,255,255);
+    live_ = false;
 }
 
 plotter::~plotter() = default;
@@ -90,9 +83,6 @@ bool plotter::initialise() {
 }
 
 void plotter::update(double t, float dt) {
-    if(s.sampler_ptr) {
-        build_plot(*s.sampler_ptr, s.vtx_offset, s.live_samples, s.live_colour);
-    }
 }
 
 void plotter::draw(const renderer::camera& cam) {
@@ -109,7 +99,7 @@ void plotter::draw(const renderer::camera& cam) {
     }
 
     // Draw the live plot
-    if(s.sampler_ptr) s.mesh.draw(primitive_type::PT_LINE_STRIP, s.vtx_offset, s.live_samples);
+    if(live_) s.mesh.draw(primitive_type::PT_LINE_STRIP, s.vtx_offset, 1000);
 
     s.mesh.release();
     s.prog.release();
@@ -136,7 +126,7 @@ bool plotter::build_grid() {
 
             s.vbuf[idx  ].position = vec2f(x_off, s.grid.range.x);
             s.vbuf[idx+1].position = vec2f(x_off, s.grid.range.y);
-            for(int c = 0; c != 2; ++c) s.vbuf[idx+c].colour1.set(50, 50, 50);
+            for(int c = 0; c != 2; ++c) s.vbuf[idx+c].colour1.set(0, 0, 0);
         }
 
         size_t offset = 2*x_samples;
@@ -146,7 +136,7 @@ bool plotter::build_grid() {
 
             s.vbuf[idx  ].position = vec2f(s.grid.domain.x, y_off);
             s.vbuf[idx+1].position = vec2f(s.grid.domain.y, y_off);
-            for(int c = 0; c != 2; ++c) s.vbuf[idx+c].colour1.set(50, 50, 50);
+            for(int c = 0; c != 2; ++c) s.vbuf[idx+c].colour1.set(0, 0, 0);
         }
 
         s.vbuf.unmap();
