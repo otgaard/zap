@@ -41,6 +41,11 @@ struct plotter::state_t {
     size_t grid_offset;
     size_t vtx_offset;
     std::vector<size_t> lines;
+
+    // A single live-plot for now
+    sampler1D<float>* sampler_ptr;
+    size_t live_samples;
+    vec3b live_colour;
 };
 
 plotter::plotter() : state_(new state_t()), s(*state_.get()) {
@@ -52,6 +57,9 @@ plotter::plotter(const vec2f& domain, const vec2f& range, const float majors) : 
     s.grid.domain_maj_min.x = majors;
     s.grid.range_maj_min.x = majors;
     s.grid_offset = 0;
+    s.sampler_ptr = nullptr;
+    s.live_samples = 0;
+    s.live_colour = vec3b(255,255,255);
 }
 
 plotter::~plotter() = default;
@@ -82,6 +90,9 @@ bool plotter::initialise() {
 }
 
 void plotter::update(double t, float dt) {
+    if(s.sampler_ptr) {
+        build_plot(*s.sampler_ptr, s.vtx_offset, s.live_samples, s.live_colour);
+    }
 }
 
 void plotter::draw(const renderer::camera& cam) {
@@ -96,6 +107,9 @@ void plotter::draw(const renderer::camera& cam) {
         s.mesh.draw(primitive_type::PT_LINE_STRIP, offset, s.lines[i] - offset);
         offset = s.lines[i];
     }
+
+    // Draw the live plot
+    if(s.sampler_ptr) s.mesh.draw(primitive_type::PT_LINE_STRIP, s.vtx_offset, s.live_samples);
 
     s.mesh.release();
     s.prog.release();
@@ -136,30 +150,45 @@ bool plotter::build_grid() {
         }
 
         s.vbuf.unmap();
-        success = !gl_error_check();
+        success = true;
     }
 
     s.grid_offset = vertex_count;
     s.vtx_offset = vertex_count;
     s.mesh.release();
-    return success;
+    return success && !gl_error_check();
 }
 
-void plotter::add_plot(const sampler1D<float>& obj, size_t samples, const vec3b& colour) {
+bool plotter::build_plot(const sampler1D<float>& sampler, size_t start, size_t samples, const vec3b& colour) {
     const float inv_x = 1.f/(samples-1);
+
+    bool success = false;
 
     s.vbuf.bind();
     if(s.vbuf.map(buffer_access::BA_WRITE_ONLY)) {
         for(int i = 0; i != samples; ++i) {
-            auto idx = s.vtx_offset + i;
+            auto idx = start + i;
 
-            s.vbuf[idx].position.set(inv_x * i, obj(inv_x * i));
+            s.vbuf[idx].position.set(inv_x * i, sampler(inv_x * i));
             s.vbuf[idx].colour1 = colour;
         }
         s.vbuf.unmap();
+        success = true;
     }
     s.vbuf.release();
+    return success && !gl_error_check();
+}
 
+
+void plotter::add_plot(const sampler1D<float>& sampler, size_t samples, const vec3b& colour) {
+    build_plot(sampler, s.vtx_offset, samples, colour);
     s.lines.push_back(s.vtx_offset + samples);
     s.vtx_offset += samples;
+}
+
+void plotter::add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour) {
+    s.sampler_ptr = sampler_ptr;
+    s.live_samples = samples;
+    s.live_colour = colour;
+    build_plot(*sampler_ptr, s.vtx_offset, samples, colour);
 }

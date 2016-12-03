@@ -127,6 +127,16 @@ namespace zap { namespace maths {
         }
     };
 
+    template <typename Container>
+    std::tuple<typename Container::value_type, typename Container::value_type> find_minmax(const Container& data) {
+        typename Container::value_type min = std::numeric_limits<typename Container::value_type>::max(), max = -min;
+        for(int i = 0; i != data.size(); ++i) {
+            if(data[i] < min) min = data[i];
+            if(data[i] > max) max = data[i];
+        }
+        return std::make_tuple(min, max);
+    }
+
     // Forward Declarations
     template <typename T> struct vec2;
     template <typename T> struct vec3;

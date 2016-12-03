@@ -12,17 +12,6 @@
 #include <vector>
 
 namespace zap { namespace graphics {
-
-    template <typename T>
-    std::tuple<T, T> find_minmax(const std::vector<T>& data) {
-        T min = std::numeric_limits<T>::max(), max = -min;
-        for(int i = 0; i != data.size(); ++i) {
-            if(data[i] < min) min = data[i];
-            if(data[i] > max) max = data[i];
-        }
-        return std::make_tuple(min, max);
-    }
-
     namespace interpolators {
         template <typename T>
         T nearest(const T& A, const T& B, float parm) {
@@ -45,23 +34,19 @@ namespace zap { namespace graphics {
     struct sampler1D {
         using interpolator = decltype(interpolators::nearest<T>);
 
-        sampler1D(const std::vector<T>& data, interpolator fnc) : data(data), inv_x(1.f/(data.size()-1)), fnc(fnc) {
-            std::tie(min, max) = find_minmax(data);
+        sampler1D() : fnc(nullptr) { }
+        sampler1D(const std::vector<T>& data, interpolator fnc) : data(data), inv_u(1.f/(data.size()-1)), fnc(fnc) {
         }
 
-        T operator()(float x) const {
-            if(x <  0.f) return data[0];
-            if(x >= 1.f) return data.back();
-
-            size_t idx = size_t(x * (data.size()-1));
-            float offset = inv_x * idx;
-            return (*fnc)(data[idx], data[idx+1], (x - offset)/inv_x);
+        T operator()(float u) const {
+            assert(0 <= u && u <= 1 && "Sampler parameter out of range [0, 1]");
+            size_t idx = size_t(u * (data.size()-1));
+            float offset = inv_u * idx;
+            return (*fnc)(data[idx], data[idx+1], (u - offset)/inv_u);
         }
 
         std::vector<T> data;
-        float inv_x;            // Default to floating point, possibly make configurable
-        T min;
-        T max;
+        float inv_u;            // Default to floating point, possibly make configurable
         interpolator* fnc;
     };
 

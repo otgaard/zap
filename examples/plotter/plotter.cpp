@@ -26,6 +26,8 @@ public:
 protected:
     camera cam_;
     graphics::plotter plot_;
+
+    graphics::sampler1D<float> live_;
 };
 
 bool plotter::initialise() {
@@ -42,11 +44,11 @@ bool plotter::initialise() {
         return false;
     }
 
-    plot_.world_transform.translate(vec2f(1280/2.f - 350/2.f, 768/2.f - 350/2.f));
-    plot_.world_transform.uniform_scale(350.f);
+    plot_.world_transform.translate(vec2f(1280/2.f - 500/2.f, 768/2.f - 500/2.f));
+    plot_.world_transform.uniform_scale(500.f);
 
     // Set up a sampler & and plot
-    std::vector<float> data(4);
+    std::vector<float> data(10);
     for(int i = 0; i != data.size(); ++i) data[i] = rand()/float(RAND_MAX);
 
     auto sampler = graphics::sampler1D<float>(data, graphics::interpolators::cubic<float>);
@@ -57,6 +59,14 @@ bool plotter::initialise() {
 
     sampler = graphics::sampler1D<float>(data, graphics::interpolators::nearest<float>);
     plot_.add_plot(sampler, 1000, vec3b(255, 0, 0));
+
+    live_.data.resize(100);
+    for(int i = 0; i != live_.data.size(); ++i) {
+        live_.data[i] = rand()/float(RAND_MAX);
+    }
+    live_.fnc = graphics::interpolators::cubic<float>;
+    live_.inv_u = 1.f/(live_.data.size()-1);
+    plot_.add_live_plot(&live_, 1000, vec3b(255,255,255));
 
     return true;
 }
@@ -71,7 +81,17 @@ void plotter::on_mousewheel(double xinc, double yinc) {
 }
 
 void plotter::update(double t, float dt) {
-    plot_.update(t, dt);
+    static float trigger = 0.f;
+
+    trigger += dt;
+    if(trigger > 0.01f) {
+        for(int i = 0, end = (int) live_.data.size() - 1; i != end; ++i) {
+            live_.data[i] = live_.data[i + 1];
+        }
+        live_.data[live_.data.size() - 1] = 0.25f*rand() / float(RAND_MAX) + 0.5f - 0.125f;
+        plot_.update(t, dt);
+        trigger = 0.f;
+    }
 }
 
 void plotter::draw() {

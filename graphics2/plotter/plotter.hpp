@@ -42,7 +42,8 @@ namespace zap { namespace graphics {
 
         void set_grid(const grid& g);
 
-        void add_plot(const sampler1D<float>& obj, size_t samples, const vec3b& colour);
+        void add_plot(const sampler1D<float>& sampler, size_t samples, const vec3b& colour);
+        void add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour);
 
         bool initialise();
 
@@ -53,6 +54,7 @@ namespace zap { namespace graphics {
 
     protected:
         bool build_grid();
+        bool build_plot(const sampler1D<float>& sampler, size_t start, size_t samples, const vec3b& colour);
 
     private:
         struct state_t;
