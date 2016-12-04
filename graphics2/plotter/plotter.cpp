@@ -38,12 +38,15 @@ struct plotter::state_t {
     mesh_plot_ls_t mesh;
     program prog;
 
-    size_t grid_offset;
-    size_t vtx_offset;
+    size_t grid_offset;             // The offset of the buffer position pointing to the end of the grid lines
+    size_t vtx_offset;              // The "write" location for static graphs
     std::vector<size_t> lines;
 };
 
 plotter::plotter() : state_(new state_t()), s(*state_.get()) {
+    s.grid_offset = 0;
+    live_ = false;
+    live_samples_ = 0;
 }
 
 plotter::plotter(const vec2f& domain, const vec2f& range, const float majors) : state_(new state_t()), s(*state_.get()) {
@@ -53,9 +56,14 @@ plotter::plotter(const vec2f& domain, const vec2f& range, const float majors) : 
     s.grid.range_maj_min.x = majors;
     s.grid_offset = 0;
     live_ = false;
+    live_samples_ = 0;
 }
 
 plotter::~plotter() = default;
+
+size_t plotter::capacity() const {
+    return s.vbuf.vertex_count() - s.vtx_offset;
+}
 
 void plotter::set_grid(const grid& g) {
     s.grid = g;
@@ -99,7 +107,7 @@ void plotter::draw(const renderer::camera& cam) {
     }
 
     // Draw the live plot
-    if(live_) s.mesh.draw(primitive_type::PT_LINE_STRIP, s.vtx_offset, 1000);
+    if(live_) s.mesh.draw(primitive_type::PT_LINE_STRIP, s.vtx_offset, live_samples_);
 
     s.mesh.release();
     s.prog.release();
@@ -171,7 +179,7 @@ void plotter::set_colour(size_t idx, const vec3b& C) {
     }
 }
 
-size_t plotter::vertex_offset() const {
+size_t plotter::vertex_count() const {
     return s.vtx_offset;
 }
 

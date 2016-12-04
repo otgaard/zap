@@ -40,28 +40,24 @@ namespace zap { namespace graphics {
         plotter(const vec2f& domain, const vec2f& range, const float majors=1.f);
         ~plotter();
 
+        size_t vertex_count() const;
+        size_t capacity() const;
+
         void set_grid(const grid& g);
 
         template <typename T, typename Interpolator>
         void add_plot(const sampler1D<T, Interpolator>& sampler, size_t samples, const vec3b& colour) {
-            build_plot(sampler, vertex_offset(), samples, colour);
+            build_plot(sampler, vertex_count(), samples, colour);
             add_plot_vertices(samples);
         }
 
         template <typename T, typename Interpolator>
         void live_plot(const sampler1D<T, Interpolator>& sampler, size_t samples, const vec3b& colour) {
-            build_plot(sampler, vertex_offset(), samples, colour);
+            build_plot(sampler, vertex_count(), samples, colour);
             live_ = true;
+            live_samples_ = samples;
         }
 
-        /*
-        void plotter::add_live_plot(sampler1D<float>* sampler_ptr, size_t samples, const vec3b& colour) {
-            s.sampler_ptr = sampler_ptr;
-            s.live_samples = samples;
-            s.live_colour = colour;
-            build_plot(*sampler_ptr, s.vtx_offset, samples, colour);
-        }
-        */
         bool initialise();
 
         void update(double t, float dt);
@@ -70,7 +66,6 @@ namespace zap { namespace graphics {
         maths::transform3f world_transform;
 
     protected:
-        size_t vertex_offset() const;
         void add_plot_vertices(size_t samples);
 
         bool map_buffer();
@@ -81,6 +76,8 @@ namespace zap { namespace graphics {
         bool build_grid();
         template <typename T, typename Interpolator>
         void build_plot(const sampler1D<T, Interpolator>& sampler, size_t start, size_t samples, const vec3b& colour) {
+            assert(samples < capacity() && "Out of range error");
+
             const float inv_x = 1.f/(samples-1);
 
             if(map_buffer()) {
@@ -90,12 +87,13 @@ namespace zap { namespace graphics {
                     set_position(idx, vec2f(inv_x * i, sampler(inv_x * i)));
                     set_colour(idx, colour);
                 }
+                unmap_buffer();
             }
-            unmap_buffer();
         }
 
     private:
         bool live_;
+        size_t live_samples_;
         struct state_t;
         std::unique_ptr<state_t> state_;
         state_t& s;

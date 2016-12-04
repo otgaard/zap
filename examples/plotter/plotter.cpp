@@ -52,26 +52,29 @@ bool plotter::initialise() {
     std::vector<float> data(10);
     for(int i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/(data.size()-1)))*.45f;
 
-    auto sampler2 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::cosine<float>);
+    using fnc1_sig = decltype(graphics::interpolators::nearest<float>);
+    using fnc2_sig = decltype(graphics::interpolators::cubic<float>);
+
+    auto sampler2 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::cosine<float>);
     plot_.add_plot(sampler2, 1000, vec3b(255, 0, 255));
 
-    sampler2 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::linear<float>);
+    sampler2 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::linear<float>);
     plot_.add_plot(sampler2, 1000, vec3b(0, 0, 255));
 
-    sampler2 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::nearest<float>);
+    sampler2 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::nearest<float>);
     plot_.add_plot(sampler2, 1000, vec3b(255, 0, 0));
 
-    auto sampler1 = graphics::sampler1D<float, decltype(graphics::interpolators::cubic<float>)>(data, graphics::interpolators::cubic<float>);
+    auto sampler1 = graphics::sampler1D<float, fnc2_sig>(data, graphics::interpolators::cubic<float>);
     plot_.add_plot(sampler1, 1000, vec3b(0, 255, 0));
 
-    data.resize(1000);
-    for(int i = 0; i != 1000; ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/999))*.45f;
-    auto sampler3 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::linear<float>);
-    plot_.add_plot(sampler3, 1000, vec3b(255, 255, 255));
+    data.resize(2000);
+    for(int i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/(data.size()-1)))*.45f;
+    auto sampler3 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::linear<float>);
+    plot_.add_plot(sampler3, data.size(), vec3b(255, 255, 255));
 
-    live_.data.resize(50, .5f);
-    live_.fnc = graphics::interpolators::linear<float>;
-    live_.inv_u = 1.f/49.f;
+    live_.data.resize(100, .5f);
+    live_.fnc = graphics::interpolators::nearest<float>;
+    live_.inv_u = 1.f/99.f;
 
     return true;
 }
@@ -98,7 +101,7 @@ void plotter::update(double t, float dt) {
 
     std::copy(live_.data.begin()+1, live_.data.end(), live_.data.begin());
     live_.data.back() = (1.f - std::sinf(TWO_PI*curr_t))*.5f;
-    plot_.live_plot(live_, 1000, vec3b(255, 255, 0));
+    plot_.live_plot(live_, 2000, vec3b(255, 255, 0));
     plot_.update(t, dt);
 }
 
