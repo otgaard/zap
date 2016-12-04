@@ -2,6 +2,8 @@
 #include <engine/program.hpp>
 #include <renderer/camera.hpp>
 
+#include <engine/gl_api.hpp>
+
 #include "plotter.hpp"
 #include "graphics2/graphics2_types.hpp"
 
@@ -99,7 +101,9 @@ void plotter::draw(const renderer::camera& cam) {
     s.prog.bind_uniform("PVM", cam.proj_view() * world_transform.gl_matrix());
 
     s.mesh.bind();
+    gl::glLineWidth(.5f);
     s.mesh.draw(primitive_type::PT_LINES, 0, s.grid_offset);
+    gl::glLineWidth(1.f);
 
     size_t offset = s.grid_offset;
     for(int i = 0; i != s.lines.size(); ++i) {

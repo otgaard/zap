@@ -65,6 +65,13 @@ namespace zap { namespace graphics {
             live_samples_ = samples;
         }
 
+        template <typename T, typename PInterpolator, typename CInterpolator>
+        void live_plot(const sampler1D<T, PInterpolator>& sampler, const sampler1D<vec3b, CInterpolator>& colour_sampler, size_t samples) {
+            build_plot(sampler, colour_sampler, vertex_count(), samples);
+            live_ = true;
+            live_samples_ = samples;
+        }
+
         bool initialise();
 
         void update(double t, float dt);
@@ -93,6 +100,24 @@ namespace zap { namespace graphics {
 
                     set_position(idx, vec2f(inv_x * i, sampler(inv_x * i)));
                     set_colour(idx, colour);
+                }
+                unmap_buffer();
+            }
+        }
+
+        template <typename T, typename PInterpolator, typename CInterpolator>
+        void build_plot(const sampler1D<T, PInterpolator>& sampler, const sampler1D<vec3b, CInterpolator>& colour_sampler, size_t start, size_t samples) {
+            assert(samples < capacity() && "Out of range error");
+
+            const float inv_x = 1.f/(samples-1);
+
+            if(map_buffer()) {
+                for(int i = 0; i != samples; ++i) {
+                    auto idx = start + i;
+
+                    const float value = sampler(inv_x * i);
+                    set_position(idx, vec2f(inv_x * i, value));
+                    set_colour(idx, colour_sampler(value));
                 }
                 unmap_buffer();
             }

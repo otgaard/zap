@@ -27,6 +27,7 @@ protected:
     camera cam_;
     graphics::plotter plot_;
     graphics::sampler1D<float, decltype(graphics::interpolators::linear<float>)> live_;
+    graphics::sampler1D<vec3b, decltype(graphics::interpolators::linear<vec3b>)> livec_;
 };
 
 bool plotter::initialise() {
@@ -72,9 +73,20 @@ bool plotter::initialise() {
     auto sampler3 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::linear<float>);
     plot_.add_plot(sampler3, data.size(), vec3b(255, 255, 255));
 
-    live_.data.resize(100, .5f);
-    live_.fnc = graphics::interpolators::nearest<float>;
-    live_.inv_u = 1.f/99.f;
+    live_.data.resize(300, .5f);
+    live_.fnc = graphics::interpolators::linear<float>;
+    live_.inv_u = 1.f/299.f;
+
+    livec_.data.resize(6);
+    livec_.data[0] = vec3b(255, 0, 0);
+    livec_.data[1] = vec3b(0, 255, 0);
+    livec_.data[2] = vec3b(0, 0, 255);
+    livec_.data[3] = vec3b(255, 255, 0);
+    livec_.data[4] = vec3b(0, 255, 255);
+    livec_.data[5] = vec3b(255, 0, 255);
+
+    livec_.fnc = graphics::interpolators::linear<vec3b>;
+    livec_.inv_u = 1.f/5.f;
 
     return true;
 }
@@ -101,7 +113,7 @@ void plotter::update(double t, float dt) {
 
     std::copy(live_.data.begin()+1, live_.data.end(), live_.data.begin());
     live_.data.back() = (1.f - std::sinf(TWO_PI*curr_t))*.5f;
-    plot_.live_plot(live_, 2000, vec3b(255, 255, 0));
+    plot_.live_plot(live_, livec_, 2000);
     plot_.update(t, dt);
 }
 

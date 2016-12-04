@@ -59,8 +59,8 @@ namespace zap { namespace graphics {
     };
 
     template <typename T>
-    struct sampler1D<T, decltype(interpolators::cubic<float>)> {
-        using interpolator = decltype(interpolators::cubic<float>);
+    struct sampler1D<T, decltype(interpolators::cubic<T>)> {
+        using interpolator = decltype(interpolators::cubic<T>);
 
         sampler1D() : fnc(nullptr) { }
         sampler1D(const std::vector<T>& data, interpolator fnc) : data(data), inv_u(1.f/(data.size()-1)), fnc(fnc) {
