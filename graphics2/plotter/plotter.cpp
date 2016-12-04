@@ -156,6 +156,7 @@ bool plotter::map_buffer() {
 
 void plotter::unmap_buffer() {
     s.vbuf.unmap();
+    s.vbuf.release();
 }
 
 void plotter::set_position(size_t idx, const vec2f& P) {

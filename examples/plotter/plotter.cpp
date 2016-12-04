@@ -67,9 +67,9 @@ bool plotter::initialise() {
     data.resize(1000);
     for(int i = 0; i != 1000; ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/999))*.45f;
     auto sampler3 = graphics::sampler1D<float, decltype(graphics::interpolators::nearest<float>)>(data, graphics::interpolators::linear<float>);
-    plot_.add_plot(sampler3, 1000, vec3b(255,255,255));
+    plot_.add_plot(sampler3, 1000, vec3b(255, 255, 255));
 
-    live_.data.resize(50, 0.f);
+    live_.data.resize(50, .5f);
     live_.fnc = graphics::interpolators::linear<float>;
     live_.inv_u = 1.f/49.f;
 
@@ -94,11 +94,11 @@ void plotter::update(double t, float dt) {
     static float curr_t = 0.f;
 
     curr_t += dt;
-    if(curr_t > TWO_PI) curr_t -= TWO_PI;
+    if(curr_t > 1) curr_t -= 1;
 
     std::copy(live_.data.begin()+1, live_.data.end(), live_.data.begin());
-    live_.data.back() = (1.f - std::sinf(4*curr_t))*.5f;
-    plot_.live_plot(live_, 1000, vec3b(255,255,0));
+    live_.data.back() = (1.f - std::sinf(TWO_PI*curr_t))*.5f;
+    plot_.live_plot(live_, 1000, vec3b(255, 255, 0));
     plot_.update(t, dt);
 }
 
