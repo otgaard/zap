@@ -40,10 +40,17 @@ namespace zap { namespace graphics {
         plotter(const vec2f& domain, const vec2f& range, const float majors=1.f);
         ~plotter();
 
+        bool is_initialised() const;
+
         size_t vertex_count() const;
         size_t capacity() const;
 
         void set_grid(const grid& g);
+        void set_reserve(size_t reserve) {
+            if(!is_initialised()) {
+                reserve_ = reserve;
+            }
+        }
 
         template <typename T, typename Interpolator>
         void add_plot(const sampler1D<T, Interpolator>& sampler, size_t samples, const vec3b& colour) {
@@ -92,6 +99,7 @@ namespace zap { namespace graphics {
         }
 
     private:
+        size_t reserve_;
         bool live_;
         size_t live_samples_;
         struct state_t;

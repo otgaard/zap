@@ -43,23 +43,24 @@ struct plotter::state_t {
     std::vector<size_t> lines;
 };
 
-plotter::plotter() : state_(new state_t()), s(*state_.get()) {
+plotter::plotter() : reserve_(10000), live_(false), live_samples_(0), state_(new state_t()), s(*state_.get()) {
     s.grid_offset = 0;
-    live_ = false;
-    live_samples_ = 0;
 }
 
-plotter::plotter(const vec2f& domain, const vec2f& range, const float majors) : state_(new state_t()), s(*state_.get()) {
+plotter::plotter(const vec2f& domain, const vec2f& range, const float majors) : reserve_(10000), live_(false), live_samples_(0),
+                                                                                state_(new state_t()), s(*state_.get()) {
     s.grid.domain = domain;
     s.grid.range = range;
     s.grid.domain_maj_min.x = majors;
     s.grid.range_maj_min.x = majors;
     s.grid_offset = 0;
-    live_ = false;
-    live_samples_ = 0;
 }
 
 plotter::~plotter() = default;
+
+bool plotter::is_initialised() const {
+    return s.mesh.is_allocated();
+}
 
 size_t plotter::capacity() const {
     return s.vbuf.vertex_count() - s.vtx_offset;
@@ -122,7 +123,7 @@ bool plotter::build_grid() {
     const size_t y_samples = (size_t)(std::round(s.grid.range.y - s.grid.range.x)/s.grid.range_maj_min.x + 1);
     const size_t vertex_count = 2*x_samples + 2*y_samples;
 
-    s.vbuf.initialise(vertex_count+10000);  // Reserve a fixed 10000 for now
+    s.vbuf.initialise(vertex_count+reserve_);
 
     auto x_inc = (s.grid.domain.y - s.grid.domain.x)/(x_samples-1);
     auto y_inc = (s.grid.range.y - s.grid.range.x)/(y_samples-1);
