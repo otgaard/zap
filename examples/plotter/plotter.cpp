@@ -79,10 +79,10 @@ bool plotter::initialise() {
 
     livec_.data.resize(6);
     livec_.data[0] = vec3b(255, 0, 0);
-    livec_.data[1] = vec3b(0, 255, 0);
-    livec_.data[2] = vec3b(0, 0, 255);
-    livec_.data[3] = vec3b(255, 255, 0);
-    livec_.data[4] = vec3b(0, 255, 255);
+    livec_.data[1] = vec3b(255, 255, 0);
+    livec_.data[2] = vec3b(0, 255, 0);
+    livec_.data[3] = vec3b(0, 255, 255);
+    livec_.data[4] = vec3b(0, 0, 255);
     livec_.data[5] = vec3b(255, 0, 255);
 
     livec_.fnc = graphics::interpolators::linear<vec3b>;

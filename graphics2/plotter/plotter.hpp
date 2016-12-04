@@ -117,7 +117,8 @@ namespace zap { namespace graphics {
 
                     const float value = sampler(inv_x * i);
                     set_position(idx, vec2f(inv_x * i, value));
-                    set_colour(idx, colour_sampler(value));
+                    // Value can be out of range due to interpolation function (e.g. cubic), therefore clamp
+                    set_colour(idx, colour_sampler(zap::maths::clamp(value, 0.f, 1.f)));
                 }
                 unmap_buffer();
             }
