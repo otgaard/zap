@@ -81,6 +81,22 @@ std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
     return polygon;
 }
 
+std::vector<vec2i> draw_shape(int sw, int sh, float angle) {
+    std::vector<vec2f> poly = { {-50,-50}, {50,-50}, {-50,50}, {50,50} };
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(vec2f(sw/2, sh/2));
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
+        auto nP = transform.ptransform(P);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    return polygon;
+}
+
 std::vector<vec2i> draw_diamond(int sw, int sh, float angle) {
     std::vector<vec2f> poly = { {50,0}, {0,100}, {-50,0}, {0,-100} };
 
@@ -97,6 +113,23 @@ std::vector<vec2i> draw_diamond(int sw, int sh, float angle) {
     return polygon;
 }
 
+std::vector<vec2i> draw_tri(int sw, int sh, float angle) {
+    std::vector<vec2f> poly = { {-100,-100}, {100,-100}, {0,100} };
+
+    transform3f transform;
+    transform.rotate(make_rotation(angle));
+    transform.translate(vec2f(sw/2, sh/2));
+
+    std::vector<vec2i> polygon;
+    std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
+        auto nP = transform.ptransform(P);
+        polygon.push_back(vec2i(nP.x, nP.y));
+    });
+
+    return polygon;
+}
+
+
 float angle = 0.01f;
 
 void raster::draw() {
@@ -108,8 +141,16 @@ void raster::draw() {
     canvas_.fill_colour(vec3b(0,0,255));
     canvas_.pen_colour(vec3b(255,255,255));
 
-    // Build a pentagram for testing even-odd fill rule
-    auto polygon = draw_diamond(sc_width_, sc_height_, angle);
+    // Passing
+    //auto polygon = draw_diamond(sc_width_, sc_height_, angle);
+    //auto polygon = draw_tri(sc_width_, sc_height_, angle);
+    auto polygon = draw_shape(sc_width_, sc_height_, 0);
+
+    // Failing
+    //auto polygon = draw_shape(sc_width_, sc_height_, angle);
+    //auto polygon = draw_pentagram(sc_width_, sc_height_, 0);
+    //LOG(angle);
+
 
     canvas_.polygon(polygon);
     canvas_.polyloop(polygon);

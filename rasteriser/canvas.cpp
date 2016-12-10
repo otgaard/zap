@@ -323,7 +323,7 @@ void canvas::filled_rect(int x1, int y1, int x2, int y2) {
 }
 
 void canvas::vertical_line(int x1, int y1, int y2) {
-    assert(y1 < y2 && "vertical_line requires y1 < y2");
+    if(y1 < y2) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
     while(y <= y2) raster_(x1,y++).set3(pen_colour_);
 }
@@ -462,11 +462,7 @@ struct edge_table {
 
     edge_table(const std::vector<vec2i>& polygon) {
         auto vl = polygon;
-
-        zap::maths::range_finder<int> yrange;
-        for(const auto& P : polygon) yrange(P.y);
-        min_y = yrange.min; max_y = yrange.max;
-        assert(min_y < max_y && "Min must be less than Max");
+        std::tie(min_y, max_y) = zap::maths::find_range(polygon, [](const vec2i& v) { return v.y; });
 
         std::sort(vl.begin(), vl.end(), [](const vec2i& A, const vec2i& B) {
             return (A.y < B.y) || (A.y == B.y && A.x < B.x);
@@ -475,7 +471,7 @@ struct edge_table {
         size_t counter = 0;
         while(counter != vl.size()) {
             auto it = std::find(polygon.begin(), polygon.end(), vl[counter]);
-            if(it->y == yrange.max) break; // We must be at the last vertex or one of the last vertices
+            if(it->y == max_y) break; // We must be at the last vertex or one of the last vertices
 
             auto i = it - polygon.begin();
             auto left = i == 0 ? int(polygon.size())-1 : i-1, right = i == int(polygon.size())-1 ? 0 : i+1;
@@ -509,7 +505,7 @@ struct edge_table {
                 e2.xmin = it->x;
                 nb.edges.emplace_back(std::move(e2));
             }
-            buckets.emplace_back(std::move(nb));
+            if(!nb.edges.empty()) buckets.emplace_back(std::move(nb));
             ++counter;
         }
     }
@@ -525,24 +521,21 @@ void canvas::polygon(const std::vector<vec2i>& polygon) {
     int curr_bucket = 0;
     int curr_y = global_et.min_y;
     while(curr_y != global_et.max_y) {
-        if(global_et.buckets[curr_bucket].y == curr_y) {
-            std::copy(global_et.buckets[curr_bucket].edges.begin(), global_et.buckets[curr_bucket].edges.end(),
-                      std::back_inserter(AET));
+        while(global_et.buckets[curr_bucket].y == curr_y) {
+            auto& current = global_et.buckets[curr_bucket];
+            std::copy(current.edges.begin(), current.edges.end(), std::back_inserter(AET));
             ++curr_bucket;
         }
 
-        auto it = std::remove_if(std::begin(AET), std::end(AET),
-                                 [&curr_y](const edge_table::edge& ed) {
-                                    return ed.ymax == curr_y;
-                                 });
-        if(it != std::end(AET)) AET.erase(it);
-
-        std::sort(std::begin(AET), std::end(AET),
-                  [](const edge_table::edge& A, const edge_table::edge& B) {
-                      return A.xmin < B.xmin;
-                  });
-
+        auto it = std::remove_if(std::begin(AET), std::end(AET), [&curr_y](const edge_table::edge& ed) {
+            return ed.ymax == curr_y;
+        });
+        if(it != std::end(AET)) AET.erase(it, AET.end());
         if(AET.size() % 2 != 0) { LOG_ERR("AET contains non-even number of edges"); return; }
+
+        std::sort(std::begin(AET), std::end(AET), [](const edge_table::edge& A, const edge_table::edge& B) {
+            return A.xmin < B.xmin;
+        });
 
         for(int i = 0, end = (int)AET.size(); i != end; i += 2) {
             auto& se = AET[2*i]; auto& ee = AET[2*i+1];

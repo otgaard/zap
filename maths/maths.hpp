@@ -117,22 +117,13 @@ namespace zap { namespace maths {
         T min, max, value, dir;
     };
 
-    template <typename T>
-    struct range_finder {
-        T min, max;
-        range_finder() : min(std::numeric_limits<T>::max()), max(std::numeric_limits<T>::lowest()) { }
-        void operator()(const T& value) {
-            if(value < min) min = value;
-            if(value > max) max = value;
-        }
-    };
-
-    template <typename Container>
-    std::tuple<typename Container::value_type, typename Container::value_type> find_minmax(const Container& data) {
-        typename Container::value_type min = std::numeric_limits<typename Container::value_type>::max(), max = -min;
-        for(int i = 0; i != data.size(); ++i) {
-            if(data[i] < min) min = data[i];
-            if(data[i] > max) max = data[i];
+    template <typename Container, typename Fnc, typename T = typename std::result_of<Fnc&(typename Container::value_type)>::type>
+    std::tuple<T, T> find_range(const Container& container, Fnc&& op) {
+        T min = std::numeric_limits<T>::max(), max = std::numeric_limits<T>::lowest();
+        for(const auto& el : container) {
+            const auto val = op(el);
+            if(val < min) min = val;
+            if(val > max) max = val;
         }
         return std::make_tuple(min, max);
     }
