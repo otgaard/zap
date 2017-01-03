@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #ifdef _WIN32
+#include "maths_exports.h"
 #define ALIGN_DECL(w) __declspec(align(w))
 #define ALIGN_ATTR(w)
 #else //_WIN32

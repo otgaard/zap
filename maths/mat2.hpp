@@ -24,7 +24,7 @@
 
 namespace zap { namespace maths {
     template <typename T>
-    struct /*ALIGN_DECL(16)*/ mat2 {
+    struct mat2 {
         using type = T;
 
         static_assert(std::is_floating_point<T>::value || std::is_integral<T>::value, "mat2<T>: T must be an algebraic type");
@@ -169,7 +169,7 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
-    mat2<T>& mat2<T>::operator+=(const mat2<T>& rhs) {
+	mat2<T>& mat2<T>::operator+=(const mat2<T>& rhs) {
         arr[0] += rhs[0]; arr[1] += rhs[1]; arr[2] += rhs[2]; arr[3] += rhs[3];
         return *this;
     }

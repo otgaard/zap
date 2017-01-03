@@ -13,6 +13,10 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/third_party/include
 	${CMAKE_SOURCE_DIR}/third_party/glew/include)
 
+if(WIN32)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})	# For the Import/Export header generation
+endif(WIN32)
+
 link_directories(
 	${CMAKE_SOURCE_DIR}/third_party/lib)
 
@@ -23,14 +27,14 @@ elseif(UNIX)
 set(CMAKE_CXX_STANDARD 14)
 add_definitions(-Wall -Werror -DGLEW_STATIC)
 elseif(WIN32)
+include(GenerateExportHeader)
+add_definitions(-DGLEW_STATIC)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS )
-add_definitions(-DGLEW_STATIC)
 endif(APPLE)
 
 #########################################
 # SOURCE PATHS
-
 set(ZAP_MATHS_PUBLIC_HEADERS
         maths/vec3.hpp
         maths/maths.hpp
@@ -200,9 +204,8 @@ if(APPLE)
     find_library(COREVIDEO CoreVideo)
     find_library(QUARTZ QuartzCore)
     find_library(OPENGL OpenGL)
-    set(GLFW_LIBS ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL} glfw3)
-    set(GTEST_LIBS )
-    set(LOADER_LIBS ${GLEW_LIB} ${OPENGL})
+    set(GLFW_LIBS glfw3 ${COCOA} ${IOKIT} ${CARBON} ${COREVIDEO} ${QUARTZ} ${OPENGL})
+    set(LOADER_LIBS ${GLEW_LIB})
 elseif(UNIX)
     find_library(OPENGL GL)
     find_library(M m)
@@ -217,8 +220,8 @@ elseif(UNIX)
     set(GLFW_LIBS glfw3 ${OPENGL} ${M} ${DYNLINK} ${XINERAMA} ${XRANDR} ${XI} ${XCURSOR} ${X11} ${XXF86VM} ${PTHREAD})
     set(LOADER_LIBS ${GLEW_LIB})
 elseif(WIN32)
-    set(GLFW_LIBS glfw3)
-    set(LOADER_LIBS opengl32.lib ${GLEW_LIB})
+    set(GLFW_LIBS glfw3.lib opengl32.lib ${GLEW_LIB})
+    set(LOADER_LIBS )
 endif(APPLE)
 
 #########################################
@@ -235,6 +238,7 @@ if(CMAKE_STATIC_BUILD)
     add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
 else(CMAKE_STATIC_BUILD)
+if(APPLE OR UNIX)
     add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
     add_library(zapEngine SHARED ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS})
     add_library(zapGraphics SHARED ${ZAP_GRAPHICS_FILES} ${ZAP_GRAPHICS_PUBLIC_HEADERS})
@@ -242,8 +246,45 @@ else(CMAKE_STATIC_BUILD)
     add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES})
     target_link_libraries(zapEngine zapMaths ${LOADER_LIBS})
+    target_link_libraries(zapHost ${LOADER_LIBS} ${GLFW_LIBS})
     target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS})
     target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS})
+else(WIN32)
+    add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS} maths_exports.h)
+    add_library(zapEngine SHARED ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS} engine_exports.h)
+    add_library(zapGraphics SHARED ${ZAP_GRAPHICS_FILES} ${ZAP_GRAPHICS_PUBLIC_HEADERS})
+    add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
+    add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES} raytracer_exports.h)
+    add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES} rasteriser_exports.h)
+
+	GENERATE_EXPORT_HEADER(zapMaths
+        BASE_NAME zapMaths
+        EXPORT_MACRO_NAME ZAPMATHS_EXPORT
+        EXPORT_FILE_NAME maths_exports.h
+        STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+
+	GENERATE_EXPORT_HEADER(zapEngine
+        BASE_NAME zapEngine
+        EXPORT_MACRO_NAME ZAPENGINE_EXPORT
+        EXPORT_FILE_NAME engine_exports.h
+        STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+
+	GENERATE_EXPORT_HEADER(zapRaytracer
+        BASE_NAME zapRaytracer
+        EXPORT_MACRO_NAME ZAPRAYTRACER_EXPORT
+        EXPORT_FILE_NAME raytracer_exports.h
+        STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+
+	GENERATE_EXPORT_HEADER(zapRasteriser
+        BASE_NAME zapRasteriser
+        EXPORT_MACRO_NAME ZAPRASTERISER_EXPORT
+        EXPORT_FILE_NAME rasteriser_exports.h
+        STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+
+    target_link_libraries(zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS})
+    target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+endif(APPLE OR UNIX)
 endif(CMAKE_STATIC_BUILD)
 
 add_library(stb STATIC ${STB_ARCHIVE})
@@ -262,7 +303,6 @@ target_link_libraries(particle_engine zapGraphics zapHost zapEngine zapMaths ${G
 
 add_executable(plotter ${PLOTTER_FILES})
 target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
-
 
 #########################################
 # INSTALL
@@ -283,7 +323,7 @@ elseif(WIN32)
 install(TARGETS zapMaths DESTINATION lib)
 install(TARGETS zapEngine DESTINATION lib)
 install(TARGETS zapGraphics DESTINATION lib)
-install(TARGETS zapHost LIBRARY DESTINATION lib)
+install(TARGETS zapHost DESTINATION lib)
 install(TARGETS zapRaytracer DESTINATION lib)
 install(TARGETS zapRasteriser DESTINATION lib)
 install(TARGETS zap_example DESTINATION bin)
@@ -299,18 +339,3 @@ foreach(file ${ZAP_PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)
     install(FILES ${file} DESTINATION include/zap/${dir})
 endforeach()
-
-#foreach(file ${ZAP_MATHS_PUBLIC_HEADERS})
-#    get_filename_component(dir ${file} DIRECTORY)
-#    install(FILES ${file} DESTINATION include/zap/${dir})
-#endforeach()
-
-#foreach(file ${ZAP_ENGINE_PUBLIC_HEADERS})
-#    get_filename_component(dir ${file} DIRECTORY)
-#    install(FILES ${file} DESTINATION include/zap/${dir})
-#endforeach()
-
-#foreach(file ${ZAP_GRAPHICS_PUBLIC_HEADERS})
-#    get_filename_component(dir ${file} DIRECTORY)
-#    install(FILES ${file} DESTINATION include/zap/${dir})
-#endforeach()

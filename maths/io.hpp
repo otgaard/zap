@@ -8,12 +8,12 @@
 #include "maths.hpp"
 
 namespace zap { namespace maths {
-    template <typename T> std::ostream& operator<<(std::ostream& str, const vec2<T>& V);
-    template <typename T> std::ostream& operator<<(std::ostream& str, const vec3<T>& V);
-    template <typename T> std::ostream& operator<<(std::ostream& str, const vec4<T>& V);
-    template <typename T> std::ostream& operator<<(std::ostream& str, const mat2<T>& M);
-    template <typename T> std::ostream& operator<<(std::ostream& str, const mat3<T>& M);
-    template <typename T> std::ostream& operator<<(std::ostream& str, const mat4<T>& M);
+    template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const vec2<T>& V);
+    template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const vec3<T>& V);
+    template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const vec4<T>& V);
+    template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const mat2<T>& M);
+    template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const mat3<T>& M);
+    template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const mat4<T>& M);
 
     // See io.cpp for explicit instantiations exported from libMaths
 }}

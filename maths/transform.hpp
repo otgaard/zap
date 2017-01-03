@@ -172,8 +172,8 @@ namespace zap { namespace maths {
         if(transform_state_.is_set(transform_state::TS_IDENTITY)) matrix_.identity();
         else {
             if(transform_state_.is_set(transform_state::TS_ROTSCALE)) {
-                for(int c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
-                    for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                for(size_t c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
+                    for(size_t r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
                         matrix_(r,c) = rotation_(r,c)*scale_[c];
                     }
                 }
@@ -197,16 +197,16 @@ namespace zap { namespace maths {
             if(transform_state_.is_set(transform_state::TS_ROTSCALE)) {
                 if(transform_state_.is_set(transform_state::TS_UNISCALE)) {
                     type inv_scale = type(1)/scale_[0];
-                    for(int c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
-                        for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                    for(size_t c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
+                        for(size_t r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
                             inv_matrix_(r,c) = inv_scale*rotation_(c,r);
                         }
                     }
                 } else {
                     auto inv_scale = reciprocal(scale_);
 
-                    for(int c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
-                        for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+                    for(size_t c = 0, cend = affine_t::cols()-1; c != cend; ++c) {
+                        for(size_t r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
                             inv_matrix_(r,c) = inv_scale[r]*rotation_(c,r);
                         }
                     }
@@ -216,7 +216,7 @@ namespace zap { namespace maths {
             }
 
             constexpr auto col = affine_t::cols()-1;
-            for(int r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
+            for(size_t r = 0, rend = affine_t::rows()-1; r != rend; ++r) {
                 inv_matrix_(r,col) = -dot(inv_matrix_.row(r), translation_);
             }
         }

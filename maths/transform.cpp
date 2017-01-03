@@ -39,3 +39,6 @@ mat4<typename transform<mat3f>::type> transform<mat3f>::gl_inverse() const {
 }
 
 }}
+
+template class zap::maths::transform<zap::maths::mat3f>;
+template class zap::maths::transform<zap::maths::mat4f>;
