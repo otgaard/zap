@@ -15,6 +15,7 @@
 #define ALIGN_DECL(w) __declspec(align(w))
 #define ALIGN_ATTR(w)
 #else //_WIN32
+#define ZAPMATHS_EXPORT
 #define ALIGN_DECL(w)
 #define ALIGN_ATTR(w) __attribute__((aligned(w)))
 #endif //_WIN32
