@@ -66,8 +66,10 @@ bool plotter::initialise() {
     sampler2 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::nearest<float>);
     plot_.add_plot(sampler2, 1000, vec3b(255, 0, 0));
 
+#ifndef _WIN32
     auto sampler1 = graphics::sampler1D<float, fnc2_sig>(data, graphics::interpolators::cubic<float>);
     plot_.add_plot(sampler1, 1000, vec3b(0, 255, 0));
+#endif
 
     data.resize(2000);
     for(size_t i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sin(i*TWO_PI/(data.size()-1)))*.45f;
