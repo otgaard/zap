@@ -13,8 +13,8 @@
  */
 
 namespace zap { namespace graphics {
-    using vec2f = maths::vec2f;
-    using vec3b = maths::vec3b;
+    using maths::vec2f;
+    using maths::vec3b;
 
     class plotter {
     public:

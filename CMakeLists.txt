@@ -4,7 +4,7 @@ project(zap)
 #########################################
 # PROJECT CONFIG
 
-set(CMAKE_STATIC_BUILD FALSE)
+set(CMAKE_STATIC_BUILD TRUE)
 
 # Default to third_party lib for dependencies
 
@@ -194,7 +194,7 @@ set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
 elseif(UNIX)
 set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
 elseif(WIN32)
-set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/lib/Release/x64/glew32s.lib)
+set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
 endif(APPLE)
 
 if(APPLE)

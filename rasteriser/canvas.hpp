@@ -13,10 +13,10 @@
 #include <maths/geometry/segment.hpp>
 
 namespace zap { namespace rasteriser {
-    using vec2i = maths::vec2i;
-    using vec3b = maths::vec3b;
-    using recti = maths::geometry::recti;
-    using segment2i = maths::geometry::segment2i;
+    using maths::vec2i;
+    using maths::vec3b;
+    using maths::geometry::recti;
+    using maths::geometry::segment2i;
 
     class canvas {
     public:
