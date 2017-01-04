@@ -4,7 +4,13 @@ project(zap)
 #########################################
 # PROJECT CONFIG
 
+# In the process of changing the windows build over to shared.
+
+if(WIN32)
 set(CMAKE_STATIC_BUILD TRUE)
+else(WIN32)
+set(CMAKE_STATIC_BUILD FALSE)
+endif(WIN32)
 
 # Default to third_party lib for dependencies
 
@@ -35,6 +41,7 @@ endif(APPLE)
 
 #########################################
 # SOURCE PATHS
+
 set(ZAP_MATHS_PUBLIC_HEADERS
         maths/vec3.hpp
         maths/maths.hpp
