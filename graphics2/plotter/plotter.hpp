@@ -95,7 +95,7 @@ namespace zap { namespace graphics {
             const float inv_x = 1.f/(samples-1);
 
             if(map_buffer()) {
-                for(int i = 0; i != samples; ++i) {
+                for(size_t i = 0; i != samples; ++i) {
                     auto idx = start + i;
 
                     set_position(idx, vec2f(inv_x * i, sampler(inv_x * i)));
@@ -112,7 +112,7 @@ namespace zap { namespace graphics {
             const float inv_x = 1.f/(samples-1);
 
             if(map_buffer()) {
-                for(int i = 0; i != samples; ++i) {
+                for(size_t i = 0; i != samples; ++i) {
                     auto idx = start + i;
 
                     const float value = sampler(inv_x * i);

@@ -1,3 +1,4 @@
+#include <cmath>
 #define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
@@ -51,7 +52,7 @@ bool plotter::initialise() {
 
     // Set up a sampler & and plot
     std::vector<float> data(10);
-    for(int i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/(data.size()-1)))*.45f;
+    for(size_t i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sin(i*TWO_PI/(data.size()-1)))*.45f;
 
     using fnc1_sig = decltype(graphics::interpolators::nearest<float>);
     using fnc2_sig = decltype(graphics::interpolators::cubic<float>);
@@ -69,7 +70,7 @@ bool plotter::initialise() {
     plot_.add_plot(sampler1, 1000, vec3b(0, 255, 0));
 
     data.resize(2000);
-    for(int i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sinf(i*TWO_PI/(data.size()-1)))*.45f;
+    for(size_t i = 0; i != data.size(); ++i) data[i] = (1.1f - std::sin(i*TWO_PI/(data.size()-1)))*.45f;
     auto sampler3 = graphics::sampler1D<float, fnc1_sig>(data, graphics::interpolators::linear<float>);
     plot_.add_plot(sampler3, data.size(), vec3b(255, 255, 255));
 
@@ -112,7 +113,7 @@ void plotter::update(double t, float dt) {
     if(curr_t > 1) curr_t -= 1;
 
     std::copy(live_.data.begin()+1, live_.data.end(), live_.data.begin());
-    live_.data.back() = (1.f - std::sinf(TWO_PI*curr_t))*.5f;
+    live_.data.back() = (1.f - std::sin(TWO_PI*curr_t))*.5f;
     plot_.live_plot(live_, livec_, 2000);
     plot_.update(t, dt);
 }

@@ -106,7 +106,7 @@ void plotter::draw(const renderer::camera& cam) {
     gl::glLineWidth(1.f);
 
     size_t offset = s.grid_offset;
-    for(int i = 0; i != s.lines.size(); ++i) {
+    for(size_t i = 0; i != s.lines.size(); ++i) {
         s.mesh.draw(primitive_type::PT_LINE_STRIP, offset, s.lines[i] - offset);
         offset = s.lines[i];
     }
@@ -133,7 +133,7 @@ bool plotter::build_grid() {
     auto y_inc = (s.grid.range.y - s.grid.range.x)/(y_samples-1);
 
     if(s.vbuf.map(buffer_access::BA_WRITE_ONLY)) {
-        for(int i = 0; i != x_samples; ++i) {
+        for(size_t i = 0; i != x_samples; ++i) {
             auto idx = 2*i;
             auto x_off = s.grid.domain.x + i*x_inc;
 
@@ -143,7 +143,7 @@ bool plotter::build_grid() {
         }
 
         size_t offset = 2*x_samples;
-        for(int i = 0; i != y_samples; ++i) {
+        for(size_t i = 0; i != y_samples; ++i) {
             auto idx = offset + 2*i;
             auto y_off = s.grid.range.x + i*y_inc;
 

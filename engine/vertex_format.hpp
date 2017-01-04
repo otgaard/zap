@@ -139,7 +139,7 @@ public:
     template <typename T> friend vertex_iterator<T> operator+(size_t lhs, const vertex_iterator<T>& rhs);
     vertex_iterator& operator-=(size_t v) { ptr_ -= v; return *this; }
     template <typename T> friend vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs);
-    template <typename T> friend ptrdiff_t operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs);
+    template <typename T> friend std::ptrdiff_t operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs);
 
 private:
     vertex_t* ptr_;
@@ -181,7 +181,7 @@ vertex_iterator<T> operator-(const vertex_iterator<T>& lhs, size_t rhs) {
 }
 
 template <typename T>
-ptrdiff_t operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
+std::ptrdiff_t operator-(const vertex_iterator<T>& lhs, const vertex_iterator<T>& rhs) {
     return lhs.ptr_ - rhs.ptr_;
 }
 
