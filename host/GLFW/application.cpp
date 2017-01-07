@@ -17,9 +17,11 @@ static void on_resize_handler(GLFWwindow* window_ptr, int width, int height) {
 
 static void on_keypress_handler(GLFWwindow* window_ptr, int key, int scancode, int action, int mods) {
     if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
-        if(action == GLFW_PRESS) app_ptr->on_keypress(char(key));
+        if(action == GLFW_PRESS)        app_ptr->on_keypress(char(key));
+        else if(action == GLFW_RELEASE) app_ptr->on_keyrelease(char(key));
     }
 }
+
 
 static void on_mousemove_handler(GLFWwindow* window_ptr, double x, double y) {
     if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
@@ -126,7 +128,11 @@ int application::run() {
 }
 
 void application::on_keypress(char ch) {
-    LOG("KEYPRESS_EVENT", ch);
+
+}
+
+void application::on_keyrelease(char ch) {
+
 }
 
 void application::on_resize(int width, int height) {
@@ -175,3 +181,4 @@ void application::clear(float r, float g, float b, float a) {
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
+

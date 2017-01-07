@@ -17,6 +17,7 @@ public:
     virtual void shutdown() { }
 
     virtual void on_keypress(char ch);
+    virtual void on_keyrelease(char ch);
     virtual void on_resize(int width, int height);
     virtual void on_mousedown(int button);
     virtual void on_mouseup(int button);
