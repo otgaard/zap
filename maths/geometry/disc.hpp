@@ -26,17 +26,17 @@ struct disc {
 
 template <typename T>
 T distance(const vec2<T>& P, const disc<T>& D) {
-    return std::sqrt((D.P - P).length_sq()) - D.r;
+    return std::sqrt((D.P - P).length_sqr()) - D.r;
 }
 
 template <typename T>
-T distance_sq(const disc<T>& A, const disc<T>& B) {
-    return (A.P - B.P).length_sq() - (A.r*A.r) - (B.r*B.r);
+T distance_sqr(const disc<T>& A, const disc<T>& B) {
+    return (A.P - B.P).length_sqr() - (A.r*A.r) - (B.r*B.r);
 }
 
 template <typename T>
 T distance(const disc<T>& A, const disc<T>& B) {
-    return std::sqrt(distance_sq(A, B));
+    return std::sqrt(distance_sqr(A, B));
 }
 
 }}}
