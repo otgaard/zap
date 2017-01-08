@@ -3,7 +3,6 @@
 //
 
 #include <algorithm>
-#define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include <renderer/colour.hpp>

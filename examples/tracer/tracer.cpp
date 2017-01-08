@@ -1,6 +1,5 @@
 /* Created by Darren Otgaar on 2016/08/07. http://www.github.com/otgaard/zap */
 
-#define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include "host/GLFW/application.hpp"

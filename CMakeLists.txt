@@ -39,6 +39,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS )
 endif(APPLE)
 
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+add_definitions(-DLOGGING_ENABLED)
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+
 #########################################
 # SOURCE PATHS
 

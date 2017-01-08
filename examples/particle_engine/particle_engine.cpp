@@ -1,6 +1,5 @@
 /* Created by Darren Otgaar on 2016/10/29 */
 
-#define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include <engine/texture.hpp>

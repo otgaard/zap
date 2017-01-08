@@ -1,7 +1,5 @@
 /* Created by Darren Otgaar on 2016/03/05. http://www.github.com/otgaard/zap */
 #include <map>
-
-#define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include <maths/geometry/AABB.hpp>

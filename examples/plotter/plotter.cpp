@@ -1,5 +1,4 @@
 #include <cmath>
-#define LOGGING_ENABLED
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include <maths/algebra.hpp>

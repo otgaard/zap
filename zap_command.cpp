@@ -6,8 +6,6 @@
 #include <chrono>
 #include <vector>
 #include <array>
-
-#define LOGGING_ENABLED
 #include <tools/log.hpp>
 /*
 

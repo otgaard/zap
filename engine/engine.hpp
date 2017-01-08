@@ -7,12 +7,9 @@
 
 #include <core/core.hpp>
 #include <maths/maths.hpp>
-
 #include <memory>
 #include <cassert>
 #include <cstdint>
-
-#define LOGGING_ENABLED
 #include "tools/log.hpp"
 
 namespace zap { namespace engine {
