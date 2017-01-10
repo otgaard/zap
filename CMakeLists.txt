@@ -197,6 +197,9 @@ set(PART_ENGINE_FILES
 set(PLOTTER_FILES
         examples/plotter/plotter.cpp)
 
+set(PROCGEN1_FILES
+        examples/procgen1/procgen1.cpp)
+
 #########################################
 # DEPENDENCIES
 
@@ -316,6 +319,9 @@ target_link_libraries(particle_engine zapGraphics zapHost zapEngine zapMaths ${G
 add_executable(plotter ${PLOTTER_FILES})
 target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
+add_executable(procgen1 ${PROCGEN1_FILES})
+target_link_libraries(procgen1 zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
 #########################################
 # INSTALL
 
@@ -331,6 +337,7 @@ install(TARGETS tracer RUNTIME DESTINATION bin)
 install(TARGETS raster RUNTIME DESTINATION bin)
 install(TARGETS particle_engine RUNTIME DESTINATION bin)
 install(TARGETS plotter RUNTIME DESTINATION bin)
+install(TARGETS procgen1 RUNTIME DESTINATION bin)
 elseif(WIN32)
 install(TARGETS zapMaths DESTINATION lib)
 install(TARGETS zapEngine DESTINATION lib)
@@ -343,6 +350,7 @@ install(TARGETS tracer DESTINATION bin)
 install(TARGETS raster DESTINATION bin)
 install(TARGETS particle_engine DESTINATION bin)
 install(TARGETS plotter DESTINATION bin)
+install(TARGETS procgen1 DESTINATION bin)
 endif(APPLE OR UNIX)
 
 set(ZAP_PUBLIC_HEADERS
