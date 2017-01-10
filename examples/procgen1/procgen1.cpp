@@ -38,19 +38,22 @@ bool procgen1::initialise() {
 
     noise::initialise();
 
-
     // Build a star field
     pixmap<rgb888_t> pixbuf(1024, 768);
     for(auto r = 0; r != 768; ++r) {
         for(auto c = 0; c != 1024; ++c) {
             vec3b colour;
 
-            if(rand_.rand() % 2000 == 0) colour.set(255,255,255);
+            auto intensity = clamp<uint8_t>(rand_.rand()%150, 100, 150);
+            if(rand_.rand() % 2000 == 0) colour.set(intensity, intensity, 255);
             else                         colour.set(0,0,0);
 
             // Add some "gas"
             auto h = noise::turbulence<perlin<float>>(4, 1.f, .5f, 4.f*r/768.f, 4.f*c/1024.f);
             colour.set(colour.x, colour.y, clamp(colour.z + uint8_t(h*255), 0, 255));
+
+            h = .4f*noise::turbulence<perlin<float>>(4, 1.f, .5f, 4.f*(r+2000)/768.f, 4.f*(c+2000)/1024.f);
+            colour.set(clamp(colour.x  + uint8_t(h*255), 0, 255), colour.y, colour.z);
 
             pixbuf(c,r).set3(colour);
         }
