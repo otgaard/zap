@@ -69,6 +69,8 @@ namespace zap { namespace maths {
 
     using transform3f = transform<mat3f>;
     using transform4f = transform<mat4f>;
+    using transform3d = transform<mat3d>;
+    using transform4d = transform<mat4d>;
 
     template <typename AffineT>
     void transform<AffineT>::make_identity() {
