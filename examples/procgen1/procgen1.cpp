@@ -30,7 +30,8 @@ public:
 private:
     quad quad_;
     rand_lcg rand_;
-    texture tex_;
+
+    pixmap<rgb888_t> generate(int width, int height) const;
 };
 
 bool procgen1::initialise() {
@@ -39,31 +40,41 @@ bool procgen1::initialise() {
     noise::initialise();
 
     // Build a star field
-    pixmap<rgb888_t> pixbuf(1024, 768);
-    for(auto r = 0; r != 768; ++r) {
-        for(auto c = 0; c != 1024; ++c) {
+    pixmap<rgb888_t> pixbuf = generate(1024, 768);
+
+    texture tex;
+    tex.allocate();
+    tex.initialise(1024, 768, pixbuf.buffer(), false);
+    quad_.set_texture(std::move(tex));
+
+    return true;
+}
+
+pixmap<rgb888_t> procgen1::generate(int width, int height) const {
+    pixmap<rgb888_t> pixbuf(width, height);
+
+    const float inv_width = 1.f/width, inv_height = 1.f/height;
+
+    for(auto r = 0; r != height; ++r) {
+        for(auto c = 0; c != width; ++c) {
             vec3b colour;
 
-            auto intensity = clamp<uint8_t>(rand_.rand()%150, 100, 150);
+            auto intensity = clamp<uint8_t>(rand_.rand() % 150, 100, 150);
             if(rand_.rand() % 2000 == 0) colour.set(intensity, intensity, 255);
             else                         colour.set(0,0,0);
 
             // Add some "gas"
-            auto h = noise::turbulence<perlin<float>>(4, 1.f, .5f, 4.f*r/768.f, 4.f*c/1024.f);
+            auto h = noise::turbulence<perlin<float>>(4, 1.f, .5f, 4.f * r * inv_height, 4.f * c * inv_width);
             colour.set(colour.x, colour.y, clamp(colour.z + uint8_t(h*255), 0, 255));
 
-            h = .4f*noise::turbulence<perlin<float>>(4, 1.f, .5f, 4.f*(r+2000)/768.f, 4.f*(c+2000)/1024.f);
+            h = .4f * noise::turbulence<perlin<float>>(4, 1.f, .5f, 4.f * (r + 2000) * inv_height, 4.f * (c + 2000) * inv_width);
             colour.set(clamp(colour.x  + uint8_t(h*255), 0, 255), colour.y, colour.z);
 
             pixbuf(c,r).set3(colour);
         }
     }
 
-    tex_.allocate();
-    tex_.initialise(1024, 768, pixbuf.buffer(), false);
-    quad_.set_texture(std::move(tex_));
-
-    return true;
+    return pixbuf;
 }
 
 void procgen1::update(double t, float dt) {
@@ -80,6 +91,12 @@ void procgen1::shutdown() {
 
 void procgen1::on_resize(int width, int height) {
     application::on_resize(width, height);
+    auto pixbuf = generate(width, height);
+    texture tex;
+    tex.allocate();
+    tex.initialise(width, height, pixbuf.buffer(), false);
+    quad_.resize(width, height);
+    quad_.set_texture(std::move(tex));
 }
 
 int main(int argc, char* argv[]) {
