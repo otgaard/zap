@@ -246,6 +246,16 @@ namespace zap { namespace maths {
     using vec2f = vec2<float>;
     using vec2d = vec2<double>;
 
-}}
+    template <typename T>
+    vec2<T> polar_to_cartesian(const vec2<T>& coord) {
+        return vec2<T>(coord.x * std::cos(coord.y), coord.x * std::sin(coord.y));
+    }
+
+    template <typename T>
+    vec2<T> cartesian_to_polar(const vec2<T>& coord) {
+        return vec2<T>(std::sqrt(coord.x * coord.x + coord.y * coord.y), std::atan2(coord.y, coord.x));
+    }
+
+    }}
 
 #endif //ZAP_VEC2_HPP

@@ -50,6 +50,16 @@ bool procgen1::initialise() {
     return true;
 }
 
+vec2f exp_spiral(float phi, float curvature, float offset) {
+    float rad = std::exp(curvature*(phi));
+    return polar_to_cartesian(vec2f(rad, phi+offset));
+}
+
+vec2f log_spiral(float phi, float A, float B, float N, float offset) {
+    float rad = A / std::log(B * std::tan(phi/2*N));
+    return polar_to_cartesian(vec2f(rad, phi+offset));
+}
+
 pixmap<rgb888_t> procgen1::generate(int width, int height) const {
     pixmap<rgb888_t> pixbuf(width, height);
 
