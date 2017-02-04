@@ -31,7 +31,7 @@ private:
     quad quad_;
     rand_lcg rand_;
 
-    pixmap<rgb888_t> generate(int width, int height) const;
+    pixmap<rgba8888_t> generate(int width, int height) const;
 };
 
 bool procgen1::initialise() {
@@ -40,7 +40,7 @@ bool procgen1::initialise() {
     noise::initialise();
 
     // Build a star field
-    pixmap<rgb888_t> pixbuf = generate(1024, 768);
+    pixmap<rgba8888_t> pixbuf = generate(1024, 768);
 
     texture tex;
     tex.allocate();
@@ -60,8 +60,8 @@ vec2f log_spiral(float phi, float A, float B, float N, float offset) {
     return polar_to_cartesian(vec2f(rad, phi+offset));
 }
 
-pixmap<rgb888_t> procgen1::generate(int width, int height) const {
-    pixmap<rgb888_t> pixbuf(width, height);
+pixmap<rgba8888_t> procgen1::generate(int width, int height) const {
+    pixmap<rgba8888_t> pixbuf(width, height);
 
     const float inv_width = 1.f/width, inv_height = 1.f/height;
 

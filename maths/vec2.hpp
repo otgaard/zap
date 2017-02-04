@@ -256,6 +256,6 @@ namespace zap { namespace maths {
         return vec2<T>(std::sqrt(coord.x * coord.x + coord.y * coord.y), std::atan2(coord.y, coord.x));
     }
 
-    }}
+}}
 
 #endif //ZAP_VEC2_HPP

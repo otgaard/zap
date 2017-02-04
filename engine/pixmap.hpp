@@ -30,7 +30,7 @@ namespace zap { namespace engine {
         inline bool is_initialised() const { return width_ != 0; }
         inline bool is_1D() const { return height_ == 1 && depth_ == 1; }
         inline bool is_2D() const { return height_ > 1 && depth_ == 1; }
-        inline bool is_3D() const { return height_ > 1 && depth_ == 1; }
+        inline bool is_3D() const { return height_ > 1 && depth_ > 1; }
 
         PixelT& operator[](int idx) { return buffer_[idx]; }
         const PixelT& operator[](int idx) const { return buffer_[idx]; }
