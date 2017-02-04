@@ -41,13 +41,14 @@ bool procgen1::initialise() {
     noise::initialise();
 
     // Build a star field
+    /*
     pixmap<rgba8888_t> pixbuf = generate(1024, 768);
 
     texture tex;
     tex.allocate();
     tex.initialise(1024, 768, pixbuf.buffer(), false);
     quad_.set_texture(std::move(tex));
-
+    */
     return true;
 }
 
@@ -78,11 +79,11 @@ pixmap<rgba8888_t> procgen1::generate(int width, int height) const {
             make_radial(14, 14)
     };
 
-    for(int i = 0; i != 200; ++i) { // Stars
+    for(int i = 0; i != 400; ++i) { // Stars
         auto star = rand_.rand()%stars.size();
 
         auto f = .15f + rand_.random()*.85f;
-        auto c = vec3f(.5f + .5f*rand_.random(), .5f + .5f*rand_.random(), .5f + .5f*rand_.random());
+        auto c = vec3f(.75f, .75f, .75f) + vec3f(.25f*rand_.random(), .25f*rand_.random(), .25f*rand_.random());
         stars[star].transform(0, 0, stars[star].width(), stars[star].height(), [f, c](auto& dest) {
             auto v = dest.template get4v<float>()/255.f;
             auto col = c * v.w * f * 255.f;
@@ -98,18 +99,20 @@ pixmap<rgba8888_t> procgen1::generate(int width, int height) const {
         });
     }
 
+    const float scale = 2.9f;
+
     for(auto r = 0; r != height; ++r) {
         for(auto c = 0; c != width; ++c) {
-            vec4b colour = pixbuf(c,r).get4v<byte>();
+            auto colour = pixbuf(c,r).get4v<float>()/255.f;
+            auto accum = vec4f(0.f, 0.f, 0.f, 0.f);
+            for(int i = 0; i != 10; ++i) {
+                auto a = .1f*noise::turbulence<perlin<float>>(8, .2f, 2.f, scale * (r + 100) * inv_height, scale * c * inv_width);
+                auto b = .05f*noise::turbulence<perlin<float>>(8, .2f, 2.f, scale * (r + 200) * inv_height, scale * c * inv_width);
+                auto e = .1f*noise::turbulence<perlin<float>>(8, .2f, 2.f, scale * (r + 300) * inv_height, scale * c * inv_width);
+                accum += vec4f(a, b, e, 1.f);
+            }
 
-            // Add some "gas"
-            auto h = noise::turbulence<perlin<float>>(8, 1.f, .5f, 4.f * r * inv_height, 4.f * c * inv_width);
-            colour.set(colour.x, colour.y, clamp(colour.z + uint8_t(h*255), 0, 255), 255);
-
-            h = .4f * noise::turbulence<perlin<float>>(8, 1.f, .5f, 10.f * (r + 2000) * inv_height, 10.f * (c + 2000) * inv_width);
-            colour.set(clamp(colour.x  + uint8_t(h*255), 0, 255), colour.y, colour.z, colour.w);
-
-            pixbuf(c,r).set4(colour);
+            pixbuf(c,r).set4(255.f*clamp(colour+accum, vec4f(0.f, 0.f, 0.f, 0.f), vec4f(1.f, 1.f, 1.f, 1.f)));
         }
     }
     return pixbuf;

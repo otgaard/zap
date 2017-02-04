@@ -42,6 +42,31 @@ namespace zap { namespace maths {
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
 
+    // Forward Declarations
+    template <typename T> struct vec2;
+    template <typename T> struct vec3;
+    template <typename T> struct vec4;
+    template <typename T> struct mat2;
+    template <typename T> struct mat3;
+    template <typename T> struct mat4;
+
+    // Clamp specialisations
+    template <typename T>
+    constexpr vec2<T> clamp(const vec2<T>& v, const vec2<T>& min, const vec2<T>& max) {
+        return vec2<T>(clamp<T>(v.x, min.x, max.x), clamp<T>(v.y, min.y, max.y));
+    }
+
+    template <typename T>
+    constexpr vec3<T> clamp(const vec3<T>& v, const vec3<T>& min, const vec3<T>& max) {
+        return vec3<T>(clamp<T>(v.x, min.x, max.x), clamp<T>(v.y, min.y, max.y), clamp<T>(v.z, min.z, max.z));
+    }
+
+    template <typename T>
+    constexpr vec4<T> clamp(const vec4<T>& v, const vec4<T>& min, const vec4<T>& max) {
+        return vec4<T>(clamp<T>(v.x, min.x, max.x), clamp<T>(v.y, min.y, max.y), clamp<T>(v.z, min.z, max.z),
+                       clamp<T>(v.w, min.w, max.w));
+    }
+
     template <typename T, typename S> T lerp(const S& u, const T& P0, const T& P1) {
         return (S(1) - u)*P0 + u*P1;
     };
@@ -129,14 +154,6 @@ namespace zap { namespace maths {
         }
         return std::make_tuple(min, max);
     }
-
-    // Forward Declarations
-    template <typename T> struct vec2;
-    template <typename T> struct vec3;
-    template <typename T> struct vec4;
-    template <typename T> struct mat2;
-    template <typename T> struct mat3;
-    template <typename T> struct mat4;
 }}
 
 #endif //ZAP_MATHS_HPP
