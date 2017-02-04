@@ -37,18 +37,7 @@ private:
 
 bool procgen1::initialise() {
     quad_.initialise();
-
     noise::initialise();
-
-    // Build a star field
-    /*
-    pixmap<rgba8888_t> pixbuf = generate(1024, 768);
-
-    texture tex;
-    tex.allocate();
-    tex.initialise(1024, 768, pixbuf.buffer(), false);
-    quad_.set_texture(std::move(tex));
-    */
     return true;
 }
 
@@ -106,13 +95,22 @@ pixmap<rgba8888_t> procgen1::generate(int width, int height) const {
             auto colour = pixbuf(c,r).get4v<float>()/255.f;
             auto accum = vec4f(0.f, 0.f, 0.f, 0.f);
             for(int i = 0; i != 10; ++i) {
-                auto a = .1f*noise::turbulence<perlin<float>>(8, .2f, 2.f, scale * (r + 100) * inv_height, scale * c * inv_width);
-                auto b = .05f*noise::turbulence<perlin<float>>(8, .2f, 2.f, scale * (r + 200) * inv_height, scale * c * inv_width);
-                auto e = .1f*noise::turbulence<perlin<float>>(8, .2f, 2.f, scale * (r + 300) * inv_height, scale * c * inv_width);
+                auto a = .1f*noise::turbulence<perlin<float>>(8, .2f, 5.f, scale * (r + 100) * inv_height, scale * c * inv_width);
+                auto b = .05f*noise::turbulence<perlin<float>>(8, .2f, 4.f, scale * (r + 200) * inv_height, scale * c * inv_width);
+                auto e = .1f*noise::turbulence<perlin<float>>(8, .2f, 3.f, scale * (r + 300) * inv_height, scale * c * inv_width);
                 accum += vec4f(a, b, e, 1.f);
             }
 
             pixbuf(c,r).set4(255.f*clamp(colour+accum, vec4f(0.f, 0.f, 0.f, 0.f), vec4f(1.f, 1.f, 1.f, 1.f)));
+        }
+    }
+
+    auto centre_x = width/2, centre_y = height/2;
+    for(int phi = 0; phi != 100; ++phi) {
+        for(int offset = 0; offset != 1000; ++offset) {
+            auto v = 100 * log_spiral(phi / 100.f, 1.1f, 2.f, .5f, offset / 10.f);
+            int c = centre_x - v.x, r = centre_y - v.y;
+            pixbuf(c, r).set4(255, 255, 255, 255);
         }
     }
     return pixbuf;
