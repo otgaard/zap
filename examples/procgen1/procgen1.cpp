@@ -88,23 +88,34 @@ pixmap<rgba8888_t> procgen1::generate(int width, int height) const {
         });
     }
 
-    const float scale = 2.9f;
+    const float ratio = (1024/768.f)*2.1f;
+    const float scale = (float(width)/height)*ratio;
+    const bool inverse = true;
 
     for(auto r = 0; r != height; ++r) {
         for(auto c = 0; c != width; ++c) {
             auto colour = pixbuf(c,r).get4v<float>()/255.f;
             auto accum = vec4f(0.f, 0.f, 0.f, 0.f);
             for(int i = 0; i != 10; ++i) {
-                auto a = .1f*noise::turbulence<perlin<float>>(8, .2f, 5.f, scale * (r + 100) * inv_height, scale * c * inv_width);
-                auto b = .05f*noise::turbulence<perlin<float>>(8, .2f, 4.f, scale * (r + 200) * inv_height, scale * c * inv_width);
-                auto e = .1f*noise::turbulence<perlin<float>>(8, .2f, 3.f, scale * (r + 300) * inv_height, scale * c * inv_width);
-                accum += vec4f(a, b, e, 1.f);
+
+                if(inverse) {
+                    auto a = 0.025f - .1f*noise::turbulence<perlin<float>>(4, .2f, 5.f, scale * (r + 100) * inv_height, scale * c * inv_width, i/100.f);
+                    auto b = 0.005f - .05f*noise::turbulence<perlin<float>>(4, .2f, 4.f, scale * (r + 200) * inv_height, scale * c * inv_width, i/100.f);
+                    auto e = 0.025f - .1f*noise::turbulence<perlin<float>>(4, .2f, 3.f, scale * (r + 300) * inv_height, scale * c * inv_width, i/100.f);
+                    accum += vec4f(a, b, e, 1.f);
+                } else {
+                    auto a = .1f*noise::turbulence<perlin<float>>(4, .2f, 5.f, scale * (r + 100) * inv_height, scale * c * inv_width, i/100.f);
+                    auto b = .05f*noise::turbulence<perlin<float>>(4, .2f, 4.f, scale * (r + 200) * inv_height, scale * c * inv_width, i/100.f);
+                    auto e = .1f*noise::turbulence<perlin<float>>(4, .2f, 3.f, scale * (r + 300) * inv_height, scale * c * inv_width, i/100.f);
+                    accum += vec4f(a, b, e, 1.f);
+                }
             }
 
             pixbuf(c,r).set4(255.f*clamp(colour+accum, vec4f(0.f, 0.f, 0.f, 0.f), vec4f(1.f, 1.f, 1.f, 1.f)));
         }
     }
 
+    /*
     auto centre_x = width/2, centre_y = height/2;
     for(int phi = 0; phi != 100; ++phi) {
         for(int offset = 0; offset != 1000; ++offset) {
@@ -113,6 +124,8 @@ pixmap<rgba8888_t> procgen1::generate(int width, int height) const {
             pixbuf(c, r).set4(255, 255, 255, 255);
         }
     }
+    */
+
     return pixbuf;
 }
 

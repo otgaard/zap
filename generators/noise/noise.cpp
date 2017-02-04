@@ -24,7 +24,8 @@ namespace zap { namespace generators {
             grad3[i] = normalise(vec3f(prn.random_s(), prn.random_s(), prn.random_s()));
         }
 
-        std::random_device rd;
+        //std::random_device rd;
+        std::minstd_rand rd;
         std::mt19937 g(rd());
 
         std::shuffle(prn_tbl, prn_tbl+noise::prn_tbl_size, g);
