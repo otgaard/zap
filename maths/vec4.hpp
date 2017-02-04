@@ -129,6 +129,8 @@ namespace zap { namespace maths {
         inline bool neq(const vec4<T>& rhs) const { return !eq(rhs); }
         inline bool is_unit() const { return eq(length_sqr(), T(1)); }
 
+        vec3<T> xyz() const { return vec3<T>(x, y, z); }
+
         union {
             struct {
                 T x, y, z, w;

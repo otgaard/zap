@@ -10,6 +10,7 @@ namespace zap { namespace engine {
     template <typename PixelT>
     class pixmap {
     public:
+        using vec2i = maths::vec2i;
         using buffer_t = std::vector<PixelT>;
         pixmap() : width_(0), height_(0), depth_(0) { }
         pixmap(int width, int height=1, int depth=1) { resize(width, height, depth); }
@@ -43,6 +44,34 @@ namespace zap { namespace engine {
 
         int offset(int c, int r) const { return width_*r + c; }
         int offset(int c, int r, int d) const { return width_*(d*height_ + r) + c; }
+        vec2i coord2(int idx) const { return vec2i(idx / width_, idx % width_); };
+
+        template <typename Fnc>
+        void blend(int origin_x, int origin_y, const pixmap& src, Fnc&& fnc) {
+            assert(src.is_2D() && is_2D() && "pixmap::copy designed for 2D only");
+            origin_x = std::max(origin_x, 0); origin_y = std::max(origin_y, 0);
+            auto end_x = std::min(origin_x+src.width(), width()), end_y = std::min(origin_y+src.height(), height());
+
+            auto& ref = *this;
+            for(auto r = origin_y; r != end_y; ++r) {
+                for(auto c = origin_x; c != end_x; ++c) {
+                    ref(c, r) = fnc(ref(c, r), src(c - origin_x, r - origin_y));
+                }
+            }
+        }
+
+        template <typename Fnc>
+        void transform(int origin_x, int origin_y, int w, int h, Fnc&& fnc) {
+            assert(is_2D() && "pixmap::transform designed for 2D only");
+            origin_x = std::max(origin_x, 0); origin_y = std::max(origin_y, 0);
+            auto end_x = std::min(origin_x+w, width()), end_y = std::min(origin_y+h, height());
+            auto& ref = *this;
+            for(auto r = origin_y; r != end_y; ++r) {
+                for(auto c = origin_x; c != end_x; ++c) {
+                    ref(c, r) = fnc(ref(c, r));
+                }
+            }
+        }
 
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         const buffer_t& buffer() const { return buffer_; }
