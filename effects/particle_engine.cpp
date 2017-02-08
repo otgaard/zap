@@ -1,16 +1,21 @@
 /* Created by Darren Otgaar on 2016/10/28. http://www.github.com/otgaard/zap */
 
-#include <examples/graphic_types.hpp>
+//#include <examples/graphic_types.hpp>
+#include <graphics3/graphics3_types.hpp>
 #include <maths/rand_lcg.hpp>
 #include "particle_engine.hpp"
-
-#include <tools/log.hpp>
 #include <maths/io.hpp>
+#include <engine/pixel_format.hpp>
+#include <engine/pixel_buffer.hpp>
+#include <engine/program.hpp>
+#include <engine/framebuffer.hpp>
+#include <renderer/camera.hpp>
 
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
 using namespace zap::effects;
+using namespace zap::graphics;
 
 using quad_vertex_t = vertex<pos2f_t, tex2f_t>;
 using quad_vbuf_t = vertex_buffer<quad_vertex_t, buffer_usage::BU_STATIC_DRAW>;

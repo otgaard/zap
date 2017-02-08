@@ -5,11 +5,10 @@
 #ifndef ZAP_GRAPHICS2_HPP
 #define ZAP_GRAPHICS2_HPP
 
-#include <maths/algebra.hpp>
-
-#include <engine/vertex_buffer.hpp>
-#include <engine/index_buffer.hpp>
 #include <engine/mesh.hpp>
+#include <maths/algebra.hpp>
+#include <engine/index_buffer.hpp>
+#include <engine/vertex_buffer.hpp>
 
 namespace zap { namespace graphics {
 

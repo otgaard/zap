@@ -26,6 +26,7 @@
 #include <renderer/colour.hpp>
 #include <renderer/camera.hpp>
 
+/*
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
@@ -52,5 +53,5 @@ using vbuf_p2t2_t = vertex_buffer<vtx_p2t2_t, buffer_usage::BU_STATIC_DRAW>;
 using mesh_p2t2_trifan_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLE_FAN>;
 
 #define GLSL(src) "#version 330 core\n" #src
-
+*/
 #endif //ZAP_GRAPHIC_TYPES_HPP

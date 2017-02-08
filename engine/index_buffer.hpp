@@ -6,7 +6,7 @@
 
 namespace zap { namespace engine {
 
-template <typename T, primitive_type PRIM, buffer_usage USAGE>
+template <typename T, primitive_type PRIM, buffer_usage USAGE=buffer_usage::BU_STATIC_DRAW>
 class index_buffer : public buffer {
 public:
     using type = T;

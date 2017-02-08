@@ -295,7 +295,7 @@ namespace zap { namespace generators {
             std::vector<T> cs(rsp1);
 
             for(r = 0; r < radial_samples; ++r) {
-                T angle = T(2.0*PI)*invRS*r;
+                T angle = T(2.0*maths::PI)*invRS*r;
                 cs[r] = std::cos(angle); sn[r] = std::sin(angle);
             }
 
@@ -314,7 +314,7 @@ namespace zap { namespace generators {
                 int save = i;
                 for(r = 0; r < radial_samples; ++r) {
                     T radial_fraction = r*invRS;
-                    vec3f radial(cs[r], sn[r], 0.0f);
+                    vec3<T> radial(cs[r], sn[r], 0.0f);
 
                     vbuf[i].position = sliceCenter + sliceRadius*radial;
 

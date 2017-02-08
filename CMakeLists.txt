@@ -155,7 +155,8 @@ set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/plotter/plotter.hpp
         graphics2/curve_input.hpp
         effects/particle_engine.hpp
-        graphics2/plotter/plot_sampler.hpp)
+        graphics2/plotter/plot_sampler.hpp
+        graphics3/graphics3_types.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp

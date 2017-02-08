@@ -4,12 +4,18 @@
 #include <tools/log.hpp>
 #include <maths/geometry/AABB.hpp>
 #include <generators/textures/planar.hpp>
+#include <engine/texture.hpp>
+#include <engine/program.hpp>
+#include <renderer/camera.hpp>
+#include <renderer/colour.hpp>
 #include "host/GLFW/application.hpp"
-#include "examples/graphic_types.hpp"
+#include "graphics3/graphics3_types.hpp"
 #include "generators/geometry/geometry3.hpp"
 
 using namespace zap;
 using namespace zap::maths;
+using namespace zap::graphics;
+using namespace zap::renderer;
 using namespace zap::generators;
 using namespace zap::maths::geometry;
 
