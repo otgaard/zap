@@ -26,6 +26,8 @@ namespace zap { namespace renderer {
         camera(bool perspective=true);
         camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective=true);
 
+        bool is_perspective() const { return cam_state_.is_set(camera_state::CS_PERSPECTIVE); }
+        void set_perspective(bool p) { p ? cam_state_.set(camera_state::CS_PERSPECTIVE) : cam_state_.clear(camera_state::CS_PERSPECTIVE); }
         vec3f right() const { return view_to_world_.col3(0); }
         vec3f up() const { return view_to_world_.col3(1); }
         vec3f dir() const { return view_to_world_.col3(2); }

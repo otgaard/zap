@@ -21,7 +21,6 @@ using col3f_t = core::colour1<vec3f>;
 using col4f_t = core::colour1<vec4f>;
 using psize1_t = core::pointsize<float>;
 
-
 using vtx_p3_t = vertex<pos3f_t>;
 using vtx_p3t2_t = vertex<pos3f_t, tex2f_t>;
 using vtx_p3c3_t = vertex<pos3f_t, col3b_t>;
@@ -39,10 +38,6 @@ using ibuf_tri4_t = index_buffer<unsigned int, primitive_type::PT_TRIANGLES>;
 using mesh_p3_tri_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES>;
 using mesh_p3n3t2_tri_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES>;
 using mesh_p3n3t2_trii_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-
-
-
-
 
 }}
 
