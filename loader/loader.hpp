@@ -4,11 +4,20 @@
 
 // Asset loader (models, images, etc)
 
+#include <string>
+#include <vector>
+
 class loader {
 public:
+    loader();
+    ~loader();
 
+    void load(const std::string& path);
 
-
+private:
+    struct state_t;
+    std::unique_ptr<state_t> state_;
+    state_t& s;
 };
 
 

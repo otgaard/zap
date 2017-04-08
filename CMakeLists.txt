@@ -170,6 +170,12 @@ set(ZAP_HOST_PUBLIC_HEADERS
 set(ZAP_HOST_FILES
         host/GLFW/application.cpp)
 
+set(ZAP_LOADER_PUBLIC_HEADERS
+        loader/loader.hpp)
+
+set(ZAP_LOADER_FILES
+        loader/loader.cpp)
+
 set(ZAP_RAYTRACER_FILES
         raytracer/raytracer.cpp
         raytracer/raytracer.hpp
@@ -256,6 +262,7 @@ if(CMAKE_STATIC_BUILD)
     add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
+    add_library(zapLoader STATIC ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
 else(CMAKE_STATIC_BUILD)
 if(APPLE OR UNIX)
     add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
@@ -264,10 +271,12 @@ if(APPLE OR UNIX)
     add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES})
+    add_library(zapLoader SHARED ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
     target_link_libraries(zapEngine zapMaths ${LOADER_LIBS})
     target_link_libraries(zapHost ${LOADER_LIBS} ${GLFW_LIBS})
     target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS})
     target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS})
+    target_link_libraries(zapLoader zapEngine zapMaths ${LOADER_LIBS} assimp)
 else(WIN32)
     add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS} maths_exports.h)
     add_library(zapEngine SHARED ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS} engine_exports.h)
@@ -275,6 +284,7 @@ else(WIN32)
     add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES} raytracer_exports.h)
     add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES} rasteriser_exports.h)
+    add_library(zapLoader SHARED ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
 
 	GENERATE_EXPORT_HEADER(zapMaths
         BASE_NAME zapMaths
@@ -303,6 +313,7 @@ else(WIN32)
     target_link_libraries(zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
     target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS})
     target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS} ${GLFW_LIBS})
+    target_link_libraries(zapLoader zapEngine zapMaths ${LOADER_LIBS})
 endif(APPLE OR UNIX)
 endif(CMAKE_STATIC_BUILD)
 
@@ -326,8 +337,10 @@ target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS
 add_executable(procgen1 ${PROCGEN1_FILES})
 target_link_libraries(procgen1 zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
+message(STATUS ${Assimp_LIBS})
+
 add_executable(models ${MODELS_FILES})
-target_link_libraries(models zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(models zapLoader zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS} assimp)
 
 #########################################
 # INSTALL
