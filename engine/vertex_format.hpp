@@ -172,7 +172,7 @@ vertex_iterator<T> operator+(const vertex_iterator<T>& lhs, size_t rhs) {
 
 template <typename T>
 vertex_iterator<T> operator+(size_t lhs, const vertex_iterator<T>& rhs) {
-    return vertex_iterator<T>(rhs.ptr_ + lhs);
+    return operator+(rhs, lhs);
 }
 
 template <typename T>

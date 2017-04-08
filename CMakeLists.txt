@@ -7,9 +7,9 @@ project(zap)
 # In the process of changing the windows build over to shared.
 
 if(WIN32)
-set(CMAKE_STATIC_BUILD TRUE)
+    set(CMAKE_STATIC_BUILD TRUE)
 else(WIN32)
-set(CMAKE_STATIC_BUILD FALSE)
+    set(CMAKE_STATIC_BUILD FALSE)
 endif(WIN32)
 
 # Default to third_party lib for dependencies
@@ -20,27 +20,27 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/third_party/glew/include)
 
 if(WIN32)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})	# For the Import/Export header generation
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})	# For the Import/Export header generation
 endif(WIN32)
 
 link_directories(
 	${CMAKE_SOURCE_DIR}/third_party/lib)
 
 if(APPLE)
-set(CMAKE_CXX_STANDARD 14)
-add_definitions(-Wall -Werror -DGLEW_STATIC)
+    set(CMAKE_CXX_STANDARD 14)
+    add_definitions(-Wall -Werror -DGLEW_STATIC)
 elseif(UNIX)
-set(CMAKE_CXX_STANDARD 14)
-add_definitions(-Wall -Werror -DGLEW_STATIC)
+    set(CMAKE_CXX_STANDARD 14)
+    add_definitions(-Wall -Werror -DGLEW_STATIC)
 elseif(WIN32)
-include(GenerateExportHeader)
-add_definitions(-DGLEW_STATIC)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS )
+    include(GenerateExportHeader)
+    add_definitions(-DGLEW_STATIC)
+    set(CMAKE_CXX_STANDARD 14)
+    #set(CMAKE_CXX_FLAGS )
 endif(APPLE)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-add_definitions(-DLOGGING_ENABLED)
+    add_definitions(-DLOGGING_ENABLED)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
@@ -201,16 +201,19 @@ set(PLOTTER_FILES
 set(PROCGEN1_FILES
         examples/procgen1/procgen1.cpp)
 
+set(MODELS_FILES
+        examples/models/models.cpp)
+
 #########################################
 # DEPENDENCIES
 
 # GLEW
 if(APPLE)
-set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
+    set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
 elseif(UNIX)
-set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
+    set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
 elseif(WIN32)
-set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
+    set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
 endif(APPLE)
 
 if(APPLE)
@@ -323,35 +326,38 @@ target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS
 add_executable(procgen1 ${PROCGEN1_FILES})
 target_link_libraries(procgen1 zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
+add_executable(models ${MODELS_FILES})
+target_link_libraries(models zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
 #########################################
 # INSTALL
 
 if(APPLE OR UNIX)
-install(TARGETS zapMaths LIBRARY DESTINATION lib)
-install(TARGETS zapEngine LIBRARY DESTINATION lib)
-install(TARGETS zapGraphics LIBRARY DESTINATION lib)
-install(TARGETS zapHost ARCHIVE DESTINATION lib)
-install(TARGETS zapRaytracer LIBRARY DESTINATION lib)
-install(TARGETS zapRasteriser LIBRARY DESTINATION lib)
-install(TARGETS zap_example RUNTIME DESTINATION bin)
-install(TARGETS tracer RUNTIME DESTINATION bin)
-install(TARGETS raster RUNTIME DESTINATION bin)
-install(TARGETS particle_engine RUNTIME DESTINATION bin)
-install(TARGETS plotter RUNTIME DESTINATION bin)
-install(TARGETS procgen1 RUNTIME DESTINATION bin)
+    install(TARGETS zapMaths LIBRARY DESTINATION lib)
+    install(TARGETS zapEngine LIBRARY DESTINATION lib)
+    install(TARGETS zapGraphics LIBRARY DESTINATION lib)
+    install(TARGETS zapHost ARCHIVE DESTINATION lib)
+    install(TARGETS zapRaytracer LIBRARY DESTINATION lib)
+    install(TARGETS zapRasteriser LIBRARY DESTINATION lib)
+    install(TARGETS zap_example RUNTIME DESTINATION bin)
+    install(TARGETS tracer RUNTIME DESTINATION bin)
+    install(TARGETS raster RUNTIME DESTINATION bin)
+    install(TARGETS particle_engine RUNTIME DESTINATION bin)
+    install(TARGETS plotter RUNTIME DESTINATION bin)
+    install(TARGETS procgen1 RUNTIME DESTINATION bin)
 elseif(WIN32)
-install(TARGETS zapMaths DESTINATION lib)
-install(TARGETS zapEngine DESTINATION lib)
-install(TARGETS zapGraphics DESTINATION lib)
-install(TARGETS zapHost DESTINATION lib)
-install(TARGETS zapRaytracer DESTINATION lib)
-install(TARGETS zapRasteriser DESTINATION lib)
-install(TARGETS zap_example DESTINATION bin)
-install(TARGETS tracer DESTINATION bin)
-install(TARGETS raster DESTINATION bin)
-install(TARGETS particle_engine DESTINATION bin)
-install(TARGETS plotter DESTINATION bin)
-install(TARGETS procgen1 DESTINATION bin)
+    install(TARGETS zapMaths DESTINATION lib)
+    install(TARGETS zapEngine DESTINATION lib)
+    install(TARGETS zapGraphics DESTINATION lib)
+    install(TARGETS zapHost DESTINATION lib)
+    install(TARGETS zapRaytracer DESTINATION lib)
+    install(TARGETS zapRasteriser DESTINATION lib)
+    install(TARGETS zap_example DESTINATION bin)
+    install(TARGETS tracer DESTINATION bin)
+    install(TARGETS raster DESTINATION bin)
+    install(TARGETS particle_engine DESTINATION bin)
+    install(TARGETS plotter DESTINATION bin)
+    install(TARGETS procgen1 DESTINATION bin)
 endif(APPLE OR UNIX)
 
 set(ZAP_PUBLIC_HEADERS
