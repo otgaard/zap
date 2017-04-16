@@ -1,7 +1,7 @@
 /* Created by Darren Otgaar on 2016/10/28. http://www.github.com/otgaard/zap */
 
 //#include <examples/graphic_types.hpp>
-#include <graphics3/graphics3_types.hpp>
+#include <graphics3/g3_types.hpp>
 #include <maths/rand_lcg.hpp>
 #include "particle_engine.hpp"
 #include <maths/io.hpp>

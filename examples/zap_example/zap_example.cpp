@@ -9,7 +9,7 @@
 #include <renderer/camera.hpp>
 #include <renderer/colour.hpp>
 #include "host/GLFW/application.hpp"
-#include "graphics3/graphics3_types.hpp"
+#include "graphics3/g3_types.hpp"
 #include "generators/geometry/geometry3.hpp"
 
 using namespace zap;

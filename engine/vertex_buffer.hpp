@@ -26,6 +26,15 @@ public:
     constexpr static auto usage = USAGE;
 
     vertex_buffer() : vertex_count_(0) { }
+    vertex_buffer(vertex_buffer&& rhs) : buffer(rhs), vertex_count_(rhs.vertex_count_) { }
+
+    vertex_buffer& operator=(vertex_buffer&& rhs) {
+        if(this != &rhs) {
+            buffer::operator=(rhs);
+            vertex_count_ = rhs.vertex_count_;
+        }
+        return *this;
+    }
 
     void bind() const { buffer::bind(buf_type); }
     void release() const { buffer::release(buf_type); }

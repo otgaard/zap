@@ -59,21 +59,10 @@ namespace zap { namespace tools {
             }
 
             print_i(args...);
-
-            switch(level) {
-                case log_level::ERROR:
-                    sstream_ << LOG_RESET;
-                    break;
-                case log_level::WARNING:
-                    sstream_ << LOG_RESET;
-                    break;
-                default:
-                    break;
-            }
         }
 
     private:
-        void print_i() { (*ostream_) << sstream_.rdbuf() << std::endl; }
+        void print_i() { (*ostream_) << sstream_.rdbuf() << LOG_RESET << std::endl; }
         template<typename T, typename... Args> void print_i(T first, Args... rest) {
             sstream_ << first << " ";
             print_i(rest...);

@@ -5,7 +5,7 @@
 #include <engine/gl_api.hpp>
 
 #include "plotter.hpp"
-#include "graphics2/graphics2_types.hpp"
+#include "graphics2/g2_types.hpp"
 
 using namespace zap;
 using namespace graphics;

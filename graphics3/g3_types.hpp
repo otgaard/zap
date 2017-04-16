@@ -5,7 +5,7 @@
 #ifndef ZAP_GRAPHICS3_TYPES_HPP
 #define ZAP_GRAPHICS3_TYPES_HPP
 
-#include "graphics2/graphics2_types.hpp"
+#include "graphics2/g2_types.hpp"
 
 namespace zap { namespace graphics {
 

@@ -11,7 +11,13 @@ namespace zap { namespace engine {
 class mesh_base {
 public:
     mesh_base() : vao_(INVALID_RESOURCE) { }
+    mesh_base(mesh_base&& rhs) : vao_(rhs.vao_) { rhs.vao_ = INVALID_RESOURCE; }
     ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
+
+    mesh_base& operator=(mesh_base&& rhs) {
+        if(this != &rhs) std::swap(vao_, rhs.vao_);
+        return *this;
+    }
 
     bool is_allocated() const { return vao_ != INVALID_RESOURCE; }
 
@@ -74,8 +80,19 @@ public:
     constexpr static primitive_type primitive = Index::primitive;
 
     mesh() : mesh_base(), idx_buffer_ptr(nullptr) { }
-    mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr) : mesh_base(),
-                                                                      vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
+    mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr)
+            : mesh_base(), vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
+    mesh(mesh&& rhs) : mesh_base(std::move(rhs)), vstream(rhs.vstream), idx_buffer_ptr(rhs.idx_buffer_ptr) { }
+
+    mesh& operator=(mesh&& rhs) {
+        if(this != &rhs) {
+            mesh_base::operator=(rhs);
+            vstream = rhs.vstream;
+            idx_buffer_ptr = rhs.idx_buffer_ptr;
+        }
+        return *this;
+    }
+
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
     void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
@@ -101,6 +118,15 @@ public:
 
     mesh() : mesh_base(), vstream() { }
     mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
+    mesh(mesh&& rhs) : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
+
+    mesh& operator=(mesh&& rhs) {
+        if(this != &rhs) {
+            mesh_base::operator=(rhs);
+            vstream = rhs.vstream;
+        }
+        return *this;
+    }
 
     void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
 

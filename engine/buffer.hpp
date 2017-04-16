@@ -10,7 +10,17 @@ namespace zap { namespace engine {
     class buffer {
     public:
         buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
+        buffer(buffer&& rhs) : id_(rhs.id_), size_(rhs.size_), mapped_ptr_(rhs.mapped_ptr_) { rhs.id_ = INVALID_RESOURCE; }
         ~buffer();
+
+        buffer& operator=(buffer&& rhs) {
+            if(this != &rhs) {
+                std::swap(id_, rhs.id_);
+                size_ = rhs.size_;
+                mapped_ptr_ = rhs.mapped_ptr_;
+            }
+            return *this;
+        }
 
         bool allocate();
         void deallocate();

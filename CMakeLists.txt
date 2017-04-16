@@ -151,12 +151,12 @@ set(ZAP_ENGINE_FILES
 
 set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/quad.hpp
-        graphics2/graphics2_types.hpp
+        graphics2/g2_types.hpp
         graphics2/plotter/plotter.hpp
         graphics2/curve_input.hpp
         effects/particle_engine.hpp
         graphics2/plotter/plot_sampler.hpp
-        graphics3/graphics3_types.hpp)
+        graphics3/g3_types.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp

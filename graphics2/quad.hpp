@@ -2,7 +2,7 @@
 #ifndef ZAP_QUAD_HPP
 #define ZAP_QUAD_HPP
 
-#include "graphics2_types.hpp"
+#include "g2_types.hpp"
 #include "engine/program.hpp"
 #include "engine/texture.hpp"
 #include "maths/transform.hpp"
