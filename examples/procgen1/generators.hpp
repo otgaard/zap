@@ -5,6 +5,7 @@
 #ifndef ZAP_PROCGEN1_GENERATORS_HPP
 #define ZAP_PROCGEN1_GENERATORS_HPP
 
+#include <cmath>
 #include <maths/vec2.hpp>
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
@@ -19,7 +20,7 @@ zap::engine::pixmap<zap::engine::rgba8888_t> make_radial(int width, int height) 
         auto y = .5f - r*inv_h;
         for(int c = 0; c != width; ++c) {
             auto x = .5f - c*inv_w;
-            auto s = std::max(1.f - 2.f*std::sqrtf(x*x + y*y), 0.f);
+            auto s = std::max(1.f - 2.f*sqrtf(x*x + y*y), 0.f);
             auto v = std::round(s*255);
             img(c,r).set4(v,v,v,v);
         }

@@ -64,8 +64,11 @@ bool models::initialise() {
     cam_.orthogonolise(vec3f(0,0,-1));
 
     LOG(LOG_BLUE, "Loading Meshes...");
-
+#ifdef __APPLE__
     meshes_ = loader_.load("/Users/otgaard/Development/zap/assets/ducky.obj");
+#else
+    meshes_ = loader_.load("/home/otgaard/Development/zap/assets/ducky.obj");
+#endif
 
     LOG("Meshes Returned:", meshes_.size());
 
