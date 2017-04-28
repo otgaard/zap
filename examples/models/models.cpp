@@ -83,11 +83,7 @@ bool models::initialise() {
     }
 
     prog_.bind();
-
-    transform4f transform;
-    transform.translate(vec3f(0,0,-500));
-
-    prog_.bind_uniform("pvm", cam_.proj_view() * transform.gl_matrix());
+    depth_test(true);
 
     return true;
 }
@@ -107,9 +103,8 @@ void models::update(double t, float dt) {
 float angle = 0;
 
 void models::draw() {
-    depth_test(true);
     transform4f transform;
-    transform.translate(vec3f(0,-200,-700));
+    transform.translate(vec3f(0,-100,-700));
     transform.rotate(make_rotation(vec3f(0,1,0), angle));
     angle += 0.01f;
 
@@ -121,7 +116,6 @@ void models::draw() {
         m.draw();
         m.release();
     }
-    depth_test(false);
 }
 
 void models::shutdown() {

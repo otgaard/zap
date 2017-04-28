@@ -49,9 +49,9 @@ std::vector<loader::mesh_p3n3t2_trii_t> loader::load(const std::string& path) {
             return result;
         }
 
-        int mesh_id = 0;
+        //int mesh_id = 0;
         if(vbuf->map(zap::engine::buffer_access::BA_WRITE_ONLY)) {
-            LOG("Mesh:", mesh_id++);
+            //LOG("Mesh:", mesh_id++);
             for(uint32_t v = 0; v != ptr->mNumVertices; ++v) {
                 auto& vtx = (*vbuf)[v];
                 vtx.position = *reinterpret_cast<zap::maths::vec3f*>(&ptr->mVertices[v]);

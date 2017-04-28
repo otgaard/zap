@@ -41,8 +41,8 @@ static void on_scroll_handler(GLFWwindow* window_ptr, double xinc, double yinc) 
     }
 }
 
-application::application(const std::string& name, int width, int height, bool fullscreen) : sc_width_(width),
-    sc_height_(height), fullscreen_(fullscreen), app_name_(name) {
+application::application(const std::string& name, int width, int height, bool fullscreen, bool resizeable) : sc_width_(width),
+    sc_height_(height), fullscreen_(fullscreen), resizeable_(resizeable), app_name_(name) {
 }
 
 int application::run() {
@@ -55,6 +55,8 @@ int application::run() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    glfwWindowHint(GLFW_RESIZABLE, resizeable_);
 
     auto window = glfwCreateWindow(sc_width_, sc_height_, app_name_.c_str(),
                                    fullscreen_ ? glfwGetPrimaryMonitor() : nullptr, nullptr);

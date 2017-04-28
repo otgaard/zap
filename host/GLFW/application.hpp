@@ -8,7 +8,7 @@
 
 class application {
 public:
-    application(const std::string& name, int width, int height, bool fullscreen);
+    application(const std::string& name, int width, int height, bool fullscreen, bool resizable=true);
     virtual ~application() { }
 
     virtual bool initialise() { return true; }
@@ -40,6 +40,7 @@ protected:
     int sc_width_;
     int sc_height_;
     bool fullscreen_;
+    bool resizeable_;
     zap::maths::vec2i mouse_;
 
 private:
