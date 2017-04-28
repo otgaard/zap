@@ -26,7 +26,7 @@ struct sphere {
 };
 
 template <typename T>
-int intersection(const sphere<T>& S, const ray<typename sphere<T>::vector>& R, T t[2]) {
+int intersection(const sphere<T>& S, const ray<typename sphere<T>::vector>& R, T t[2], const T& epsilon=std::numeric_limits<T>::epsilon()) {
     using vector = typename sphere<T>::vector;
     vector v = R.O - S.C;
     T a = R.d.length_sqr(), b = T(2) * dot(R.d, v), c = v.length_sqr() - S.r*S.r;
@@ -35,10 +35,10 @@ int intersection(const sphere<T>& S, const ray<typename sphere<T>::vector>& R, T
         T a2 = 2*a, rt = std::sqrt(discrim);
         t[0] = (-b + rt) / a2; // Larger Root First
         t[1] = (-b - rt) / a2;
-        return int(t[0] >= 0) + int(t[1] >= 0); // Epsilon?
+        return int(t[0] >= epsilon) + int(t[1] >= epsilon);
     } else if(discrim == 0) {   // One root
         t[0] = -b / (2*a);
-        return int(t[0] >= 0);
+        return int(t[0] >= epsilon);
     }
 
     return 0;
