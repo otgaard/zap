@@ -10,7 +10,7 @@
 #include <numeric>
 #include <type_traits>
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(GLEW_STATIC)
 #include "maths_exports.h"
 #define ALIGN_DECL(w) __declspec(align(w))
 #define ALIGN_ATTR(w)

@@ -219,7 +219,8 @@ if(APPLE)
 elseif(UNIX)
     set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/libGLEW.a)
 elseif(WIN32)
-    set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
+    #set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
+    set(GLEW_LIB ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/Win32/glew32s.lib)
 endif(APPLE)
 
 if(APPLE)
@@ -262,7 +263,7 @@ if(CMAKE_STATIC_BUILD)
     add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
-    add_library(zapLoader STATIC ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
+    #add_library(zapLoader STATIC ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
 else(CMAKE_STATIC_BUILD)
 if(APPLE OR UNIX)
     add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
@@ -334,13 +335,13 @@ target_link_libraries(particle_engine zapGraphics zapHost zapEngine zapMaths ${G
 add_executable(plotter ${PLOTTER_FILES})
 target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
+if(APPLE OR UNIX)
 add_executable(procgen1 ${PROCGEN1_FILES})
 target_link_libraries(procgen1 zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
-message(STATUS ${Assimp_LIBS})
-
 add_executable(models ${MODELS_FILES})
 target_link_libraries(models zapLoader zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS} assimp)
+endif(APPLE OR UNIX)
 
 #########################################
 # INSTALL
@@ -370,7 +371,7 @@ elseif(WIN32)
     install(TARGETS raster DESTINATION bin)
     install(TARGETS particle_engine DESTINATION bin)
     install(TARGETS plotter DESTINATION bin)
-    install(TARGETS procgen1 DESTINATION bin)
+    #install(TARGETS procgen1 DESTINATION bin)
 endif(APPLE OR UNIX)
 
 set(ZAP_PUBLIC_HEADERS
