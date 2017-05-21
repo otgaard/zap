@@ -11,6 +11,11 @@
 
 // Based on Ken Perlin's implementation at https://mrl.nyu.edu/~perlin/doc/oscar.html
 
+// Perlin noise ranges:
+// 1D = [-.5f, +.5f]                                    // Observed
+// 2D = [-sqrt(2)/2, +sqrt(2)/2] = [-.7071f, +.7071f]
+// 3D = [-sqrt(2)/2, +sqrt(2)/2] = [-.7071f, +.7071f]   // Observed: should be sqrt(3)/3 ?
+
 namespace zap { namespace generators {
     template <typename T>
     struct perlin {

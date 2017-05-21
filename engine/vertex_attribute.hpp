@@ -14,7 +14,7 @@ namespace zap {
         MAKE_PODFIELD(position, engine::attribute_type, engine::attribute_type::AT_POSITION);
         MAKE_PODFIELD(normal, engine::attribute_type, engine::attribute_type::AT_NORMAL);
         MAKE_PODFIELD(tangent, engine::attribute_type, engine::attribute_type::AT_TANGENT);
-        MAKE_PODFIELD(binormal, engine::attribute_type, engine::attribute_type::AT_BINORMAL);
+        MAKE_PODFIELD(bitangent, engine::attribute_type, engine::attribute_type::AT_BITANGENT);
         MAKE_PODFIELD(texcoord1, engine::attribute_type, engine::attribute_type::AT_TEXCOORD1);
         MAKE_PODFIELD(texcoord2, engine::attribute_type, engine::attribute_type::AT_TEXCOORD2);
         MAKE_PODFIELD(texcoord3, engine::attribute_type, engine::attribute_type::AT_TEXCOORD3);

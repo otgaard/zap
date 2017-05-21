@@ -140,7 +140,7 @@ namespace zap { namespace engine {
         AT_POSITION = 1 << 0,
         AT_NORMAL = 1 << 1,
         AT_TANGENT = 1 << 2,
-        AT_BINORMAL = 1 << 3,
+        AT_BITANGENT = 1 << 3,
         AT_TEXCOORD1 = 1 << 4,
         AT_TEXCOORD2 = 1 << 5,
         AT_TEXCOORD3 = 1 << 6,
@@ -157,22 +157,22 @@ namespace zap { namespace engine {
     };
 
     constexpr static const char* const attribute_name[size_t(attribute_type::AT_SIZE)] = {
-            "position",
-            "normal",
-            "tangent",
-            "binormal",
-            "texcoord1",
-            "texcoord2",
-            "texcoord3",
-            "texcoord4",
-            "texcoord5",
-            "texcoord6",
-            "colour1",
-            "colour2",
-            "blendindex",
-            "blendweight",
-            "fogcoord",
-            "pointsize"
+        "position",
+        "normal",
+        "tangent",
+        "bitangent",
+        "texcoord1",
+        "texcoord2",
+        "texcoord3",
+        "texcoord4",
+        "texcoord5",
+        "texcoord6",
+        "colour1",
+        "colour2",
+        "blendindex",
+        "blendweight",
+        "fogcoord",
+        "pointsize"
     };
 
     enum class primitive_type : std::uint8_t {
@@ -198,6 +198,36 @@ namespace zap { namespace engine {
         TT_TEX1D_ARR = 7,
         TT_TEX2D_ARR = 8,
         TT_SIZE = 9
+    };
+
+    enum class tex_parm : std::uint8_t {
+        TP_WRAP_S = 0,
+        TP_WRAP_T = 1,
+        TP_WRAP_R = 2,
+        TP_MAG_FILTER = 3,
+        TP_MIN_FILTER = 4,
+        TP_MAX_ANISOTROPY = 5,
+        TP_BORDER_COLOUR = 6,
+        TP_SIZE = 7
+    };
+
+    enum class tex_filter : std::uint8_t {
+        TF_NEAREST = 0,
+        TF_LINEAR = 1,
+        TF_NEAREST_MIPMAP_NEAREST = 2,
+        TF_LINEAR_MIPMAP_NEAREST = 3,
+        TF_NEAREST_MIPMAP_LINEAR = 4,
+        TF_LINEAR_MIPMAP_LINEAR = 5,
+        TF_SIZE = 6
+    };
+
+    enum class tex_wrap : std::uint8_t {
+        TW_CLAMP_TO_EDGE = 0,
+        TW_CLAMP_TO_BORDER = 1,
+        TW_MIRRORED_REPEAT = 2,
+        TW_REPEAT = 3,
+        TW_MIRROR_CLAMP_TO_EDGE = 4,
+        TW_SIZE = 5
     };
 
     bool init();

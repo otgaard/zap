@@ -172,6 +172,60 @@ namespace zap { namespace engine { namespace gl {
             "GL_TEXTURE_2D_ARRAY"
     };
 
+    constexpr GLenum gl_tex_parm[(int)tex_parm::TP_SIZE] = {
+            GL_TEXTURE_WRAP_S,
+            GL_TEXTURE_WRAP_T,
+            GL_TEXTURE_WRAP_R,
+            GL_TEXTURE_MAG_FILTER,
+            GL_TEXTURE_MIN_FILTER,
+            GL_TEXTURE_MAX_ANISOTROPY_EXT,
+            GL_TEXTURE_BORDER_COLOR
+    };
+
+    constexpr const char* gl_tex_parm_names[(int)tex_parm::TP_SIZE] = {
+            "GL_TEXTURE_WRAP_S",
+            "GL_TEXTURE_WRAP_T",
+            "GL_TEXTURE_WRAP_R",
+            "GL_TEXTURE_MAG_FILTER",
+            "GL_TEXTURE_MIN_FILTER",
+            "GL_TEXTURE_MAX_ANISOTROPY_EXT",
+            "GL_TEXTURE_BORDER_COLOR"
+    };
+
+    constexpr GLenum gl_tex_filter[(int)tex_filter::TF_SIZE] = {
+            GL_NEAREST,
+            GL_LINEAR,
+            GL_NEAREST_MIPMAP_NEAREST,
+            GL_LINEAR_MIPMAP_NEAREST,
+            GL_NEAREST_MIPMAP_LINEAR,
+            GL_LINEAR_MIPMAP_LINEAR
+    };
+
+    constexpr const char* gl_tex_filter_names[(int)tex_filter::TF_SIZE] = {
+            "GL_NEAREST",
+            "GL_LINEAR",
+            "GL_NEAREST_MIPMAP_NEAREST",
+            "GL_LINEAR_MIPMAP_NEAREST",
+            "GL_NEAREST_MIPMAP_LINEAR",
+            "GL_LINEAR_MIPMAP_LINEAR"
+    };
+
+    constexpr GLenum gl_tex_wrap[(int)tex_wrap::TW_SIZE] = {
+            GL_CLAMP_TO_EDGE,
+            GL_CLAMP_TO_BORDER,
+            GL_MIRRORED_REPEAT,
+            GL_REPEAT,
+            GL_MIRROR_CLAMP_TO_EDGE
+    };
+
+    constexpr const char* gl_tex_wrap_names[(int)tex_wrap::TW_SIZE] = {
+            "GL_CLAMP_TO_EDGE",
+            "GL_CLAMP_TO_BORDER",
+            "GL_MIRRORED_REPEAT",
+            "GL_REPEAT",
+            "GL_MIRROR_CLAMP_TO_EDGE"
+    };
+
     constexpr GLenum gl_type(shader_type type) { return gl_shader_types[(int)type]; }
     constexpr const char* gl_typename(shader_type type) { return gl_shader_type_names[(int)type]; }
     constexpr GLenum gl_type(buffer_type type) { return gl_buffer_types[(int)type]; }
@@ -190,6 +244,12 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(pixel_datatype type) { return gl_pixel_dtype_names[(int)type]; }
     constexpr GLenum gl_type(texture_type type) { return gl_texture_type[(int)type]; }
     constexpr const char* gl_typename(texture_type type) { return gl_texture_type_names[(int)type]; }
+    constexpr GLenum gl_type(tex_parm type) { return gl_tex_parm[(int)type]; }
+    constexpr const char* gl_typename(tex_parm type) { return gl_tex_parm_names[(int)type]; }
+    constexpr GLenum gl_type(tex_filter type) { return gl_tex_filter[(int)type]; }
+    constexpr const char* gl_typename(tex_filter type) { return gl_tex_filter_names[(int)type]; }
+    constexpr GLenum gl_type(tex_wrap type) { return gl_tex_wrap[(int)type]; }
+    constexpr const char* gl_typename(tex_wrap type) { return gl_tex_wrap_names[(int)type]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
 
