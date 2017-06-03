@@ -36,4 +36,8 @@ void mesh_base::draw_elements_impl(primitive_type type, data_type index_type, si
     glDrawElements(gl_type(type), count, gl_type(index_type), reinterpret_cast<void*>(first*dt_bytesize(index_type)));
 }
 
+void mesh_base::draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances) {
+    glDrawElementsInstanced(gl_type(type), count, gl_type(index_type), reinterpret_cast<void*>(first*dt_bytesize(index_type)), instances);
+}
+
 }}
