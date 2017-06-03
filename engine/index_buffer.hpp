@@ -15,6 +15,7 @@ public:
     constexpr static auto usage = USAGE;
 
     index_buffer() : index_count_(0) { }
+    virtual ~index_buffer() = default;
 
     void bind() const { buffer::bind(buf_type); }
     void release() const { buffer::release(buf_type); }

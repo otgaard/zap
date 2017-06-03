@@ -24,16 +24,20 @@ using col4f_t = core::colour1<vec4f>;
 using psize1_t = core::pointsize<float>;
 
 using vtx_p3_t = vertex<pos3f_t>;
+using vtx_ps1_t = vertex<psize1_t>;
 using vtx_p3t2_t = vertex<pos3f_t, tex2f_t>;
 using vtx_p3c3_t = vertex<pos3f_t, col3b_t>;
+using vtx_n3ps1_t = vertex<nor3f_t, psize1_t>;
 using vtx_p3n3t2_t = vertex<pos3f_t, nor3f_t, tex2f_t>;
 using vtx_p3c4ps1_t = vertex<pos3f_t, col4f_t, psize1_t>;
 using vtx_p3n3t2c3_t = vertex<pos3f_t, nor3f_t, tex2f_t, col3f_t>;
 using vtx_p3n3tn3t2_t = vertex<pos3f_t, nor3f_t, tan3f_t, tex2f_t>;
 
 using vbuf_p3_t = vertex_buffer<vtx_p3_t>;
+using vbuf_ps1_t = vertex_buffer<vtx_ps1_t>;
 using vbuf_p3t2_t = vertex_buffer<vtx_p3t2_t>;
 using vbuf_p3c3_t = vertex_buffer<vtx_p3c3_t>;
+using vbuf_n3ps1_t = vertex_buffer<vtx_n3ps1_t>;
 using vbuf_p3n3t2_t = vertex_buffer<vtx_p3n3t2_t>;
 using vbuf_p3n3tn3t2_t = vertex_buffer<vtx_p3n3tn3t2_t>;
 
@@ -45,6 +49,9 @@ using mesh_p3n3t2_trii_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT
 using mesh_p3n3tn3t2_tri_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLES>;
 using mesh_p3n3tn3t2_trii_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
 using mesh_p3n3tn3t2_ts_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
+
+using mesh_p3_ps1_trii_t = mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
+using mesh_p3_n3ps1_trii_t = mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
 
 }}
 

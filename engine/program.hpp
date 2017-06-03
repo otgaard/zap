@@ -77,9 +77,9 @@ namespace zap { namespace engine {
     template <> void program::bind_uniform<zap::maths::vec2f>(int location, const zap::maths::vec2f& type);
     template <> void program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type);
     template <> void program::bind_uniform<zap::maths::vec4f>(int location, const zap::maths::vec4f& type);
-
     template <> void program::bind_uniform<zap::maths::mat3f>(int location, const zap::maths::mat3f& type);
     template <> void program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type);
+    template <> void program::bind_uniform<std::vector<float>>(int location, const std::vector<float>& type);
 
     template <> void program::bind_uniform<int>(const char* name, const int& value);
     template <> void program::bind_uniform<float>(const char* name, const float& value);
@@ -88,8 +88,7 @@ namespace zap { namespace engine {
     template <> void program::bind_uniform<zap::maths::vec4f>(const char* name, const zap::maths::vec4f& type);
     template <> void program::bind_uniform<zap::maths::mat3f>(const char* name, const zap::maths::mat3f& type);
     template <> void program::bind_uniform<zap::maths::mat4f>(const char* name, const zap::maths::mat4f& type);
-
-
+    template <> void program::bind_uniform<std::vector<float>>(const char* name, const std::vector<float>& type);
 
 }}
 

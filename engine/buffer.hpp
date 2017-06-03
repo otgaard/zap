@@ -11,7 +11,7 @@ namespace zap { namespace engine {
     public:
         buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
         buffer(buffer&& rhs) : id_(rhs.id_), size_(rhs.size_), mapped_ptr_(rhs.mapped_ptr_) { rhs.id_ = INVALID_RESOURCE; }
-        ~buffer();
+        virtual ~buffer();
 
         buffer& operator=(buffer&& rhs) {
             if(this != &rhs) {

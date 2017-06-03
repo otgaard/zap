@@ -26,11 +26,12 @@ public:
     constexpr static auto usage = USAGE;
 
     vertex_buffer() : vertex_count_(0) { }
-    vertex_buffer(vertex_buffer&& rhs) : buffer(rhs), vertex_count_(rhs.vertex_count_) { }
+    vertex_buffer(vertex_buffer&& rhs) : buffer(std::move(rhs)), vertex_count_(rhs.vertex_count_) { }
+    virtual ~vertex_buffer() = default;
 
     vertex_buffer& operator=(vertex_buffer&& rhs) {
         if(this != &rhs) {
-            buffer::operator=(rhs);
+            buffer::operator=(std::move(rhs));
             vertex_count_ = rhs.vertex_count_;
         }
         return *this;

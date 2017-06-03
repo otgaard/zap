@@ -12,7 +12,7 @@ class mesh_base {
 public:
     mesh_base() : vao_(INVALID_RESOURCE) { }
     mesh_base(mesh_base&& rhs) : vao_(rhs.vao_) { rhs.vao_ = INVALID_RESOURCE; }
-    ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
+    virtual ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
 
     mesh_base& operator=(mesh_base&& rhs) {
         if(this != &rhs) std::swap(vao_, rhs.vao_);
@@ -83,10 +83,11 @@ public:
     mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr)
             : mesh_base(), vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
     mesh(mesh&& rhs) : mesh_base(std::move(rhs)), vstream(rhs.vstream), idx_buffer_ptr(rhs.idx_buffer_ptr) { }
+    virtual ~mesh() = default;
 
     mesh& operator=(mesh&& rhs) {
         if(this != &rhs) {
-            mesh_base::operator=(rhs);
+            mesh_base::operator=(std::move(rhs));
             vstream = rhs.vstream;
             idx_buffer_ptr = rhs.idx_buffer_ptr;
         }
@@ -119,10 +120,11 @@ public:
     mesh() : mesh_base(), vstream() { }
     mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
     mesh(mesh&& rhs) : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
+    virtual ~mesh() = default;
 
     mesh& operator=(mesh&& rhs) {
         if(this != &rhs) {
-            mesh_base::operator=(rhs);
+            mesh_base::operator=(std::move(rhs));
             vstream = rhs.vstream;
         }
         return *this;
