@@ -5,6 +5,9 @@
 #ifndef ZAP_SPHERE_HPP
 #define ZAP_SPHERE_HPP
 
+#include <limits>
+#include "ray.hpp"
+
 namespace zap { namespace maths { namespace geometry {
 
 template <typename T>

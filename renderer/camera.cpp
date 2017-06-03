@@ -122,7 +122,7 @@ bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
     float dd = frustum_[FP_DMIN];
 
     origin = world_pos();
-    d = dd*dir() + dr*right() - du*up();
+    d = dd*dir() + dr*right() + du*up();
     d.normalise();
     return true;
 }

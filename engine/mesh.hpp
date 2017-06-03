@@ -29,6 +29,7 @@ public:
 
     void draw_arrays_impl(primitive_type type, size_t first, size_t count);
     void draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count);
+    void draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances);
 
 private:
     resource_t vao_;
@@ -105,6 +106,16 @@ public:
                                       (data_type)dt_descriptor<typename index_buffer_t::type>::value,
                                       start,
                                       count == 0 ? idx_buffer_ptr->index_count() : count);
+    }
+
+    void draw_inst(size_t instances, size_t start=0, size_t count=0) {
+        if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
+
+        mesh_base::draw_elements_inst_impl(primitive,
+                                           (data_type)dt_descriptor<typename index_buffer_t::type>::value,
+                                           start,
+                                           count == 0 ? idx_buffer_ptr->index_count() : count,
+                                           instances);
     }
 
     vertex_stream_t vstream;
