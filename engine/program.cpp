@@ -113,6 +113,10 @@ template <> void program::bind_uniform<std::vector<zap::maths::vec3f>>(int locat
     gl::glUniform3fv(location, type.size(), type.data()->data());
 }
 
+template <> void zap::engine::program::bind_uniform<std::vector<float>>(int location, const std::vector<float>& type) {
+    gl::glUniform1fv(location, type.size(), type.data());
+}
+
 template <> void zap::engine::program::bind_uniform<float>(const char* name, const float& type) {
     auto loc = uniform_location(name);
     assert(loc != -1 && "Invalid mat4f uniform specified");
@@ -165,4 +169,10 @@ template <> void zap::engine::program::bind_uniform<int>(const char* name, const
     auto loc = uniform_location(name);
     assert(loc != -1 && "Invalid int uniform specified");
     if(loc != -1) gl::glUniform1i(loc, value);
+}
+
+template <> void zap::engine::program::bind_uniform<std::vector<float>>(const char* name, const std::vector<float>& type) {
+    auto loc = uniform_location(name);
+    assert(loc != -1 && "Invalid float array uniform specified");
+    if(loc != -1) gl::glUniform1fv(loc, type.size(), type.data());
 }

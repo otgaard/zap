@@ -162,7 +162,7 @@ set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp
         graphics2/quad.cpp
         effects/particle_engine.cpp
-        graphics2/plotter/plotter.cpp)
+        graphics2/plotter/plotter.cpp graphics3/g3_types.cpp graphics2/g2_types.cpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)
