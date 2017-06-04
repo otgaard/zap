@@ -12,7 +12,7 @@ bool framebuffer::allocate() {
 }
 
 void framebuffer::deallocate() {
-    for(int i = 0, end = target_count_ + (depthstencil_ ? 1 : 0); i != end; ++i) attachments_[i].deallocate();
+    for(auto& t : attachments_) t.deallocate();
     glDeleteFramebuffers(1, &framebuffer_);
     LOG("Framebuffer Deallocated:", framebuffer_);
     framebuffer_ = INVALID_IDX;
@@ -63,6 +63,7 @@ bool framebuffer::initialise() {
     assert(is_allocated() && "Framebuffer is not allocated");
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
+    attachments_.resize(0);
     attachments_.reserve(target_count_ + depthstencil_);
     draw_buffers_.reserve(target_count_);
     for(size_t i = 0; i != target_count_; ++i) {

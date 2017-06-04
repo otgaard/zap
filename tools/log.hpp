@@ -84,7 +84,7 @@ static zap::tools::logger default_log(&std::cout);
 
 #else //LOGGING_ENABLED
 #define LOG(...)
-#define LOG_ERR(...)
+#define LOG_ERR default_log.print<zap::tools::log_level::ERROR>
 #define LOG_WARN(...)
 #endif //LOGGING_ENABLED
 
