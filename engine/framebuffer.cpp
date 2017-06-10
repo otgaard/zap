@@ -63,7 +63,7 @@ bool framebuffer::initialise() {
     assert(is_allocated() && "Framebuffer is not allocated");
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
-    attachments_.resize(0);
+    attachments_.clear();
     attachments_.reserve(target_count_ + depthstencil_);
     draw_buffers_.reserve(target_count_);
     for(size_t i = 0; i != target_count_; ++i) {

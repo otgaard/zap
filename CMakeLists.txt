@@ -338,6 +338,9 @@ target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS
 add_executable(frustum examples/frustum.cpp)
 target_link_libraries(frustum zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
+add_executable(noises examples/noises.cpp)
+target_link_libraries(noises zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
 if(APPLE OR UNIX)
 add_executable(procgen1 ${PROCGEN1_FILES})
 target_link_libraries(procgen1 zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
