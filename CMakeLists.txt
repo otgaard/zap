@@ -20,7 +20,8 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/third_party/glew/include)
 
 if(WIN32)
-    include_directories(${CMAKE_CURRENT_BINARY_DIR})	# For the Import/Export header generation
+    include_directories(${CMAKE_CURRENT_BINARY_DIR} 	# For the Import/Export header generation
+            ${CMAKE_SOURCE_DIR}/third_party/asio/include)
 endif(WIN32)
 
 link_directories(
@@ -40,7 +41,7 @@ elseif(WIN32)
 endif(APPLE)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    add_definitions(-DLOGGING_ENABLED)
+    #add_definitions(-DLOGGING_ENABLED)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 

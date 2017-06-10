@@ -42,6 +42,7 @@ public:
     }
 
     // Wraps a function in a future and executes it in the threadpool
+#ifndef _WIN32
     template <typename Fnc, typename... Args>
     auto run_function(Fnc&& fnc, Args&&... arguments) -> std::future<decltype(fnc(arguments...))> {
         using RetT = decltype(fnc(arguments...));
@@ -57,6 +58,24 @@ public:
 
         return fut;
     }
+#else
+    template <typename Fnc, typename... Args>
+    auto run_function(Fnc&& fnc, Args&&... arguments) -> std::future<decltype(fnc(arguments...))> {
+        using RetT = decltype(fnc(arguments...));
+        auto parms = std::make_tuple(std::forward<Args>(arguments)...);
+        auto promise = std::make_shared<std::promise<RetT>>();
+        auto fut = promise->get_future();
+
+        auto new_fnc = [args{std::move(parms)}, promise](Fnc&& fnc) {
+            promise->set_value(apply(std::forward<Fnc>(fnc), args));
+        };
+
+        io_service.post(std::bind(new_fnc, std::forward<Fnc>(fnc)));
+
+        return fut;
+    }
+
+#endif
 
     asio::io_service io_service;
 

@@ -9,7 +9,7 @@
 
 #include <core/core.hpp>
 
-#define LOG_RESET       "\033[0m"
+const char* const LOG_RESET = "\033[0m";
 #define LOG_BLACK       "\033[30m"
 #define LOG_RED         "\033[31m"
 #define LOG_GREEN       "\033[32m"
@@ -19,9 +19,9 @@
 #define LOG_CYAN        "\033[36m"
 #define LOG_WHITE       "\033[37m"
 #define LOG_BOLDBLACK   "\033[1m\033[30m"
-#define LOG_BOLDRED     "\033[1m\033[31m"
+const char* const LOG_BOLDRED = "\033[1m\033[31m";
 #define LOG_BOLDGREEN   "\033[1m\033[32m"
-#define LOG_BOLDYELLOW  "\033[1m\033[33m"
+const char* const LOG_BOLDYELLOW = "\033[1m\033[33m";
 #define LOG_BOLDBLUE    "\033[1m\033[34m"
 #define LOG_BOLDMAGENTA "\033[1m\033[35m"
 #define LOG_BOLDCYAN    "\033[1m\033[36m"
@@ -84,7 +84,7 @@ static zap::tools::logger default_log(&std::cout);
 
 #else //LOGGING_ENABLED
 #define LOG(...)
-#define LOG_ERR default_log.print<zap::tools::log_level::ERROR>
+#define LOG_ERR(...)
 #define LOG_WARN(...)
 #endif //LOGGING_ENABLED
 
