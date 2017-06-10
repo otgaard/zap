@@ -50,6 +50,8 @@ public:
                     const void* data=nullptr);
     template <typename PixelT, buffer_usage USAGE>
     bool initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, bool generate_mipmaps=false);
+    template <typename PixelT>
+    bool initialise(const pixmap<PixelT>& pmap, bool generate_mipmaps=false);
 
     template <typename PixelT, buffer_usage USAGE>
     bool copy(const pixel_buffer<PixelT,USAGE>& pixbuf, size_t col, size_t row, size_t width, size_t height,

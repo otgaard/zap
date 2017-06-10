@@ -28,13 +28,13 @@ link_directories(
 
 if(APPLE)
     set(CMAKE_CXX_STANDARD 14)
-    add_definitions(-Wall -Werror -DGLEW_STATIC)
+    add_definitions(-Wall -Werror -Wno-unused-local-typedef -DGLEW_STATIC -DASIO_STANDALONE)
 elseif(UNIX)
     set(CMAKE_CXX_STANDARD 14)
-    add_definitions(-Wall -Werror -DGLEW_STATIC)
+    add_definitions(-Wall -Werror -DGLEW_STATIC -DASIO_STANDALONE)
 elseif(WIN32)
     include(GenerateExportHeader)
-    add_definitions(-DGLEW_STATIC)
+    add_definitions(-DGLEW_STATIC -DASIO_STANDALONE)
     set(CMAKE_CXX_STANDARD 14)
     #set(CMAKE_CXX_FLAGS )
 endif(APPLE)
@@ -124,7 +124,7 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         renderer/render_state.hpp
         tools/os.hpp
         renderer/renderer_fwd.hpp
-        engine/sampler.hpp)
+        engine/sampler.hpp tools/threadpool.hpp)
 
 set(ZAP_ENGINE_FILES
         engine/shader.cpp

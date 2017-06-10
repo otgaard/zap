@@ -78,4 +78,17 @@ void expand(Fnc fnc, Args&&... args) {
     details::expander<Fnc, Args...>::expand(fnc, std::forward<Args>(args)...);
 };
 
+namespace details {
+template<typename Fnc, typename Tuple, size_t... Idx>
+auto applier(Fnc&& fnc, Tuple&& tuple, std::index_sequence<Idx...>) {
+    return std::forward<Fnc>(fnc)(std::get<Idx>(std::forward<Tuple>(tuple))...);
+};
+}
+
+template <typename Fnc, typename Tuple>
+auto apply(Fnc&& fnc, Tuple&& tuple) {
+    using indices = std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>;
+    return details::applier(std::forward<Fnc>(fnc), std::forward<Tuple>(tuple), indices());
+};
+
 #endif //ZAP_CORE_HPP

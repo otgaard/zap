@@ -16,6 +16,9 @@
 #include <maths/io.hpp>
 #include <graphics2/quad.hpp>
 #include <host/GLFW/application.hpp>
+#include <tools/threadpool.hpp>
+#include <generators/noise/noise.hpp>
+#include <tuple>
 
 using namespace zap;
 using namespace zap::maths;
@@ -35,6 +38,9 @@ public:
 
 protected:
     quad quad_;
+    threadpool pool_;
+    std::vector<std::future<bool>> completion_tokens_;
+    pixmap<rgb888_t> image_;
 };
 
 bool noises::initialise() {
@@ -43,14 +49,49 @@ bool noises::initialise() {
         return false;
     }
 
+    if(!pool_.initialise(2)) {
+        LOG_ERR("Threadpool failed to initialise");
+        return false;
+    }
+
     return true;
 }
 
 void noises::on_resize(int width, int height) {
     quad_.resize(width, height);
+    image_.resize(width, height);
+
+    auto fnc = [width](pixmap<rgb888_t>& image, int c, int r, int w, int h)->bool {
+        const byte color = byte(c == 0 ? 0 : 255);
+        for(int y = r, rend = r + h; y != rend; ++y) {
+            for(int x = c, cend = c + w; x != cend; ++x) {
+                image(x,y).set3(color, 255-color, 0);
+            }
+        }
+
+        return true;
+    };
+
+    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), 0, 0, width/2, height));
+    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, 0, width/2 + (width%2), height));
 }
 
 void noises::update(double t, float dt) {
+    if(!completion_tokens_.empty()) {
+        bool finished = true;
+        for(auto& c : completion_tokens_)
+            finished &= c.wait_for(std::chrono::milliseconds(2)) == std::future_status::ready;
+
+        if(finished) {
+            LOG("FINISHED");
+
+            completion_tokens_.clear();
+            texture tex{};
+            tex.allocate();
+            tex.initialise(image_, false);
+            quad_.set_texture(std::move(tex));
+        }
+    }
 }
 
 void noises::draw() {
