@@ -41,7 +41,7 @@ elseif(WIN32)
 endif(APPLE)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    #add_definitions(-DLOGGING_ENABLED)
+    add_definitions(-DLOGGING_ENABLED)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
@@ -157,13 +157,17 @@ set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/curve_input.hpp
         effects/particle_engine.hpp
         graphics2/plotter/plot_sampler.hpp
-        graphics3/g3_types.hpp)
+        graphics3/g3_types.hpp
+        generators/generator.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp
         graphics2/quad.cpp
         effects/particle_engine.cpp
-        graphics2/plotter/plotter.cpp graphics3/g3_types.cpp graphics2/g2_types.cpp)
+        graphics2/plotter/plotter.cpp
+        graphics3/g3_types.cpp
+        graphics2/g2_types.cpp
+        generators/generator.cpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)

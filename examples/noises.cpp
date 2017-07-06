@@ -17,8 +17,7 @@
 #include <graphics2/quad.hpp>
 #include <host/GLFW/application.hpp>
 #include <tools/threadpool.hpp>
-#include <generators/noise/noise.hpp>
-#include <tuple>
+#include <generators/generator.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -27,7 +26,7 @@ using namespace zap::renderer;
 
 class noises : public application {
 public:
-    noises() : application("noises", 1280, 768, false) { }
+    noises() : application("noises", 1281, 769, false) { }
 
     bool initialise() override final;
     void update(double t, float dt) override final;
@@ -41,6 +40,7 @@ protected:
     threadpool pool_;
     std::vector<std::future<bool>> completion_tokens_;
     pixmap<rgb888_t> image_;
+    generator gen_;
 };
 
 bool noises::initialise() {
@@ -54,29 +54,56 @@ bool noises::initialise() {
         return false;
     }
 
+    if(!gen_.initialise()) {
+        LOG_ERR("Error initialising texture generator");
+        return false;
+    }
+
     return true;
 }
+
+#define POOL
 
 void noises::on_resize(int width, int height) {
     quad_.resize(width, height);
     image_.resize(width, height);
 
+#if defined(POOL)
     auto fnc = [width](pixmap<rgb888_t>& image, int c, int r, int w, int h)->bool {
-        const byte color = byte(c == 0 ? 0 : 255);
+        const byte colourA = byte(c == 0 ? 0 : 255);
+        const byte colourB = byte(r == 0 ? 0 : 255);
         for(int y = r, rend = r + h; y != rend; ++y) {
             for(int x = c, cend = c + w; x != cend; ++x) {
-                image(x,y).set3(color, 255-color, 0);
+                image(x,y).set3(colourA, 255 - colourA, colourB);
             }
         }
 
         return true;
     };
 
-    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), 0, 0, width/2, height));
-    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, 0, width/2 + (width%2), height));
+    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), 0, 0, width/2, height/2));
+    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), 0, height/2, width/2, height/2 + (height%2)));
+    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, 0, width/2 + (width%2), height/2));
+    completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, height/2, width/2 + (width%2), height/2 + (height%2)));
+#else   // !defined(POOL)
+    render_task task{1280, 800};
+    task.scale.set(10.f, 10.f);
+    auto img = gen_.render(task).get();
+    pixmap<rgb888_t> image{1280, 800};
+    for(auto i = 0; i != img.size(); ++i) {
+        byte b = (byte)(255.f*(.5f + .5f*img(i)));
+        image(i).set3(b, b, b);
+    }
+
+    texture tex{};
+    tex.allocate();
+    tex.initialise(image, false);
+    quad_.set_texture(std::move(tex));
+#endif  // !defined(POOL)
 }
 
 void noises::update(double t, float dt) {
+#if defined(POOL)
     if(!completion_tokens_.empty()) {
         bool finished = true;
         for(auto& c : completion_tokens_)
@@ -92,6 +119,7 @@ void noises::update(double t, float dt) {
             quad_.set_texture(std::move(tex));
         }
     }
+#endif
 }
 
 void noises::draw() {

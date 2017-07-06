@@ -14,7 +14,7 @@ namespace zap { namespace engine {
         using buffer_t = std::vector<PixelT>;
         pixmap() : width_(0), height_(0), depth_(0) { }
         pixmap(int width, int height=1, int depth=1) { resize(width, height, depth); }
-        pixmap(const pixmap&) = delete;
+        pixmap(const pixmap&) = default;
         ~pixmap() = default;
 
         pixmap& operator=(const pixmap&) = delete;

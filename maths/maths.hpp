@@ -42,6 +42,8 @@ namespace zap { namespace maths {
     template <typename T> constexpr T min(const T& a, const T& b) { return (a < b) ? a : b; }
     template <typename T> constexpr T max(const T& a, const T& b) { return (a > b) ? a : b; }
 
+    template <typename T> constexpr int floor(T x) { return ((int)x - (x < 0 && x != (int)x)); }
+
     // Forward Declarations
     template <typename T> struct vec2;
     template <typename T> struct vec3;

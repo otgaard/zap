@@ -74,7 +74,6 @@ public:
 
         return fut;
     }
-
 #endif
 
     asio::io_service io_service;
