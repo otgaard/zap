@@ -43,6 +43,7 @@ endif(APPLE)
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     add_definitions(-DLOGGING_ENABLED)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    add_definitions(-DLOGGING_ENABLED)
 endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
 #########################################
@@ -77,7 +78,7 @@ set(ZAP_MATHS_PUBLIC_HEADERS
 
 set(ZAP_MATHS_FILES
         maths/io.cpp
-        maths/transform.cpp)
+        maths/transform.cpp maths/simd.hpp)
 
 set(ZAP_ENGINE_PUBLIC_HEADERS
         tools/log.hpp

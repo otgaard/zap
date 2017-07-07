@@ -3,6 +3,7 @@
 #include <tools/threadpool.hpp>
 #include <random>
 #include "generator.hpp"
+#include <maths/simd.hpp>
 
 using namespace zap;
 using namespace engine;
@@ -15,8 +16,13 @@ struct generator::state_t {
 
     bool initialised;
     byte prn_table[RND_TBL];
-    float grad1[RND_TBL];
-    maths::vec2f grad2[RND_TBL];
+#if defined(_WIN32)
+    __declspec(align(16)) float grad1[RND_TBL];
+    __declspec(align(16)) maths::vec2f grad2[RND_TBL];
+#else
+    float __attribute__((aligned(16))) grad1[RND_TBL];
+    maths::vec2f __attribute__((aligned(16))) grad2[RND_TBL];
+#endif
     state_t() : pool_ptr(nullptr), initialised(false) { }
 
     byte perm(int x) { return prn_table[x & RND_MASK]; }
@@ -26,7 +32,6 @@ struct generator::state_t {
 };
 
 generator::generator() : state_(new state_t()), s(*state_.get()) {
-    UNUSED(RND_MASK);
 }
 
 zap::generator::~generator() = default;
@@ -71,12 +76,17 @@ std::future<generator::pixmap<float>> generator::render(const render_task& req, 
 }
 
 pixmap<float> generator::render_cpu(const render_task& req) {
+    LOG("CPU");
     pixmap<float> image{req.width, req.height};
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     const float inv_x = req.scale.x/req.width;
     const float inv_y = req.scale.y/req.height;
 
     using maths::floor;
 
+    for(int outer = 0; outer != 1000; ++outer) {
     for(int r = 0; r != req.height; ++r) {
         float y = inv_y * r;
         for(int c = 0; c != req.width; ++c) {
@@ -87,12 +97,73 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                                                  s.grad1[s.perm(xi, yi+1)], s.grad1[s.perm(xi+1, yi+1)]);
         }
     }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto dur = std::chrono::duration<float>(end - start).count();
+    LOG("CPU Total Time: ", dur);
 
     return image;
 }
 
 pixmap<float> generator::render_simd(const render_task& req) {
-    return zap::generator::pixmap<float>();
+    LOG("SIMD");
+    pixmap<float> image{req.width, req.height};
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    const float inv_x = req.scale.x/req.width;
+    const float inv_y = req.scale.y/req.height;
+    using namespace zap::maths::simd;
+
+    const int stream_size = 4;
+    const int blocks = req.width/stream_size;
+
+    const vecm32f vseq = {{ 1.f, 2.f, 3.f, 4.f }};
+    const vecm32f vinc = {{ inv_x, inv_x, inv_x, inv_x }};
+    const vecm vsteps = _mm_mul_ps(vseq.v, vinc.v);
+    //const vecm32f one = {{ 1.f, 1.f, 1.f, 1.f }};
+    //const vecm32f scale = {{ 127.f, 127.f, 127.f, 127.f }};
+
+    set_round_down();
+
+    // Do it 100 times
+
+    for(int outer = 0; outer != 1000; ++outer) {
+    for(int r = 0; r != req.height; ++r) {
+        float vy = r * inv_y;
+        int iy = floor(vy);
+        float dy = vy - iy;
+        for(int c = 0; c != blocks; ++c) {
+            const int c_offset = c * stream_size;
+            vecm vx = _mm_add_ps(_mm_mul_ps(load(c_offset), vinc.v), vsteps);
+            vecm fx = floor_v(vx);
+            vecm32i ix;
+            ix.v = floor_vi(fx);
+            vecm dx = _mm_sub_ps(vx, fx);
+
+            vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
+            vecm32f P01 = {{ s.grad1[s.perm(ix.arr[0]+1,iy)], s.grad1[s.perm(ix.arr[1]+1,iy)], s.grad1[s.perm(ix.arr[2]+1,iy)], s.grad1[s.perm(ix.arr[3]+1,iy)] }};
+            vecm32f P10 = {{ s.grad1[s.perm(ix.arr[0],iy+1)], s.grad1[s.perm(ix.arr[1],iy+1)], s.grad1[s.perm(ix.arr[2],iy+1)], s.grad1[s.perm(ix.arr[3],iy+1)] }};
+            vecm32f P11 = {{ s.grad1[s.perm(ix.arr[0]+1,iy+1)], s.grad1[s.perm(ix.arr[1]+1,iy+1)], s.grad1[s.perm(ix.arr[2]+1,iy+1)], s.grad1[s.perm(ix.arr[3]+1,iy+1)] }};
+
+            vecm32f res;
+            res.v = bilinear_v(dx, load(dy), P00.v, P01.v, P10.v, P11.v);
+
+            //res = lerp_v(dx, P00.v, P01.v);
+            //ix.v = floor_vi(_mm_mul_ps(_mm_add_ps(res, one), scale));
+            for(int i = 0; i != 4; ++i) image(c_offset+i, r) = res.arr[i];
+        }
+    }
+    }
+
+    set_round_default();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto dur = std::chrono::duration<float>(end - start).count();
+    LOG("SIMD Total Time: ", dur);
+
+    return image;
 }
 
 pixmap<float> generator::render_gpu(const render_task& req) {

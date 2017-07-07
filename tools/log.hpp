@@ -9,29 +9,49 @@
 
 #include <core/core.hpp>
 
+#if !defined(_WIN32)
 const char* const LOG_RESET = "\033[0m";
-#define LOG_BLACK       "\033[30m"
-#define LOG_RED         "\033[31m"
-#define LOG_GREEN       "\033[32m"
-#define LOG_YELLOW      "\033[33m"
-#define LOG_BLUE        "\033[34m"
-#define LOG_MAGENTA     "\033[35m"
-#define LOG_CYAN        "\033[36m"
-#define LOG_WHITE       "\033[37m"
-#define LOG_BOLDBLACK   "\033[1m\033[30m"
+const char* const LOG_BLACK = "\033[30m";
+const char* const LOG_RED = "\033[31m";
+const char* const LOG_GREEN = "\033[32m";
+const char* const LOG_YELLOW = "\033[33m";
+const char* const LOG_BLUE = "\033[34m";
+const char* const LOG_MAGENTA = "\033[35m";
+const char* const LOG_CYAN = "\033[36m";
+const char* const LOG_WHITE = "\033[37m";
+const char* const LOG_BOLDBLACK = "\033[1m\033[30m";
 const char* const LOG_BOLDRED = "\033[1m\033[31m";
-#define LOG_BOLDGREEN   "\033[1m\033[32m"
+const char* const LOG_BOLDGREEN = "\033[1m\033[32m";
 const char* const LOG_BOLDYELLOW = "\033[1m\033[33m";
-#define LOG_BOLDBLUE    "\033[1m\033[34m"
-#define LOG_BOLDMAGENTA "\033[1m\033[35m"
-#define LOG_BOLDCYAN    "\033[1m\033[36m"
-#define LOG_BOLDWHITE   "\033[1m\033[37m"
+const char* const LOG_BOLDBLUE = "\033[1m\033[34m";
+const char* const LOG_BOLDMAGENTA = "\033[1m\033[35m";
+const char* const LOG_BOLDCYAN = "\033[1m\033[36m";
+const char* const LOG_BOLDWHITE = "\033[1m\033[37m";
+#else
+const char* const LOG_RESET = "";
+const char* const LOG_BLACK = "";
+const char* const LOG_RED = "";
+const char* const LOG_GREEN = "";
+const char* const LOG_YELLOW = "";
+const char* const LOG_BLUE = "";
+const char* const LOG_MAGENTA = "";
+const char* const LOG_CYAN = "";
+const char* const LOG_WHITE = "";
+const char* const LOG_BOLDBLACK = "";
+const char* const LOG_BOLDRED = "";
+const char* const LOG_BOLDGREEN = "";
+const char* const LOG_BOLDYELLOW = "";
+const char* const LOG_BOLDBLUE = "";
+const char* const LOG_BOLDMAGENTA = "";
+const char* const LOG_BOLDCYAN = "";
+const char* const LOG_BOLDWHITE = "";
+#endif
 
 namespace zap { namespace tools {
     enum class log_level : uint8_t {
-        DEBUG,
-        WARNING,
-        ERROR
+        LL_DEBUG,
+        LL_WARNING,
+        LL_ERROR
     };
 
     inline void def_cleanup_fnc(std::ostream* stream) { UNUSED(stream); }
@@ -47,13 +67,13 @@ namespace zap { namespace tools {
             std::unique_lock<std::mutex> lock(lock_);
 
             switch(level) {
-                case log_level::DEBUG:
+                case log_level::LL_DEBUG:
                     sstream_ << "<DEBUG>:";
                     break;
-                case log_level::ERROR:
+                case log_level::LL_ERROR:
                     sstream_ << "<ERROR>:" << LOG_BOLDRED;
                     break;
-                case log_level::WARNING:
+                case log_level::LL_WARNING:
                     sstream_ << "<WARNING>:"  << LOG_BOLDYELLOW;
                     break;
             }
@@ -77,15 +97,14 @@ namespace zap { namespace tools {
 
 static zap::tools::logger default_log(&std::cout);
 
-#ifdef LOGGING_ENABLED
-#define LOG default_log.print<zap::tools::log_level::DEBUG>
-#define LOG_ERR default_log.print<zap::tools::log_level::ERROR>
-#define LOG_WARN default_log.print<zap::tools::log_level::WARNING>
-
-#else //LOGGING_ENABLED
+#if defined(LOGGING_ENABLED)
+#define LOG default_log.print<zap::tools::log_level::LL_DEBUG>
+#define LOG_ERR default_log.print<zap::tools::log_level::LL_ERROR>
+#define LOG_WARN default_log.print<zap::tools::log_level::LL_WARNING>
+#else //!LOGGING_ENABLED
 #define LOG(...)
 #define LOG_ERR(...)
 #define LOG_WARN(...)
-#endif //LOGGING_ENABLED
+#endif //!LOGGING_ENABLED
 
 #endif //ZAP_LOG_HPP

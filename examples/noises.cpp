@@ -26,7 +26,7 @@ using namespace zap::renderer;
 
 class noises : public application {
 public:
-    noises() : application("noises", 1281, 769, false) { }
+    noises() : application("noises", 1200, 1200, false) { }
 
     bool initialise() override final;
     void update(double t, float dt) override final;
@@ -62,7 +62,7 @@ bool noises::initialise() {
     return true;
 }
 
-#define POOL
+//#define POOL
 
 void noises::on_resize(int width, int height) {
     quad_.resize(width, height);
@@ -86,10 +86,14 @@ void noises::on_resize(int width, int height) {
     completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, 0, width/2 + (width%2), height/2));
     completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, height/2, width/2 + (width%2), height/2 + (height%2)));
 #else   // !defined(POOL)
-    render_task task{1280, 800};
-    task.scale.set(10.f, 10.f);
-    auto img = gen_.render(task).get();
-    pixmap<rgb888_t> image{1280, 800};
+    render_task task{width, height};
+    task.scale.set(50.f, 50.f);
+    auto start = std::chrono::high_resolution_clock::now();
+    auto img = gen_.render(task, generator::gen_method::SIMD).get();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto dur = std::chrono::duration<float>(end - start).count();
+    LOG("Time:", dur);
+    pixmap<rgb888_t> image{width, height};
     for(auto i = 0; i != img.size(); ++i) {
         byte b = (byte)(255.f*(.5f + .5f*img(i)));
         image(i).set3(b, b, b);
