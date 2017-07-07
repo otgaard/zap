@@ -134,12 +134,17 @@ pixmap<float> generator::render_simd(const render_task& req) {
         float vy = r * inv_y;
         int iy = floor(vy);
         float dy = vy - iy;
+        vecm dv = load(dy);
         for(int c = 0; c != blocks; ++c) {
             const int c_offset = c * stream_size;
             vecm vx = _mm_add_ps(_mm_mul_ps(load(c_offset), vinc.v), vsteps);
             vecm fx = floor_v(vx);
             vecm32i ix;
+#if defined(_WIN32)
+            ix.v = _mm_castsi128_ps(floor_vi(fx));
+#else
             ix.v = floor_vi(fx);
+#endif
             vecm dx = _mm_sub_ps(vx, fx);
 
             vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
@@ -148,7 +153,7 @@ pixmap<float> generator::render_simd(const render_task& req) {
             vecm32f P11 = {{ s.grad1[s.perm(ix.arr[0]+1,iy+1)], s.grad1[s.perm(ix.arr[1]+1,iy+1)], s.grad1[s.perm(ix.arr[2]+1,iy+1)], s.grad1[s.perm(ix.arr[3]+1,iy+1)] }};
 
             vecm32f res;
-            res.v = bilinear_v(dx, load(dy), P00.v, P01.v, P10.v, P11.v);
+            res.v = bilinear_v(dx, dv, P00.v, P01.v, P10.v, P11.v);
 
             //res = lerp_v(dx, P00.v, P01.v);
             //ix.v = floor_vi(_mm_mul_ps(_mm_add_ps(res, one), scale));

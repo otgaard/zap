@@ -17,7 +17,7 @@ namespace zap { namespace engine {
         pixmap(const pixmap&) = default;
         ~pixmap() = default;
 
-        pixmap& operator=(const pixmap&) = delete;
+        pixmap& operator=(const pixmap&) = default;
 
         void resize(int width, int height=1, int depth=1) {
             if(width < 1 || height < 1 || depth < 1) return;
