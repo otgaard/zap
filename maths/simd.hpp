@@ -20,7 +20,8 @@ namespace zap { namespace maths { namespace simd {
     using veci = __m128i;
 
     inline vecm VCALL load(const float* arr) { return _mm_load_ps(arr); }
-    inline vecm VCALL load(float value) { return _mm_load_ps1(&value); }
+    inline vecm VCALL load(float value) { return _mm_set1_ps(value); }
+    inline veci VCALL load(int value) { return _mm_set1_epi32(value); }
 
 #if defined(_WIN32)
     __declspec(align(16)) struct vecm32f {
@@ -44,8 +45,14 @@ namespace zap { namespace maths { namespace simd {
         };
     };
 
+    //inline vecm VCALL load(int value) { vecm32i r = {{ (float)value, (float)value, (float)value, (float)value}}; return r.v; }
+
+    const float mask = (float)255;
     const vecm32i vecm_abs_mask = {{ 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF }};
+    const vecm32i vecm_rnd_mask = {{ 0x000000FF, 0x000000FF, 0x000000FF, 0x000000FF }};
     const vecm32f vecm_no_fraction = {{ 8388608.f, 8388608.f, 8388608.f, 8388608.f }};
+    const vecm32f vecm_one = {{ 1.f, 1.f, 1.f, 1.f }};
+    const veci veci_one = _mm_cvtps_epi32(vecm_one.v);
 
     inline void set_round_down() {
         _MM_SET_ROUNDING_MODE(_MM_ROUND_DOWN);
@@ -69,7 +76,12 @@ namespace zap { namespace maths { namespace simd {
         return result;
     }
 
-    inline veci VCALL floor_vi(const vecm& v) {
+    inline vecm VCALL ffloor_v(const vecm& v) {
+        vecm f = _mm_cvtepi32_ps(_mm_cvttps_epi32(v));
+        return _mm_sub_ps(f, _mm_and_ps(_mm_cmplt_ps(v, f), vecm_one.v));
+    }
+
+    inline veci VCALL convert_v(const vecm& v) {
         return _mm_cvtps_epi32(v);
     }
 
@@ -81,6 +93,18 @@ namespace zap { namespace maths { namespace simd {
 
     inline vecm VCALL bilinear_v(const vecm& u, const vecm& v, const vecm& P00, const vecm& P01, const vecm& P10, const vecm& P11) {
         return lerp_v(v, lerp_v(u, P00, P01), lerp_v(u, P10, P11));
+    }
+
+    // From Intel Developer Zone (SSE2 signed 32bit integer multiplication)
+    // https://software.intel.com/en-us/forums/intel-c-compiler/topic/288768
+    // _mm_mul_epu32  - Multiply the low unsigned 32-bit integers from each packed 64-bit element in a and b, and store
+    //                  the unsigned 64-bit result in dst.
+    // _mm_srli_si128 - shift a right by imm8 bytes while shifting in zeros and store the results in dst;
+    // _mm_shuffle_ps - select first two words from a and last two words from b as per the word arrangement in _MM_SHUFFLE()
+    inline veci VCALL mul(const veci& a, const veci& b) {
+        vecm tmp1 = _mm_castsi128_ps(_mm_mul_epu32(a,b));
+        vecm tmp2 = _mm_castsi128_ps(_mm_mul_epu32(_mm_srli_si128(a,4), _mm_srli_si128(b,4)));
+        return _mm_shuffle_epi32(_mm_castps_si128(_mm_shuffle_ps(tmp1, tmp2, _MM_SHUFFLE(2,0,2,0))), _MM_SHUFFLE(3,1,2,0));
     }
 
 }}}

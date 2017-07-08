@@ -6,10 +6,13 @@
 #include <maths/simd.hpp>
 
 using namespace zap;
+using namespace maths;
 using namespace engine;
 
 const int RND_TBL = 256;
 const int RND_MASK = 255;
+
+const simd::veci RND_MASK_V = simd::load(0xFF);
 
 struct generator::state_t {
     threadpool* pool_ptr;
@@ -29,6 +32,47 @@ struct generator::state_t {
     byte perm(int x, int y) { return perm(x + perm(y)); }
     byte perm(int x, int y, int z) { return perm(x + perm(y + perm(z))); }
     byte perm(int x, int y, int z, int w) { return perm(x + perm(y + perm(z + perm(w)))); }
+
+    float grad_a(int x) {
+        return grad1[perm(x)];
+    }
+
+    float grad_b(int x) {
+        x = (x >> 13) ^ x;
+        int xx = (x * (x * x * 19990303) + 1376312589) & 0x7ffffff;
+        return 1.f - ((float)xx / 1073741824.f);
+    }
+
+    simd::veci VCALL grad_v(const simd::veci& seed, const simd::veci& x) {
+        simd::veci hash = seed;
+        hash = _mm_xor_si128(x, hash);
+        //hash = _mm_mul_ep
+        return x;
+    }
+
+    simd::veci VCALL perm_v(const simd::vecm32i& x) {
+        simd::vecm32i idx;
+        idx.v = _mm_castsi128_ps(_mm_and_si128(_mm_castps_si128(x.v), RND_MASK_V));
+        return _mm_set_epi32(prn_table[idx.arr[0]], prn_table[idx.arr[1]], prn_table[idx.arr[2]], prn_table[idx.arr[3]]);
+    }
+
+    simd::veci VCALL perm_v(const simd::vecm32i& x, const simd::vecm32i& y) {
+        simd::vecm32i tmp1;
+        tmp1.v = _mm_add_epi32(_mm_castps_si128(x.v), _mm_castps_si128(perm_v(y)));
+        return perm_v(tmp1);
+    }
+
+    simd::vecm32f VCALL grad_v(const simd::vecm32i& x, const simd::vecm32i& y) {
+        simd::vecm32i idx;
+        idx.v = _mm_castsi128_ps(perm_v(x, y));
+
+        return simd::vecm32f{{
+            grad1[idx.arr[0]],
+            grad1[idx.arr[1]],
+            grad1[idx.arr[2]],
+            grad1[idx.arr[3]]
+        }};
+    }
 };
 
 generator::generator() : state_(new state_t()), s(*state_.get()) {
@@ -60,6 +104,36 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
     std::shuffle(s.prn_table, s.prn_table+RND_TBL, gen);
 
     s.initialised = true;
+
+    LOG(LOG_BOLDGREEN, "Running Lookup vs Computation Tests");
+
+    using clock = std::chrono::high_resolution_clock;
+    using duration = std::chrono::duration<float>;
+
+    auto start = clock::now();
+
+    float total = -std::numeric_limits<float>::max();
+    for(size_t i = 0; i != 10000000; ++i) {
+        float v = s.grad_a(i);
+        total += v;
+    }
+
+    auto end = clock::now();
+
+    LOG(LOG_BOLDRED, "Time to look up value in table:", duration(end - start).count());
+
+    start = clock::now();
+
+    for(size_t i = 0; i != 10000000; ++i) {
+        float v = s.grad_b(i);
+        total += v;
+    }
+
+    end = clock::now();
+    LOG(LOG_BOLDRED, "Time to look up value in table:", duration(end - start).count());
+
+    LOG(total);
+
     return true;
 }
 
@@ -122,8 +196,6 @@ pixmap<float> generator::render_simd(const render_task& req) {
     const vecm32f vseq = {{ 1.f, 2.f, 3.f, 4.f }};
     const vecm32f vinc = {{ inv_x, inv_x, inv_x, inv_x }};
     const vecm vsteps = _mm_mul_ps(vseq.v, vinc.v);
-    //const vecm32f one = {{ 1.f, 1.f, 1.f, 1.f }};
-    //const vecm32f scale = {{ 127.f, 127.f, 127.f, 127.f }};
 
     set_round_down();
 
@@ -133,30 +205,30 @@ pixmap<float> generator::render_simd(const render_task& req) {
     for(int r = 0; r != req.height; ++r) {
         float vy = r * inv_y;
         int iy = floor(vy);
-        float dy = vy - iy;
-        vecm dv = load(dy);
+        vecm dy = load(vy - (float)iy);
+        vecm32i iy_v;
+        iy_v.v = load(iy);
+        vecm32i iyp1;
+        iyp1.v = load(iy+1);
         for(int c = 0; c != blocks; ++c) {
             const int c_offset = c * stream_size;
-            vecm vx = _mm_add_ps(_mm_mul_ps(load(c_offset), vinc.v), vsteps);
-            vecm fx = floor_v(vx);
+            vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
+            vecm fx = ffloor_v(vx);
             vecm32i ix;
-#if defined(_WIN32)
-            ix.v = _mm_castsi128_ps(floor_vi(fx));
-#else
-            ix.v = floor_vi(fx);
-#endif
+            ix.v = _mm_castsi128_ps(convert_v(fx));
+
+            vecm32i ixp1;
+            ixp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
+
+            vecm32f P00 = s.grad_v(ix, iy_v);
+            vecm32f P01 = s.grad_v(ixp1, iy_v);
+            vecm32f P10 = s.grad_v(ix, iyp1);
+            vecm32f P11 = s.grad_v(ixp1, iyp1);
+
             vecm dx = _mm_sub_ps(vx, fx);
 
-            vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
-            vecm32f P01 = {{ s.grad1[s.perm(ix.arr[0]+1,iy)], s.grad1[s.perm(ix.arr[1]+1,iy)], s.grad1[s.perm(ix.arr[2]+1,iy)], s.grad1[s.perm(ix.arr[3]+1,iy)] }};
-            vecm32f P10 = {{ s.grad1[s.perm(ix.arr[0],iy+1)], s.grad1[s.perm(ix.arr[1],iy+1)], s.grad1[s.perm(ix.arr[2],iy+1)], s.grad1[s.perm(ix.arr[3],iy+1)] }};
-            vecm32f P11 = {{ s.grad1[s.perm(ix.arr[0]+1,iy+1)], s.grad1[s.perm(ix.arr[1]+1,iy+1)], s.grad1[s.perm(ix.arr[2]+1,iy+1)], s.grad1[s.perm(ix.arr[3]+1,iy+1)] }};
-
             vecm32f res;
-            res.v = bilinear_v(dx, dv, P00.v, P01.v, P10.v, P11.v);
-
-            //res = lerp_v(dx, P00.v, P01.v);
-            //ix.v = floor_vi(_mm_mul_ps(_mm_add_ps(res, one), scale));
+            res.v = bilinear_v(dx, dy, P00.v, P01.v, P10.v, P11.v);
             for(int i = 0; i != 4; ++i) image(c_offset+i, r) = res.arr[i];
         }
     }
@@ -172,5 +244,62 @@ pixmap<float> generator::render_simd(const render_task& req) {
 }
 
 pixmap<float> generator::render_gpu(const render_task& req) {
-    return zap::generator::pixmap<float>();
+    LOG("SIMD2");
+    pixmap<float> image{req.width, req.height};
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    const float inv_x = req.scale.x/req.width;
+    const float inv_y = req.scale.y/req.height;
+    using namespace zap::maths::simd;
+
+    const int stream_size = 4;
+    const int blocks = req.width/stream_size;
+
+    const vecm32f vseq = {{ 1.f, 2.f, 3.f, 4.f }};
+    const vecm32f vinc = {{ inv_x, inv_x, inv_x, inv_x }};
+    const vecm vsteps = _mm_mul_ps(vseq.v, vinc.v);
+
+    set_round_down();
+
+    // Do it 100 times
+
+    for(int outer = 0; outer != 1000; ++outer) {
+        for(int r = 0; r != req.height; ++r) {
+            float vy = r * inv_y;
+            int iy = floor(vy);
+            int iyp1 = iy+1;
+            float dy = vy - iy;
+            vecm dv = load(dy);
+            for(int c = 0; c != blocks; ++c) {
+                int c_offset = c * stream_size;
+                vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
+                vecm fx = ffloor_v(vx);
+                vecm32i ix;
+                ix.v = _mm_castsi128_ps(convert_v(fx));
+
+                vecm32i ixp1;
+                ixp1.v = _mm_castsi128_ps(_mm_add_epi32(ix.v, veci_one));
+
+                vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
+                vecm32f P01 = {{ s.grad1[s.perm(ixp1.arr[0],iy)], s.grad1[s.perm(ixp1.arr[1],iy)], s.grad1[s.perm(ixp1.arr[2],iy)], s.grad1[s.perm(ixp1.arr[3],iy)] }};
+                vecm32f P10 = {{ s.grad1[s.perm(ix.arr[0],iyp1)], s.grad1[s.perm(ix.arr[1],iyp1)], s.grad1[s.perm(ix.arr[2],iyp1)], s.grad1[s.perm(ix.arr[3],iyp1)] }};
+                vecm32f P11 = {{ s.grad1[s.perm(ixp1.arr[0],iyp1)], s.grad1[s.perm(ixp1.arr[1],iyp1)], s.grad1[s.perm(ixp1.arr[2],iyp1)], s.grad1[s.perm(ixp1.arr[3],iyp1)] }};
+
+                vecm dx = _mm_sub_ps(vx, fx);
+
+                vecm32f res;
+                res.v = bilinear_v(dx, dv, P00.v, P01.v, P10.v, P11.v);
+                for(int i = 0; i != 4; ++i) image((int)(c_offset+i), r) = res.arr[i];
+            }
+        }
+    }
+
+    set_round_default();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto dur = std::chrono::duration<float>(end - start).count();
+    LOG("SIMD Total Time: ", dur);
+
+    return image;
 }
