@@ -8,11 +8,13 @@
 #include <xmmintrin.h>  // SSE
 #include <emmintrin.h>  // SSE2
 #include <pmmintrin.h>  // SSE3
+#include <initializer_list>
 
 #if defined(_WIN32)
 #define VCALL _vectorcall
 #else
-#define VCALL __attribute__((vectorcall))
+//#define VCALL __attribute__((vectorcall))
+#define VCALL
 #endif
 
 namespace zap { namespace maths { namespace simd {
@@ -32,6 +34,13 @@ namespace zap { namespace maths { namespace simd {
             vecm v;
             float arr[4];
         };
+
+        vecm32f() = default;
+        explicit vecm32f(const float* arr_ptr) { arr[0] = *arr_ptr++, arr[1] = *arr_ptr++, arr[2] = *arr_ptr++, arr[3] = *arr_ptr; }
+        vecm32f(__m128 vec) : v(vec) { }
+        vecm32f(std::initializer_list<float> init) { auto it = init.begin(); arr[0] = *it++; arr[1] = *it++; arr[2] = *it++, arr[3] = *it; }
+        operator __m128() const { return v; }
+        operator float* const() const { return (float* const)arr; }
     };
 
 #if defined(WIN32)
@@ -43,15 +52,41 @@ namespace zap { namespace maths { namespace simd {
             vecm v;
             int32_t arr[4];
         };
+
+        vecm32i() = default;
+        explicit vecm32i(const int32_t* arr_ptr) { arr[0] = *arr_ptr++, arr[1] = *arr_ptr++, arr[2] = *arr_ptr++, arr[3] = *arr_ptr; }
+        vecm32i(__m128 vec) : v(vec) { }
+        vecm32i(std::initializer_list<int32_t> init) { auto it = init.begin(); arr[0] = *it++; arr[1] = *it++; arr[2] = *it++, arr[3] = *it; }
+        operator __m128() const { return v; }
+        operator int32_t* const() const { return (int32_t* const)arr; }
+    };
+
+#if defined(WIN32)
+    __declspec(align(16)) struct veci32i {
+#else
+    struct __attribute__((aligned(16))) veci32i {
+#endif
+        union {
+            veci v;
+            int32_t arr[4];
+        };
+
+        veci32i() = default;
+        explicit veci32i(const int32_t* arr_ptr) { arr[0] = *arr_ptr++, arr[1] = *arr_ptr++, arr[2] = *arr_ptr++, arr[3] = *arr_ptr; }
+        explicit veci32i(const veci& vec) : v(vec) { }
+        veci32i(__m128i vec) : v(vec) { }
+        veci32i(std::initializer_list<int32_t> init) { auto it = init.begin(); arr[0] = *it++; arr[1] = *it++; arr[2] = *it++, arr[3] = *it; }
+        operator __m128i() const { return v; }
+        operator int32_t* const() const { return (int32_t* const)arr; }
     };
 
     //inline vecm VCALL load(int value) { vecm32i r = {{ (float)value, (float)value, (float)value, (float)value}}; return r.v; }
 
     const float mask = (float)255;
-    const vecm32i vecm_abs_mask = {{ 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF }};
-    const vecm32i vecm_rnd_mask = {{ 0x000000FF, 0x000000FF, 0x000000FF, 0x000000FF }};
-    const vecm32f vecm_no_fraction = {{ 8388608.f, 8388608.f, 8388608.f, 8388608.f }};
-    const vecm32f vecm_one = {{ 1.f, 1.f, 1.f, 1.f }};
+    const vecm32i vecm_abs_mask = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF };
+    const vecm32i vecm_rnd_mask = { 0x000000FF, 0x000000FF, 0x000000FF, 0x000000FF };
+    const vecm32f vecm_no_fraction = { 8388608.f, 8388608.f, 8388608.f, 8388608.f };
+    const vecm32f vecm_one = { 1.f, 1.f, 1.f, 1.f };
     const veci veci_one = _mm_cvtps_epi32(vecm_one.v);
 
     inline void set_round_down() {
@@ -100,7 +135,7 @@ namespace zap { namespace maths { namespace simd {
     // _mm_mul_epu32  - Multiply the low unsigned 32-bit integers from each packed 64-bit element in a and b, and store
     //                  the unsigned 64-bit result in dst.
     // _mm_srli_si128 - shift a right by imm8 bytes while shifting in zeros and store the results in dst;
-    // _mm_shuffle_ps - select first two words from a and last two words from b as per the word arrangement in _MM_SHUFFLE()
+    // _mm_shuffle_ps - select first two dwords from a and last two dwords from b as per the dword arrangement in _MM_SHUFFLE()
     inline veci VCALL mul(const veci& a, const veci& b) {
         vecm tmp1 = _mm_castsi128_ps(_mm_mul_epu32(a,b));
         vecm tmp2 = _mm_castsi128_ps(_mm_mul_epu32(_mm_srli_si128(a,4), _mm_srli_si128(b,4)));

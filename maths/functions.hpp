@@ -13,7 +13,7 @@ namespace zap { namespace maths {
 struct timer {
     enum { STOPPED, RUNNING, PAUSED } state;
     std::chrono::high_resolution_clock::time_point start_time;
-    timer(bool start=false) : state(start ? RUNNING : STOPPED), start_time(std::chrono::high_resolution_clock::now()) {}
+    explicit timer(bool start=false) : state(start ? RUNNING : STOPPED), start_time(std::chrono::high_resolution_clock::now()) {}
 
     bool is_stopped() const { return state == STOPPED; }
     bool is_running() const { return state == RUNNING; }
@@ -44,7 +44,7 @@ template <typename T>
 class oscillator {
 public:
     static_assert(std::is_floating_point<T>::value, ZERR_TYPE_FLOATING);
-    oscillator(T freq) : freq(freq), inv_freq(T(1)/freq), time(false) { }
+    explicit oscillator(T freq) : freq(freq), inv_freq(T(1)/freq), time(false) { }
 
     void start() { time.start(); }
     T get_value() const { return freq * std::fmod(time.get_time<T>(), inv_freq); }

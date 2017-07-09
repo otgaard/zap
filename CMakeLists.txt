@@ -353,7 +353,13 @@ target_link_libraries(procgen1 zapGraphics zapHost zapEngine zapMaths ${GLFW_LIB
 
 add_executable(models ${MODELS_FILES})
 target_link_libraries(models zapLoader zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS} assimp)
+
+add_executable(memory_access_tests tests/simd/memory_access_tests.cpp tests/simd/functions.hpp)
+target_compile_options(memory_access_tests PUBLIC -O3 -ffast-math -save-temps -mllvm --x86-asm-syntax=intel -fverbose-asm)
+#target_compile_options(memory_access_tests PUBLIC -save-temps -mllvm --x86-asm-syntax=intel -fverbose-asm)
+
 endif(APPLE OR UNIX)
+
 
 #########################################
 # INSTALL
