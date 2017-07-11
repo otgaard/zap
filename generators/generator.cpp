@@ -193,9 +193,9 @@ pixmap<float> generator::render_simd(const render_task& req) {
     const int stream_size = 4;
     const int blocks = req.width/stream_size;
 
-    const vecm32f vseq = {{ 1.f, 2.f, 3.f, 4.f }};
-    const vecm32f vinc = {{ inv_x, inv_x, inv_x, inv_x }};
-    const vecm vsteps = _mm_mul_ps(vseq.v, vinc.v);
+    const vecm32f vseq = { 0.f, 1.f, 2.f, 3.f };
+    const vecm32f vinc = { inv_x, inv_x, inv_x, inv_x };
+    const vecm vsteps = _mm_mul_ps(vseq, vinc);
 
     set_round_down();
 
@@ -206,30 +206,24 @@ pixmap<float> generator::render_simd(const render_task& req) {
         float vy = r * inv_y;
         int iy = floor(vy);
         vecm dy = load(vy - (float)iy);
-        vecm32i iy_v;
-        iy_v.v = load(iy);
-        vecm32i iyp1;
-        iyp1.v = load(iy+1);
+        vecm32i iy_v = load(iy);
+        vecm32i iyp1 = load(iy+1);
         for(int c = 0; c != blocks; ++c) {
             const int c_offset = c * stream_size;
             vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
-            vecm fx = ffloor_v(vx);
-            vecm32i ix;
-            ix.v = _mm_castsi128_ps(convert_v(fx));
+            vecm fx = floor_v(vx);
+            vecm32i ix = _mm_castsi128_ps(convert_v(fx));
+            vecm32i ixp1 = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
 
-            vecm32i ixp1;
-            ixp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
-
-            vecm32f P00 = s.grad_v(ix, iy_v);
-            vecm32f P01 = s.grad_v(ixp1, iy_v);
-            vecm32f P10 = s.grad_v(ix, iyp1);
-            vecm32f P11 = s.grad_v(ixp1, iyp1);
+            vecm P00 = s.grad_v(ix, iy_v);
+            vecm P01 = s.grad_v(ixp1, iy_v);
+            vecm P10 = s.grad_v(ix, iyp1);
+            vecm P11 = s.grad_v(ixp1, iyp1);
 
             vecm dx = _mm_sub_ps(vx, fx);
 
-            vecm32f res;
-            res.v = bilinear_v(dx, dy, P00.v, P01.v, P10.v, P11.v);
-            for(int i = 0; i != 4; ++i) image(c_offset+i, r) = res.arr[i];
+            vecm32f res = bilinear_v(dx, dy, P00, P01, P10, P11);
+            _mm_store_ps(image.data(c_offset, r), res);
         }
     }
     }

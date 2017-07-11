@@ -76,7 +76,7 @@ namespace zap { namespace maths { namespace simd {
         explicit veci32i(const veci& vec) : v(vec) { }
         veci32i(__m128i vec) : v(vec) { }
         veci32i(std::initializer_list<int32_t> init) { auto it = init.begin(); arr[0] = *it++; arr[1] = *it++; arr[2] = *it++, arr[3] = *it; }
-        operator __m128i() const { return v; }
+        operator __m128i() const { return _mm_castps_si128(v); }
         operator int32_t* const() const { return (int32_t* const)arr; }
     };
 
