@@ -357,7 +357,9 @@ target_link_libraries(models zapLoader zapGraphics zapHost zapEngine zapMaths ${
 add_executable(memory_access_tests tests/simd/memory_access_tests.cpp tests/simd/functions.hpp)
 target_compile_options(memory_access_tests PUBLIC -O3 -ffast-math -save-temps -mllvm --x86-asm-syntax=intel -fverbose-asm)
 #target_compile_options(memory_access_tests PUBLIC -save-temps -mllvm --x86-asm-syntax=intel -fverbose-asm)
-
+else(WIN32)
+add_executable(memory_access_tests tests/simd/memory_access_tests.cpp tests/simd/functions.hpp)
+target_compile_options(memory_access_tests PUBLIC /FAs)
 endif(APPLE OR UNIX)
 
 

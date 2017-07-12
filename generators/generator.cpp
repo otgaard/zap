@@ -58,7 +58,7 @@ struct generator::state_t {
 
     simd::veci VCALL perm_v(const simd::vecm32i& x, const simd::vecm32i& y) {
         simd::vecm32i tmp1;
-        tmp1.v = _mm_add_epi32(_mm_castps_si128(x.v), _mm_castps_si128(perm_v(y)));
+        tmp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(x.v), perm_v(y)));
         return perm_v(tmp1);
     }
 
@@ -206,8 +206,8 @@ pixmap<float> generator::render_simd(const render_task& req) {
         float vy = r * inv_y;
         int iy = floor(vy);
         vecm dy = load(vy - (float)iy);
-        vecm32i iy_v = load(iy);
-        vecm32i iyp1 = load(iy+1);
+        vecm32i iy_v = _mm_castsi128_ps(load(iy));
+        vecm32i iyp1 = _mm_castsi128_ps(load(iy+1));
         for(int c = 0; c != blocks; ++c) {
             const int c_offset = c * stream_size;
             vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
@@ -273,7 +273,7 @@ pixmap<float> generator::render_gpu(const render_task& req) {
                 ix.v = _mm_castsi128_ps(convert_v(fx));
 
                 vecm32i ixp1;
-                ixp1.v = _mm_castsi128_ps(_mm_add_epi32(ix.v, veci_one));
+                ixp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
 
                 vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
                 vecm32f P01 = {{ s.grad1[s.perm(ixp1.arr[0],iy)], s.grad1[s.perm(ixp1.arr[1],iy)], s.grad1[s.perm(ixp1.arr[2],iy)], s.grad1[s.perm(ixp1.arr[3],iy)] }};

@@ -11,7 +11,6 @@
 #include <vector>
 #include <random>
 #include <maths/rand_lcg.hpp>
-#include <zlib.h>
 
 using namespace zap;
 using namespace zap::maths;
@@ -31,7 +30,7 @@ static const int iterator_count = 10000;
 
 // SIMD constants
 
-const veci32i seq_vi = { 3, 2, 1, 0 };
+const veci32i seq_vi = { 0, 1, 2, 3 };
 const vecm32f seq_vf = { 0.f, 1.f, 2.f, 3.f };
 const veci32i zero_vi = _mm_setzero_si128();
 const veci32i one_vi = { 1, 1, 1, 1 };
@@ -78,13 +77,13 @@ struct state_t {
 
     veci VCALL perm_v(const vecm32i& x) {
         vecm32i idx;
-        idx.v = _mm_castsi128_ps(_mm_and_si128(_mm_castps_si128(x.v), vecm_rnd_mask));
+        idx.v = _mm_castsi128_ps(_mm_and_si128(_mm_castps_si128(x.v), _mm_castps_si128(vecm_rnd_mask)));
         return _mm_set_epi32(prn_table[idx.arr[0]], prn_table[idx.arr[1]], prn_table[idx.arr[2]], prn_table[idx.arr[3]]);
     }
 
     veci VCALL perm_v(const vecm32i& x, const vecm32i& y) {
         vecm32i tmp1;
-        tmp1.v = _mm_add_epi32(_mm_castps_si128(x.v), _mm_castps_si128(perm_v(y)));
+        tmp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(x.v), perm_v(y)));
         return perm_v(tmp1);
     }
 
@@ -191,8 +190,8 @@ void render_noiseB(int width, int height, float* buffer_ptr) {
         float vy = r * inv_y;
         int iy = floor(vy);
         vecm dy = load(vy - (float)iy);
-        vecm32i iy_v = load(iy);
-        vecm32i iyp1 = load(iy+1);
+        vecm32i iy_v = _mm_castsi128_ps(load(iy));
+        vecm32i iyp1 = _mm_castsi128_ps(load(iy+1));
         for(int c = 0; c != blocks; ++c) {
             const int c_offset = c * stream_size;
             vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
