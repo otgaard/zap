@@ -27,7 +27,7 @@ public:
 
     void set_program(program* prog);
 
-    void resize(int w, int h) { screen_.set(w,h); }
+    void resize(int w, int h);
 
 private:
     engine::program program_;

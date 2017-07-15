@@ -2,6 +2,7 @@
 #include "quad.hpp"
 #include <generators/textures/planar.hpp>
 #include <renderer/colour.hpp>
+#include <engine/gl_api.hpp>
 
 #define GLSL(src) "#version 330 core\n" #src
 
@@ -91,6 +92,11 @@ bool quad::initialise() {
 
 void quad::set_program(program* prog) {
     override_ = prog;
+}
+
+void quad::resize(int w, int h) {
+    screen_.set(w, h);
+    gl::glViewport(0, 0, w, h);
 }
 
 void quad::update(double t, float dt) {
