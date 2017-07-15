@@ -22,6 +22,9 @@ public:
     void update(double t, float dt);
     void draw(bool default_bind=true);
 
+    int get_width() const { return screen_.x; }
+    int get_height() const { return screen_.y; }
+
     void set_program(program* prog);
 
     void resize(int w, int h) { screen_.set(w,h); }
