@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <algorithm>
 #include <maths/rand_lcg.hpp>
 
 using namespace zap;
@@ -104,7 +105,7 @@ static state_t global_state;
 
 float total(float* buffer_ptr, size_t count) {
     float result = 0.f;
-    for(int i = 0; i != count; ++i)
+    for(size_t i = 0; i != count; ++i)
         result += buffer_ptr[i];
     return result;
 }
