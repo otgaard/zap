@@ -108,7 +108,7 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
     LOG(LOG_BOLDGREEN, "Running Lookup vs Computation Tests");
 
     using clock = std::chrono::high_resolution_clock;
-    using duration = std::chrono::duration<float>;
+    //using duration = std::chrono::duration<float>;
 
     auto start = clock::now();
 
@@ -140,9 +140,10 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
 std::future<generator::pixmap<float>> generator::render(const render_task& req, generator::gen_method method) {
     auto fnc = [this, method](const auto& r)->generator::pixmap<float>  {
         switch(method) {
-            case gen_method::CPU: return render_cpu(r);
-            case gen_method::SIMD: return render_simd(r);
-            case gen_method::GPU: return render_gpu(r);
+            case gen_method::CPU: return this->render_cpu(r);
+            case gen_method::SIMD: return this->render_simd(r);
+            case gen_method::GPU: return this->render_gpu(r);
+            default: return pixmap<float>{0, 0};
         }
     };
 
@@ -175,6 +176,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
 
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
+    UNUSED(dur);
     LOG("CPU Total Time: ", dur);
 
     return image;
@@ -232,6 +234,7 @@ pixmap<float> generator::render_simd(const render_task& req) {
 
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
+    UNUSED(dur);
     LOG("SIMD Total Time: ", dur);
 
     return image;
@@ -293,6 +296,7 @@ pixmap<float> generator::render_gpu(const render_task& req) {
 
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
+    UNUSED(dur);
     LOG("SIMD Total Time: ", dur);
 
     return image;

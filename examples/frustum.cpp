@@ -257,7 +257,7 @@ void frustum::on_mousedown(int button) {
     if(!front_cam_.pick_ray(mouse_.x, mouse_.y, O, d)) return;
 
     float parms[2];
-    for(int i = 0; i != spheres_.size(); ++i) {
+    for(size_t i = 0; i != spheres_.size(); ++i) {
         auto sp = zap::maths::geometry::sphere<float>(rot.transform(spheres_[i]), .2f);
         if(intersection(sp, zap::maths::geometry::ray3f(O, d), parms) > 0) selected_[i] = true;
         else                                                               selected_[i] = false;
