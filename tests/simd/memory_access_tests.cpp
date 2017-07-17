@@ -98,6 +98,31 @@ struct state_t {
             grad1[idx.arr[3]]
         }};
     }
+
+    veci VCALL perm_v(const veci& x) {
+        veci32i idx = _mm_and_si128(x, veci_rnd_mask);
+        VALIGN int ii[4];
+        ii[0] = prn_table[idx.arr[0]];
+        ii[1] = prn_table[idx.arr[1]];
+        ii[2] = prn_table[idx.arr[2]];
+        ii[3] = prn_table[idx.arr[3]];
+        return _mm_load_si128((veci*)ii);
+    }
+
+    veci VCALL perm_v(const veci& x, const veci& y) {
+        veci32i idx = _mm_add_epi32(x, perm_v(y));
+        return perm_v(idx);
+    }
+
+    vecm VCALL grad_v(const veci& x, const veci& y) {
+        veci32i idx = perm_v(x, y);
+        return vecm32f{{
+                grad1[idx.arr[0]],
+                grad1[idx.arr[1]],
+                grad1[idx.arr[2]],
+                grad1[idx.arr[3]]
+        }};
+    }
 };
 
 static state_t global_state;
@@ -188,7 +213,7 @@ void render_noiseB(int width, int height, float* buffer_ptr) {
 
     for(int r = 0; r != height; ++r) {
         float vy = r * inv_y;
-        int iy = floor(vy);
+        int iy = (int)floor(vy);
         vecm dy = load(vy - (float)iy);
         vecm32i iy_v = _mm_castsi128_ps(load(iy));
         vecm32i iyp1 = _mm_castsi128_ps(load(iy+1));
@@ -214,6 +239,47 @@ void render_noiseB(int width, int height, float* buffer_ptr) {
     set_round_default();
 }
 
+void render_noiseC(int width, int height, float* buffer_ptr) {
+    const float inv_x = 1.f/width;
+    const float inv_y = 1.f/height;
+    using namespace zap::maths::simd;
+
+    const int stream_size = 4;
+    const int blocks = width/stream_size;
+
+    const vecm32f vseq = { 0.f, 1.f, 2.f, 3.f };
+    const vecm32f vinc = { inv_x, inv_x, inv_x, inv_x };
+    const vecm vsteps = _mm_mul_ps(vseq, vinc);
+
+    set_round_down();
+
+    for(int r = 0; r != height; ++r) {
+        float vy = r * inv_y;
+        int iy = (int)floor(vy);
+        vecm dy = load(vy - (float)iy);
+        veci iy_v = load(iy);
+        veci iyp1 = load(iy+1);
+        for(int c = 0; c != blocks; ++c) {
+            const int c_offset = c * stream_size;
+            vecm vx = _mm_add_ps(load(c_offset * vinc.arr[0]), vsteps);
+            vecm fx = ffloor_v(vx);
+            veci ix = convert_v(fx);
+            veci ixp1 = _mm_add_epi32(ix, veci_one);
+
+            vecm P00 = global_state.grad_v(ix, iy_v);
+            vecm P01 = global_state.grad_v(ixp1, iy_v);
+            vecm P10 = global_state.grad_v(ix, iyp1);
+            vecm P11 = global_state.grad_v(ixp1, iyp1);
+
+            vecm dx = _mm_sub_ps(vx, fx);
+
+            vecm32f res = bilinear_v(dx, dy, P00, P01, P10, P11);
+            _mm_store_ps(buffer_ptr+(r*width+c_offset), res);
+        }
+    }
+
+    set_round_default();
+}
 
 veci testA() {
     const veci zeroi = _mm_set_epi32(10, 9, 8, 7);
@@ -294,7 +360,7 @@ int main(int argc, char* argv[]) {
 
     for(int i = 0; i != 1000; ++i) {
         start = hrclock::now();
-        render_noiseA(1024, 1024, buffer);
+        render_noiseC(1024, 1024, buffer);
         end = hrclock::now();
         times[i] = duration_t(end - start).count();
     }
@@ -308,7 +374,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Time measured for CPU, total: " << avg << ", avg: " << avg/iterator_count << ", min: " << min << ", max: " << max << std::endl;
 
-    for(int i = 0; i != 1024; ++i) {
+    for(int i = 0; i != 10; ++i) {
         std::cout << buffer[i] << ", ";
     }
     std::cout << std::endl;
@@ -330,11 +396,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Time measured for SIMD, total: " << avg << ", avg: " << avg/iterator_count << ", min: " << min << ", max: " << max << std::endl;
 
-    for(int i = 0; i != 1024; ++i) {
+    for(int i = 0; i != 10; ++i) {
         std::cout << buffer[i] << ", ";
     }
     std::cout << std::endl;
-
 
     delete[] buffer;
     return 0;

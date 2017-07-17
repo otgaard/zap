@@ -18,6 +18,12 @@
 #define VCALL
 #endif
 
+#if defined(_WIN32)
+#define VALIGN __declspec(align(16))
+#else
+#define VALIGN __attribute__((aligned(16)))
+#endif
+
 namespace zap { namespace maths { namespace simd {
     using vecm = __m128;
     using veci = __m128i;
@@ -29,7 +35,7 @@ namespace zap { namespace maths { namespace simd {
 #if defined(_WIN32)
     __declspec(align(16)) struct vecm32f {
 #else
-    struct __attribute__((aligned(16))) vecm32f {
+        struct __attribute__((aligned(16))) vecm32f {
 #endif
         union {
             vecm v;
@@ -47,7 +53,7 @@ namespace zap { namespace maths { namespace simd {
 #if defined(WIN32)
     __declspec(align(16)) struct vecm32i {
 #else
-    struct __attribute__((aligned(16))) vecm32i {
+        struct __attribute__((aligned(16))) vecm32i {
 #endif
         union {
             vecm v;
@@ -65,7 +71,7 @@ namespace zap { namespace maths { namespace simd {
 #if defined(WIN32)
     __declspec(align(16)) struct veci32i {
 #else
-    struct __attribute__((aligned(16))) veci32i {
+        struct __attribute__((aligned(16))) veci32i {
 #endif
         union {
             veci v;
@@ -86,6 +92,7 @@ namespace zap { namespace maths { namespace simd {
     const float mask = (float)255;
     const vecm32i vecm_abs_mask = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF };
     const vecm32i vecm_rnd_mask = { 0x000000FF, 0x000000FF, 0x000000FF, 0x000000FF };
+    const veci32i veci_rnd_mask = { 0x000000FF, 0x000000FF, 0x000000FF, 0x000000FF };
     const vecm32f vecm_no_fraction = { 8388608.f, 8388608.f, 8388608.f, 8388608.f };
     const vecm32f vecm_one = { 1.f, 1.f, 1.f, 1.f };
     const veci veci_one = _mm_cvtps_epi32(vecm_one.v);
@@ -141,6 +148,36 @@ namespace zap { namespace maths { namespace simd {
         vecm tmp1 = _mm_castsi128_ps(_mm_mul_epu32(a,b));
         vecm tmp2 = _mm_castsi128_ps(_mm_mul_epu32(_mm_srli_si128(a,4), _mm_srli_si128(b,4)));
         return _mm_shuffle_epi32(_mm_castps_si128(_mm_shuffle_ps(tmp1, tmp2, _MM_SHUFFLE(2,0,2,0))), _MM_SHUFFLE(3,1,2,0));
+    }
+
+    inline vecm set_x(const vecm& v, float x) {
+        vecm tmp = _mm_unpacklo_ps(load(x), v);
+        return _mm_shuffle_ps(tmp, v, _MM_SHUFFLE(3, 2, 3, 0));
+    }
+
+    inline vecm set_y(const vecm& v, float y) {
+        vecm tmp = _mm_unpacklo_ps(load(y), v);
+        return _mm_shuffle_ps(tmp, v, _MM_SHUFFLE(3, 2, 0, 1));
+    }
+
+    inline vecm set_z(const vecm& v, float z) {
+        vecm tmp = _mm_unpackhi_ps(load(z), v);
+        return _mm_shuffle_ps(v, tmp, _MM_SHUFFLE(3, 0, 1, 0));
+    }
+
+    inline vecm set_w(const vecm& v, float w) {
+        vecm tmp = _mm_unpackhi_ps(load(w), v);
+        return _mm_shuffle_ps(v, tmp, _MM_SHUFFLE(0, 1, 1, 0));
+    }
+
+    inline vecm set(const vecm& v, int i, float value) {
+        switch(i) {
+            case 0: return set_x(v, value);
+            case 1: return set_y(v, value);
+            case 2: return set_z(v, value);
+            case 3: return set_w(v, value);
+            default: return v;
+        }
     }
 
 }}}
