@@ -12,6 +12,8 @@
 #include <random>
 #include <algorithm>
 #include <maths/rand_lcg.hpp>
+#define LOGGING_ENABLED
+#include <tools/log.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -101,13 +103,12 @@ struct state_t {
     }
 
     veci VCALL perm_v(const veci& x) {
-        veci32i idx = _mm_and_si128(x, veci_rnd_mask);
         VALIGN int ii[4];
-        ii[0] = prn_table[idx.arr[0]];
-        ii[1] = prn_table[idx.arr[1]];
-        ii[2] = prn_table[idx.arr[2]];
-        ii[3] = prn_table[idx.arr[3]];
-        return _mm_load_si128((veci*)ii);
+        veci idx = _mm_and_si128(x, veci_rnd_mask);
+        _mm_store_si128((__m128i*)ii, idx);
+        // This is far faster than _mm_setr_epi32
+        VALIGN int iii[4] = { prn_table[ii[0]], prn_table[ii[1]], prn_table[ii[2]], prn_table[ii[3]] };
+        return _mm_load_si128((veci*)iii);
     }
 
     veci VCALL perm_v(const veci& x, const veci& y) {
@@ -116,13 +117,11 @@ struct state_t {
     }
 
     vecm VCALL grad_v(const veci& x, const veci& y) {
-        veci32i idx = perm_v(x, y);
-        return vecm32f{{
-                grad1[idx.arr[0]],
-                grad1[idx.arr[1]],
-                grad1[idx.arr[2]],
-                grad1[idx.arr[3]]
-        }};
+        veci idx = perm_v(x, y);
+        VALIGN int ii[4];
+        _mm_store_si128((veci*)ii, idx);
+        VALIGN float ff[4] = { grad1[ii[0]], grad1[ii[1]], grad1[ii[2]], grad1[ii[3]] };
+        return _mm_load_ps(ff);
     }
 };
 
@@ -353,55 +352,41 @@ void test_one() {
     delete[] bufferB_ptr;
 }
 
-int main(int argc, char* argv[]) {
-    float* buffer = new float[1024*1024];
+void test_noise_implementations(int iterations) {
+    const char* fn_names[3] = { "render_noiseA", "render_noiseB", "render_noiseC" };
+    void(*functions[3])(int,int,float*) = { &render_noiseA, &render_noiseB, &render_noiseC };
 
+    const int width = 1024, height = 1024;
+    const int dims = width*height;
     auto start = hrclock::now(), end = hrclock::now();
-    std::vector<float> times(1000);
+    std::vector<float> buffer(dims);
+    std::vector<float> timings(iterations);
 
-    for(int i = 0; i != 1000; ++i) {
-        start = hrclock::now();
-        render_noiseC(1024, 1024, buffer);
-        end = hrclock::now();
-        times[i] = duration_t(end - start).count();
+    int fn = 0;
+    for(auto& function : functions) {
+        // Warmup
+        for(int iter = 0, count = iterations/10; iter != count; ++iter) function(width, height, buffer.data());
+
+        for(int iter = 0; iter != iterations; ++iter) {
+            start = hrclock::now();
+            function(width, height, buffer.data());
+            end = hrclock::now();
+            timings[iter] = duration_t(end - start).count();
+        }
+
+        float min = std::numeric_limits<float>::max(), max = -min, avg = 0.f;
+        for(auto& v : timings) {
+            if(v < min) min = v;
+            if(v > max) max = v;
+            avg += v;
+        }
+
+        LOG(LOG_RED, "Time for", fn_names[fn++], "Total:", avg, "Avg:", avg/iterations, "Min:", min, "Max:", max);
+        LOG(LOG_YELLOW, "Array vals:", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
     }
+}
 
-    float min = std::numeric_limits<float>::max(), max = -min, avg = 0.f;
-    for(auto& v : times) {
-        if(v < min) min = v;
-        if(v > max) max = v;
-        avg += v;
-    }
-
-    std::cout << "Time measured for CPU, total: " << avg << ", avg: " << avg/iterator_count << ", min: " << min << ", max: " << max << std::endl;
-
-    for(int i = 0; i != 10; ++i) {
-        std::cout << buffer[i] << ", ";
-    }
-    std::cout << std::endl;
-
-    times.clear(); times.resize(1000);
-    for(int i = 0; i != 1000; ++i) {
-        start = hrclock::now();
-        render_noiseB(1024, 1024, buffer);
-        end = hrclock::now();
-        times[i] = duration_t(end - start).count();
-    }
-
-    min = std::numeric_limits<float>::max(); max = -min; avg = 0.f;
-    for(auto& v : times) {
-        if(v < min) min = v;
-        if(v > max) max = v;
-        avg += v;
-    }
-
-    std::cout << "Time measured for SIMD, total: " << avg << ", avg: " << avg/iterator_count << ", min: " << min << ", max: " << max << std::endl;
-
-    for(int i = 0; i != 10; ++i) {
-        std::cout << buffer[i] << ", ";
-    }
-    std::cout << std::endl;
-
-    delete[] buffer;
+int main(int argc, char* argv[]) {
+    test_noise_implementations(1000);
     return 0;
 }

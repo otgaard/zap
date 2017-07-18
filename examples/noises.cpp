@@ -92,6 +92,7 @@ void noises::on_resize(int width, int height) {
     auto img = gen_.render(task, generator::gen_method::SIMD).get();
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
+    UNUSED(dur);
     LOG("Time:", dur);
     pixmap<rgb888_t> image{width, height};
     for(auto i = 0; i != img.size(); ++i) {
