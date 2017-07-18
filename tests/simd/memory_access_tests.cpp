@@ -294,11 +294,6 @@ void render_noiseC(int width, int height, float* buffer_ptr) {
     set_round_default();
 }
 
-// This is an attempt to remodel the problem into three phases
-// 1) Computing the Index
-// 2) Permutation & Gradient Lookup
-// 3) Interpolation & Storage
-
 void render_noiseD(int width, int height, float* buffer_ptr) {
     const float inv_x = 1.f/width;
     const float inv_y = 1.f/height;
@@ -343,9 +338,55 @@ void render_noiseD(int width, int height, float* buffer_ptr) {
     set_round_default();
 }
 
+void render_noiseE(int width, int height, float* buffer_ptr) {
+    const float inv_x = 1.f/width;
+    const float inv_y = 1.f/height;
+    using namespace zap::maths::simd;
+
+    const int stream_size = 4;
+    const int blocks = width/stream_size;
+
+    const vecm32f vseq = { 0.f, 1.f, 2.f, 3.f };
+    const vecm32f vinc = { inv_x, inv_x, inv_x, inv_x };
+    const vecm vsteps = _mm_mul_ps(vseq, vinc);
+
+    set_round_down();
+
+    for(int r = 0; r != height; ++r) {
+        float vy = r * inv_y;
+        int iy = zap::maths::floor(vy);
+        int iyp1 = iy + 1;
+        vecm dy = load(vy - float(iy));
+        int col_offset = r * width;
+        for(int c = 0, offset = 0; c != blocks; ++c, col_offset += 4, offset += 4) {
+            vecm vx = _mm_add_ps(load(col_offset * inv_x), vsteps);
+            vecm fx = ffloor_v(vx);
+            veci ix = convert_v(fx);
+            veci ixp1 = _mm_add_epi32(ix, veci_one);
+            vecm dx = _mm_sub_ps(vx, fx);
+
+            int xi[4], xip1[4];
+            _mm_store_si128((veci*)xi, ix);
+            _mm_store_si128((veci*)xip1, ixp1);
+            VALIGN float values[4*4];
+            for(int i = 0; i != 4; ++i) {
+                values[i] = global_state.grad1[global_state.perm(xi[i], iy)];
+                values[4+i] = global_state.grad1[global_state.perm(xip1[i], iy)];
+                values[8+i] = global_state.grad1[global_state.perm(xi[i], iyp1)];
+                values[12+i] = global_state.grad1[global_state.perm(xip1[i], iyp1)];
+            }
+
+            vecm res = bilinear_v(dx, dy, _mm_load_ps(values), _mm_load_ps(values+4), _mm_load_ps(values+8), _mm_load_ps(values+12));
+            _mm_store_ps(buffer_ptr+col_offset, res);
+        }
+    }
+
+    set_round_default();
+}
+
 void test_noise_implementations(int iterations) {
-    const char* fn_names[4] = { "render_noiseA", "render_noiseB", "render_noiseC", "render_noiseD" };
-    void(*functions[4])(int,int,float*) = { &render_noiseA, &render_noiseB, &render_noiseC, &render_noiseD };
+    const char* fn_names[5] = { "render_noiseA", "render_noiseB", "render_noiseC", "render_noiseD", "render_noiseE" };
+    void(*functions[5])(int,int,float*) = { &render_noiseA, &render_noiseB, &render_noiseC, &render_noiseD, &render_noiseE };
 
     const int width = 1024, height = 1024;
     const int dims = width*height;
