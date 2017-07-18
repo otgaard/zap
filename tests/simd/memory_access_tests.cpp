@@ -14,6 +14,8 @@
 #include <maths/rand_lcg.hpp>
 #define LOGGING_ENABLED
 #include <tools/log.hpp>
+#include <engine/pixmap.hpp>
+#include <engine/pixel_format.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -368,7 +370,7 @@ void render_noiseE(int width, int height, float* buffer_ptr) {
             int xi[4], xip1[4];
             _mm_store_si128((veci*)xi, ix);
             _mm_store_si128((veci*)xip1, ixp1);
-            VALIGN float values[4*4];
+            VALIGN float values[16];
             for(int i = 0; i != 4; ++i) {
                 values[i] = global_state.grad1[global_state.perm(xi[i], iy)];
                 values[4+i] = global_state.grad1[global_state.perm(xip1[i], iy)];
@@ -414,11 +416,97 @@ void test_noise_implementations(int iterations) {
         }
 
         LOG(LOG_RED, "Time for", fn_names[fn++], "Total:", avg, "Avg:", avg/iterations, "Min:", min, "Max:", max);
-        LOG(LOG_YELLOW, "Array vals:", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
+        LOG(LOG_YELLOW, "Array vals:", buffer[0], buffer[1], buffer[2], buffer[3],
+            buffer[4], buffer[5], buffer[6], buffer[7]);
+    }
+}
+
+zap::engine::pixmap<zap::engine::rgb888_t> conversion_cpu(const zap::engine::pixmap<float>& img) {
+    using namespace zap::engine;
+    using pixmap = pixmap<rgb888_t>;
+    pixmap ret{img.width(), img.height()};
+
+    for(auto i = 0; i != img.size(); ++i) {
+        byte px = (byte)(img[i] * 127.f + 127.f);
+        ret[i].set3(px,px,px);
+    }
+
+    return ret;
+}
+
+zap::engine::pixmap<zap::engine::rgb888_t> conversion_simd(const zap::engine::pixmap<float>& img) {
+    using namespace zap::engine;
+    using pixmap = pixmap<rgb888_t>;
+    pixmap ret{img.width(), img.height()};
+
+    const vecm vhalf = _mm_set_ps(127.f, 127.f, 127.f, 127.f);
+
+    set_round_down();
+
+    byte arr[8];    // 128 bits
+    for(auto i = 0; i != img.size(); i += 4) {
+        vecm val = _mm_load_ps(img.data(i));
+        val = _mm_add_ps(_mm_mul_ps(val, vhalf), vhalf);
+        veci vi = _mm_cvtps_epi32(val);
+        vi = _mm_packus_epi32(vi, vi);
+        vi = _mm_packus_epi16(vi, vi);
+        *(int*)arr = _mm_cvtsi128_si32(vi);
+        ret[i].set3(arr[0], arr[0], arr[0]);
+        ret[i+1].set3(arr[1], arr[1], arr[1]);
+        ret[i+2].set3(arr[2], arr[2], arr[2]);
+        ret[i+3].set3(arr[3], arr[3], arr[3]);
+    }
+
+    set_round_default();
+
+    return ret;
+}
+
+void test_conversion_implementations(int iterations) {
+    const char* fn_names[2] = { "conversion_cpu", "conversion_simd" };
+    zap::engine::pixmap<zap::engine::rgb888_t>(*functions[2])(const zap::engine::pixmap<float>&) = {
+        &conversion_cpu, &conversion_simd
+    };
+
+    const int width = 1024, height = 1024;
+    const int dims = width*height;
+    auto start = hrclock::now(), end = hrclock::now();
+    zap::engine::pixmap<float> buffer(dims);
+    std::vector<float> timings(iterations);
+
+    render_noiseE(width, height, buffer.data());
+
+    int fn = 0;
+    for(auto& function : functions) {
+        // Warmup
+        for(int iter = 0, count = iterations/10; iter != count; ++iter) function(buffer);
+
+        for(int iter = 0; iter != iterations; ++iter) {
+            start = hrclock::now();
+            function(buffer);
+            end = hrclock::now();
+            timings[iter] = duration_t(end - start).count();
+        }
+
+        float min = std::numeric_limits<float>::max(), max = -min, avg = 0.f;
+        for(auto& v : timings) {
+            if(v < min) min = v;
+            if(v > max) max = v;
+            avg += v;
+        }
+
+        auto output = function(buffer);
+
+        LOG(LOG_RED, "Time for", fn_names[fn++], "Total:", avg, "Avg:", avg/iterations, "Min:", min, "Max:", max);
+        LOG(LOG_YELLOW, "Array vals:", (int)output[0].get(0), (int)output[1].get(0), (int)output[2].get(0), (int)output[3].get(0),
+            (int)output[4].get(0), (int)output[5].get(0), (int)output[6].get(0), (int)output[7].get(0));
+        LOG(LOG_YELLOW, "Array vals:", (int)output[8].get(0), (int)output[9].get(0), (int)output[10].get(0), (int)output[11].get(0),
+            (int)output[12].get(0), (int)output[13].get(0), (int)output[14].get(0), (int)output[15].get(0));
     }
 }
 
 int main(int argc, char* argv[]) {
-    test_noise_implementations(1000);
+    //test_noise_implementations(1000);
+    test_conversion_implementations(10000);
     return 0;
 }

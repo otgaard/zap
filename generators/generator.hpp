@@ -25,8 +25,7 @@ struct render_task {
     using mat3f = maths::mat3f;
 
     enum class basis_function {
-        LINEAR_VALUE,
-        CUBIC_VALUE,
+        VALUE,
         PERLIN,
         SIMPLEX,
         WORLEY,
@@ -40,7 +39,7 @@ struct render_task {
     vec2f scale;
     bool is_unit[3];
 
-    render_task(int width, int height, basis_function bf=basis_function::LINEAR_VALUE) :
+    render_task(int width, int height, basis_function bf=basis_function::VALUE) :
             basis_fnc{bf},
             width{width},
             height{height},
