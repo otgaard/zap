@@ -14,8 +14,8 @@
 #if defined(_WIN32)
 #define VCALL _vectorcall
 #else
-//#define VCALL __attribute__((vectorcall))
-#define VCALL
+#define VCALL __attribute__((vectorcall))
+//#define VCALL
 #endif
 
 #if defined(_WIN32)
@@ -130,7 +130,7 @@ namespace zap { namespace maths { namespace simd {
 
     inline vecm VCALL lerp_v(const vecm& u, const vecm& v0, const vecm& v1) {
         return _mm_add_ps(
-                _mm_mul_ps(_mm_sub_ps(load(1.f), u), v0),
+                _mm_mul_ps(_mm_sub_ps(vecm_one, u), v0),
                 _mm_mul_ps(u, v1));
     }
 

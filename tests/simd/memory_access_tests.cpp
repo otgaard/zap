@@ -26,10 +26,14 @@ using duration_t = std::chrono::duration<float>;
 using byte = unsigned char;
 static const int RND_TBL = 256;
 static const int RND_MASK = 255;
-static const int width = 1024;
-static const int height = 1024;
-static const int px_count = width * height;
-static const int iterator_count = 10000;
+//static const int width = 1024;
+//static const int height = 1024;
+//static const int px_count = width * height;
+//static const int iterator_count = 10000;
+static const int prime = 57559;
+static const int seed = 8395;
+static const veci vprime = _mm_set_epi32(prime, prime, prime, prime);
+static const veci vseed = _mm_set_epi32(seed, seed, seed, seed);
 
 // SIMD constants
 
@@ -38,7 +42,7 @@ const vecm32f seq_vf = { 0.f, 1.f, 2.f, 3.f };
 const veci32i zero_vi = _mm_setzero_si128();
 const veci32i one_vi = { 1, 1, 1, 1 };
 const vecm32f one_vf = { 1.f, 1.f, 1.f, 1.f };
-
+const vecm32f float_vf = {1.f/2147483648.f, 1.f/2147483648.f, 1.f/2147483648.f, 1.f/2147483648.f};
 
 struct state_t {
     bool initialised;
@@ -76,6 +80,12 @@ struct state_t {
         x = (x >> 13) ^ x;
         int xx = (x * (x * x * 19990303) + 1376312589) & 0x7ffffff;
         return 1.f - ((float)xx / 1073741824.f);
+    }
+
+    vecm VCALL grad_g(const veci& x, const veci& y) {
+        veci hash = _mm_xor_si128(x, _mm_xor_si128(y, vseed));
+        hash = mul(mul(mul(hash, hash), vprime), hash);
+        return _mm_mul_ps(float_vf, _mm_cvtepi32_ps(hash));
     }
 
     veci VCALL perm_v(const vecm32i& x) {
@@ -224,6 +234,7 @@ void render_noiseB(int width, int height, float* buffer_ptr) {
             vecm32i ix = _mm_castsi128_ps(convert_v(fx));
             vecm32i ixp1 = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
 
+            // This code is hugely inefficient in SIMD
             vecm P00 = global_state.grad_v(ix, iy_v);
             vecm P01 = global_state.grad_v(ixp1, iy_v);
             vecm P10 = global_state.grad_v(ix, iyp1);
@@ -259,13 +270,15 @@ void render_noiseC(int width, int height, float* buffer_ptr) {
         vecm dy = load(vy - (float)iy);
         veci iy_v = load(iy);
         veci iyp1 = load(iy+1);
+
         for(int c = 0; c != blocks; ++c) {
             const int c_offset = c * stream_size;
-            vecm vx = _mm_add_ps(load(c_offset * vinc.arr[0]), vsteps);
+            vecm vx = _mm_add_ps(load(c_offset * inv_x), vsteps);
             vecm fx = ffloor_v(vx);
             veci ix = convert_v(fx);
             veci ixp1 = _mm_add_epi32(ix, veci_one);
 
+            // This code is hugely inefficient in SIMD
             vecm P00 = global_state.grad_v(ix, iy_v);
             vecm P01 = global_state.grad_v(ixp1, iy_v);
             vecm P10 = global_state.grad_v(ix, iyp1);
@@ -273,7 +286,7 @@ void render_noiseC(int width, int height, float* buffer_ptr) {
 
             vecm dx = _mm_sub_ps(vx, fx);
 
-            vecm32f res = bilinear_v(dx, dy, P00, P01, P10, P11);
+            vecm res = bilinear_v(dx, dy, P00, P01, P10, P11);
             _mm_store_ps(buffer_ptr+(r*width+c_offset), res);
         }
     }
@@ -281,80 +294,58 @@ void render_noiseC(int width, int height, float* buffer_ptr) {
     set_round_default();
 }
 
-veci testA() {
-    const veci zeroi = _mm_set_epi32(10, 9, 8, 7);
-    const veci seqi = _mm_set_epi32(4, 3, 2, 1);
+// This is an attempt to remodel the problem into three phases
+// 1) Computing the Index
+// 2) Permutation & Gradient Lookup
+// 3) Interpolation & Storage
 
-    return _mm_add_epi32(zeroi, seqi);
-}
+void render_noiseD(int width, int height, float* buffer_ptr) {
+    const float inv_x = 1.f/width;
+    const float inv_y = 1.f/height;
+    using namespace zap::maths::simd;
 
-veci32i testB() {
-    const veci32i A = {7, 8, 9, 10};
-    const veci32i B = {1, 2, 3, 4};
+    const int stream_size = 4;
+    const int blocks = width/stream_size;
 
-    return _mm_add_epi32(A, B);
-}
+    const vecm32f vseq = { 0.f, 1.f, 2.f, 3.f };
+    const vecm32f vinc = { inv_x, inv_x, inv_x, inv_x };
+    const vecm vsteps = _mm_mul_ps(vseq, vinc);
 
-void test_one() {
-    testA();
-    testB();
+    set_round_down();
 
-    // Note: Can't assume 16-byte alignment, but new always returns 16-byte aligned memory on 64-bit macOS.
-    float* bufferA_ptr = new float[px_count];
-    float* bufferB_ptr = new float[px_count];
+    for(int r = 0; r != height; ++r) {
+        float vy = r * inv_y;
+        int iy = (int)floor(vy);
+        vecm dy = load(vy - (float)iy);
+        veci iy_v = load(iy);
+        veci iyp1 = load(iy+1);
 
-    std::vector<float> cpu_times(iterator_count);
-    std::vector<float> simd_times(iterator_count);
+        for(int c = 0; c != blocks; ++c) {
+            const int c_offset = c * stream_size;
+            vecm vx = _mm_add_ps(load(c_offset * inv_x), vsteps);
+            vecm fx = ffloor_v(vx);
+            veci ix = convert_v(fx);
+            veci ixp1 = _mm_add_epi32(ix, veci_one);
 
-    auto start = hrclock::now(), end = hrclock::now();
+            // This code is hugely inefficient in SIMD
+            vecm P00 = global_state.grad_g(ix, iy_v);
+            vecm P01 = global_state.grad_g(ixp1, iy_v);
+            vecm P10 = global_state.grad_g(ix, iyp1);
+            vecm P11 = global_state.grad_g(ixp1, iyp1);
 
-    for(int i = 0; i != iterator_count; ++i) {
-        start = hrclock::now();
-        render_cpu(width, height, bufferA_ptr);
-        end = hrclock::now();
-        cpu_times[i] = duration_t(end - start).count();
+            vecm dx = _mm_sub_ps(vx, fx);
 
-        start = hrclock::now();
-        render_simd(width, height, bufferB_ptr);
-        end = hrclock::now();
-        simd_times[i] = duration_t(end - start).count();
+            vecm res = bilinear_v(dx, dy, P00, P01, P10, P11);
+            _mm_store_ps(buffer_ptr+(r*width+c_offset), res);
+        }
     }
 
-    float min = std::numeric_limits<float>::max(), max = -min, avg = 0.f;
-    for(auto& v : cpu_times) {
-        if(v < min) min = v;
-        if(v > max) max = v;
-        avg += v;
-    }
-
-    std::cout << "Time measured for CPU, total: " << avg << ", avg: " << avg/iterator_count << ", min: " << min << ", max: " << max << std::endl;
-
-    min = std::numeric_limits<float>::max(); max = -min; avg = 0.f;
-    for(auto& v : simd_times) {
-        if(v < min) min = v;
-        if(v > max) max = v;
-        avg += v;
-    }
-
-    std::cout << "Time measured for SIMD, total: " << avg << ", avg: " << avg/iterator_count << ", min: " << min << ", max: " << max << std::endl;
-
-    for(int i = 0; i != 1024; ++i) {
-        std::cout << bufferA_ptr[i] << ", ";
-    }
-    std::cout << std::endl;
-
-    for(int i = 0; i != 1024; ++i) {
-        std::cout << bufferB_ptr[i] << ", ";
-    }
-    std::cout << std::endl;
-
-    delete[] bufferA_ptr;
-    delete[] bufferB_ptr;
+    set_round_default();
 }
 
 void test_noise_implementations(int iterations) {
-    const char* fn_names[3] = { "render_noiseA", "render_noiseB", "render_noiseC" };
-    void(*functions[3])(int,int,float*) = { &render_noiseA, &render_noiseB, &render_noiseC };
+    const char* fn_names[4] = { "render_noiseA", "render_noiseB", "render_noiseC", "render_noiseD" };
+    void(*functions[4])(int,int,float*) = { &render_noiseA, &render_noiseB, &render_noiseC, &render_noiseD };
 
     const int width = 1024, height = 1024;
     const int dims = width*height;
