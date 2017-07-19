@@ -47,7 +47,7 @@ void zap::engine::sampler::set_wrap_r(tex_wrap w) {
 }
 
 void zap::engine::sampler::set_mag_filter(tex_filter f) {
-    assert(f == tex_filter::TF_LINEAR || f == tex_filter::TF_NEAREST && "Mag filter must be NEAREST or LINEAR");
+    assert((f == tex_filter::TF_LINEAR || f == tex_filter::TF_NEAREST) && "Mag filter must be NEAREST or LINEAR");
     gl::glSamplerParameteri(id_, gl::gl_type(tex_parm::TP_MAG_FILTER), gl::gl_type(f));
 }
 

@@ -1,10 +1,10 @@
 /* Created by Darren Otgaar on 2017/06/11. http://www.github.com/otgaard/zap */
+#include <maths/rand_lcg.hpp>
 #include <tools/threadpool.hpp>
 #include <random>
 #include <core/core.hpp>
 #include "generator.hpp"
 #include <maths/simd.hpp>
-#include <maths/rand_lcg.hpp>
 
 using namespace zap;
 using namespace maths;
@@ -101,12 +101,6 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
     }
 
     prn.shuffle(s.prn_table, s.prn_table+RND_TBL);
-
-    for(int i = 0; i != 20; ++i) {
-        LOG("PRN:", i, (int)s.prn_table[i], s.grad1[i]);
-    }
-
-    return false;
 
     s.initialised = true;
     return true;

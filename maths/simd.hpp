@@ -15,9 +15,10 @@
 
 #if defined(_WIN32)
 #define VCALL _vectorcall
-#else
+#elif defined(__APPLE__)
 #define VCALL __attribute__((vectorcall))
-//#define VCALL
+#else
+#define VCALL
 #endif
 
 #if defined(_WIN32)
