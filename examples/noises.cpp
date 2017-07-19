@@ -18,6 +18,7 @@
 #include <host/GLFW/application.hpp>
 #include <tools/threadpool.hpp>
 #include <generators/generator.hpp>
+#include <random>
 
 using namespace zap;
 using namespace zap::maths;

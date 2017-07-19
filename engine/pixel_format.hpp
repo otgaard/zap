@@ -88,6 +88,7 @@ namespace zap { namespace engine {
         using data_t::set;
         using data_t::get;
 
+        void set(const T& a) { for(int i = 0; i != size; ++i) set(i, a); }
         void set1(const T& a) { set(0, a); }
         void set2(const T& a, const T& b) { set(0, a); set(1, b); }
         void set3(const T& a, const T& b, const T& c) { set(0, a); set(1, b), set(2, c); }

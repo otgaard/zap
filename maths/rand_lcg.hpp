@@ -30,6 +30,13 @@ namespace zap { namespace maths {
             return 2 * (*(float*)ptr - 1.5f);           // [-1 .. 1]
         }
 
+        template<class RndIterator>
+        void shuffle(RndIterator begin, RndIterator end) {
+            for(int n = end - begin, i = n - 1; i > 0; --i) {
+                std::swap(begin[i], begin[rand()%(i+1)]);
+            }
+        }
+
     private:
         mutable ulonglong curr_;
     };

@@ -1,9 +1,10 @@
 /* Created by Darren Otgaar on 2017/06/11. http://www.github.com/otgaard/zap */
-#include <maths/rand_lcg.hpp>
 #include <tools/threadpool.hpp>
 #include <random>
+#include <core/core.hpp>
 #include "generator.hpp"
 #include <maths/simd.hpp>
+#include <maths/rand_lcg.hpp>
 
 using namespace zap;
 using namespace maths;
@@ -66,12 +67,12 @@ struct generator::state_t {
         simd::vecm32i idx;
         idx.v = _mm_castsi128_ps(perm_v(x, y));
 
-        return simd::vecm32f{{
+        return simd::vecm32f{
             grad1[idx.arr[0]],
             grad1[idx.arr[1]],
             grad1[idx.arr[2]],
             grad1[idx.arr[3]]
-        }};
+        };
     }
 };
 
@@ -81,7 +82,7 @@ generator::generator() : state_(new state_t()), s(*state_.get()) {
 zap::generator::~generator() = default;
 
 bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong seed) {
-    maths::rand_lcg prn(seed);
+    zap::maths::rand_lcg prn{seed};
 
     if(!pool_ptr) {
         s.pool_ptr = new threadpool{};
@@ -99,41 +100,15 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
         s.grad2[i] = maths::normalise(maths::vec2f{prn.random_s(), prn.random_s()});
     }
 
-    std::minstd_rand rd((uint32_t)seed);
-    std::mt19937 gen(rd());
-    std::shuffle(s.prn_table, s.prn_table+RND_TBL, gen);
+    prn.shuffle(s.prn_table, s.prn_table+RND_TBL);
+
+    for(int i = 0; i != 20; ++i) {
+        LOG("PRN:", i, (int)s.prn_table[i], s.grad1[i]);
+    }
+
+    return false;
 
     s.initialised = true;
-
-    LOG(LOG_BOLDGREEN, "Running Lookup vs Computation Tests");
-
-    using clock = std::chrono::high_resolution_clock;
-    //using duration = std::chrono::duration<float>;
-
-    auto start = clock::now();
-
-    float total = -std::numeric_limits<float>::max();
-    for(size_t i = 0; i != 10000000; ++i) {
-        float v = s.grad_a(i);
-        total += v;
-    }
-
-    auto end = clock::now();
-
-    LOG(LOG_BOLDRED, "Time to look up value in table:", duration(end - start).count());
-
-    start = clock::now();
-
-    for(size_t i = 0; i != 10000000; ++i) {
-        float v = s.grad_b(i);
-        total += v;
-    }
-
-    end = clock::now();
-    LOG(LOG_BOLDRED, "Time to look up value in table:", duration(end - start).count());
-
-    LOG(total);
-
     return true;
 }
 
@@ -161,7 +136,6 @@ pixmap<float> generator::render_cpu(const render_task& req) {
 
     using maths::floor;
 
-    for(int outer = 0; outer != 1000; ++outer) {
     for(int r = 0; r != req.height; ++r) {
         float y = inv_y * r;
         for(int c = 0; c != req.width; ++c) {
@@ -171,7 +145,6 @@ pixmap<float> generator::render_cpu(const render_task& req) {
             image(c,r) = maths::bilinear(dx, dy, s.grad1[s.perm(xi, yi)],   s.grad1[s.perm(xi+1, yi)],
                                                  s.grad1[s.perm(xi, yi+1)], s.grad1[s.perm(xi+1, yi+1)]);
         }
-    }
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -201,9 +174,6 @@ pixmap<float> generator::render_simd(const render_task& req) {
 
     set_round_down();
 
-    // Do it 100 times
-
-    for(int outer = 0; outer != 1000; ++outer) {
     for(int r = 0; r != req.height; ++r) {
         float vy = r * inv_y;
         int iy = floor(vy);
@@ -227,7 +197,6 @@ pixmap<float> generator::render_simd(const render_task& req) {
             vecm32f res = bilinear_v(dx, dy, P00, P01, P10, P11);
             _mm_store_ps(image.data(c_offset, r), res);
         }
-    }
     }
 
     set_round_default();
@@ -253,42 +222,38 @@ pixmap<float> generator::render_gpu(const render_task& req) {
     const int stream_size = 4;
     const int blocks = req.width/stream_size;
 
-    const vecm32f vseq = {{ 1.f, 2.f, 3.f, 4.f }};
-    const vecm32f vinc = {{ inv_x, inv_x, inv_x, inv_x }};
+    const vecm32f vseq = { 0.f, 1.f, 2.f, 3.f };
+    const vecm32f vinc = { inv_x, inv_x, inv_x, inv_x };
     const vecm vsteps = _mm_mul_ps(vseq.v, vinc.v);
 
     set_round_down();
 
-    // Do it 100 times
+    for(int r = 0; r != req.height; ++r) {
+        float vy = r * inv_y;
+        int iy = floor(vy);
+        int iyp1 = iy+1;
+        float dy = vy - iy;
+        vecm dv = load(dy);
+        for(int c = 0; c != blocks; ++c) {
+            int c_offset = c * stream_size;
+            vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
+            vecm fx = ffloor_v(vx);
+            vecm32i ix;
+            ix.v = _mm_castsi128_ps(convert_v(fx));
 
-    for(int outer = 0; outer != 1000; ++outer) {
-        for(int r = 0; r != req.height; ++r) {
-            float vy = r * inv_y;
-            int iy = floor(vy);
-            int iyp1 = iy+1;
-            float dy = vy - iy;
-            vecm dv = load(dy);
-            for(int c = 0; c != blocks; ++c) {
-                int c_offset = c * stream_size;
-                vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
-                vecm fx = ffloor_v(vx);
-                vecm32i ix;
-                ix.v = _mm_castsi128_ps(convert_v(fx));
+            vecm32i ixp1;
+            ixp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
 
-                vecm32i ixp1;
-                ixp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
+            vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
+            vecm32f P01 = {{ s.grad1[s.perm(ixp1.arr[0],iy)], s.grad1[s.perm(ixp1.arr[1],iy)], s.grad1[s.perm(ixp1.arr[2],iy)], s.grad1[s.perm(ixp1.arr[3],iy)] }};
+            vecm32f P10 = {{ s.grad1[s.perm(ix.arr[0],iyp1)], s.grad1[s.perm(ix.arr[1],iyp1)], s.grad1[s.perm(ix.arr[2],iyp1)], s.grad1[s.perm(ix.arr[3],iyp1)] }};
+            vecm32f P11 = {{ s.grad1[s.perm(ixp1.arr[0],iyp1)], s.grad1[s.perm(ixp1.arr[1],iyp1)], s.grad1[s.perm(ixp1.arr[2],iyp1)], s.grad1[s.perm(ixp1.arr[3],iyp1)] }};
 
-                vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
-                vecm32f P01 = {{ s.grad1[s.perm(ixp1.arr[0],iy)], s.grad1[s.perm(ixp1.arr[1],iy)], s.grad1[s.perm(ixp1.arr[2],iy)], s.grad1[s.perm(ixp1.arr[3],iy)] }};
-                vecm32f P10 = {{ s.grad1[s.perm(ix.arr[0],iyp1)], s.grad1[s.perm(ix.arr[1],iyp1)], s.grad1[s.perm(ix.arr[2],iyp1)], s.grad1[s.perm(ix.arr[3],iyp1)] }};
-                vecm32f P11 = {{ s.grad1[s.perm(ixp1.arr[0],iyp1)], s.grad1[s.perm(ixp1.arr[1],iyp1)], s.grad1[s.perm(ixp1.arr[2],iyp1)], s.grad1[s.perm(ixp1.arr[3],iyp1)] }};
+            vecm dx = _mm_sub_ps(vx, fx);
 
-                vecm dx = _mm_sub_ps(vx, fx);
-
-                vecm32f res;
-                res.v = bilinear_v(dx, dv, P00.v, P01.v, P10.v, P11.v);
-                for(int i = 0; i != 4; ++i) image((int)(c_offset+i), r) = res.arr[i];
-            }
+            vecm32f res;
+            res.v = bilinear_v(dx, dv, P00.v, P01.v, P10.v, P11.v);
+            for(int i = 0; i != 4; ++i) image((int)(c_offset+i), r) = res.arr[i];
         }
     }
 

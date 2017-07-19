@@ -428,7 +428,7 @@ zap::engine::pixmap<zap::engine::rgb888_t> conversion_cpu(const zap::engine::pix
 
     for(auto i = 0; i != img.size(); ++i) {
         byte px = (byte)(img[i] * 127.f + 127.f);
-        ret[i].set3(px,px,px);
+        ret[i].set(px);
     }
 
     return ret;
@@ -451,10 +451,50 @@ zap::engine::pixmap<zap::engine::rgb888_t> conversion_simd(const zap::engine::pi
         vi = _mm_packus_epi32(vi, vi);
         vi = _mm_packus_epi16(vi, vi);
         *(int*)arr = _mm_cvtsi128_si32(vi);
-        ret[i].set3(arr[0], arr[0], arr[0]);
-        ret[i+1].set3(arr[1], arr[1], arr[1]);
-        ret[i+2].set3(arr[2], arr[2], arr[2]);
-        ret[i+3].set3(arr[3], arr[3], arr[3]);
+        ret[i].set(arr[0]);
+        ret[i+1].set(arr[1]);
+        ret[i+2].set(arr[2]);
+        ret[i+3].set(arr[3]);
+    }
+
+    set_round_default();
+
+    return ret;
+}
+
+zap::engine::pixmap<zap::engine::rgb888_t> conversion_simdB(const zap::engine::pixmap<float>& img) {
+    using namespace zap::engine;
+    using pixmap = pixmap<rgb888_t>;
+    pixmap ret{img.width(), img.height()};
+
+    const vecm vhalf = _mm_set_ps(127.f, 127.f, 127.f, 127.f);
+
+    set_round_down();
+
+    byte arr[16];    // 128 bits
+    for(auto i = 0; i != img.size(); i += 16) {
+        vecm valA = _mm_load_ps(img.data(i));
+        vecm valB = _mm_load_ps(img.data(i+4));
+        valA = _mm_add_ps(_mm_mul_ps(valA, vhalf), vhalf);
+        valB = _mm_add_ps(_mm_mul_ps(valB, vhalf), vhalf);
+
+        veci viA = _mm_cvtps_epi32(valA);
+        veci viB = _mm_cvtps_epi32(valB);
+        viA = _mm_packs_epi32(viA, viB);
+
+        valB = _mm_load_ps(img.data(i+8));
+        vecm valC = _mm_load_ps(img.data(i+12));
+        valB = _mm_add_ps(_mm_mul_ps(valB, vhalf), vhalf);
+        valC = _mm_add_ps(_mm_mul_ps(valC, vhalf), vhalf);
+
+        viB = _mm_cvtps_epi32(valB);
+        veci viC = _mm_cvtps_epi32(valC);
+        viB = _mm_packs_epi32(viB, viC);
+
+        viC = _mm_packus_epi16(viA, viB);
+        _mm_store_si128((veci*)arr, viC);
+
+        for(int c = 0; c != 16; ++c) ret[c].set(arr[15-c]);
     }
 
     set_round_default();
@@ -463,9 +503,9 @@ zap::engine::pixmap<zap::engine::rgb888_t> conversion_simd(const zap::engine::pi
 }
 
 void test_conversion_implementations(int iterations) {
-    const char* fn_names[2] = { "conversion_cpu", "conversion_simd" };
-    zap::engine::pixmap<zap::engine::rgb888_t>(*functions[2])(const zap::engine::pixmap<float>&) = {
-        &conversion_cpu, &conversion_simd
+    const char* fn_names[3] = { "conversion_cpu", "conversion_simd", "conversion_simdB" };
+    zap::engine::pixmap<zap::engine::rgb888_t>(*functions[3])(const zap::engine::pixmap<float>&) = {
+        &conversion_cpu, &conversion_simd, &conversion_simdB
     };
 
     const int width = 1024, height = 1024;
