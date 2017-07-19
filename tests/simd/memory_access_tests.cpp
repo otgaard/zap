@@ -443,14 +443,18 @@ zap::engine::pixmap<zap::engine::rgb888_t> conversion_simd(const zap::engine::pi
 
     set_round_down();
 
-    byte arr[8];    // 128 bits
+    union {
+        byte arr[16];    // 128 bits
+        int32_t arri[4];
+    };
+
     for(auto i = 0; i != img.size(); i += 4) {
         vecm val = _mm_load_ps(img.data(i));
         val = _mm_add_ps(_mm_mul_ps(val, vhalf), vhalf);
         veci vi = _mm_cvtps_epi32(val);
         vi = _mm_packus_epi32(vi, vi);
         vi = _mm_packus_epi16(vi, vi);
-        *(int*)arr = _mm_cvtsi128_si32(vi);
+        *arri = _mm_cvtsi128_si32(vi);
         ret[i].set(arr[0]);
         ret[i+1].set(arr[1]);
         ret[i+2].set(arr[2]);
