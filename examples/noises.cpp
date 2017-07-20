@@ -12,6 +12,8 @@
  * 4) Fast readback from GPU (Pixel Buffers)
  */
 
+#define LOGGING_ENABLED
+
 #include <tools/log.hpp>
 #include <maths/io.hpp>
 #include <graphics2/quad.hpp>
@@ -27,7 +29,7 @@ using namespace zap::renderer;
 
 class noises : public application {
 public:
-    noises() : application("noises", 1200, 1200, false) { }
+    noises() : application("noises", 1024, 1024, false) { }
 
     bool initialise() override final;
     void update(double t, float dt) override final;
@@ -66,6 +68,7 @@ bool noises::initialise() {
 //#define POOL
 
 void noises::on_resize(int width, int height) {
+    application::on_resize(width, height);
     quad_.resize(width, height);
     image_.resize(width, height);
 
@@ -88,17 +91,19 @@ void noises::on_resize(int width, int height) {
     completion_tokens_.emplace_back(pool_.run_function(fnc, std::ref(image_), width/2, height/2, width/2 + (width%2), height/2 + (height%2)));
 #else   // !defined(POOL)
     render_task task{width, height};
-    task.scale.set(50.f, 50.f);
+    static int i = 1;
+    task.scale.set(.8f*i, .8f*i);
+    i += 1;
     auto start = std::chrono::high_resolution_clock::now();
-    auto img = gen_.render(task, generator::gen_method::SIMD).get();
+    auto img = gen_.render(task, generator::gen_method::GPU).get();
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
     UNUSED(dur);
     LOG("Time:", dur);
     pixmap<rgb888_t> image{width, height};
     for(auto i = 0; i != img.size(); ++i) {
-        byte b = (byte)(255.f*(.5f + .5f*img(i)));
-        image(i).set3(b, b, b);
+        byte b = (byte)(127.f + 127.f*img(i));
+        image(i).set(b);
     }
 
     texture tex{};
@@ -129,6 +134,7 @@ void noises::update(double t, float dt) {
 }
 
 void noises::draw() {
+    on_resize(sc_width_, sc_height_);
     quad_.draw();
 }
 

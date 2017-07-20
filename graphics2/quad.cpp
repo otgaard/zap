@@ -11,12 +11,11 @@ using namespace zap::graphics;
 const char* const quadvshdr_source = GLSL(
     in vec2 position;
     in vec2 texcoord1;
-    uniform mat4 proj_matrix;
-    uniform mat4 mv_matrix;
+    uniform mat4 pvm;
     out vec2 tex;
     void main() {
         tex = texcoord1;
-        gl_Position = proj_matrix * mv_matrix * vec4(position, 0, 1);
+        gl_Position = pvm * vec4(position, 0, 1);
     }
 );
 
@@ -29,7 +28,7 @@ const char* const quadfshdr_source = GLSL(
     }
 );
 
-quad::quad() : override_(nullptr), screen_(0,0) {
+quad::quad() : frag_shdr_(nullptr), screen_(0,0) {
 }
 
 quad::~quad() {
@@ -45,7 +44,7 @@ void quad::set_texture(texture&& tex) {
     program_.release();
 }
 
-bool quad::initialise() {
+bool quad::initialise(shader* frag_shdr) {
     if(mesh_.is_allocated()) return true;
 
     if(!mesh_.allocate() || !vbuf_.allocate()) {
@@ -66,54 +65,91 @@ bool quad::initialise() {
     vbuf_.initialise(4, vertices);
     mesh_.release();
 
+    frag_shdr_ = frag_shdr;
     program_.add_shader(new shader(shader_type::ST_VERTEX, quadvshdr_source));
-    program_.add_shader(new shader(shader_type::ST_FRAGMENT, quadfshdr_source));
+    program_.add_shader(frag_shdr_ ? frag_shdr_ : new shader(shader_type::ST_FRAGMENT, quadfshdr_source));
     if(!program_.link()) {
-        LOG("An error occurred during compilation or linkage of the Quad shader program");
+        LOG_ERR("An error occurred during compilation or linkage of the Quad shader program");
         return false;
     }
 
     auto proj = make_ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
     auto cam = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,1));
+    auto pvm = proj * cam;
 
     program_.bind();
-    program_.bind_uniform("proj_matrix", proj);
-    program_.bind_uniform("mv_matrix", cam);
-    program_.bind_texture_unit(program_.uniform_location("diffuse"), 0);
-    program_.release();
+    program_.bind_uniform("pvm", pvm);
 
-    texture tex;
-    tex.allocate();
-    tex.initialise(8, 8, generators::planar<rgb888_t>::make_checker(8, 8, colour::red8, colour::blue8));
-    set_texture(std::move(tex));
+    if(!frag_shdr) {
+        program_.bind_texture_unit(program_.uniform_location("diffuse"), 0);
+
+        texture tex;
+        tex.allocate();
+        tex.initialise(8, 8, generators::planar<rgb888_t>::make_checker(8, 8, colour::red8, colour::blue8));
+        set_texture(std::move(tex));
+    }
+
+    program_.release();
 
     return true;
 }
 
+/*
 void quad::set_program(program* prog) {
     override_ = prog;
 }
 
+
+bool quad::set_frag_shader(shader* shdr) {
+    if(!shdr || shdr->type() != shader_type::ST_FRAGMENT) {
+        LOG_ERR("Expected fragment shader");
+        return false;
+    }
+
+    program prog{};
+    prog.add_shader(new shader(shader_type::ST_VERTEX, quadvshdr_source));
+    prog.add_shader(shdr);
+    if(!prog.link()) {
+        LOG_ERR("An error occurred during linkage of the quad shader");
+        return false;
+    }
+
+    auto proj = make_ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+    auto cam = make_frame(vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, 1.f});
+    auto pvm = proj*cam;
+
+    prog.bind();
+    prog.bind_uniform("pvm", pvm);
+    prog.release();
+    program_ = std::move(prog);
+    return true;
+}
+*/
 void quad::resize(int w, int h) {
     screen_.set(w, h);
-    gl::glViewport(0, 0, w, h);
 }
 
 void quad::update(double t, float dt) {
 }
 
-void quad::draw(bool default_bind) {
-    if(!texture_.is_allocated() || screen_.is_zero()) return;
+void quad::draw() {
+    if(screen_.is_zero()) return;
 
-    if(override_) override_->bind();
-    else          program_.bind();
-    if(default_bind) texture_.bind(0);
+    program_.bind();
+    gl_error_check();
+    if(frag_shdr_ == nullptr) texture_.bind(0);
 
     mesh_.bind();
+    gl_error_check();
+    gl::glGetIntegerv(GL_VIEWPORT, curr_viewport_);
+    gl::glViewport(0, 0, screen_.x, screen_.y);
+    gl_error_check();
     mesh_.draw();
+    gl_error_check();
+    gl::glViewport(curr_viewport_[0], curr_viewport_[1], curr_viewport_[2], curr_viewport_[3]);
     mesh_.release();
+    gl_error_check();
 
-    if(default_bind) texture_.release();
-    if(override_) override_->release();
-    else          program_.release();
+    if(frag_shdr_ == nullptr) texture_.release();
+    program_.release();
 }

@@ -11,18 +11,14 @@
 #include <memory>
 #include <future>
 #include <maths/vec2.hpp>
-#include <maths/vec3.hpp>
 #include <maths/mat2.hpp>
-#include <maths/mat3.hpp>
 #include <engine/pixmap.hpp>
 
 namespace zap {
 
 struct render_task {
     using vec2f = maths::vec2f;
-    using vec3f = maths::vec3f;
     using mat2f = maths::mat2f;
-    using mat3f = maths::mat3f;
 
     enum class basis_function {
         VALUE,
@@ -32,21 +28,24 @@ struct render_task {
         WHITE
     } basis_fnc;
 
+    enum class interpolation {
+        LINEAR,
+        CUBIC,
+        QUINTIC
+    } interp = interpolation::LINEAR;
+
     int width, height;
 
-    vec2f translation;
-    mat2f rotation;
-    vec2f scale;
-    bool is_unit[3];
+    vec2f translation = {0.f, 0.f};
+    mat2f rotation = {1.f, 0.f,
+                      0.f, 1.f};
+    vec2f scale = {1.f, 1.f};
+    bool is_unit[3] = {true, true, true};
 
     render_task(int width, int height, basis_function bf=basis_function::VALUE) :
             basis_fnc{bf},
             width{width},
-            height{height},
-            translation{0.f, 0.f},
-            rotation{1.f, 1.f},
-            scale{1.f, 1.f},
-            is_unit{true, true, true} {
+            height{height} {
     }
 };
 
@@ -66,13 +65,16 @@ public:
     };
 
     generator();
+    generator(const generator&) = delete;
+    generator(generator&&) = delete;
     ~generator();
+
+    generator& operator=(const generator&) = delete;
+    generator& operator=(generator&&) = delete;
 
     bool initialise(threadpool* pool_ptr=nullptr, int pool_size=2, ulonglong seed=1);
 
     pixmap_future<float> render(const render_task& req, gen_method method=gen_method::CPU);
-
-protected:
     pixmap<float> render_cpu(const render_task& req);
     pixmap<float> render_simd(const render_task& req);
     pixmap<float> render_gpu(const render_task& req);

@@ -137,7 +137,9 @@ bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) {
         return false;
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
     glReadBuffer(GL_COLOR_ATTACHMENT0 + idx);
     glReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], gl_type(pix_format_), gl_type(pix_dtype_), 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return !gl_error_check();
 }

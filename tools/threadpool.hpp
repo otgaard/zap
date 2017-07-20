@@ -6,6 +6,7 @@
 #define ZAP_THREADPOOL_HPP
 
 #include <asio.hpp>
+#include <core/core.hpp>
 #include <thread>
 #include <future>
 #include <tuple>

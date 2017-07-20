@@ -1,10 +1,13 @@
 /* Created by Darren Otgaar on 2017/06/11. http://www.github.com/otgaard/zap */
 #include <maths/rand_lcg.hpp>
 #include <tools/threadpool.hpp>
-#include <random>
-#include <core/core.hpp>
 #include "generator.hpp"
 #include <maths/simd.hpp>
+#include <graphics2/quad.hpp>
+#include <engine/sampler.hpp>
+#include <engine/texture.hpp>
+#include <maths/io.hpp>
+#include <engine/framebuffer.hpp>
 
 using namespace zap;
 using namespace maths;
@@ -15,65 +18,88 @@ const int RND_MASK = 255;
 
 const simd::veci RND_MASK_V = simd::load(0xFF);
 
-struct generator::state_t {
-    threadpool* pool_ptr;
+const char* const value_noise_fshdr = GLSL(
+        const int mask = 0xFF;
+        uniform vec4 dims;        // [width, height, inv_w, inv_h]
+        uniform usampler1D perm;  // permutation table 256 bytes
+        uniform sampler1D grad;   // grad1 table 256 floats 1024 bytes
+        in vec2 tex;
 
-    bool initialised;
-    byte prn_table[RND_TBL];
+        int perm1(int x) { return int(texelFetch(perm, x & mask, 0).r); }
+        int perm2(int x, int y) { return int(texelFetch(perm, (x + perm1(y)) & mask, 0).r); }
+        float grad1(int x) { return texelFetch(grad, perm1(x), 0).r; }
+        float grad2(int x, int y) { return texelFetch(grad, perm2(x, y), 0).r; }
+
+        float noise1(float x) {
+            float fx = floor(x);
+            int ix = int(fx);
+            float dx = fx - float(ix);
+            return mix(grad1(ix), grad1(ix+1), dx);
+        }
+
+        float noise2(float x, float y) {
+            float fx = floor(x);
+            float fy = floor(y);
+            int ix = int(fx);
+            int iy = int(fy);
+            float dx = x - fx;
+            float dy = y - fy;
+            return mix(mix(grad2(ix, iy),   grad2(ix+1, iy),   dx),
+                       mix(grad2(ix, iy+1), grad2(ix+1, iy+1), dx),
+                       dy);
+        }
+
+        out float frag_colour;
+
+        void main() {
+            frag_colour = noise2(tex.x * dims[2], tex.y * dims[3]);
+        }
+);
+
+struct generator::state_t {
+    threadpool* pool_ptr = nullptr;
+    bool initialised = false;
+
+    bool initialise(ulonglong seed) {
+        zap::maths::rand_lcg prn{seed};
+        for(int i = 0; i != RND_TBL; ++i) {
+            prn_table[i] = byte(i);
+            grad1_table[i] = prn.random_s();
+            grad2_table[i] = maths::normalise(maths::vec2f{prn.random_s(), prn.random_s()});
+        }
+
+        prn.shuffle(prn_table, prn_table+RND_TBL);
+
+        initialised = true;
+        return true;
+    }
+
+    byte prn_table[RND_TBL] = {};
 #if defined(_WIN32)
     __declspec(align(16)) float grad1[RND_TBL];
     __declspec(align(16)) maths::vec2f grad2[RND_TBL];
 #else
-    float __attribute__((aligned(16))) grad1[RND_TBL];
-    maths::vec2f __attribute__((aligned(16))) grad2[RND_TBL];
+    float __attribute__((aligned(16))) grad1_table[RND_TBL] = {};
+    maths::vec2f __attribute__((aligned(16))) grad2_table[RND_TBL] = {};
 #endif
-    state_t() : pool_ptr(nullptr), initialised(false) { }
 
-    byte perm(int x) { return prn_table[x & RND_MASK]; }
-    byte perm(int x, int y) { return perm(x + perm(y)); }
-    byte perm(int x, int y, int z) { return perm(x + perm(y + perm(z))); }
-    byte perm(int x, int y, int z, int w) { return perm(x + perm(y + perm(z + perm(w)))); }
+    // OpenGL Resources
+    graphics::quad quad;
+    texture prn_tex;
+    texture grad1_tex;
+    framebuffer fbuffer;
+    pixel_buffer<r32f_t, buffer_usage::BU_DYNAMIC_DRAW> pbuffer;
 
-    float grad_a(int x) {
-        return grad1[perm(x)];
-    }
+    state_t() = default;
 
-    float grad_b(int x) {
-        x = (x >> 13) ^ x;
-        int xx = (x * (x * x * 19990303) + 1376312589) & 0x7ffffff;
-        return 1.f - ((float)xx / 1073741824.f);
-    }
-
-    simd::veci VCALL grad_v(const simd::veci& seed, const simd::veci& x) {
-        simd::veci hash = seed;
-        hash = _mm_xor_si128(x, hash);
-        //hash = _mm_mul_ep
-        return x;
-    }
-
-    simd::veci VCALL perm_v(const simd::vecm32i& x) {
-        simd::vecm32i idx;
-        idx.v = _mm_castsi128_ps(_mm_and_si128(_mm_castps_si128(x.v), RND_MASK_V));
-        return _mm_set_epi32(prn_table[idx.arr[0]], prn_table[idx.arr[1]], prn_table[idx.arr[2]], prn_table[idx.arr[3]]);
-    }
-
-    simd::veci VCALL perm_v(const simd::vecm32i& x, const simd::vecm32i& y) {
-        simd::vecm32i tmp1;
-        tmp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(x.v), perm_v(y)));
-        return perm_v(tmp1);
-    }
-
-    simd::vecm32f VCALL grad_v(const simd::vecm32i& x, const simd::vecm32i& y) {
-        simd::vecm32i idx;
-        idx.v = _mm_castsi128_ps(perm_v(x, y));
-
-        return simd::vecm32f{
-            grad1[idx.arr[0]],
-            grad1[idx.arr[1]],
-            grad1[idx.arr[2]],
-            grad1[idx.arr[3]]
-        };
-    }
+    byte perm(int x) const { return prn_table[x & RND_MASK]; }
+    byte perm(int x, int y) const { return perm(x + perm(y)); }
+    byte perm(int x, int y, int z) const { return perm(x + perm(y + perm(z))); }
+    byte perm(int x, int y, int z, int w) const { return perm(x + perm(y + perm(z + perm(w)))); }
+    float grad1(int x) const { return grad1_table[perm(x)]; }
+    float grad1(int x, int y) const { return grad1_table[perm(x,y)]; }
+    float grad1(int x, int y, int z) const { return grad1_table[perm(x,y,z)]; }
+    float grad1(int x, int y, int z, int w) const { return grad1_table[perm(x,y,z,w)]; }
 };
 
 generator::generator() : state_(new state_t()), s(*state_.get()) {
@@ -82,8 +108,6 @@ generator::generator() : state_(new state_t()), s(*state_.get()) {
 zap::generator::~generator() = default;
 
 bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong seed) {
-    zap::maths::rand_lcg prn{seed};
-
     if(!pool_ptr) {
         s.pool_ptr = new threadpool{};
         if(!s.pool_ptr->initialise(pool_size)) {
@@ -94,70 +118,84 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
         s.pool_ptr = pool_ptr;
     }
 
-    for(int i = 0; i != RND_TBL; ++i) {
-        s.prn_table[i] = byte(i);
-        s.grad1[i] = prn.random_s();
-        s.grad2[i] = maths::normalise(maths::vec2f{prn.random_s(), prn.random_s()});
+    if(!s.initialise(seed)) {
+        LOG_ERR("Failed to initialise noise tables");
+        return false;
     }
 
-    prn.shuffle(s.prn_table, s.prn_table+RND_TBL);
+    // Initialise GPU resources
+    UNUSED(value_noise_fshdr);
+    if(!s.quad.initialise(new shader(shader_type::ST_FRAGMENT, value_noise_fshdr))) {
+        LOG_ERR("Failed to initialise render quad");
+        return false;
+    }
 
-    s.initialised = true;
+    s.prn_tex.allocate();
+    s.prn_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, pixel_format::PF_RED, pixel_datatype::PD_DN_UNSIGNED_BYTE, s.prn_table);
+
+    s.grad1_tex.allocate();
+    s.grad1_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, pixel_format::PF_RED, pixel_datatype::PD_FLOAT, s.grad1_table);
+
+    s.fbuffer.allocate();
+    s.pbuffer.allocate();
+
     return true;
 }
 
 std::future<generator::pixmap<float>> generator::render(const render_task& req, generator::gen_method method) {
-    auto fnc = [this, method](const auto& r)->generator::pixmap<float>  {
-        switch(method) {
-            case gen_method::CPU: return this->render_cpu(r);
-            case gen_method::SIMD: return this->render_simd(r);
-            case gen_method::GPU: return this->render_gpu(r);
-            default: return pixmap<float>{0, 0};
-        }
-    };
+    if(method == gen_method::GPU) {
+        std::promise<generator::pixmap<float>> promise;
+        auto fut = promise.get_future();
+        promise.set_value(render_gpu(req));
+        return fut;
+    } else {
+        auto fnc = [this, method](const auto& r)->generator::pixmap<float>  {
+            switch(method) {
+                case gen_method::CPU: return this->render_cpu(r);
+                case gen_method::SIMD: return this->render_simd(r);
+                default: return pixmap<float>{0, 0};    // (due to warning in GCC)
+            }
+        };
 
-    return s.pool_ptr->run_function(fnc, std::cref(req));
+        return s.pool_ptr->run_function(fnc, std::cref(req));
+    }
 }
 
 pixmap<float> generator::render_cpu(const render_task& req) {
-    LOG("CPU");
     pixmap<float> image{req.width, req.height};
-
-    auto start = std::chrono::high_resolution_clock::now();
 
     const float inv_x = req.scale.x/req.width;
     const float inv_y = req.scale.y/req.height;
 
-    using maths::floor;
-
     for(int r = 0; r != req.height; ++r) {
         float y = inv_y * r;
+        int iy0 = maths::floor(y), iy1 = iy0+1;
+        float dy = y - iy0;
         for(int c = 0; c != req.width; ++c) {
             float x = inv_x * c;
-            int xi = floor(x), yi = floor(y);
-            float dx = x - xi, dy = y - yi;
-            image(c,r) = maths::bilinear(dx, dy, s.grad1[s.perm(xi, yi)],   s.grad1[s.perm(xi+1, yi)],
-                                                 s.grad1[s.perm(xi, yi+1)], s.grad1[s.perm(xi+1, yi+1)]);
+            int ix0 = maths::floor(x), ix1 = ix0+1;
+            float dx = x - ix0;
+            image(c,r) = maths::bilinear(dx, dy,
+                                         s.grad1(ix0, iy0),
+                                         s.grad1(ix1, iy0),
+                                         s.grad1(ix0, iy1),
+                                         s.grad1(ix1, iy1));
         }
     }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto dur = std::chrono::duration<float>(end - start).count();
-    UNUSED(dur);
-    LOG("CPU Total Time: ", dur);
-
     return image;
 }
 
 pixmap<float> generator::render_simd(const render_task& req) {
-    LOG("SIMD");
-    pixmap<float> image{req.width, req.height};
+    using namespace zap::maths::simd;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    pixmap<float> img{req.width, req.height};
+
+    // Don't support non-aligned sizes for now (need to refactor pixelmap to support row alignment)
+    if(req.width % 4 != 0) return img;
+
 
     const float inv_x = req.scale.x/req.width;
     const float inv_y = req.scale.y/req.height;
-    using namespace zap::maths::simd;
 
     const int stream_size = 4;
     const int blocks = req.width/stream_size;
@@ -170,93 +208,79 @@ pixmap<float> generator::render_simd(const render_task& req) {
 
     for(int r = 0; r != req.height; ++r) {
         float vy = r * inv_y;
-        int iy = floor(vy);
-        vecm dy = load(vy - (float)iy);
-        vecm32i iy_v = _mm_castsi128_ps(load(iy));
-        vecm32i iyp1 = _mm_castsi128_ps(load(iy+1));
-        for(int c = 0; c != blocks; ++c) {
-            const int c_offset = c * stream_size;
-            vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
-            vecm fx = floor_v(vx);
-            vecm32i ix = _mm_castsi128_ps(convert_v(fx));
-            vecm32i ixp1 = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
+        int iy0 = zap::maths::floor(vy), iy1 = iy0+1;
+        float dy = vy - float(iy0);
+        vecm vdy = load(dy);
+        int col_offset = r * req.width;
+        for(int c = 0, offset = 0; c != blocks; ++c, col_offset += 4, offset += 4) {
+            vecm vx = _mm_add_ps(load(offset * inv_x), vsteps);
+            vecm fx = ffloor_v(vx);
+            veci ix0 = convert_v(fx);
+            veci ix1 = _mm_add_epi32(ix0, veci_one);
+            vecm vdx = _mm_sub_ps(vx, fx);
 
-            vecm P00 = s.grad_v(ix, iy_v);
-            vecm P01 = s.grad_v(ixp1, iy_v);
-            vecm P10 = s.grad_v(ix, iyp1);
-            vecm P11 = s.grad_v(ixp1, iyp1);
+            VALIGN int xi0[4], xi1[4];
+            _mm_store_si128((veci*)xi0, ix0);
+            _mm_store_si128((veci*)xi1, ix1);
 
-            vecm dx = _mm_sub_ps(vx, fx);
+            VALIGN float values[16];
+            for(int i = 0; i != 4; ++i) {
+                values[i]    = s.grad1(xi0[i], iy0);
+                values[4+i]  = s.grad1(xi1[i], iy0);
+                values[8+i]  = s.grad1(xi0[i], iy1);
+                values[12+i] = s.grad1(xi1[i], iy1);
+            }
 
-            vecm32f res = bilinear_v(dx, dy, P00, P01, P10, P11);
-            _mm_store_ps(image.data(c_offset, r), res);
+            vecm res = bilinear_v(vdx, vdy,
+                                  _mm_load_ps(values),
+                                  _mm_load_ps(values+4),
+                                  _mm_load_ps(values+8),
+                                  _mm_load_ps(values+12));
+            _mm_store_ps(img.data(size_t(col_offset)), res);
         }
     }
 
     set_round_default();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto dur = std::chrono::duration<float>(end - start).count();
-    UNUSED(dur);
-    LOG("SIMD Total Time: ", dur);
-
-    return image;
+    return img;
 }
 
 pixmap<float> generator::render_gpu(const render_task& req) {
-    LOG("SIMD2");
-    pixmap<float> image{req.width, req.height};
+    pixmap<float> img{req.width, req.height};
 
-    auto start = std::chrono::high_resolution_clock::now();
+    vec4f dims = {float(req.width), float(req.height), req.scale.x, req.scale.y};
 
-    const float inv_x = req.scale.x/req.width;
-    const float inv_y = req.scale.y/req.height;
-    using namespace zap::maths::simd;
+    s.quad.get_program()->bind();
+    s.quad.get_program()->bind_uniform("dims", dims);
+    s.quad.get_program()->bind_texture_unit("perm", 0);
+    s.quad.get_program()->bind_texture_unit("grad", 1);
 
-    const int stream_size = 4;
-    const int blocks = req.width/stream_size;
+    s.prn_tex.bind(0);
+    s.grad1_tex.bind(1);
 
-    const vecm32f vseq = { 0.f, 1.f, 2.f, 3.f };
-    const vecm32f vinc = { inv_x, inv_x, inv_x, inv_x };
-    const vecm vsteps = _mm_mul_ps(vseq.v, vinc.v);
+    s.fbuffer.initialise(1, req.width, req.height, pixel_format::PF_RED, pixel_datatype::PD_FLOAT, false, false);
 
-    set_round_down();
+    s.fbuffer.bind();
+    s.quad.resize(req.width, req.height);
+    s.quad.draw();
+    s.fbuffer.release();
 
-    for(int r = 0; r != req.height; ++r) {
-        float vy = r * inv_y;
-        int iy = floor(vy);
-        int iyp1 = iy+1;
-        float dy = vy - iy;
-        vecm dv = load(dy);
-        for(int c = 0; c != blocks; ++c) {
-            int c_offset = c * stream_size;
-            vecm vx = _mm_add_ps(_mm_mul_ps(load((float)c_offset), vinc.v), vsteps);
-            vecm fx = ffloor_v(vx);
-            vecm32i ix;
-            ix.v = _mm_castsi128_ps(convert_v(fx));
+    s.grad1_tex.release();
+    s.prn_tex.release();
 
-            vecm32i ixp1;
-            ixp1.v = _mm_castsi128_ps(_mm_add_epi32(_mm_castps_si128(ix.v), veci_one));
+    s.pbuffer.bind();
+    s.pbuffer.initialise(req.width, req.height);
+    s.pbuffer.release();
 
-            vecm32f P00 = {{ s.grad1[s.perm(ix.arr[0], iy)], s.grad1[s.perm(ix.arr[1], iy)], s.grad1[s.perm(ix.arr[2], iy)], s.grad1[s.perm(ix.arr[3], iy)] }};
-            vecm32f P01 = {{ s.grad1[s.perm(ixp1.arr[0],iy)], s.grad1[s.perm(ixp1.arr[1],iy)], s.grad1[s.perm(ixp1.arr[2],iy)], s.grad1[s.perm(ixp1.arr[3],iy)] }};
-            vecm32f P10 = {{ s.grad1[s.perm(ix.arr[0],iyp1)], s.grad1[s.perm(ix.arr[1],iyp1)], s.grad1[s.perm(ix.arr[2],iyp1)], s.grad1[s.perm(ix.arr[3],iyp1)] }};
-            vecm32f P11 = {{ s.grad1[s.perm(ixp1.arr[0],iyp1)], s.grad1[s.perm(ixp1.arr[1],iyp1)], s.grad1[s.perm(ixp1.arr[2],iyp1)], s.grad1[s.perm(ixp1.arr[3],iyp1)] }};
+    s.fbuffer.read_attachment(s.pbuffer, vec4i{0, 0, req.width, req.height}, 0);
 
-            vecm dx = _mm_sub_ps(vx, fx);
-
-            vecm32f res;
-            res.v = bilinear_v(dx, dv, P00.v, P01.v, P10.v, P11.v);
-            for(int i = 0; i != 4; ++i) image((int)(c_offset+i), r) = res.arr[i];
-        }
+    s.pbuffer.bind(s.pbuffer.read_type);
+    if(s.pbuffer.map(buffer_access::BA_READ_ONLY, false)) {
+        std::copy((char*)s.pbuffer.data(), (char*)(s.pbuffer.data())+s.pbuffer.size(), (char*)img.data());
+        s.pbuffer.unmap(false);
     }
+    s.pbuffer.release(s.pbuffer.read_type);
 
-    set_round_default();
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto dur = std::chrono::duration<float>(end - start).count();
-    UNUSED(dur);
-    LOG("SIMD Total Time: ", dur);
-
-    return image;
+    return img;
 }
+

@@ -361,7 +361,7 @@ void render_noiseE(int width, int height, float* buffer_ptr) {
         vecm dy = load(vy - float(iy));
         int col_offset = r * width;
         for(int c = 0, offset = 0; c != blocks; ++c, col_offset += 4, offset += 4) {
-            vecm vx = _mm_add_ps(load(col_offset * inv_x), vsteps);
+            vecm vx = _mm_add_ps(load(offset * inv_x), vsteps);
             vecm fx = ffloor_v(vx);
             veci ix = convert_v(fx);
             veci ixp1 = _mm_add_epi32(ix, veci_one);

@@ -17,7 +17,7 @@ namespace zap { namespace engine {
         program(const std::vector<shader_ptr>& shaders);
         program(std::vector<shader_ptr>&& shaders);
         program(program&& rhs);
-        program& operator=(program&& rhs);
+        program& operator=(program&& rhs) noexcept;
         ~program();
 
         program(const program&) = delete;
@@ -27,7 +27,7 @@ namespace zap { namespace engine {
         std::int32_t uniform_block_index(const char* name);
 
         resource_t resource() const { return id_; }
-        bool is_allocated() const { return id_ != INVALID_RESOURCE; }
+        bool is_allocated() const { return id_ != 0; } // glCreateProgram returns 0 on error
         bool is_linked() const { return is_allocated() && linked_; }
 
         void bind();
@@ -64,7 +64,7 @@ namespace zap { namespace engine {
     inline program::program(program&& rhs) : id_(rhs.id_), linked_(rhs.linked_), shaders_(std::move(rhs.shaders_)) {
         rhs.id_ = INVALID_RESOURCE; rhs.linked_ = false;
     }
-    inline program& program::operator=(program&& rhs) {
+    inline program& program::operator=(program&& rhs) noexcept {
         if(this != &rhs) {
             id_ = rhs.id_; linked_ = rhs.linked_; shaders_ = std::move(rhs.shaders_);
             rhs.id_ = INVALID_RESOURCE; rhs.linked_ = false;

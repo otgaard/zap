@@ -134,6 +134,7 @@ namespace zap { namespace engine {
     using rgb332_t = pixel<core::bitfield<byte, 3, 3, 2>, red3_t, green3_t, blue2_t>;
     using lum8dn_t = pixel<byte, lum8_t>;   // Denormalised
     using rgb888_t = pixel<byte, red8_t, green8_t, blue8_t>;
+    using r32f_t = pixel<float, red32_t>;
     using rgb32f_t = pixel<float, red32_t, green32_t, blue32_t>;
     using rgba32f_t = pixel<float, red32_t, green32_t, blue32_t, alpha32_t>;
     using rgba8888_t = pixel<byte, red8_t, green8_t, blue8_t, alpha8_t>;
@@ -149,6 +150,7 @@ namespace zap { namespace engine {
     DEF_PIXEL_TYPE(rgb332_t, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE_3_3_2)
     DEF_PIXEL_TYPE(lum8dn_t, pixel_format::PF_RED, pixel_datatype::PD_DN_UNSIGNED_BYTE)
     DEF_PIXEL_TYPE(rgb888_t, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE)
+    DEF_PIXEL_TYPE(r32f_t, pixel_format::PF_RED, pixel_datatype::PD_FLOAT)
     DEF_PIXEL_TYPE(rgb32f_t, pixel_format::PF_RGB, pixel_datatype::PD_FLOAT)
     DEF_PIXEL_TYPE(rgba32f_t, pixel_format::PF_RGBA, pixel_datatype::PD_FLOAT)
     DEF_PIXEL_TYPE(rgba8888_t, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE)
