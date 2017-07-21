@@ -76,8 +76,8 @@ struct generator::state_t {
 
     byte prn_table[RND_TBL] = {};
 #if defined(_WIN32)
-    __declspec(align(16)) float grad1[RND_TBL];
-    __declspec(align(16)) maths::vec2f grad2[RND_TBL];
+    __declspec(align(16)) float grad1_table[RND_TBL];
+    __declspec(align(16)) maths::vec2f grad2_table[RND_TBL];
 #else
     float __attribute__((aligned(16))) grad1_table[RND_TBL] = {};
     maths::vec2f __attribute__((aligned(16))) grad2_table[RND_TBL] = {};
@@ -123,6 +123,11 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
         return false;
     }
 
+    // Test that the gradients coordinates are initialised in the same order across platforms
+    for(int i = 0; i != 10; ++i) {
+        LOG(s.grad2_table[i].x, s.grad2_table[i].y);
+    }
+
     // Initialise GPU resources
     UNUSED(value_noise_fshdr);
     if(!s.quad.initialise(new shader(shader_type::ST_FRAGMENT, value_noise_fshdr))) {
@@ -135,6 +140,11 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
 
     s.grad1_tex.allocate();
     s.grad1_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, pixel_format::PF_RED, pixel_datatype::PD_FLOAT, s.grad1_table);
+
+    s.quad.get_program()->bind();
+    s.quad.get_program()->bind_texture_unit("perm", 0);
+    s.quad.get_program()->bind_texture_unit("grad", 1);
+    s.quad.release();
 
     s.fbuffer.allocate();
     s.pbuffer.allocate();
@@ -191,8 +201,10 @@ pixmap<float> generator::render_simd(const render_task& req) {
     pixmap<float> img{req.width, req.height};
 
     // Don't support non-aligned sizes for now (need to refactor pixelmap to support row alignment)
-    if(req.width % 4 != 0) return img;
-
+    if(req.width % 4 != 0) {
+        LOG_ERR("generator::render_simd cannot be used with unaligned memory, width % 4 != 0");
+        return img;
+    }
 
     const float inv_x = req.scale.x/req.width;
     const float inv_y = req.scale.y/req.height;
@@ -250,10 +262,8 @@ pixmap<float> generator::render_gpu(const render_task& req) {
 
     vec4f dims = {float(req.width), float(req.height), req.scale.x, req.scale.y};
 
-    s.quad.get_program()->bind();
+    s.quad.bind();
     s.quad.get_program()->bind_uniform("dims", dims);
-    s.quad.get_program()->bind_texture_unit("perm", 0);
-    s.quad.get_program()->bind_texture_unit("grad", 1);
 
     s.prn_tex.bind(0);
     s.grad1_tex.bind(1);

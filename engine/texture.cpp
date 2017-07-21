@@ -208,6 +208,8 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
     if(type_ == texture_type::TT_TEX1D) {
         if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE)
             glTexImage1D(gltype, 0, GL_R8UI, width, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
+        else if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_FLOAT)
+            glTexImage1D(gltype, 0, GL_R32F, width, 0, GL_RED, GL_FLOAT, data);
         else
             glTexImage1D(gltype, 0, gl_type(format), width, 0, gl_type(format), gl_type(datatype), data);
 
