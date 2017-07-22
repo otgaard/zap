@@ -87,7 +87,7 @@ struct generator::state_t {
     texture prn_tex;
     texture grad1_tex;
     framebuffer fbuffer;
-    pixel_buffer<r32f_t, buffer_usage::BU_DYNAMIC_DRAW> pbuffer;
+    pixel_buffer<r32f_t> pbuffer;
 
     state_t() = default;
 
@@ -291,5 +291,37 @@ pixmap<float> generator::render_gpu(const render_task& req) {
     s.pbuffer.release(s.pbuffer.read_type);
 
     return img;
+}
+
+texture generator::render_texture(const render_task& req, generator::gen_method method) {
+    vec4f dims = {float(req.width), float(req.height), req.scale.x, req.scale.y};
+
+    s.quad.bind();
+    s.quad.get_program()->bind_uniform("dims", dims);
+
+    s.prn_tex.bind(0);
+    s.grad1_tex.bind(1);
+
+    s.fbuffer.initialise(1, req.width, req.height, pixel_format::PF_RED, pixel_datatype::PD_FLOAT, false, false);
+
+    s.fbuffer.bind();
+    s.quad.resize(req.width, req.height);
+    s.quad.draw();
+    s.fbuffer.release();
+
+    s.grad1_tex.release();
+    s.prn_tex.release();
+
+    s.pbuffer.bind();
+    s.pbuffer.initialise(req.width, req.height);
+    s.pbuffer.release();
+
+    s.fbuffer.read_attachment(s.pbuffer, vec4i{0, 0, req.width, req.height}, 0);
+
+    texture tex{};
+    tex.allocate();
+    tex.initialise(s.pbuffer, false);
+
+    return tex;
 }
 

@@ -12,7 +12,9 @@
 #include <random>
 #include <algorithm>
 #include <maths/rand_lcg.hpp>
+#if !defined(DEBUG)
 #define LOGGING_ENABLED
+#endif
 #include <tools/log.hpp>
 #include <engine/pixmap.hpp>
 #include <engine/pixel_format.hpp>

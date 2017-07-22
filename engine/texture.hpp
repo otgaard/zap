@@ -48,13 +48,13 @@ public:
     bool initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps=false);
     bool initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                     const void* data=nullptr);
-    template <typename PixelT, buffer_usage USAGE>
-    bool initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, bool generate_mipmaps=false);
+    template <typename PixelT>
+    bool initialise(const pixel_buffer<PixelT>& pixbuf, bool generate_mipmaps=false);
     template <typename PixelT>
     bool initialise(const pixmap<PixelT>& pmap, bool generate_mipmaps=false);
 
-    template <typename PixelT, buffer_usage USAGE>
-    bool copy(const pixel_buffer<PixelT,USAGE>& pixbuf, size_t col, size_t row, size_t width, size_t height,
+    template <typename PixelT>
+    bool copy(const pixel_buffer<PixelT>& pixbuf, size_t col, size_t row, size_t width, size_t height,
                 int level=0, bool update_mipmaps=false) {
         pixbuf.bind();
         auto err = copy(col, row, width, height, level, update_mipmaps, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype, 0);

@@ -12,7 +12,9 @@
  * 4) Fast readback from GPU (Pixel Buffers)
  */
 
+#if !defined(DEBUG)
 #define LOGGING_ENABLED
+#endif
 
 #include <tools/log.hpp>
 #include <maths/io.hpp>
@@ -95,15 +97,16 @@ void noises::on_resize(int width, int height) {
     task.scale.set(.8f*i, .8f*i);
     i += 1;
     auto start = std::chrono::high_resolution_clock::now();
+    auto tex = gen_.render_texture(task);
     auto img = gen_.render_image<rgb888_t>(task, generator::gen_method::SIMD).get();
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
     UNUSED(dur);
     LOG("Time:", dur);
 
-    texture tex{};
-    tex.allocate();
-    tex.initialise(img, false);
+    //texture tex{};
+    //tex.allocate();
+    //tex.initialise(img, false);
     quad_.set_texture(std::move(tex));
 #endif  // !defined(POOL)
 }

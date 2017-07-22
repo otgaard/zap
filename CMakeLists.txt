@@ -43,7 +43,7 @@ elseif(WIN32)
 endif(APPLE)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    add_definitions(-DLOGGING_ENABLED)
+    add_definitions(-DLOGGING_ENABLED -DDEBUG)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
     #add_definitions(-DLOGGING_ENABLED)
 endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")

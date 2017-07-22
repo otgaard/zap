@@ -7,14 +7,14 @@
 #include "pixel_format.hpp"
 
 namespace zap { namespace engine {
-    template <typename PIX_T, buffer_usage USAGE>
+    template <typename PIX_T>
     class pixel_buffer : public buffer {
     public:
         using pixel_t = PIX_T;
         using pixmap_t = pixmap<pixel_t>;
         constexpr static auto read_type = buffer_type::BT_PIXEL_PACK;
         constexpr static auto write_type = buffer_type::BT_PIXEL_UNPACK;
-        constexpr static auto usage = USAGE;
+        buffer_usage usage = buffer_usage::BU_STATIC_DRAW;
 
         pixel_buffer() : pixel_count_(0), width_(0), height_(0), depth_(0), write_bound_(false) { }
 

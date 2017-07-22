@@ -21,7 +21,7 @@ using quad_vertex_t = vertex<pos2f_t, tex2f_t>;
 using quad_vbuf_t = vertex_buffer<quad_vertex_t, buffer_usage::BU_STATIC_DRAW>;
 using quad_mesh_t = mesh<vertex_stream<quad_vbuf_t>, primitive_type::PT_TRIANGLE_FAN>;
 
-using vec3_pbuf_t = pixel_buffer<rgb32f_t, buffer_usage::BU_DYNAMIC_DRAW>;
+using vec3_pbuf_t = pixel_buffer<rgb32f_t>;
 
 using particle_vbuf_t = vertex_buffer<vertex<pos3f_t>, buffer_usage::BU_STREAM_COPY>;
 using particle_mesh_t = mesh<vertex_stream<particle_vbuf_t>, primitive_type::PT_POINTS>;

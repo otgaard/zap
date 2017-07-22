@@ -65,7 +65,7 @@ namespace zap { namespace rasteriser {
 
     protected:
         using rgb888_t = zap::engine::rgb888_t;
-        using pbuf_t = zap::engine::pixel_buffer<rgb888_t,zap::engine::buffer_usage::BU_DYNAMIC_DRAW>;
+        using pbuf_t = zap::engine::pixel_buffer<rgb888_t>;
 
         void initialise();
         void update_region(int x, int y);

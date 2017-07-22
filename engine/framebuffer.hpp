@@ -35,8 +35,8 @@ public:
 
     // Framebuffer must be bound for read/write operations to succeed
     // Note: viewport = [x, y, width, height]
-    template <typename PixelT, buffer_usage BU>
-    bool read_attachment(pixel_buffer<PixelT, BU>& pbuf, const vec4i& viewport, size_t idx) {
+    template <typename PixelT>
+    bool read_attachment(pixel_buffer<PixelT>& pbuf, const vec4i& viewport, size_t idx) {
         checkidx(idx, target_count_ + depthstencil_);
 
         // Check type is compatible
@@ -51,8 +51,8 @@ public:
         return err;
     }
 
-    template <typename PixelT, buffer_usage BU>
-    bool write_attachment(const pixel_buffer<PixelT, BU>& pbuf, const vec4i& viewport, size_t idx) {
+    template <typename PixelT>
+    bool write_attachment(const pixel_buffer<PixelT>& pbuf, const vec4i& viewport, size_t idx) {
         checkidx(idx, target_count_ + depthstencil_);
 
         // Check type is compatible

@@ -83,6 +83,9 @@ public:
 
     bool initialise(threadpool* pool_ptr=nullptr, int pool_size=2, ulonglong seed=1);
 
+    // Creates a R32F floating point texture i.e. pixmap<float>
+    texture render_texture(const render_task& req, gen_method method=gen_method::GPU);
+
     template <typename PixelT>
     pixmap_future<PixelT> render_image(const render_task& req, gen_method method=gen_method::CPU);
     // Render the resource for usage on the client

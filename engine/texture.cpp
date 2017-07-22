@@ -60,8 +60,8 @@ bool zap::engine::texture::initialise(size_t width, size_t height, const std::ve
     return !gl_error_check();
 }
 
-template <typename PixelT, zap::engine::buffer_usage USAGE>
-bool zap::engine::texture::initialise(const pixel_buffer<PixelT,USAGE>& pixbuf, bool generate_mipmaps) {
+template <typename PixelT>
+bool zap::engine::texture::initialise(const pixel_buffer<PixelT>& pixbuf, bool generate_mipmaps) {
     using namespace gl;
 
     bind();
@@ -129,20 +129,23 @@ namespace zap { namespace engine {
     template bool texture::initialise<rgb888_t>(size_t width, size_t height, const std::vector<rgb888_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgba8888_t>(size_t width, size_t height, const std::vector<rgba8888_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb332_t>(size_t width, size_t height, const std::vector<rgb332_t>& buffer, bool generate_mipmaps);
+    template bool texture::initialise<r32f_t>(size_t width, size_t height, const std::vector<r32f_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgb32f_t>(size_t width, size_t height, const std::vector<rgb32f_t>& buffer, bool generate_mipmaps);
     template bool texture::initialise<rgba32f_t>(size_t width, size_t height, const std::vector<rgba32f_t>& buffer, bool generate_mipmaps);
 
     template bool texture::initialise<rgb888_t>(const pixmap<rgb888_t>& pmap, bool generate_mipmaps);
     template bool texture::initialise<rgba8888_t>(const pixmap<rgba8888_t>& pmap, bool generate_mipmaps);
     template bool texture::initialise<rgb332_t>(const pixmap<rgb332_t>& pmap, bool generate_mipmaps);
+    template bool texture::initialise<r32f_t>(const pixmap<r32f_t>& pmap, bool generate_mipmaps);
     template bool texture::initialise<rgb32f_t>(const pixmap<rgb32f_t>& pmap, bool generate_mipmaps);
     template bool texture::initialise<rgba32f_t>(const pixmap<rgba32f_t>& pmap, bool generate_mipmaps);
 
-    template bool texture::initialise<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb888_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
-    template bool texture::initialise<rgba8888_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgba8888_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
-    template bool texture::initialise<rgb332_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb332_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
-    template bool texture::initialise<rgb32f_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgb32f_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
-    template bool texture::initialise<rgba32f_t,buffer_usage::BU_DYNAMIC_DRAW>(const pixel_buffer<rgba32f_t,buffer_usage::BU_DYNAMIC_DRAW>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgb888_t>(const pixel_buffer<rgb888_t>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgba8888_t>(const pixel_buffer<rgba8888_t>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgb332_t>(const pixel_buffer<rgb332_t>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<r32f_t>(const pixel_buffer<r32f_t>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgb32f_t>(const pixel_buffer<rgb32f_t>& pixbuf, bool generate_mipmaps);
+    template bool texture::initialise<rgba32f_t>(const pixel_buffer<rgba32f_t>& pixbuf, bool generate_mipmaps);
 }}
 
 using namespace zap::engine;
