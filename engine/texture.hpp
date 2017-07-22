@@ -11,13 +11,15 @@ namespace zap { namespace engine {
 
 class texture {
 public:
-    texture(texture_type type=texture_type::TT_TEX2D) : type_(type), id_(INVALID_RESOURCE), w_(0), h_(0), d_(0) { }
+    explicit texture(texture_type type=texture_type::TT_TEX2D) : type_(type) { }
     ~texture() { if(is_allocated()) deallocate(); }
     texture(const texture& rhs) = delete;
-    texture(texture&& rhs) : type_(rhs.type_), id_(rhs.id_), w_(rhs.w_), h_(rhs.h_), d_(rhs.d_) { rhs.id_ = INVALID_RESOURCE; }
-    texture& operator=(const texture& rhs) = delete;
+    texture(texture&& rhs) noexcept : type_(rhs.type_), id_(rhs.id_), w_(rhs.w_), h_(rhs.h_), d_(rhs.d_) {
+        rhs.id_ = INVALID_RESOURCE;
+    }
 
-    texture& operator=(texture&& rhs) {
+    texture& operator=(const texture& rhs) = delete;
+    texture& operator=(texture&& rhs) noexcept {
         if(this != &rhs) {
             std::swap(type_, rhs.type_);
             std::swap(id_, rhs.id_);
@@ -65,9 +67,11 @@ public:
     static size_t query_max_units();
 
 protected:
-    texture_type type_;
-    resource_t id_;
-    int w_, h_, d_;
+    texture_type type_ = texture_type::TT_TEX2D;
+    resource_t id_ = 0;
+    int w_ = 0;
+    int h_ = 0;
+    int d_ = 0;
 };
 
 }}

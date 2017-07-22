@@ -20,10 +20,17 @@ zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap
     using namespace zap::engine; using namespace gl;
     if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) return gl_type(format);
     else if(datatype == pixel_datatype::PD_UNSIGNED_BYTE_3_3_2) return gl_type(format);
+    else if(datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE) {
+        if(format == pixel_format::PF_RED_INTEGER)  return GL_R8UI;
+        if(format == pixel_format::PF_RG_INTEGER)   return GL_RG8UI;
+        if(format == pixel_format::PF_RGB_INTEGER)  return GL_RGB8UI;
+        if(format == pixel_format::PF_RGBA_INTEGER) return GL_RGBA8UI;
+    }
     else if(datatype == pixel_datatype::PD_FLOAT) {
-        if(format == pixel_format::PF_RGB) return GL_RGB32F;
-        if(format == pixel_format::PF_RED) return GL_R32F;
-        else return GL_NONE;
+        if(format == pixel_format::PF_RED)  return GL_R32F;
+        if(format == pixel_format::PF_RG)   return GL_RG32F;
+        if(format == pixel_format::PF_RGB)  return GL_RGB32F;
+        if(format == pixel_format::PF_RGBA) return GL_RGBA32F;
     }
     return GL_NONE;
 }
@@ -50,7 +57,8 @@ bool zap::engine::texture::initialise(size_t width, size_t height, const std::ve
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, datatype, buffer.data());
+    const auto internal_fmt = gl_internal_format(pixel_type<Pixel>::format, pixel_type<Pixel>::datatype);
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, width, height, 0, format, datatype, buffer.data());
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
 
     w_ = width; h_ = height; d_ = 1;
@@ -80,8 +88,10 @@ bool zap::engine::texture::initialise(const pixel_buffer<PixelT>& pixbuf, bool g
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 
+    const auto internal_fmt = gl_internal_format(pixel_type<PixelT>::format, pixel_type<PixelT>::datatype);
+
     pixbuf.bind();
-    glTexImage2D(GL_TEXTURE_2D, 0, format, pixbuf.width(), pixbuf.height(), 0, format, datatype, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, pixbuf.width(), pixbuf.height(), 0, format, datatype, 0);
     pixbuf.release();
 
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
@@ -112,8 +122,8 @@ bool zap::engine::texture::initialise(const pixmap<PixelT>& pmap, bool generate_
         glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, pmap.width(), pmap.height(), 0, format, datatype, pmap.data());
+    const auto internal_fmt = gl_internal_format(pixel_type<PixelT>::format, pixel_type<PixelT>::datatype);
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, pmap.width(), pmap.height(), 0, format, datatype, pmap.data());
 
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -209,22 +219,12 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 
-    if(type_ == texture_type::TT_TEX1D) {
-        if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE)
-            glTexImage1D(gltype, 0, GL_R8UI, width, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
-        else if(format == pixel_format::PF_RED && datatype == pixel_datatype::PD_FLOAT)
-            glTexImage1D(gltype, 0, GL_R32F, width, 0, GL_RED, GL_FLOAT, data);
-        else
-            glTexImage1D(gltype, 0, gl_type(format), width, 0, gl_type(format), gl_type(datatype), data);
+    const auto internal_fmt = gl_internal_format(format, datatype);
+    const auto gl_format = gl_type(format);
+    const auto gl_datatype = gl_type(datatype);
 
-    } else if(type_ == texture_type::TT_TEX2D) {
-        if(datatype == pixel_datatype::PD_FLOAT)
-            glTexImage2D(gltype, 0, GL_RGB32F, width, height, 0, GL_RGB, gl_type(datatype), data);
-        else
-            glTexImage2D(gltype, 0, gl_type(format), width, height, 0, gl_type(format), gl_type(datatype), data);
-    } else {
-        LOG_ERR("This function is incomplete and the texture you've just initialised isn't gonna work.");
-    }
+    if(type_ == texture_type::TT_TEX1D) glTexImage1D(gltype, 0, internal_fmt, width, 0, gl_format, gl_datatype, data);
+    else if(type_ == texture_type::TT_TEX2D) glTexImage2D(gltype, 0, internal_fmt, width, height, 0, gl_format, gl_datatype, data);
 
     w_ = width; h_ = height; d_ = 1;
 

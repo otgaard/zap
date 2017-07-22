@@ -14,7 +14,17 @@ public:
     constexpr static auto buf_type = buffer_type::BT_ELEMENT_ARRAY;
 
     explicit index_buffer(buffer_usage use=buffer_usage::BU_STATIC_DRAW) : buffer(use) { }
+    index_buffer(const index_buffer&) = delete;
     virtual ~index_buffer() = default;
+
+    index_buffer& operator=(const index_buffer&) = delete;
+    index_buffer& operator=(index_buffer&& rhs) noexcept {
+        if(this != &rhs) {
+            buffer::operator=(std::move(rhs));
+            index_count_ = rhs.index_count_;
+        }
+        return *this;
+    }
 
     void bind() const { buffer::bind(buf_type); }
     void release() const { buffer::release(buf_type); }

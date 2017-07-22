@@ -16,6 +16,18 @@ namespace zap { namespace engine {
         constexpr static auto write_type = buffer_type::BT_PIXEL_UNPACK;
 
         explicit pixel_buffer(buffer_usage use=buffer_usage::BU_STREAM_COPY) : buffer(use) { }
+        pixel_buffer(const pixel_buffer&) = delete;
+        pixel_buffer(pixel_buffer&& rhs) noexcept : buffer(std::move(rhs)), pixel_count_(rhs.pixel_count_) { }
+        ~pixel_buffer() override = default;
+
+        pixel_buffer& operator=(const pixel_buffer&) = delete;
+        pixel_buffer& operator=(pixel_buffer&& rhs) noexcept {
+            if(this != &rhs) {
+                buffer::operator=(std::move(rhs));
+                pixel_count_ = rhs.pixel_count_;
+            }
+            return *this;
+        }
 
         size_t idx(size_t col, size_t row) const { return row*width_ + col; }
         size_t idx(size_t col, size_t row, size_t dep) const { return width_*(row + dep*height_) + col; }

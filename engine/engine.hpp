@@ -82,6 +82,12 @@ namespace zap { namespace engine {
         PF_BGRA,
         PF_DEPTH_COMPONENT,
         PF_DEPTH_STENCIL,
+        PF_RED_INTEGER,
+        PF_RG_INTEGER,
+        PF_RGB_INTEGER,
+        PF_BGR_INTEGER,
+        PF_RGBA_INTEGER,
+        PF_BGRA_INTEGER,
         PF_SIZE
     };
 

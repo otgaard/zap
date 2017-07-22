@@ -11,6 +11,7 @@ namespace zap { namespace engine {
 class mesh_base {
 public:
     mesh_base() = default;
+    mesh_base(const mesh_base&) = delete;
     mesh_base(mesh_base&& rhs) noexcept : vao_(rhs.vao_) { rhs.vao_ = INVALID_RESOURCE; }
     virtual ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
 
@@ -45,7 +46,8 @@ struct vertex_stream<VBuf, VBuffers...> : vertex_stream<VBuffers...> {
     using type = VBuf;
     using ptr_t = VBuf*;
     vertex_stream() : ptr(nullptr) { }
-    vertex_stream(VBuf* vbuf_ptr, VBuffers*... vbuffers) : vertex_stream<VBuffers...>(vbuffers...), ptr(vbuf_ptr) { }
+    vertex_stream(VBuf* vbuf_ptr, VBuffers*... vbuffers)
+            : vertex_stream<VBuffers...>(vbuffers...), ptr(vbuf_ptr) { }
     VBuf* ptr;
 };
 
@@ -81,12 +83,14 @@ public:
     constexpr static primitive_type primitive = Index::primitive;
 
     mesh() : mesh_base(), idx_buffer_ptr(nullptr) { }
+    explicit mesh(const mesh&) = delete;
     mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr)
             : mesh_base(), vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
-    mesh(mesh&& rhs) : mesh_base(std::move(rhs)), vstream(rhs.vstream), idx_buffer_ptr(rhs.idx_buffer_ptr) { }
-    virtual ~mesh() = default;
+    mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream), idx_buffer_ptr(rhs.idx_buffer_ptr) { }
+    ~mesh() override = default;
 
-    mesh& operator=(mesh&& rhs) {
+    mesh& operator=(const mesh&) = delete;
+    mesh& operator=(mesh&& rhs) noexcept {
         if(this != &rhs) {
             mesh_base::operator=(std::move(rhs));
             vstream = rhs.vstream;
@@ -119,7 +123,7 @@ public:
     }
 
     vertex_stream_t vstream;
-    Index* idx_buffer_ptr;
+    Index* idx_buffer_ptr = nullptr;
 };
 
 template <typename VtxStream, primitive_type Primitive>
@@ -130,9 +134,11 @@ public:
 
     mesh() : mesh_base(), vstream() { }
     explicit mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
+    explicit mesh(const mesh&) = delete;
     mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
     ~mesh() override = default;
 
+    mesh& operator=(const mesh&) = delete;
     mesh& operator=(mesh&& rhs) noexcept {
         if(this != &rhs) {
             mesh_base::operator=(std::move(rhs));

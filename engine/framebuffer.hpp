@@ -12,10 +12,15 @@ class framebuffer {
 public:
     using vec4i = maths::vec4i;
 
-    framebuffer() : framebuffer_(INVALID_IDX), target_count_(0) { }
+    framebuffer() = default;
+    framebuffer(const framebuffer&) = delete;
+    framebuffer(framebuffer&&) = delete;
     framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                 bool mipmaps, bool depthstencil);
     ~framebuffer() { if(is_allocated()) deallocate(); }
+
+    framebuffer& operator=(const framebuffer&) = delete;
+    framebuffer& operator=(framebuffer&&) = delete;
 
     inline size_t width() const { return width_; }
     inline size_t height() const { return height_; }
@@ -81,8 +86,8 @@ protected:
     // viewport = [x, y, width, height]
     bool read_attachment(const vec4i& viewport, size_t idx);
 
-    resource_t framebuffer_;
-    size_t target_count_;
+    resource_t framebuffer_ = INVALID_IDX;
+    size_t target_count_ = 0;
     size_t width_;
     size_t height_;
     pixel_format pix_format_;

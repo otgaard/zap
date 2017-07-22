@@ -25,9 +25,11 @@ public:
     constexpr static auto buf_type = buffer_type::BT_ARRAY;
 
     explicit vertex_buffer(buffer_usage use=buffer_usage::BU_STATIC_DRAW) : buffer(use) { }
+    vertex_buffer(const vertex_buffer&) = delete;
     vertex_buffer(vertex_buffer&& rhs) noexcept : buffer(std::move(rhs)), vertex_count_(rhs.vertex_count_) { }
     virtual ~vertex_buffer() = default;
 
+    vertex_buffer& operator=(const vertex_buffer&) = delete;
     vertex_buffer& operator=(vertex_buffer&& rhs) noexcept {
         if(this != &rhs) {
             buffer::operator=(std::move(rhs));

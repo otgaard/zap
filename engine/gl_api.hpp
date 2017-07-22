@@ -115,7 +115,13 @@ namespace zap { namespace engine { namespace gl {
             GL_RGBA,
             GL_BGRA,
             GL_DEPTH_COMPONENT,
-            GL_DEPTH_STENCIL
+            GL_DEPTH_STENCIL,
+            GL_RED_INTEGER,
+            GL_RG_INTEGER,
+            GL_RGB_INTEGER,
+            GL_BGR_INTEGER,
+            GL_RGBA_INTEGER,
+            GL_BGRA_INTEGER
     };
 
     constexpr const char* gl_pixel_format_names[(int)pixel_format::PF_SIZE] = {
@@ -127,7 +133,13 @@ namespace zap { namespace engine { namespace gl {
             "GL_RGBA",
             "GL_BGRA",
             "GL_DEPTH_COMPONENT",
-            "GL_DEPTH_STENCIL"
+            "GL_DEPTH_STENCIL",
+            "GL_RED_INTEGER",
+            "GL_RG_INTEGER",
+            "GL_RGB_INTEGER",
+            "GL_BGR_INTEGER",
+            "GL_RGBA_INTEGER",
+            "GL_BGRA_INTEGER"
     };
 
     constexpr GLenum gl_pixel_dtype_type[(int)pixel_datatype::PD_SIZE] = {
@@ -136,7 +148,8 @@ namespace zap { namespace engine { namespace gl {
             GL_UNSIGNED_BYTE,
             GL_FLOAT,
             GL_UNSIGNED_INT_24_8,
-            GL_UNSIGNED_INT
+            GL_UNSIGNED_INT,
+            GL_UNSIGNED_BYTE,
     };
 
     constexpr const char* gl_pixel_dtype_names[(int)pixel_datatype::PD_SIZE] = {
@@ -145,7 +158,8 @@ namespace zap { namespace engine { namespace gl {
             "GL_UNSIGNED_BYTE",
             "GL_FLOAT",
             "GL_UNSIGNED_INT_24_8",
-            "GL_UNSIGNED_INT"
+            "GL_UNSIGNED_INT",
+            "GL_UNSIGNED_BYTE"
     };
 
     constexpr GLenum gl_texture_type[(int)texture_type::TT_SIZE] = {
