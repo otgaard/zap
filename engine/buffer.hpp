@@ -9,13 +9,15 @@
 namespace zap { namespace engine {
     class buffer {
     public:
-        buffer() : id_(INVALID_RESOURCE), size_(0), mapped_ptr_(nullptr) { }
-        buffer(buffer&& rhs) : id_(rhs.id_), size_(rhs.size_), mapped_ptr_(rhs.mapped_ptr_) { rhs.id_ = INVALID_RESOURCE; }
+        buffer() = default;
+        explicit buffer(buffer_usage usage) : usage_(usage) { }
+        buffer(buffer&& rhs) noexcept : id_(rhs.id_), usage_(rhs.usage_), size_(rhs.size_), mapped_ptr_(rhs.mapped_ptr_) { rhs.id_ = INVALID_RESOURCE; }
         virtual ~buffer();
 
-        buffer& operator=(buffer&& rhs) {
+        buffer& operator=(buffer&& rhs) noexcept {
             if(this != &rhs) {
                 std::swap(id_, rhs.id_);
+                usage_ = rhs.usage_;
                 size_ = rhs.size_;
                 mapped_ptr_ = rhs.mapped_ptr_;
             }
@@ -31,6 +33,10 @@ namespace zap { namespace engine {
 
         bool is_mapped() const { return mapped_ptr_ != nullptr; }
         bool is_allocated() const { return id_ != INVALID_RESOURCE; }
+
+        void usage(buffer_usage usage) { usage_ = usage; }
+        buffer_usage usage() const { return usage_; }
+        size_t size() const { return size_; }
 
         bool initialise(buffer_type type, buffer_usage usage, size_t size, const char* data=nullptr);
         bool initialise(buffer_type type, buffer_usage usage, const std::vector<char>& data) {
@@ -51,13 +57,11 @@ namespace zap { namespace engine {
 
         bool copy_buffer(buffer_type src_type, buffer_type trg_type, size_t src_offset, size_t trg_offset, size_t length);
 
-        size_t size() const { return size_; }
-        size_t query_size() const;
-
     protected:
-        resource_t id_;
-        size_t size_;
-        mutable char* mapped_ptr_;
+        resource_t id_ = INVALID_RESOURCE;
+        buffer_usage usage_ = buffer_usage::BU_STATIC_DRAW;
+        size_t size_ = 0;
+        mutable char* mapped_ptr_ = nullptr;
     };
 }}
 

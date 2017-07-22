@@ -33,12 +33,12 @@ class noises : public application {
 public:
     noises() : application("noises", 1024, 1024, false) { }
 
-    bool initialise() override final;
-    void update(double t, float dt) override final;
-    void draw() override final;
-    void shutdown() override final;
+    bool initialise() final;
+    void update(double t, float dt) final;
+    void draw() final;
+    void shutdown() final;
 
-    void on_resize(int width, int height) override final;
+    void on_resize(int width, int height) final;
 
 protected:
     quad quad_;

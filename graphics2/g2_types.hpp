@@ -33,7 +33,7 @@ using vbuf_p2_t = vertex_buffer<vtx_p2_t>;
 using vbuf_p2t2_t = vertex_buffer<vtx_p2t2_t>;
 using vbuf_p2c3_t = vertex_buffer<vtx_p2c3_t>;
 
-using vbuf_plot_t = vertex_buffer<vtx_p2c3_t, buffer_usage::BU_DYNAMIC_COPY>;
+using vbuf_plot_t = vertex_buffer<vtx_p2c3_t>;  // BU_DYNAMIC_COPY
 
 using mesh_p2_tfan_t = mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_TRIANGLE_FAN>;
 using mesh_p2t2_tfan_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLE_FAN>;

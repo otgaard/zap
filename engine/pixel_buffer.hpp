@@ -14,24 +14,23 @@ namespace zap { namespace engine {
         using pixmap_t = pixmap<pixel_t>;
         constexpr static auto read_type = buffer_type::BT_PIXEL_PACK;
         constexpr static auto write_type = buffer_type::BT_PIXEL_UNPACK;
-        buffer_usage usage = buffer_usage::BU_STATIC_DRAW;
 
-        pixel_buffer() : pixel_count_(0), width_(0), height_(0), depth_(0), write_bound_(false) { }
+        explicit pixel_buffer(buffer_usage use=buffer_usage::BU_STREAM_COPY) : buffer(use) { }
 
-        inline size_t idx(size_t col, size_t row) const { return row*width_ + col; }
-        inline size_t idx(size_t col, size_t row, size_t dep) const { return width_*(row + dep*height_) + col; }
+        size_t idx(size_t col, size_t row) const { return row*width_ + col; }
+        size_t idx(size_t col, size_t row, size_t dep) const { return width_*(row + dep*height_) + col; }
 
-        inline size_t width() const { return width_; }
-        inline size_t height() const { return height_; }
-        inline size_t depth() const { return depth_; }
-        inline size_t pixel_count() const { return pixel_count_; }
-        inline size_t pixel_size() const { return sizeof(pixel_t); }
+        size_t width() const { return width_; }
+        size_t height() const { return height_; }
+        size_t depth() const { return depth_; }
+        size_t pixel_count() const { return pixel_count_; }
+        size_t pixel_size() const { return sizeof(pixel_t); }
 
         void bind(buffer_type type=write_type) const { buffer::bind(type); }
         void release(buffer_type type=write_type) const { buffer::release(type); }
 
         bool initialise(size_t width, size_t height, const pixel_t* data=nullptr) {
-            if(buffer::initialise(write_type, usage, width*height*pixel_t::bytesize, reinterpret_cast<const char*>(data))) {
+            if(buffer::initialise(write_type, usage_, width*height*pixel_t::bytesize, reinterpret_cast<const char*>(data))) {
                 pixel_count_ = width*height; width_ = width; height_ = height; depth_ = 1;
                 return true;
             }
@@ -39,7 +38,7 @@ namespace zap { namespace engine {
         }
 
         bool resize(size_t width, size_t height) {
-            if(buffer::initialise(write_type, usage, width*height*pixel_t::bytesize)) {
+            if(buffer::initialise(write_type, usage_, width*height*pixel_t::bytesize)) {
                 pixel_count_ = width*height; width_ = width; height_ = height; depth_ = 1;
                 return true;
             }
@@ -99,8 +98,11 @@ namespace zap { namespace engine {
         pixel_t* data() { return (reinterpret_cast<pixel_t*>(mapped_ptr_)); }
 
     private:
-        size_t pixel_count_, width_, height_, depth_;
-        mutable bool write_bound_;
+        size_t pixel_count_ = 0;
+        size_t width_ = 0;
+        size_t height_ = 0;
+        size_t depth_ = 0;
+        mutable bool write_bound_ = false;
     };
 }}
 

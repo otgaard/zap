@@ -6,22 +6,21 @@
 
 namespace zap { namespace engine {
 
-template <typename T, primitive_type PRIM, buffer_usage USAGE=buffer_usage::BU_STATIC_DRAW>
+template <typename T, primitive_type PRIM>
 class index_buffer : public buffer {
 public:
     using type = T;
     constexpr static auto primitive = PRIM;
     constexpr static auto buf_type = buffer_type::BT_ELEMENT_ARRAY;
-    constexpr static auto usage = USAGE;
 
-    index_buffer() : index_count_(0) { }
+    explicit index_buffer(buffer_usage use=buffer_usage::BU_STATIC_DRAW) : buffer(use) { }
     virtual ~index_buffer() = default;
 
     void bind() const { buffer::bind(buf_type); }
     void release() const { buffer::release(buf_type); }
 
     bool initialise(size_t index_count, const char* data=nullptr) {
-        if(buffer::initialise(buf_type, usage, index_count*sizeof(T), data)) {
+        if(buffer::initialise(buf_type, usage(), index_count*sizeof(T), data)) {
             index_count_ = index_count;
             return true;
         }
@@ -29,7 +28,7 @@ public:
     }
 
     bool initialise(const std::vector<char>& data) {
-        if(buffer::initialise(buf_type, usage, data)) {
+        if(buffer::initialise(buf_type, usage(), data)) {
             index_count_ = data.size() / sizeof(T);
             return true;
         }
@@ -37,7 +36,7 @@ public:
     }
 
     bool initialise(const std::vector<T>& data) {
-        auto result = buffer::initialise(buf_type, usage, data.size()*sizeof(T),
+        auto result = buffer::initialise(buf_type, usage(), data.size()*sizeof(T),
                                          reinterpret_cast<const char*>(data.data()));
         index_count_ = data.size();
         return result;
@@ -64,11 +63,11 @@ public:
     const size_t index_count() const { return index_count_; }
 
 protected:
-    size_t index_count_;
+    size_t index_count_ = 0;
 };
 
 template <typename Parm> struct is_index_buffer : std::false_type { };
-template <typename T, primitive_type PRIM, buffer_usage USAGE> struct is_index_buffer<index_buffer<T, PRIM, USAGE>> : std::true_type { };
+template <typename T, primitive_type PRIM> struct is_index_buffer<index_buffer<T, PRIM>> : std::true_type { };
 
 }}
 

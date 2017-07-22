@@ -14,7 +14,7 @@ namespace gl {
     void vertex_attrib_lptr(uint32_t index, int32_t size, data_type type, uint32_t stride, const void* ptr);
 }
 
-template <typename VTX_T, buffer_usage USAGE=buffer_usage::BU_STATIC_DRAW>
+template <typename VTX_T>
 class vertex_buffer : public buffer {
     static_assert(is_specialisation_of<vertex, VTX_T>::value, "VTX_T must be a specialisation of vertex<>");
 
@@ -23,10 +23,9 @@ public:
     using iterator = vertex_iterator<VTX_T>;
     using pod_t = typename vertex_t::pod_t;
     constexpr static auto buf_type = buffer_type::BT_ARRAY;
-    constexpr static auto usage = USAGE;
 
     vertex_buffer() : vertex_count_(0) { }
-    vertex_buffer(vertex_buffer&& rhs) : buffer(std::move(rhs)), vertex_count_(rhs.vertex_count_) { }
+    vertex_buffer(vertex_buffer&& rhs) noexcept : buffer(std::move(rhs)), vertex_count_(rhs.vertex_count_) { }
     virtual ~vertex_buffer() = default;
 
     vertex_buffer& operator=(vertex_buffer&& rhs) {
@@ -41,7 +40,7 @@ public:
     void release() const { buffer::release(buf_type); }
 
     bool initialise(size_t vertex_count, const char* data=nullptr) {
-        if(buffer::initialise(buf_type, usage, vertex_count*vertex_t::bytesize(), data)) {
+        if(buffer::initialise(buf_type, usage_, vertex_count*vertex_t::bytesize(), data)) {
             vertex_count_ = vertex_count;
             return configure_attributes();
         }
@@ -49,7 +48,7 @@ public:
     }
 
     bool initialise(const std::vector<char>& data) {
-        if(buffer::initialise(buf_type, usage, data)) {
+        if(buffer::initialise(buf_type, usage_, data)) {
             vertex_count_ = data.size() / vertex_t::bytesize();
             return configure_attributes();
         }
@@ -57,7 +56,7 @@ public:
     }
 
     bool initialise(const std::vector<vertex_t>& data) {
-        auto result = buffer::initialise(buf_type, usage, vertex_t::bytesize()*data.size(),
+        auto result = buffer::initialise(buf_type, usage_, vertex_t::bytesize()*data.size(),
                                          reinterpret_cast<const char*>(data.data()));
         vertex_count_ = data.size();
         return result && configure_attributes();
@@ -65,7 +64,7 @@ public:
 
     bool initialise(size_t vertex_count, const vertex_t* data) { return initialise(vertex_count, reinterpret_cast<const char*>(data)); }
 
-    bool orphan() { return buffer::orphan(buf_type, usage); }
+    bool orphan() { return buffer::orphan(buf_type, usage()); }
 
     // All sizes are in vertices, i.e src_off = 0 is the first vertex, src_off = 1 is the second and so on.
     bool copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count);
@@ -121,11 +120,14 @@ public:
 
 protected:
     bool configure_attributes();
+
+private:
+    buffer_usage usage_ = buffer_usage::BU_STATIC_DRAW;
     size_t vertex_count_;
 };
 
-template <typename VTX_T, buffer_usage USAGE>
-bool vertex_buffer<VTX_T, USAGE>::configure_attributes() {
+template <typename VTX_T>
+bool vertex_buffer<VTX_T>::configure_attributes() {
     static_assert(vertex_t::size > 0, "An empty vertex<> type cannot be configured");
 
     for(size_t i = 0; i != vertex_t::size; ++i) {
@@ -145,8 +147,8 @@ bool vertex_buffer<VTX_T, USAGE>::configure_attributes() {
     return true;
 }
 
-template <typename VTX_T, buffer_usage USAGE>
-bool vertex_buffer<VTX_T,USAGE>::copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count) {
+template <typename VTX_T>
+bool vertex_buffer<VTX_T>::copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count) {
     const size_t length = vertex_count * VTX_T::bytesize();
     const size_t source_offset = src_off * VTX_T::bytesize();
     const size_t target_offset = trg_off * VTX_T::bytesize();
@@ -162,7 +164,7 @@ bool vertex_buffer<VTX_T,USAGE>::copy(const vertex_buffer& src, size_t src_off, 
 }
 
 template <typename Parm> struct is_vertex_buffer : std::false_type { };
-template <typename VTX_T, buffer_usage USAGE> struct is_vertex_buffer<vertex_buffer<VTX_T, USAGE>> : std::true_type { };
+template <typename VTX_T> struct is_vertex_buffer<vertex_buffer<VTX_T>> : std::true_type { };
 
 }}
 

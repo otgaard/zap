@@ -33,9 +33,6 @@ template class vertex_buffer<vtx_p2_t>;
 template class vertex_buffer<vtx_p2t2_t>;
 template class vertex_buffer<vtx_p2c3_t>;
 
-template class vertex_buffer<vtx_p2c3_t, buffer_usage::BU_DYNAMIC_COPY>;
-
-
 template struct mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_TRIANGLE_FAN>;
 template struct mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLE_FAN>;
 template struct mesh<vertex_stream<vbuf_p2c3_t>, primitive_type::PT_LINE_STRIP>;

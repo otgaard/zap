@@ -20,26 +20,26 @@ using namespace zap::generators;
 using namespace zap::maths::geometry;
 
 using ico_vertex_t = vertex<pos3f_t>;
-using ico_vbuf_t = vertex_buffer<ico_vertex_t, buffer_usage::BU_STATIC_DRAW>;
-using u16_ibuf_t = index_buffer<uint16_t, primitive_type::PT_TRIANGLES, buffer_usage::BU_STATIC_DRAW>;
+using ico_vbuf_t = vertex_buffer<ico_vertex_t>;
+using u16_ibuf_t = index_buffer<uint16_t, primitive_type::PT_TRIANGLES>;
 using ico_mesh_t = mesh<vertex_stream<ico_vbuf_t>, primitive_type::PT_TRIANGLES, u16_ibuf_t>;
 
 using tex_vertex_t = vertex<pos3f_t, nor3f_t, tex2f_t>;
-using tex_vbuf_t = vertex_buffer<tex_vertex_t, buffer_usage::BU_STATIC_DRAW>;
+using tex_vbuf_t = vertex_buffer<tex_vertex_t>;
 using tex_mesh_t = mesh<vertex_stream<tex_vbuf_t>, primitive_type::PT_TRIANGLES, u16_ibuf_t>;
 
 class zap_example : public application {
 public:
     zap_example() : application("zap_example", 1280, 768, false) { }
 
-    bool initialise() override final;
-    void update(double t, float dt) override final;
-    void draw() override final;
-    void shutdown() override final;
+    bool initialise() final;
+    void update(double t, float dt) final;
+    void draw() final;
+    void shutdown() final;
 
-    void on_resize(int width, int height) override final;
-    void on_mousemove(double x, double y) override final;
-    void on_mousewheel(double xinc, double yinc) override final;
+    void on_resize(int width, int height) final;
+    void on_mousemove(double x, double y) final;
+    void on_mousewheel(double xinc, double yinc) final;
 
 protected:
     void make_isosphere(int subdivision_levels);
