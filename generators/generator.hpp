@@ -13,6 +13,8 @@
 #include <maths/vec2.hpp>
 #include <maths/mat2.hpp>
 #include <engine/pixmap.hpp>
+#include <engine/texture.hpp>
+#include "pixel_conversion.hpp"
 
 namespace zap {
 
@@ -34,6 +36,13 @@ struct render_task {
         QUINTIC
     } interp = interpolation::LINEAR;
 
+    enum class projection {
+        PLANAR,
+        SPHERICAL,
+        CYLINDRICAL,
+        TOROIDAL
+    } project = projection::PLANAR;
+
     int width, height;
 
     vec2f translation = {0.f, 0.f};
@@ -50,9 +59,9 @@ struct render_task {
 };
 
 // Starting with Linear Value Noise
-
 class generator {
 public:
+    using texture = zap::engine::texture;
     template <typename PixelT>
     using pixmap = engine::pixmap<PixelT>;
     template <typename PixelT>
@@ -74,16 +83,37 @@ public:
 
     bool initialise(threadpool* pool_ptr=nullptr, int pool_size=2, ulonglong seed=1);
 
+    template <typename PixelT>
+    pixmap_future<PixelT> render_image(const render_task& req, gen_method method=gen_method::CPU);
+    // Render the resource for usage on the client
     pixmap_future<float> render(const render_task& req, gen_method method=gen_method::CPU);
+
     pixmap<float> render_cpu(const render_task& req);
     pixmap<float> render_simd(const render_task& req);
     pixmap<float> render_gpu(const render_task& req);
 
+protected:
+
+
 private:
+    threadpool* pool_ptr_ = nullptr;
+
     struct state_t;
     std::unique_ptr<state_t> state_;
     state_t& s;
 };
+
+template <typename PixelT>
+generator::pixmap_future<PixelT> generator::render_image(const render_task& req, generator::gen_method method) {
+    auto fnc = [this, method](render_task r)->generator::pixmap<PixelT> {
+        auto input = render(r, method).get();
+        pixmap<PixelT> img{r.width, r.height};
+        convert(input, img);
+        return img;
+    };
+
+    return pool_ptr_->run_function(fnc, req);
+}
 
 }
 #endif //ZAP_GENERATOR_HPP

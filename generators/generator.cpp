@@ -57,7 +57,6 @@ const char* const value_noise_fshdr = GLSL(
 );
 
 struct generator::state_t {
-    threadpool* pool_ptr = nullptr;
     bool initialised = false;
 
     bool initialise(ulonglong seed) {
@@ -109,13 +108,13 @@ zap::generator::~generator() = default;
 
 bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong seed) {
     if(!pool_ptr) {
-        s.pool_ptr = new threadpool{};
-        if(!s.pool_ptr->initialise(pool_size)) {
+        pool_ptr_ = new threadpool{};
+        if(!pool_ptr_->initialise(pool_size)) {
             LOG_ERR("Failed to initialise threadpool.  Aborting.");
             return false;
         }
     } else {
-        s.pool_ptr = pool_ptr;
+        pool_ptr_ = pool_ptr;
     }
 
     if(!s.initialise(seed)) {
@@ -159,7 +158,7 @@ std::future<generator::pixmap<float>> generator::render(const render_task& req, 
         promise.set_value(render_gpu(req));
         return fut;
     } else {
-        auto fnc = [this, method](const auto& r)->generator::pixmap<float>  {
+        auto fnc = [this, method](render_task r)->generator::pixmap<float>  {
             switch(method) {
                 case gen_method::CPU: return this->render_cpu(r);
                 case gen_method::SIMD: return this->render_simd(r);
@@ -167,7 +166,7 @@ std::future<generator::pixmap<float>> generator::render(const render_task& req, 
             }
         };
 
-        return s.pool_ptr->run_function(fnc, std::cref(req));
+        return pool_ptr_->run_function(fnc, req);
     }
 }
 

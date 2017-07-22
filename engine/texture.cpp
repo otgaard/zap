@@ -22,6 +22,7 @@ zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap
     else if(datatype == pixel_datatype::PD_UNSIGNED_BYTE_3_3_2) return gl_type(format);
     else if(datatype == pixel_datatype::PD_FLOAT) {
         if(format == pixel_format::PF_RGB) return GL_RGB32F;
+        if(format == pixel_format::PF_RED) return GL_R32F;
         else return GL_NONE;
     }
     return GL_NONE;

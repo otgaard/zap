@@ -161,7 +161,8 @@ set(ZAP_GRAPHICS_PUBLIC_HEADERS
         effects/particle_engine.hpp
         graphics2/plotter/plot_sampler.hpp
         graphics3/g3_types.hpp
-        generators/generator.hpp)
+        generators/generator.hpp
+        generators/pixel_conversion.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp
@@ -170,7 +171,8 @@ set(ZAP_GRAPHICS_FILES
         graphics2/plotter/plotter.cpp
         graphics3/g3_types.cpp
         graphics2/g2_types.cpp
-        generators/generator.cpp)
+        generators/generator.cpp
+        generators/pixel_conversion.cpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)

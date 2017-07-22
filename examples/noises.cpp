@@ -95,20 +95,15 @@ void noises::on_resize(int width, int height) {
     task.scale.set(.8f*i, .8f*i);
     i += 1;
     auto start = std::chrono::high_resolution_clock::now();
-    auto img = gen_.render(task, generator::gen_method::GPU).get();
+    auto img = gen_.render_image<rgb888_t>(task, generator::gen_method::SIMD).get();
     auto end = std::chrono::high_resolution_clock::now();
     auto dur = std::chrono::duration<float>(end - start).count();
     UNUSED(dur);
     LOG("Time:", dur);
-    pixmap<rgb888_t> image{width, height};
-    for(auto i = 0; i != img.size(); ++i) {
-        byte b = (byte)(127.f + 127.f*img(i));
-        image(i).set(b);
-    }
 
     texture tex{};
     tex.allocate();
-    tex.initialise(image, false);
+    tex.initialise(img, false);
     quad_.set_texture(std::move(tex));
 #endif  // !defined(POOL)
 }
