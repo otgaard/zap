@@ -14,7 +14,7 @@ namespace gl {
     void bind_buffer_base(buffer_type type, int idx, uint32_t bo);
 }
 
-template <typename UBlock, buffer_usage Usage>
+template <typename UBlock>
 class uniform_buffer : public buffer {
     static_assert(is_specialisation_of<uniform_block, UBlock>::value, "UBlock must be a specialisation of uniform_block<>");
 
@@ -22,19 +22,18 @@ public:
     using block_t = UBlock;
     using pod_t = typename block_t::pod_t;
     constexpr static auto buf_type = buffer_type::BT_UNIFORM;
-    constexpr static auto usage = Usage;
 
-    uniform_buffer() { }
+    explicit uniform_buffer(buffer_usage use=buffer_usage::BU_DYNAMIC_COPY) : buffer(use) { }
 
     void bind() const { buffer::bind(buf_type); }
     void release() const { buffer::release(buf_type); }
 
     bool initialise(const char* data=nullptr) {
-        return buffer::initialise(buf_type, usage, block_t::bytesize(), data);
+        return buffer::initialise(buf_type, usage(), block_t::bytesize(), data);
     }
 
     bool initialise(const block_t& data) {
-        return buffer::initialise(buf_type, usage, block_t::bytesize(), reinterpret_cast<const char*>(&data));
+        return buffer::initialise(buf_type, usage(), block_t::bytesize(), reinterpret_cast<const char*>(&data));
     }
 
     void bind_point(int idx) {

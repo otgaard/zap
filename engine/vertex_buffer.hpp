@@ -24,11 +24,11 @@ public:
     using pod_t = typename vertex_t::pod_t;
     constexpr static auto buf_type = buffer_type::BT_ARRAY;
 
-    vertex_buffer() : vertex_count_(0) { }
+    explicit vertex_buffer(buffer_usage use=buffer_usage::BU_STATIC_DRAW) : buffer(use) { }
     vertex_buffer(vertex_buffer&& rhs) noexcept : buffer(std::move(rhs)), vertex_count_(rhs.vertex_count_) { }
     virtual ~vertex_buffer() = default;
 
-    vertex_buffer& operator=(vertex_buffer&& rhs) {
+    vertex_buffer& operator=(vertex_buffer&& rhs) noexcept {
         if(this != &rhs) {
             buffer::operator=(std::move(rhs));
             vertex_count_ = rhs.vertex_count_;
@@ -40,7 +40,7 @@ public:
     void release() const { buffer::release(buf_type); }
 
     bool initialise(size_t vertex_count, const char* data=nullptr) {
-        if(buffer::initialise(buf_type, usage_, vertex_count*vertex_t::bytesize(), data)) {
+        if(buffer::initialise(buf_type, usage(), vertex_count*vertex_t::bytesize(), data)) {
             vertex_count_ = vertex_count;
             return configure_attributes();
         }
@@ -48,7 +48,7 @@ public:
     }
 
     bool initialise(const std::vector<char>& data) {
-        if(buffer::initialise(buf_type, usage_, data)) {
+        if(buffer::initialise(buf_type, usage(), data)) {
             vertex_count_ = data.size() / vertex_t::bytesize();
             return configure_attributes();
         }
@@ -56,7 +56,7 @@ public:
     }
 
     bool initialise(const std::vector<vertex_t>& data) {
-        auto result = buffer::initialise(buf_type, usage_, vertex_t::bytesize()*data.size(),
+        auto result = buffer::initialise(buf_type, usage(), vertex_t::bytesize()*data.size(),
                                          reinterpret_cast<const char*>(data.data()));
         vertex_count_ = data.size();
         return result && configure_attributes();
@@ -122,8 +122,7 @@ protected:
     bool configure_attributes();
 
 private:
-    buffer_usage usage_ = buffer_usage::BU_STATIC_DRAW;
-    size_t vertex_count_;
+    size_t vertex_count_ = 0;
 };
 
 template <typename VTX_T>

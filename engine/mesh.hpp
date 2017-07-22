@@ -10,11 +10,11 @@ namespace zap { namespace engine {
 
 class mesh_base {
 public:
-    mesh_base() : vao_(INVALID_RESOURCE) { }
-    mesh_base(mesh_base&& rhs) : vao_(rhs.vao_) { rhs.vao_ = INVALID_RESOURCE; }
+    mesh_base() = default;
+    mesh_base(mesh_base&& rhs) noexcept : vao_(rhs.vao_) { rhs.vao_ = INVALID_RESOURCE; }
     virtual ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
 
-    mesh_base& operator=(mesh_base&& rhs) {
+    mesh_base& operator=(mesh_base&& rhs) noexcept {
         if(this != &rhs) std::swap(vao_, rhs.vao_);
         return *this;
     }
@@ -32,7 +32,7 @@ public:
     void draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances);
 
 private:
-    resource_t vao_;
+    resource_t vao_ = INVALID_RESOURCE;
 };
 
 template <typename... VBuffers>
@@ -129,11 +129,11 @@ public:
     constexpr static primitive_type primitive = Primitive;
 
     mesh() : mesh_base(), vstream() { }
-    mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
-    mesh(mesh&& rhs) : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
-    virtual ~mesh() = default;
+    explicit mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
+    mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
+    ~mesh() override = default;
 
-    mesh& operator=(mesh&& rhs) {
+    mesh& operator=(mesh&& rhs) noexcept {
         if(this != &rhs) {
             mesh_base::operator=(std::move(rhs));
             vstream = rhs.vstream;
