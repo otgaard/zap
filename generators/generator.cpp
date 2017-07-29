@@ -211,11 +211,6 @@ pixmap<float> generator::render_cpu(const render_task& req) {
         const float inv_y = float(PI)/req.height;
         const float radius = req.scale.x;
 
-#if defined(__APPLE__) || defined(_WIN32)
-        using cosf = std::cosf;
-        using sinf = std::sinf;
-#endif
-
         for(int r = 0; r != req.height; ++r) {
             float theta = inv_y * r, ctheta = cosf(theta), stheta = sinf(theta);
             for(int c = 0; c != req.width; ++c) {
