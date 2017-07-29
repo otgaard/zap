@@ -125,12 +125,9 @@ bool zap::engine::texture::initialise(const pixmap<PixelT>& pmap, bool generate_
         if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_3D);
     } else if(type_ == texture_type::TT_CUBE_MAP) {
         assert(pmap.depth() == 6 && "Cube Map must consist of six 2D textures stored in depth");
-        GLenum lst[6] = {GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, GL_TEXTURE_CUBE_MAP_POSITIVE_Z};
-
         for(int i = 0; i != 6; ++i) {
-            glTexImage2D(lst[i], 0, internal_fmt, pmap.width(), pmap.height(), 0, format, datatype, pmap.data(0,0,i));
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, internal_fmt, pmap.width(), pmap.height(), 0,
+                         format, datatype, pmap.data(0,0,i));
             gl_error_check();
         }
 

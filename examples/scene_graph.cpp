@@ -114,21 +114,12 @@ bool scene_graph_test::initialise() {
     }
 
     render_task req{256, 256};
-    req.scale.set(40.f, 1.f);
-    req.project = render_task::projection::SPHERICAL;
+    req.scale.set(20.f, 20.f);
+    req.project = render_task::projection::CUBE_MAP;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
-    pixmap<rgb888_t> checker{8, 8, 1, generators::planar<rgb888_t>::make_checker(8, 8, colour::red8, colour::yellow8)};
-
-    auto& the_tex = checker;
-
-    pixmap<rgb888_t> cube_map{the_tex.width(), the_tex.height(), 6};
-    for(int i = 0; i != 6; ++i) {
-        std::copy(the_tex.begin(), the_tex.end(), cube_map.data(0, 0, i));
-    }
-
     tex1_.set_type(texture_type::TT_CUBE_MAP);
-    if(!tex1_.allocate() || !tex1_.initialise(cube_map, true)) {
+    if(!tex1_.allocate() || !tex1_.initialise(pm, true)) {
         LOG_ERR("Failed to allocate or initialise texture");
         return false;
     }
@@ -167,14 +158,16 @@ void scene_graph_test::on_resize(int width, int height) {
 
 float inc = 0;
 void scene_graph_test::update(double t, float dt) {
-    inc += dt;
+    inc += .2f*dt;
 }
 
 void scene_graph_test::draw() {
     prog1_.bind();
 
-    prog1_.bind_uniform("PVM", cam_.proj_view() * make_translation(0.f, 0.f, -2.f) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2) *
-                        make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+    prog1_.bind_uniform("PVM", cam_.proj_view()
+                               * make_translation(0.f, 0.f, -2.f)
+                               * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                               * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
 
     mesh1_.bind();
     tex1_.bind(0);

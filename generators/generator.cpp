@@ -182,7 +182,8 @@ std::future<generator::pixmap<float>> generator::render(const render_task& req, 
 }
 
 pixmap<float> generator::render_cpu(const render_task& req) {
-    pixmap<float> image{req.width, req.height};
+    pixmap<float> image{req.width, req.height, (req.project == render_task::projection::CUBE_MAP ? 6 : 1)};
+    LOG(image.width(), image.height(), image.depth(), image.size());
 
     if(req.project == render_task::projection::PLANAR) {
         const float inv_x = req.scale.x/req.width;
@@ -212,6 +213,21 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
                 float dx = x - float(ix), dy = y - float(iy), dz = z - float(iz);
                 image(c,r) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
+        }
+    } else if(req.project == render_task::projection::CUBE_MAP) {
+        assert(req.width == req.height && "Cube Map requires width == height");
+        const float inv_dim = 1.f/req.width;
+        const int h_dim = req.width/2;
+
+        for(int r = 0; r != req.height; ++r) {
+            for(int c = 0; c != req.width; ++c) {
+                float x = 2.f * (h_dim - c) * inv_dim;
+                float y = 2.f * (r - h_dim) * inv_dim;
+                vec3f sP = req.scale.x * cube_to_sphere(vec3f{1.f, y, x});
+                int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
+                float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
+                image(c,r,0) = vnoise(dx, dy, dz, ix, iy, iz);
             }
         }
     }

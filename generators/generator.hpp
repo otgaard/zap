@@ -114,7 +114,7 @@ template <typename PixelT>
 generator::pixmap_future<PixelT> generator::render_image(const render_task& req, generator::gen_method method) {
     auto fnc = [this, method](render_task r)->generator::pixmap<PixelT> {
         auto input = render(r, method).get();
-        pixmap<PixelT> img{r.width, r.height};
+        pixmap<PixelT> img{r.width, r.height, (r.project == render_task::projection::CUBE_MAP ? 6 : 1)};
         convert(input, img);
         return img;
     };
