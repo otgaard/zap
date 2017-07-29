@@ -6,9 +6,10 @@
 #define ZAP_SPATIAL_HPP
 
 #include <core/enumfield.hpp>
+#include <maths/transform.hpp>
 
-namespace zap { namespace engine { namespace scene_graph {
-    template <typename SpatialT> class node;
+namespace zap { namespace scene_graph {
+    template <typename SpatialT, typename PtrT=std::unique_ptr<SpatialT>> class node;
 
     enum class cull_mode : char {
         CM_NEVER,
@@ -24,6 +25,7 @@ namespace zap { namespace engine { namespace scene_graph {
 
     template <typename TransformT, typename BoundT>
     class spatial {
+    public:
         using transform_t = TransformT;
         using bound_t = BoundT;
         using type = typename transform_t::type;
@@ -35,12 +37,12 @@ namespace zap { namespace engine { namespace scene_graph {
         virtual ~spatial() = default;
         spatial& operator=(const spatial& rhs) = delete;
 
-        inline void translate(const vec_t& T);
-        inline void rotate(const rot_t& R);
-        inline void rotate(const affine_t& R);
-        inline void matrix(const rot_t& M);
-        inline void uniform_scale(type S);
-        inline void scale(const vec_t& S);
+        void translate(const vec_t& T);
+        void rotate(const rot_t& R);
+        void rotate(const affine_t& R);
+        void matrix(const rot_t& M);
+        void uniform_scale(type S);
+        void scale(const vec_t& S);
 
         const transform_t& model_transform() const { return model_transform_; }
         const bound_t& model_bound() const { return model_bound_; }
@@ -117,12 +119,6 @@ namespace zap { namespace engine { namespace scene_graph {
     }
 
     template <typename TransformT, typename BoundT>
-    const TransformT spatial<TransformT,BoundT>::world_transform() const {
-        update_transform();
-        return world_transform_;
-    }
-
-    template <typename TransformT, typename BoundT>
     const TransformT& spatial<TransformT,BoundT>::world_transform() const {
         update_transform();
         return world_transform_;
@@ -159,6 +155,6 @@ namespace zap { namespace engine { namespace scene_graph {
         cache_state_.clear(spatial_state::SS_BOUND_INVALID);
     }
 
-}}}
+}}
 
 #endif //ZAP_SPATIAL_HPP

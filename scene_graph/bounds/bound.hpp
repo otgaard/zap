@@ -12,18 +12,18 @@
 #include <maths/geometry/AABB.hpp>
 
 namespace zap { namespace engine {
-    template <typename GeoT>
+    template <typename GeoT, typename TransformT>
     class bound {
     public:
         using geo_t = GeoT;
-        using affine_t = typename geo_t::affine_t;
-        using transform_t = maths::transform<affine_t>;
+        using transform_t = TransformT;
+        using affine_t = typename transform_t::affine_t;
         using vec_t = typename transform_t::vec_t;
         using ray_t = maths::geometry::ray<vec_t>;
         using type = typename transform_t::type;
 
         bound() = default;
-        bound(const geo_t& B) : geometry_(B) { }
+        explicit bound(const geo_t& B) : geometry_(B) { }
         bound(const bound& rhs) = default;
 
         bound& operator=(const bound& rhs) = default;

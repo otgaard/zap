@@ -107,10 +107,15 @@ struct vertex : core::pod<Args...> {
     template <typename T> void set(size_t idx, const T& value) {
         assert(idx < size && fieldsizes::data[idx] == sizeof(T) && "Attempt to access invalid field in vertex");
         if(idx < size && fieldsizes::data[idx] == sizeof(T))
-            memcpy((((unsigned char*) this) + offsets::data[idx]), &value, sizeof(T));
+            memcpy((((unsigned char*)this) + offsets::data[idx]), &value, sizeof(T));
     }
 
-    vertex() { }
+    template <typename T> const T* get(size_t idx) {
+        assert(idx < size && fieldsizes::data[idx] == sizeof(T) && "Attempt to access invalid field in vertex");
+        return (idx < size && fieldsizes::data[idx] == sizeof(T)) ? reinterpret_cast<T*>(((unsigned char*)this) + offsets::data[idx]) : nullptr;
+    }
+
+    vertex() = default;
     vertex(const Args&... args) : core::pod<Args...>(args...) { }
 };
 

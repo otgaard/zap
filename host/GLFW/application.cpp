@@ -10,6 +10,7 @@ static void on_error_handler(int error, const char* description) {
 
 static void on_resize_handler(GLFWwindow* window_ptr, int width, int height) {
     if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
+        app_ptr->set_dims(width, height);
         app_ptr->on_resize(width, height);
     }
 }
@@ -175,6 +176,14 @@ void application::alpha_blending(bool on) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     } else {
         glDisable(GL_BLEND);
+    }
+}
+
+void application::wire_frame(bool on) {
+    if(on) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
 

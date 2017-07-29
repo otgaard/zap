@@ -30,7 +30,7 @@ namespace zap { namespace maths {
         using vec_t = typename affine_t::vec_t; // Vector type (N-1)
         using rot_t = typename affine_t::rot_t; // The rotation matrix
 
-        transform(bool initialise=true) { if(initialise) make_identity(); }
+        explicit transform(bool initialise=true) { if(initialise) make_identity(); }
 
         void make_identity();
 

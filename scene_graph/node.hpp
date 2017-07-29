@@ -6,41 +6,43 @@
 #define ZAP_NODE_HPP
 
 #include <vector>
+#include <memory>
 #include "spatial.hpp"
 
-namespace zap { namespace engine { namespace scene_graph {
-    template <typename SpatialT>
+namespace zap { namespace scene_graph {
+    template <typename SpatialT, typename PtrT>
     class node : public SpatialT {
     public:
         using spatial_t = SpatialT;
+        using ptr_t = PtrT;
 
         node() = default;
-        node(size_t reserve) : children_(reserve) { }
+        explicit node(size_t reserve) : children_(reserve) { }
         node(const node& rhs) = delete;
         virtual ~node() = default;
 
         node& operator=(const node& rhs) = delete;
 
-        virtual void update(double t, float dt) override;
+        void update(double t, float dt) override;
 
-        size_t child_count() const { return childen_.size(); }
+        size_t child_count() const { return children_.size(); }
         size_t attach_child(spatial_t* ptr);
-        spatial_t detach_child(spatial_t* ptr);
-        spatial_t detach_child(size_t idx);
+        spatial_t* detach_child(spatial_t* ptr);
+        spatial_t* detach_child(size_t idx);
         spatial_t* at(size_t idx);
-        const spatial* at(size_t idx) const;
+        const spatial_t* at(size_t idx) const;
 
     protected:
-        using child_arr_t = std::vector<spatial_t*>;
-        virtual void invalidate_transform() const override;
-        virtual void update_transform() const override;
-        virtual void update_bound() const override;
+        using child_array_t = std::vector<ptr_t>;
+        void invalidate_transform() const override;
+        void update_transform() const override;
+        void update_bound() const override;
 
-        child_arr_t children_;
+        child_array_t children_;
     };
 
-    template <typename SpatialT>
-    size_t node<SpatialT>::attach_child(spatial_t* ptr) {
+    template <typename SpatialT, typename PtrT>
+    size_t node<SpatialT, PtrT>::attach_child(typename node<SpatialT, PtrT>::spatial_t* ptr) {
         assert(ptr->parent() == nullptr && "Attempt to attach owned child");
         if(ptr->parent() != nullptr) return INVALID_IDX;
         auto idx = children_.size();
@@ -48,8 +50,8 @@ namespace zap { namespace engine { namespace scene_graph {
         return idx;
     }
 
-    template <typename SpatialT>
-    typename node<SpatialT>::spatial_t* node<SpatialT>::detach_child(spatial_t* ptr) {
+    template <typename SpatialT, typename PtrT>
+    typename node<SpatialT, PtrT>::spatial_t* node<SpatialT, PtrT>::detach_child(typename node<SpatialT, PtrT>::spatial_t* ptr) {
         auto it = std::find_if(children_.begin(), children_.end(), ptr);
         if(it != children_.end()) {
             children_.erase(it);
@@ -58,8 +60,8 @@ namespace zap { namespace engine { namespace scene_graph {
         return nullptr;
     }
 
-    template <typename SpatialT>
-    typename node<SpatialT>::spatial_t* node<SpatialT>::detach_child(size_t idx) {
+    template <typename SpatialT, typename PtrT>
+    typename node<SpatialT, PtrT>::spatial_t* node<SpatialT, PtrT>::detach_child(size_t idx) {
         auto it = children_.begin()+idx;
         if(it != children_.end()) {
             auto ptr = *it;
@@ -69,21 +71,19 @@ namespace zap { namespace engine { namespace scene_graph {
         return nullptr;
     }
 
-    template <typename SpatialT>
-    typename node<SpatialT>::spatial_t* node<SpatialT>::at(size_t idx) {
-        if(idx < children_.size()) return children_[idx];
-        else                       return nullptr;
+    template <typename SpatialT, typename PtrT>
+    typename node<SpatialT, PtrT>::spatial_t* node<SpatialT, PtrT>::at(size_t idx) {
+        return idx < children_.size() ? children_[idx] : nullptr;
     }
 
-    template <typename SpatialT>
-    const typename node<SpatialT>::spatial_t* node<SpatialT>::at(size_t idx) const {
-        if(idx < children_.size()) return children_[idx];
-        else                       return nullptr;
+    template <typename SpatialT, typename PtrT>
+    const typename node<SpatialT, PtrT>::spatial_t* node<SpatialT, PtrT>::at(size_t idx) const {
+        return idx < children_.size() ? children_[idx] : nullptr;
     }
 
-    template <typename SpatialT>
-    void node<SpatialT>::update(double t, float dt) {
-        if(cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) {
+    template <typename SpatialT, typename PtrT>
+    void node<SpatialT, PtrT>::update(double t, float dt) {
+        if(SpatialT::cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) {
             update_transform();
 
             for(auto spatial : children_) {
@@ -97,47 +97,47 @@ namespace zap { namespace engine { namespace scene_graph {
         }
     }
 
-    template <typename SpatialT>
-    void node<SpatialT>::update_transform() const {
-        if(parent_ && parent_->cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) {
-            parent_->update_transform();
-            cache_state_.set(spatial_state::SS_TRANS_INVALID);
+    template <typename SpatialT, typename PtrT>
+    void node<SpatialT, PtrT>::update_transform() const {
+        if(SpatialT::parent_ && SpatialT::parent_->cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) {
+            SpatialT::parent_->update_transform();
+            SpatialT::cache_state_.set(spatial_state::SS_TRANS_INVALID);
         }
 
-        if(!cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) return;
+        if(!SpatialT::cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) return;
 
-        if(parent_) {
-            world_transform_ = parent_->world_transform() * model_transform();
-            parent_->invalidate_bound();
+        if(SpatialT::parent_) {
+            SpatialT::world_transform_ = SpatialT::parent_->world_transform() * SpatialT::model_transform();
+            SpatialT::parent_->invalidate_bound();
         } else {
-            world_transform_ = model_transform();
+            SpatialT::world_transform_ = SpatialT::model_transform();
         }
-        cache_state_.clear(spatial_state::SS_TRANS_INVALID);
-        cache_state_.set(spatial_state::SS_BOUND_INVALID);
+        SpatialT::cache_state_.clear(spatial_state::SS_TRANS_INVALID);
+        SpatialT::cache_state_.set(spatial_state::SS_BOUND_INVALID);
         for(auto spatial : children_) spatial->invalidate_transform();
     }
 
-    template <typename SpatialT>
-    void node<SpatialT>::update_bound() const {
-        if(cache_state_.is_set(spatial_state::SS_BOUND_INVALID)) {
+    template <typename SpatialT, typename PtrT>
+    void node<SpatialT, PtrT>::update_bound() const {
+        if(SpatialT::cache_state_.is_set(spatial_state::SS_BOUND_INVALID)) {
             bool found_first = false;
             for(auto spatial : children_) {
-                if(found_first) world_bound_.combine(spatial->world_bound());
+                if(found_first) SpatialT::world_bound_.combine(spatial->world_bound());
                 else {
                     found_first = true;
-                    world_bound_ = spatial->world_bound();
+                    SpatialT::world_bound_ = spatial->world_bound();
                 }
             }
-            model_bound_ = world_bound_.transform(world_transform().inv_affine());
+            SpatialT::model_bound_ = SpatialT::world_bound_.transform(SpatialT::world_transform().inv_affine());
         }
-        cache_state_.clear(spatial_state::SS_BOUND_INVALID);
+        SpatialT::cache_state_.clear(spatial_state::SS_BOUND_INVALID);
     }
 
-    template <typename SpatialT>
-    void node<SpatialT>::invalidate_transform() const {
+    template <typename SpatialT, typename PtrT>
+    void node<SpatialT, PtrT>::invalidate_transform() const {
         SpatialT::invalidate_transform();
         for(auto spatial : children_) spatial->invalidate_transform();
     }
-}}}
+}}
 
 #endif //ZAP_NODE_HPP

@@ -14,6 +14,7 @@
 #include <maths/mat2.hpp>
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
+#include <tools/threadpool.hpp>
 #include "pixel_conversion.hpp"
 
 namespace zap {
@@ -96,7 +97,9 @@ public:
     pixmap<float> render_gpu(const render_task& req);
 
 protected:
-
+    float vnoise(float dx, int x) const;
+    float vnoise(float dx, float dy, int x, int y) const;
+    float vnoise(float dx, float dy, float dz, int x, int y, int z) const;
 
 private:
     threadpool* pool_ptr_ = nullptr;

@@ -26,13 +26,17 @@ public:
 
     int run();
 
-    inline zap::maths::vec2i mouse_pos() const { return mouse_; }
+    zap::maths::vec2i mouse_pos() const { return mouse_; }
+    void set_dims(int width, int height) { sc_width_ = width; sc_height_ = height; }
+    int width() const { return sc_width_; }
+    int height() const { return sc_height_; }
 
     // TODO: Remove and replace with render_state.
     void depth_test(bool on);
     void bf_culling(bool on);
     void alpha_blending(bool on);
     void line_width(float w);
+    void wire_frame(bool on);
 
     void clear(float r=.15f, float g=.15f, float b=.15f, float a=1.f);
 

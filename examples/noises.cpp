@@ -70,7 +70,6 @@ bool noises::initialise() {
 //#define POOL
 
 void noises::on_resize(int width, int height) {
-    application::on_resize(width, height);
     quad_.resize(width, height);
     image_.resize(width, height);
 

@@ -173,24 +173,38 @@ std::future<generator::pixmap<float>> generator::render(const render_task& req, 
 pixmap<float> generator::render_cpu(const render_task& req) {
     pixmap<float> image{req.width, req.height};
 
-    const float inv_x = req.scale.x/req.width;
-    const float inv_y = req.scale.y/req.height;
+    if(req.project == render_task::projection::PLANAR) {
+        const float inv_x = req.scale.x/req.width;
+        const float inv_y = req.scale.y/req.height;
 
-    for(int r = 0; r != req.height; ++r) {
-        float y = inv_y * r;
-        int iy0 = maths::floor(y), iy1 = iy0+1;
-        float dy = y - iy0;
-        for(int c = 0; c != req.width; ++c) {
-            float x = inv_x * c;
-            int ix0 = maths::floor(x), ix1 = ix0+1;
-            float dx = x - ix0;
-            image(c,r) = maths::bilinear(dx, dy,
-                                         s.grad1(ix0, iy0),
-                                         s.grad1(ix1, iy0),
-                                         s.grad1(ix0, iy1),
-                                         s.grad1(ix1, iy1));
+        for(int r = 0; r != req.height; ++r) {
+            float y = inv_y * r;
+            int iy = maths::floor(y);
+            float dy = y - iy;
+            for(int c = 0; c != req.width; ++c) {
+                float x = inv_x * c;
+                int ix = maths::floor(x);
+                float dx = x - ix;
+                image(c,r) = vnoise(dx, dy, ix, iy);
+            }
+        }
+    } else if(req.project == render_task::projection::SPHERICAL) {
+        const float inv_x = float(TWO_PI)/req.width;
+        const float inv_y = float(PI)/req.height;
+        const float radius = req.scale.x;
+
+        for(int r = 0; r != req.height; ++r) {
+            float theta = inv_y * r, ctheta = std::cosf(theta), stheta = std::sinf(theta);
+            for(int c = 0; c != req.width; ++c) {
+                float phi = inv_x * c, cphi = std::cosf(phi), sphi = std::sinf(phi);
+                float x = radius * stheta * cphi, z = radius * stheta * sphi, y = radius * ctheta;
+                int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+                float dx = x - float(ix), dy = y - float(iy), dz = z - float(iz);
+                image(c,r) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
         }
     }
+
     return image;
 }
 
@@ -323,5 +337,20 @@ texture generator::render_texture(const render_task& req, generator::gen_method 
     tex.initialise(s.pbuffer, false);
 
     return tex;
+}
+
+float generator::vnoise(float dx, int x) const {
+    return maths::lerp(dx, s.grad1(x), s.grad1(x+1));
+}
+
+float generator::vnoise(float dx, float dy, int x, int y) const {
+    int x1 = x+1, y1 = y+1;
+    return maths::bilinear(dx, dy, s.grad1(x, y), s.grad1(x1, y), s.grad1(x, y1), s.grad1(x1, y1));
+}
+
+float generator::vnoise(float dx, float dy, float dz, int x, int y, int z) const {
+    int x1 = x+1, y1 = y+1, z1 = z+1;
+    return maths::trilinear(dx, dy, dz, s.grad1(x,y,z),  s.grad1(x1,y,z),  s.grad1(x,y1,z),  s.grad1(x1,y1,z),
+                                        s.grad1(x,y,z1), s.grad1(x1,y,z1), s.grad1(x,y1,z1), s.grad1(x1,y1,z1));
 }
 

@@ -284,7 +284,8 @@ namespace zap { namespace generators {
             int tri_count = 2*zsm2*radial_samples;
             int index_count = 3*tri_count;
 
-            const auto texcoord = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
+            const auto normal_idx = VertexT::find(engine::attribute_type::AT_NORMAL);
+            const auto texcoord_idx = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
             auto vbuf = std::vector<VertexT>(vertex_count);
 
             T invRS = T(1)/radial_samples;
@@ -296,7 +297,7 @@ namespace zap { namespace generators {
             std::vector<T> cs(rsp1);
 
             for(r = 0; r < radial_samples; ++r) {
-                T angle = T(2.0*maths::PI)*invRS*r;
+                T angle = T(maths::TWO_PI)*invRS*r;
                 cs[r] = std::cos(angle); sn[r] = std::sin(angle);
             }
 
@@ -319,53 +320,50 @@ namespace zap { namespace generators {
 
                     vbuf[i].position = sliceCenter + sliceRadius*radial;
 
-                    normal = vbuf[i].position;
-                    normal.normalise();
-                    if(inside) vbuf[i].normal = -normal;
-                    else       vbuf[i].normal = normal;
+                    if(normal_idx != INVALID_IDX) {
+                        normal = vbuf[i].position;
+                        normal.normalise();
+                        vbuf[i].set(normal_idx, inside ? -normal : normal);
+                    }
 
-                    if(texcoord != INVALID_IDX) {
+                    if(texcoord_idx != INVALID_IDX) {
                         tcoord[0] = radial_fraction;
                         tcoord[1] = T(0.5) * (zFraction + T(1));
-                        vbuf[i].set(texcoord, tcoord);
+                        vbuf[i].set(texcoord_idx, tcoord);
                     }
 
                     ++i;
                 }
 
                 vbuf[i].position = vbuf[save].position;
-                vbuf[i].normal   = vbuf[save].normal;
+                if(normal_idx != INVALID_IDX) vbuf[i].set(normal_idx, *vbuf[save].template get<vec3<T>>(normal_idx));
 
-                if(texcoord != INVALID_IDX) {
+                if(texcoord_idx != INVALID_IDX) {
                     tcoord[0] = T(1);
                     tcoord[1] = T(0.5) * (zFraction + T(1));
-                    vbuf[i].set(texcoord, tcoord);
+                    vbuf[i].set(texcoord_idx, tcoord);
                 }
 
                 ++i;
             }
 
             vbuf[i].position = vec3<T>(0, 0, -radius);
-            if(inside) vbuf[i].normal = vec3<T>(0, 0, T(1));
-            else       vbuf[i].normal = vec3<T>(0, 0, T(-1));
+            if(normal_idx != INVALID_IDX) vbuf[i].set(normal_idx, inside ? vec3<T>(0, 0, T(1)) : vec3<T>(0, 0, T(-1)));
 
-            if(texcoord != INVALID_IDX) {
-                tcoord = vec2<T>(T(0.5), T(0.5));
-                vbuf[i].set(texcoord, tcoord);
+            if(texcoord_idx != INVALID_IDX) {
+                tcoord = vec2<T>(T(0.5), T(0));
+                vbuf[i].set(texcoord_idx, tcoord);
             }
 
             ++i;
 
             vbuf[i].position = vec3<T>(0, 0, radius);
-            if(inside) vbuf[i].normal = vec3<T>(0, 0, T(-1));
-            else       vbuf[i].normal = vec3<T>(0, 0, T(1));
+            if(normal_idx != INVALID_IDX) vbuf[i].set(normal_idx, inside ? vec3<T>(0, 0, T(-1)) : vec3<T>(0, 0, T(1)));
 
-            if(texcoord != INVALID_IDX) {
+            if(texcoord_idx != INVALID_IDX) {
                 tcoord = vec2<T>(T(0.5), T(1));
-                vbuf[i].set(texcoord, tcoord);
+                vbuf[i].set(texcoord_idx, tcoord);
             }
-
-            ++i;
 
             std::vector<IndexT> ibuf(index_count);
             auto* indices = ibuf.data();
