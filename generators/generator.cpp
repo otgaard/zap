@@ -220,14 +220,75 @@ pixmap<float> generator::render_cpu(const render_task& req) {
         const float inv_dim = 1.f/req.width;
         const int h_dim = req.width/2;
 
+        // X+ Plane
         for(int r = 0; r != req.height; ++r) {
+            float y = 2.f * (r - h_dim) * inv_dim;
             for(int c = 0; c != req.width; ++c) {
                 float x = 2.f * (h_dim - c) * inv_dim;
-                float y = 2.f * (r - h_dim) * inv_dim;
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{1.f, y, x});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
                 image(c,r,0) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
+        }
+
+        // X- Plane
+        for(int r = 0; r != req.height; ++r) {
+            float y = 2.f * (r - h_dim) * inv_dim;
+            for(int c = 0; c != req.width; ++c) {
+                float x = 2.f * (c - h_dim) * inv_dim;
+                vec3f sP = req.scale.x * cube_to_sphere(vec3f{-1.f, y, x});
+                int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
+                float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
+                image(c,r,1) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
+        }
+
+        // Y+ Plane
+        for(int r = 0; r != req.height; ++r) {
+            float y = 2.f * (r - h_dim) * inv_dim;
+            for(int c = 0; c != req.width; ++c) {
+                float x = 2.f * (c - h_dim) * inv_dim;
+                vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, -1.f, y});
+                int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
+                float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
+                image(c,r,2) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
+        }
+
+        // Y- Plane
+        for(int r = 0; r != req.height; ++r) {
+            float y = 2.f * (h_dim - r) * inv_dim;
+            for(int c = 0; c != req.width; ++c) {
+                float x = 2.f * (c - h_dim) * inv_dim;
+                vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, 1.f, y});
+                int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
+                float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
+                image(c,r,3) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
+        }
+
+        // Z+ Plane
+        for(int r = 0; r != req.height; ++r) {
+            float y = 2.f * (r - h_dim) * inv_dim;
+            for(int c = 0; c != req.width; ++c) {
+                float x = 2.f * (c - h_dim) * inv_dim;
+                vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, 1.f});
+                int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
+                float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
+                image(c,r,4) = vnoise(dx, dy, dz, ix, iy, iz);
+            }
+        }
+
+        // Z+ Plane
+        for(int r = 0; r != req.height; ++r) {
+            float y = 2.f * (r - h_dim) * inv_dim;
+            for(int c = 0; c != req.width; ++c) {
+                float x = 2.f * (h_dim - c) * inv_dim;
+                vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, -1.f});
+                int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
+                float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
+                image(c,r,5) = vnoise(dx, dy, dz, ix, iy, iz);
             }
         }
     }
