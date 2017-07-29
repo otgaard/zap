@@ -28,6 +28,9 @@ public:
         return *this;
     }
 
+    void set_type(texture_type type) { if(!is_allocated()) type_ = type; }
+    texture_type get_type() const { return type_; }
+
     inline int width() const { return w_; }
     inline int height() const { return h_; }
     inline int depth() const { return d_; }
@@ -70,7 +73,7 @@ protected:
     void initialise_default();
 
     texture_type type_ = texture_type::TT_TEX2D;
-    resource_t id_ = 0;
+    resource_t id_ = INVALID_IDX;
     int w_ = 0;
     int h_ = 0;
     int d_ = 0;

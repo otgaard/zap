@@ -22,21 +22,22 @@
 #include <graphics3/g3_types.hpp>
 #include <generators/geometry/geometry3.hpp>
 #include <generators/generator.hpp>
+#include <generators/textures/planar.hpp>
+#include <renderer/colour.hpp>
 
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
     in vec3 position;
-    in vec2 texcoord1;
-    out vec2 tex;
+    out vec3 tex;
     void main() {
-        tex = texcoord1;
+        tex = position;
         gl_Position = PVM * vec4(position, 1.);
     }
 );
 
 const char* const basic_fshdr = GLSL(
-    uniform sampler2D diffuse_tex;
-    in vec2 tex;
+    uniform samplerCube diffuse_tex;
+    in vec3 tex;
     out vec4 frag_colour;
     void main() {
         frag_colour = texture(diffuse_tex, tex);
@@ -68,9 +69,9 @@ public:
 protected:
     camera cam_;
     visual_t vis1_;
-    vbuf_p3t2_t vbuf1_;
+    vbuf_p3_t vbuf1_;
     ibuf_tri4_t ibuf1_;
-    mesh_p3t2_trii_t mesh1_;
+    mesh_p3_trii_t mesh1_;
     program prog1_;
     texture tex1_;
     sampler samp1_;
@@ -89,7 +90,7 @@ bool scene_graph_test::initialise() {
     mesh1_.set_stream(&vbuf1_);
     mesh1_.set_index(&ibuf1_);
 
-    auto sphere = generators::geometry3<vtx_p3t2_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(30, 60, 1.f, false);
+    auto sphere = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(30, 60, 1.f, false);
     if(!vbuf1_.initialise(get<0>(sphere))) {
         LOG_ERR("Failed to initialise sphere");
         return false;
@@ -112,12 +113,22 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    render_task req{512, 256};
-    req.scale.set(10.f, 1.f);
+    render_task req{256, 256};
+    req.scale.set(40.f, 1.f);
     req.project = render_task::projection::SPHERICAL;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
-    if(!tex1_.allocate() || !tex1_.initialise(pm, true)) {
+    pixmap<rgb888_t> checker{8, 8, 1, generators::planar<rgb888_t>::make_checker(8, 8, colour::red8, colour::yellow8)};
+
+    auto& the_tex = checker;
+
+    pixmap<rgb888_t> cube_map{the_tex.width(), the_tex.height(), 6};
+    for(int i = 0; i != 6; ++i) {
+        std::copy(the_tex.begin(), the_tex.end(), cube_map.data(0, 0, i));
+    }
+
+    tex1_.set_type(texture_type::TT_CUBE_MAP);
+    if(!tex1_.allocate() || !tex1_.initialise(cube_map, true)) {
         LOG_ERR("Failed to allocate or initialise texture");
         return false;
     }

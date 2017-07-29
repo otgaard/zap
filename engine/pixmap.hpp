@@ -14,6 +14,8 @@ namespace zap { namespace engine {
         using buffer_t = std::vector<PixelT>;
         pixmap() : width_(0), height_(0), depth_(0) { }
         pixmap(int width, int height=1, int depth=1) { resize(width, height, depth); }
+        pixmap(int width, int height, int depth, const std::vector<PixelT>& buffer) :
+            width_(width), height_(height), depth_(depth), buffer_(buffer) { }
         pixmap(const pixmap&) = default;
         ~pixmap() = default;
 
@@ -76,6 +78,9 @@ namespace zap { namespace engine {
             }
         }
 
+        const PixelT* begin() const { return buffer_.data(); }
+        const PixelT* end() const { return buffer_.data()+(width_*height_*depth_); }
+
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         PixelT* data(size_t offset=0) { return buffer_.data()+offset; }
         const PixelT* data(int c, int r) const { return buffer_.data()+offset(c,r); }
@@ -88,7 +93,7 @@ namespace zap { namespace engine {
     protected:
 
     private:
-        int width_, height_, depth_;
+        int width_ = 0, height_ = 0, depth_ = 0;
         buffer_t buffer_;
     };
 }}

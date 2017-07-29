@@ -131,11 +131,11 @@ bool zap::engine::texture::initialise(const pixmap<PixelT>& pmap, bool generate_
 
         for(int i = 0; i != 6; ++i) {
             glTexImage2D(lst[i], 0, internal_fmt, pmap.width(), pmap.height(), 0, format, datatype, pmap.data(0,0,i));
+            gl_error_check();
         }
+
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     }
-
-
-    if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
 
     w_ = pmap.width(); h_ = pmap.height(); d_ = 1;
 
