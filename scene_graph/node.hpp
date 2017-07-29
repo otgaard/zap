@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include "spatial.hpp"
 
 namespace zap { namespace scene_graph {

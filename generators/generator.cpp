@@ -21,9 +21,15 @@ vec3f cube_to_sphere(const vec3f& P) {
     const float inv3 = 1.f/3.f, x2 = P.x*P.x, y2 = P.y*P.y, z2 = P.z*P.z;
     const float y2z2inv3 = y2*z2*inv3, z2x2inv3 = z2*x2*inv3, x2y2inv3 = x2*y2*inv3;
     return vec3f{
+#if defined(__APPLE__) || defined(_WIN32)
             P.x * std::sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
             P.y * std::sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
             P.z * std::sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
+#else
+            P.x * sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
+            P.y * sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
+            P.z * sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
+#endif
     };
 }
 
@@ -205,10 +211,15 @@ pixmap<float> generator::render_cpu(const render_task& req) {
         const float inv_y = float(PI)/req.height;
         const float radius = req.scale.x;
 
+#if defined(__APPLE__) || defined(_WIN32)
+        using cosf = std::cosf;
+        using sinf = std::sinf;
+#endif
+
         for(int r = 0; r != req.height; ++r) {
-            float theta = inv_y * r, ctheta = std::cosf(theta), stheta = std::sinf(theta);
+            float theta = inv_y * r, ctheta = cosf(theta), stheta = sinf(theta);
             for(int c = 0; c != req.width; ++c) {
-                float phi = inv_x * c, cphi = std::cosf(phi), sphi = std::sinf(phi);
+                float phi = inv_x * c, cphi = cosf(phi), sphi = sinf(phi);
                 float x = radius * stheta * cphi, y = radius * ctheta, z = radius * stheta * sphi;
                 int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
                 float dx = x - float(ix), dy = y - float(iy), dz = z - float(iz);
