@@ -114,7 +114,7 @@ bool scene_graph_test::initialise() {
     }
 
     render_task req{256, 256};
-    req.scale.set(20.f, 20.f);
+    req.scale.set(40.f, 40.f);
     req.project = render_task::projection::CUBE_MAP;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
@@ -133,6 +133,9 @@ bool scene_graph_test::initialise() {
     samp1_.set_anisotropy(16.f);
     samp1_.set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
     samp1_.set_mag_filter(tex_filter::TF_LINEAR);
+    samp1_.set_wrap_s(tex_wrap::TW_MIRRORED_REPEAT);
+    samp1_.set_wrap_t(tex_wrap::TW_MIRRORED_REPEAT);
+    samp1_.set_wrap_r(tex_wrap::TW_MIRRORED_REPEAT);
     samp1_.release(0);
 
     //wire_frame(true);
