@@ -67,6 +67,8 @@ public:
     static size_t query_max_units();
 
 protected:
+    void initialise_default();
+
     texture_type type_ = texture_type::TT_TEX2D;
     resource_t id_ = 0;
     int w_ = 0;

@@ -13,6 +13,7 @@
 #include <maths/geometry/sphere.hpp>
 
 #include <renderer/camera.hpp>
+#include <engine/sampler.hpp>
 
 #include <scene_graph/spatial.hpp>
 #include <scene_graph/visual.hpp>
@@ -72,6 +73,7 @@ protected:
     mesh_p3t2_trii_t mesh1_;
     program prog1_;
     texture tex1_;
+    sampler samp1_;
     generator gen_;
 };
 
@@ -110,17 +112,26 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-
-    render_task req{2048, 1024};
+    render_task req{512, 256};
     req.scale.set(10.f, 1.f);
     req.project = render_task::projection::SPHERICAL;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
-    if(!tex1_.allocate() || !tex1_.initialise(pm)) {
+    if(!tex1_.allocate() || !tex1_.initialise(pm, true)) {
         LOG_ERR("Failed to allocate or initialise texture");
         return false;
     }
 
+    if(!samp1_.allocate()) {
+        LOG_ERR("Failed to allocate sampler");
+        return false;
+    }
+
+    samp1_.initialise();
+    samp1_.set_anisotropy(16.f);
+    samp1_.set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
+    samp1_.set_mag_filter(tex_filter::TF_LINEAR);
+    samp1_.release(0);
 
     //wire_frame(true);
     //bf_culling(false);
@@ -156,7 +167,9 @@ void scene_graph_test::draw() {
 
     mesh1_.bind();
     tex1_.bind(0);
+    samp1_.bind(0);
     mesh1_.draw();
+    samp1_.release(0);
     tex1_.release();
     mesh1_.release();
 

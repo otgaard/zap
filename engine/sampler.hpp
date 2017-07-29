@@ -8,9 +8,9 @@ namespace zap { namespace engine {
 
 class sampler {
 public:
-    sampler() : id_(INVALID_RESOURCE) { }
-    sampler(sampler&& rhs) : id_(rhs.id_) { rhs.id_ = INVALID_RESOURCE; }
-    sampler& operator=(sampler&& rhs) {
+    sampler() = default;
+    sampler(sampler&& rhs) noexcept : id_(rhs.id_) { rhs.id_ = INVALID_RESOURCE; }
+    sampler& operator=(sampler&& rhs) noexcept {
         if(this != &rhs) std::swap(id_, rhs.id_);
         return *this;
     }
@@ -38,7 +38,7 @@ public:
     void set_border_colour(float r, float g, float b, float a);
 
 private:
-    resource_t id_;
+    resource_t id_ = INVALID_IDX;
 };
 
 }}

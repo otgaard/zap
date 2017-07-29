@@ -91,6 +91,12 @@ auto apply(Fnc&& fnc, Tuple&& tuple) {
     return details::applier(std::forward<Fnc>(fnc), std::forward<Tuple>(tuple), indices());
 };
 
+template <typename T>
+bool is_one_of(const T& value, const std::initializer_list<T>& list) {
+    for(auto& v : list) if(v == value) return true;
+    return false;
+}
+
 }
 
 #endif //ZAP_CORE_HPP

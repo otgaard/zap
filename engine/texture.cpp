@@ -42,10 +42,7 @@ bool zap::engine::texture::initialise(size_t width, size_t height, const std::ve
     using namespace gl;
 
     bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, generate_mipmaps ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    initialise_default();
 
     const auto format =  gl_type(pixel_type<Pixel>::format);
     const auto datatype = gl_type(pixel_type<Pixel>::datatype);
@@ -73,10 +70,7 @@ bool zap::engine::texture::initialise(const pixel_buffer<PixelT>& pixbuf, bool g
     using namespace gl;
 
     bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, generate_mipmaps ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    initialise_default();
 
     const auto format =  gl_type(pixel_type<PixelT>::format);
     const auto datatype = gl_type(pixel_type<PixelT>::datatype);
@@ -108,10 +102,7 @@ bool zap::engine::texture::initialise(const pixmap<PixelT>& pmap, bool generate_
     using namespace gl;
 
     bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, generate_mipmaps ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    initialise_default();
 
     const auto format =  gl_type(pixel_type<PixelT>::format);
     const auto datatype = gl_type(pixel_type<PixelT>::datatype);
@@ -123,7 +114,26 @@ bool zap::engine::texture::initialise(const pixmap<PixelT>& pmap, bool generate_
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
     const auto internal_fmt = gl_internal_format(pixel_type<PixelT>::format, pixel_type<PixelT>::datatype);
-    glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, pmap.width(), pmap.height(), 0, format, datatype, pmap.data());
+    if(type_ == texture_type::TT_TEX1D) {
+        glTexImage1D(GL_TEXTURE_1D, 0, internal_fmt, pmap.width(), 0, format, datatype, pmap.data());
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_1D);
+    } else if(type_ == texture_type::TT_TEX2D) {
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, pmap.width(), pmap.height(), 0, format, datatype, pmap.data());
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+    } else if(type_ == texture_type::TT_TEX3D) {
+        glTexImage3D(GL_TEXTURE_3D, 0, internal_fmt, pmap.width(), pmap.height(), pmap.depth(), 0, format, datatype, pmap.data());
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_3D);
+    } else if(type_ == texture_type::TT_CUBE_MAP) {
+        assert(pmap.depth() == 6 && "Cube Map must consist of six 2D textures stored in depth");
+        GLenum lst[6] = {GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, GL_TEXTURE_CUBE_MAP_POSITIVE_Z};
+
+        for(int i = 0; i != 6; ++i) {
+            glTexImage2D(lst[i], 0, internal_fmt, pmap.width(), pmap.height(), 0, format, datatype, pmap.data(0,0,i));
+        }
+    }
+
 
     if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -207,10 +217,7 @@ bool texture::initialise(texture_type type, size_t width, size_t height, pixel_f
     auto gltype = gl_type(type);
 
     bind();
-    glTexParameteri(gltype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(gltype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(gltype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(gltype, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    initialise_default();
 
     // TODO: Fix texture alignment (let float use 4 for now)
     int pixel_alignment = 0;
@@ -254,4 +261,15 @@ bool texture::copy(size_t col, size_t row, size_t width, size_t height, int leve
     release();
     if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
     return !gl_error_check();
+}
+
+void texture::initialise_default() {
+    auto gltype = gl_type(type_);
+    glTexParameteri(gltype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(gltype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(gltype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    if(is_one_of(type_, {texture_type::TT_TEX2D, texture_type::TT_TEX3D, texture_type::TT_CUBE_MAP}))
+        glTexParameteri(gltype, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if(is_one_of(type_, {texture_type::TT_TEX3D, texture_type::TT_CUBE_MAP}))
+        glTexParameteri(gltype, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }

@@ -78,7 +78,11 @@ namespace zap { namespace engine {
 
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         PixelT* data(size_t offset=0) { return buffer_.data()+offset; }
+        const PixelT* data(int c, int r) const { return buffer_.data()+offset(c,r); }
         PixelT* data(int c, int r) { return buffer_.data()+offset(c,r); }
+        const PixelT* data(int c, int r, int d) const { return buffer_.data()+offset(c,r,d); }
+        PixelT* data(int c, int r, int d) { return buffer_.data()+offset(c,r,d); }
+
         const buffer_t& buffer() const { return buffer_; }
 
     protected:

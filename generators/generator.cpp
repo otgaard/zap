@@ -16,17 +16,28 @@ using namespace engine;
 const int RND_TBL = 256;
 const int RND_MASK = 255;
 
+// Convert cube coordinates to spherical
+vec3f cube_to_sphere(const vec3f& P) {
+    const float inv3 = 1.f/3.f, x2 = P.x*P.x, y2 = P.y*P.y, z2 = P.z*P.z;
+    const float y2z2inv3 = y2*z2*inv3, z2x2inv3 = z2*x2*inv3, x2y2inv3 = x2*y2*inv3;
+    return vec3f{
+            P.x * std::sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
+            P.y * std::sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
+            P.z * std::sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
+    };
+}
+
 const simd::veci RND_MASK_V = simd::load(0xFF);
 
 const char* const value_noise_fshdr = GLSL(
-        const int mask = 0xFF;
+        const int MASK = 0xFF;
         uniform vec4 dims;        // [width, height, inv_w, inv_h]
         uniform usampler1D perm;  // permutation table 256 bytes
         uniform sampler1D grad;   // grad1 table 256 floats 1024 bytes
         in vec2 tex;
 
-        int perm1(int x) { return int(texelFetch(perm, x & mask, 0).r); }
-        int perm2(int x, int y) { return int(texelFetch(perm, (x + perm1(y)) & mask, 0).r); }
+        int perm1(int x) { return int(texelFetch(perm, x & MASK, 0).r); }
+        int perm2(int x, int y) { return int(texelFetch(perm, (x + perm1(y)) & MASK, 0).r); }
         float grad1(int x) { return texelFetch(grad, perm1(x), 0).r; }
         float grad2(int x, int y) { return texelFetch(grad, perm2(x, y), 0).r; }
 
@@ -180,11 +191,11 @@ pixmap<float> generator::render_cpu(const render_task& req) {
         for(int r = 0; r != req.height; ++r) {
             float y = inv_y * r;
             int iy = maths::floor(y);
-            float dy = y - iy;
+            float dy = y - float(iy);
             for(int c = 0; c != req.width; ++c) {
                 float x = inv_x * c;
                 int ix = maths::floor(x);
-                float dx = x - ix;
+                float dx = x - float(ix);
                 image(c,r) = vnoise(dx, dy, ix, iy);
             }
         }
@@ -197,7 +208,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
             float theta = inv_y * r, ctheta = std::cosf(theta), stheta = std::sinf(theta);
             for(int c = 0; c != req.width; ++c) {
                 float phi = inv_x * c, cphi = std::cosf(phi), sphi = std::sinf(phi);
-                float x = radius * stheta * cphi, z = radius * stheta * sphi, y = radius * ctheta;
+                float x = radius * stheta * cphi, y = radius * ctheta, z = radius * stheta * sphi;
                 int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
                 float dx = x - float(ix), dy = y - float(iy), dz = z - float(iz);
                 image(c,r) = vnoise(dx, dy, dz, ix, iy, iz);

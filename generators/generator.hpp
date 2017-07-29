@@ -41,7 +41,8 @@ struct render_task {
         PLANAR,
         SPHERICAL,
         CYLINDRICAL,
-        TOROIDAL
+        TOROIDAL,
+        CUBE_MAP        // Returns a 6-layered pixmap containing [x_min, x_max, y_min, y_max, z_min, z_max]
     } project = projection::PLANAR;
 
     int width, height;
