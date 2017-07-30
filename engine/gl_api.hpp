@@ -241,6 +241,7 @@ namespace zap { namespace engine { namespace gl {
     };
 
     constexpr GLenum gl_parameter_type[(int)parameter_type::PT_SIZE] = {
+            0,
             GL_FLOAT,
             GL_FLOAT_VEC2,
             GL_FLOAT_VEC3,
@@ -305,6 +306,7 @@ namespace zap { namespace engine { namespace gl {
     };
 
     constexpr const char* gl_parameter_type_names[(int)parameter_type::PT_SIZE] = {
+            "VOID",
             "GL_FLOAT",
             "GL_FLOAT_VEC2",
             "GL_FLOAT_VEC3",

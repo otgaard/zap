@@ -46,6 +46,17 @@ public:
     explicit render_context(program* prog) : program_{prog} { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
 
+    bool initialise() {
+        if(!program_) return false;
+        parameters_ = program_->get_parameters();
+        size_t total = 0;
+        for(const auto& p : parameters_) {
+            total += p.bytesize();
+        }
+        uniforms_.resize(total);
+        return true;
+    }
+
     void add_sampler(texture* tex_ptr, sampler* smp_ptr) {
         textures_.emplace_back(tex_ptr);
         samplers_.emplace_back(smp_ptr);
@@ -77,7 +88,7 @@ protected:
 private:
     // no ownership yet
 
-    program* program_;
+    program* program_ = nullptr;
     std::vector<parameter> parameters_;     // move this to a lookup table in the engine later
     std::vector<texture*> textures_;
     std::vector<sampler*> samplers_;

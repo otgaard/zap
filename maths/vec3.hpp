@@ -211,6 +211,7 @@ namespace zap { namespace maths {
     using vec3b = vec3<uint8_t>;
     using vec3s = vec3<int16_t>;
     using vec3i = vec3<int32_t>;
+    using vec3u = vec3<uint32_t>;
     using vec3f = vec3<float>;
     using vec3d = vec3<double>;
 }}

@@ -146,6 +146,7 @@ bool scene_graph_test::initialise() {
 
     render_context ctx(&prog1_);
     ctx.add_sampler(&tex1_, &samp1_, &tex1_, &samp1_, &tex1_, &samp1_);
+    ctx.initialise();
 
     //wire_frame(true);
     //bf_culling(false);

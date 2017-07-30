@@ -10,6 +10,7 @@
 #include <memory>
 #include <cassert>
 #include <cstdint>
+#include <maths/algebra.hpp>
 #include "tools/log.hpp"
 
 namespace zap { namespace engine {
@@ -237,6 +238,7 @@ namespace zap { namespace engine {
     };
 
     enum class parameter_type {
+        PT_VOID,
         PT_FLOAT,
         PT_FLOAT_VEC2,
         PT_FLOAT_VEC3,
@@ -299,6 +301,73 @@ namespace zap { namespace engine {
         PT_UINT_SAMPLER_BUFFER,
         PT_UINT_SAMPLER_2D_RECT,
         PT_SIZE
+    };
+
+    template <typename T> struct pt_descriptor { enum { value = int(parameter_type::PT_VOID) }; };
+    template <> struct pt_descriptor<float> { enum { value = int(parameter_type::PT_FLOAT) }; };
+    template <> struct pt_descriptor<maths::vec2f> { enum { value = int(parameter_type::PT_FLOAT_VEC2) }; };
+    template <> struct pt_descriptor<maths::vec3f> { enum { value = int(parameter_type::PT_FLOAT_VEC3) }; };
+    template <> struct pt_descriptor<maths::vec4f> { enum { value = int(parameter_type::PT_FLOAT_VEC4) }; };
+    template <> struct pt_descriptor<int> { enum { value = int(parameter_type::PT_INT) }; };
+    template <> struct pt_descriptor<maths::vec2i> { enum { value = int(parameter_type::PT_INT_VEC2) }; };
+    template <> struct pt_descriptor<maths::vec3i> { enum { value = int(parameter_type::PT_INT_VEC3) }; };
+    template <> struct pt_descriptor<maths::vec4i> { enum { value = int(parameter_type::PT_INT_VEC4) }; };
+    template <> struct pt_descriptor<uint32_t> { enum { value = int(parameter_type::PT_UINT) }; };
+    template <> struct pt_descriptor<maths::vec2u> { enum { value = int(parameter_type::PT_UINT_VEC2) }; };
+    template <> struct pt_descriptor<maths::vec3u> { enum { value = int(parameter_type::PT_UINT_VEC3) }; };
+    template <> struct pt_descriptor<maths::vec4u> { enum { value = int(parameter_type::PT_UINT_VEC4) }; };
+    template <> struct pt_descriptor<uint8_t> { enum { value = int(parameter_type::PT_BOOL) }; };
+    template <> struct pt_descriptor<maths::vec2b> { enum { value = int(parameter_type::PT_BOOL_VEC2) }; };
+    template <> struct pt_descriptor<maths::vec3b> { enum { value = int(parameter_type::PT_BOOL_VEC3) }; };
+    template <> struct pt_descriptor<maths::vec4b> { enum { value = int(parameter_type::PT_BOOL_VEC4) }; };
+    template <> struct pt_descriptor<maths::mat2f> { enum { value = int(parameter_type::PT_FLOAT_MAT2) }; };
+    template <> struct pt_descriptor<maths::mat3f> { enum { value = int(parameter_type::PT_FLOAT_MAT3) }; };
+    template <> struct pt_descriptor<maths::mat4f> { enum { value = int(parameter_type::PT_FLOAT_MAT4) }; };
+
+    template <parameter_type PT> struct pt_type { using type = void; };
+    template <> struct pt_type<parameter_type::PT_FLOAT> { using type = float; };
+    template <> struct pt_type<parameter_type::PT_FLOAT_VEC2> { using type = maths::vec2f; };
+    template <> struct pt_type<parameter_type::PT_FLOAT_VEC3> { using type = maths::vec3f; };
+    template <> struct pt_type<parameter_type::PT_FLOAT_VEC4> { using type = maths::vec4f; };
+    template <> struct pt_type<parameter_type::PT_INT> { using type = int32_t; };
+    template <> struct pt_type<parameter_type::PT_INT_VEC2> { using type = maths::vec2i; };
+    template <> struct pt_type<parameter_type::PT_INT_VEC3> { using type = maths::vec3i; };
+    template <> struct pt_type<parameter_type::PT_INT_VEC4> { using type = maths::vec4i; };
+    template <> struct pt_type<parameter_type::PT_UINT> { using type = uint32_t; };
+    template <> struct pt_type<parameter_type::PT_UINT_VEC2> { using type = maths::vec2u; };
+    template <> struct pt_type<parameter_type::PT_UINT_VEC3> { using type = maths::vec3u; };
+    template <> struct pt_type<parameter_type::PT_UINT_VEC4> { using type = maths::vec4u; };
+    template <> struct pt_type<parameter_type::PT_BOOL> { using type = uint8_t; };
+    template <> struct pt_type<parameter_type::PT_BOOL_VEC2> { using type = maths::vec2b; };
+    template <> struct pt_type<parameter_type::PT_BOOL_VEC3> { using type = maths::vec3b; };
+    template <> struct pt_type<parameter_type::PT_BOOL_VEC4> { using type = maths::vec4b; };
+    template <> struct pt_type<parameter_type::PT_FLOAT_MAT2> { using type = maths::mat2f; };
+    template <> struct pt_type<parameter_type::PT_FLOAT_MAT3> { using type = maths::mat3f; };
+    template <> struct pt_type<parameter_type::PT_FLOAT_MAT4> { using type = maths::mat4f; };
+
+    constexpr size_t pt_bytesize[int(parameter_type::PT_SIZE)] = {
+            0,
+            sizeof(float),
+            sizeof(maths::vec2f),
+            sizeof(maths::vec3f),
+            sizeof(maths::vec4f),
+            sizeof(int32_t),
+            sizeof(maths::vec2i),
+            sizeof(maths::vec3i),
+            sizeof(maths::vec4i),
+            sizeof(uint32_t),
+            sizeof(maths::vec2u),
+            sizeof(maths::vec3u),
+            sizeof(maths::vec4u),
+            sizeof(uint8_t),
+            sizeof(maths::vec2b),
+            sizeof(maths::vec3b),
+            sizeof(maths::vec4b),
+            sizeof(maths::mat2f),
+            sizeof(maths::mat3f),
+            sizeof(maths::mat4f),
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
     bool init();

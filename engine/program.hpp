@@ -19,6 +19,7 @@ namespace zap { namespace engine {
 
         bool is_valid() const { return index != INVALID_IDX; }
         bool is_array() const { return size > 1; }
+        size_t bytesize() const { return pt_bytesize[int(type)]; }
 
         parameter() = default;
         explicit parameter(uint32_t i) : index(i) { }
