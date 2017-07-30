@@ -17,6 +17,9 @@ namespace zap { namespace engine {
         parameter_type type;
         int32_t size;
 
+        bool is_valid() const { return index != INVALID_IDX; }
+        bool is_array() const { return size > 1; }
+
         parameter() = default;
         explicit parameter(uint32_t i) : index(i) { }
         parameter(uint32_t i, const std::string& n, parameter_type t, int32_t s) : index(i), name(n), type(t), size(s) { }

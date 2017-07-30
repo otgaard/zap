@@ -24,7 +24,6 @@
 #include <engine/program.hpp>
 #include <engine/texture.hpp>
 #include <engine/sampler.hpp>
-#include <engine/framebuffer.hpp>
 #include <engine/render_state.hpp>
 #include <engine/uniform_buffer.hpp>
 
@@ -33,24 +32,42 @@ namespace zap { namespace renderer {
 using program_ptr = std::unique_ptr<engine::program>;
 using texture_ptr = std::unique_ptr<engine::texture>;
 using sampler_ptr = std::unique_ptr<engine::sampler>;
-using framebuffer_ptr = std::unique_ptr<engine::framebuffer>;
 using render_state_ptr = std::unique_ptr<engine::render_state>;
 
 class render_context {
 public:
+    using parameter = engine::parameter;
     using program = engine::program;
     using texture = engine::texture;
     using sampler = engine::sampler;
-    using framebuffer = engine::framebuffer;
     using render_state = engine::render_state;
 
     render_context() = default;
     explicit render_context(program* prog) : program_{prog} { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
 
+    void add_sampler(texture* tex_ptr, sampler* smp_ptr) {
+        textures_.emplace_back(tex_ptr);
+        samplers_.emplace_back(smp_ptr);
+    }
+    template <typename... Args>
+    void add_sampler(texture* tex_ptr, sampler* smp_ptr, Args... ptrs) {
+        textures_.emplace_back(tex_ptr);
+        samplers_.emplace_back(smp_ptr);
+        add_sampler(ptrs...);
+    }
+
+    void add_texture(texture* tex_ptr) {
+        textures_.emplace_back(tex_ptr);
+    }
+    template <typename... Args>
+    void add_texture(texture* tex_ptr, Args... ptrs) {
+        textures_.emplace_back(tex_ptr);
+        add_texture(ptrs...);
+    }
+
     void set_program(program* ptr) { program_ = ptr; }
     program* get_program() const { return program_; }
-
 
     void bind() const;
     void release() const;
@@ -59,11 +76,13 @@ protected:
 
 private:
     // no ownership yet
+
     program* program_;
+    std::vector<parameter> parameters_;     // move this to a lookup table in the engine later
     std::vector<texture*> textures_;
     std::vector<sampler*> samplers_;
-
     std::vector<char> uniforms_;            // Store all uniforms in a contiguous block
+    //bool dirty_args_ = true;                // If any uniform has been set on the client but not yet on the server
 };
 
 

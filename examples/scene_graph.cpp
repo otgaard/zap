@@ -24,6 +24,7 @@
 #include <generators/generator.hpp>
 #include <generators/textures/planar.hpp>
 #include <renderer/colour.hpp>
+#include <renderer/render_context.hpp>
 
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
@@ -113,6 +114,11 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
+
+    auto parms = prog1_.get_parameters();
+    //return false;
+
+
     render_task req{256, 256};
     req.scale.set(40.f, 40.f);
     req.project = render_task::projection::CUBE_MAP;
@@ -137,6 +143,9 @@ bool scene_graph_test::initialise() {
     samp1_.set_wrap_t(tex_wrap::TW_MIRRORED_REPEAT);
     samp1_.set_wrap_r(tex_wrap::TW_MIRRORED_REPEAT);
     samp1_.release(0);
+
+    render_context ctx(&prog1_);
+    ctx.add_sampler(&tex1_, &samp1_, &tex1_, &samp1_, &tex1_, &samp1_);
 
     //wire_frame(true);
     //bf_culling(false);
