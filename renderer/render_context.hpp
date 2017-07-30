@@ -48,16 +48,22 @@ public:
     explicit render_context(program* prog) : program_{prog} { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
 
+    void set_program(program* ptr) { program_ = ptr; }
+    program* get_program() const { return program_; }
+
+
     void bind() const;
     void release() const;
 
 protected:
 
 private:
+    // no ownership yet
     program* program_;
     std::vector<texture*> textures_;
     std::vector<sampler*> samplers_;
 
+    std::vector<char> uniforms_;            // Store all uniforms in a contiguous block
 };
 
 

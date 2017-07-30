@@ -240,6 +240,142 @@ namespace zap { namespace engine { namespace gl {
             "GL_MIRROR_CLAMP_TO_EDGE"
     };
 
+    constexpr GLenum gl_parameter_type[(int)parameter_type::PT_SIZE] = {
+            GL_FLOAT,
+            GL_FLOAT_VEC2,
+            GL_FLOAT_VEC3,
+            GL_FLOAT_VEC4,
+            GL_INT,
+            GL_INT_VEC2,
+            GL_INT_VEC3,
+            GL_INT_VEC4,
+            GL_UNSIGNED_INT,
+            GL_UNSIGNED_INT_VEC2,
+            GL_UNSIGNED_INT_VEC3,
+            GL_UNSIGNED_INT_VEC4,
+            GL_BOOL,
+            GL_BOOL_VEC2,
+            GL_BOOL_VEC3,
+            GL_BOOL_VEC4,
+            GL_FLOAT_MAT2,
+            GL_FLOAT_MAT3,
+            GL_FLOAT_MAT4,
+            GL_FLOAT_MAT2x3,
+            GL_FLOAT_MAT2x4,
+            GL_FLOAT_MAT3x2,
+            GL_FLOAT_MAT3x4,
+            GL_FLOAT_MAT4x2,
+            GL_FLOAT_MAT4x3,
+            GL_SAMPLER_1D,
+            GL_SAMPLER_2D,
+            GL_SAMPLER_3D,
+            GL_SAMPLER_CUBE,
+            GL_SAMPLER_1D_SHADOW,
+            GL_SAMPLER_2D_SHADOW,
+            GL_SAMPLER_1D_ARRAY,
+            GL_SAMPLER_2D_ARRAY,
+            GL_SAMPLER_1D_ARRAY_SHADOW,
+            GL_SAMPLER_2D_ARRAY_SHADOW,
+            GL_SAMPLER_2D_MULTISAMPLE,
+            GL_SAMPLER_2D_MULTISAMPLE_ARRAY,
+            GL_SAMPLER_CUBE_SHADOW,
+            GL_SAMPLER_BUFFER,
+            GL_SAMPLER_2D_RECT,
+            GL_SAMPLER_2D_RECT_SHADOW,
+            GL_INT_SAMPLER_1D,
+            GL_INT_SAMPLER_2D,
+            GL_INT_SAMPLER_3D,
+            GL_INT_SAMPLER_CUBE,
+            GL_INT_SAMPLER_1D_ARRAY,
+            GL_INT_SAMPLER_2D_ARRAY,
+            GL_INT_SAMPLER_2D_MULTISAMPLE,
+            GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY,
+            GL_INT_SAMPLER_BUFFER,
+            GL_INT_SAMPLER_2D_RECT,
+            GL_UNSIGNED_INT_SAMPLER_1D,
+            GL_UNSIGNED_INT_SAMPLER_2D,
+            GL_UNSIGNED_INT_SAMPLER_3D,
+            GL_UNSIGNED_INT_SAMPLER_CUBE,
+            GL_UNSIGNED_INT_SAMPLER_1D_ARRAY,
+            GL_UNSIGNED_INT_SAMPLER_2D_ARRAY,
+            GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE,
+            GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY,
+            GL_UNSIGNED_INT_SAMPLER_BUFFER,
+            GL_UNSIGNED_INT_SAMPLER_2D_RECT
+    };
+
+    constexpr const char* gl_parameter_type_names[(int)parameter_type::PT_SIZE] = {
+            "GL_FLOAT",
+            "GL_FLOAT_VEC2",
+            "GL_FLOAT_VEC3",
+            "GL_FLOAT_VEC4",
+            "GL_INT",
+            "GL_INT_VEC2",
+            "GL_INT_VEC3",
+            "GL_INT_VEC4",
+            "GL_UNSIGNED_INT",
+            "GL_UNSIGNED_INT_VEC2",
+            "GL_UNSIGNED_INT_VEC3",
+            "GL_UNSIGNED_INT_VEC4",
+            "GL_BOOL",
+            "GL_BOOL_VEC2",
+            "GL_BOOL_VEC3",
+            "GL_BOOL_VEC4",
+            "GL_FLOAT_MAT2",
+            "GL_FLOAT_MAT3",
+            "GL_FLOAT_MAT4",
+            "GL_FLOAT_MAT2x3",
+            "GL_FLOAT_MAT2x4",
+            "GL_FLOAT_MAT3x2",
+            "GL_FLOAT_MAT3x4",
+            "GL_FLOAT_MAT4x2",
+            "GL_FLOAT_MAT4x3",
+            "GL_SAMPLER_1D",
+            "GL_SAMPLER_2D",
+            "GL_SAMPLER_3D",
+            "GL_SAMPLER_CUBE",
+            "GL_SAMPLER_1D_SHADOW",
+            "GL_SAMPLER_2D_SHADOW",
+            "GL_SAMPLER_1D_ARRAY",
+            "GL_SAMPLER_2D_ARRAY",
+            "GL_SAMPLER_1D_ARRAY_SHADOW",
+            "GL_SAMPLER_2D_ARRAY_SHADOW",
+            "GL_SAMPLER_2D_MULTISAMPLE",
+            "GL_SAMPLER_2D_MULTISAMPLE_ARRAY",
+            "GL_SAMPLER_CUBE_SHADOW",
+            "GL_SAMPLER_BUFFER",
+            "GL_SAMPLER_2D_RECT",
+            "GL_SAMPLER_2D_RECT_SHADOW",
+            "GL_INT_SAMPLER_1D",
+            "GL_INT_SAMPLER_2D",
+            "GL_INT_SAMPLER_3D",
+            "GL_INT_SAMPLER_CUBE",
+            "GL_INT_SAMPLER_1D_ARRAY",
+            "GL_INT_SAMPLER_2D_ARRAY",
+            "GL_INT_SAMPLER_2D_MULTISAMPLE",
+            "GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
+            "GL_INT_SAMPLER_BUFFER",
+            "GL_INT_SAMPLER_2D_RECT",
+            "GL_UNSIGNED_INT_SAMPLER_1D",
+            "GL_UNSIGNED_INT_SAMPLER_2D",
+            "GL_UNSIGNED_INT_SAMPLER_3D",
+            "GL_UNSIGNED_INT_SAMPLER_CUBE",
+            "GL_UNSIGNED_INT_SAMPLER_1D_ARRAY",
+            "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY",
+            "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE",
+            "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
+            "GL_UNSIGNED_INT_SAMPLER_BUFFER",
+            "GL_UNSIGNED_INT_SAMPLER_2D_RECT"
+    };
+
+    template <typename EngineType>
+    bool internal_type(GLenum gltype, const GLenum* begin, const GLenum* end, EngineType& type) {
+        auto it = std::find(begin, end, gltype);
+        if(it == end) return false;
+        type = (EngineType)(it - begin);
+        return true;
+    }
+
     constexpr GLenum gl_type(shader_type type) { return gl_shader_types[(int)type]; }
     constexpr const char* gl_typename(shader_type type) { return gl_shader_type_names[(int)type]; }
     constexpr GLenum gl_type(buffer_type type) { return gl_buffer_types[(int)type]; }
@@ -264,6 +400,8 @@ namespace zap { namespace engine { namespace gl {
     constexpr const char* gl_typename(tex_filter type) { return gl_tex_filter_names[(int)type]; }
     constexpr GLenum gl_type(tex_wrap type) { return gl_tex_wrap[(int)type]; }
     constexpr const char* gl_typename(tex_wrap type) { return gl_tex_wrap_names[(int)type]; }
+    constexpr GLenum gl_type(parameter_type type) { return gl_parameter_type[(int)type]; }
+    constexpr const char* gl_typename(parameter_type type) { return gl_parameter_type_names[(int)type]; }
 
     inline const char* gl_version() { return (const char*)glGetString(GL_VERSION); }
 

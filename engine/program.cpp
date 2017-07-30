@@ -77,6 +77,27 @@ void program::bind_texture_unit(const char* name, int unit) {
     if(loc != -1) gl::glUniform1i(loc, unit);
 }
 
+std::vector<parameter> program::get_parameters() const {
+    const uint32_t bufsize=128;
+    char buffer[bufsize] = {0};
+
+    std::vector<parameter> parms{};
+
+    int32_t count;
+    gl::glGetProgramiv(id_, GL_ACTIVE_UNIFORMS, &count);
+    for(uint32_t i = 0; i != count; ++i) {
+        parameter p{i};
+        int len;
+        gl::GLenum gltype;
+        parameter_type type;
+        gl::glGetActiveUniform(id_, i, bufsize, &len, &p.size, &gltype, buffer);
+        if(gl::internal_type(gltype, gl::gl_parameter_type, gl::gl_parameter_type+int(parameter_type::PT_SIZE), type)) {
+            LOG("Parm:", buffer, gl::gl_typename(type), p.size, len, i);
+        }
+    }
+    return parms;
+}
+
 template <> void zap::engine::program::bind_uniform<int>(int location, const int& value) {
     gl::glUniform1i(location, value);
 }

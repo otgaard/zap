@@ -11,12 +11,23 @@
 #include <maths/algebra.hpp>
 
 namespace zap { namespace engine {
+    struct parameter {
+        uint32_t index = INVALID_IDX;
+        std::string name;
+        parameter_type type;
+        int32_t size;
+
+        parameter() = default;
+        explicit parameter(uint32_t i) : index(i) { }
+        parameter(uint32_t i, const std::string& n, parameter_type t, int32_t s) : index(i), name(n), type(t), size(s) { }
+    };
+
     class program {
     public:
         program();
-        program(const std::vector<shader_ptr>& shaders);
-        program(std::vector<shader_ptr>&& shaders);
-        program(program&& rhs);
+        explicit program(const std::vector<shader_ptr>& shaders);
+        explicit program(std::vector<shader_ptr>&& shaders);
+        program(program&& rhs) noexcept;
         program& operator=(program&& rhs) noexcept;
         ~program();
 
@@ -32,6 +43,8 @@ namespace zap { namespace engine {
 
         void bind() const;
         void release() const;
+
+        std::vector<parameter> get_parameters() const;
 
         void add_shader(shader_type type, const std::string& src) { add_shader(std::make_shared<shader>(type,src)); }
         void add_shader(shader* shdr) { add_shader(std::shared_ptr<shader>(shdr)); }
@@ -61,7 +74,7 @@ namespace zap { namespace engine {
                                                                       shaders_(std::move(shaders)) { }
     inline program::program(std::vector<shader_ptr>&& shaders) : id_(INVALID_RESOURCE), linked_(false),
                                                                  shaders_(std::move(shaders)) { }
-    inline program::program(program&& rhs) : id_(rhs.id_), linked_(rhs.linked_), shaders_(std::move(rhs.shaders_)) {
+    inline program::program(program&& rhs) noexcept : id_(rhs.id_), linked_(rhs.linked_), shaders_(std::move(rhs.shaders_)) {
         rhs.id_ = INVALID_RESOURCE; rhs.linked_ = false;
     }
     inline program& program::operator=(program&& rhs) noexcept {
