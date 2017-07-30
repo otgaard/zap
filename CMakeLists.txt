@@ -125,10 +125,12 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         scene_graph/visual.hpp
         scene_graph/bounds/bound.hpp
         renderer/style.hpp
-        renderer/render_state.hpp
+        engine/render_state.hpp
         tools/os.hpp
         renderer/renderer_fwd.hpp
-        engine/sampler.hpp tools/threadpool.hpp)
+        engine/sampler.hpp
+        tools/threadpool.hpp
+        renderer/render_context.hpp)
 
 set(ZAP_ENGINE_FILES
         engine/shader.cpp
@@ -149,9 +151,10 @@ set(ZAP_ENGINE_FILES
         renderer/material.cpp
         renderer/light.cpp
         renderer/style.cpp
-        renderer/render_state.cpp
+        engine/render_state.cpp
         tools/os.cpp
-        engine/sampler.cpp)
+        engine/sampler.cpp
+        renderer/render_context.cpp)
 
 set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/quad.hpp

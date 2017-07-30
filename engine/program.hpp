@@ -30,8 +30,8 @@ namespace zap { namespace engine {
         bool is_allocated() const { return id_ != 0; } // glCreateProgram returns 0 on error
         bool is_linked() const { return is_allocated() && linked_; }
 
-        void bind();
-        void release();
+        void bind() const;
+        void release() const;
 
         void add_shader(shader_type type, const std::string& src) { add_shader(std::make_shared<shader>(type,src)); }
         void add_shader(shader* shdr) { add_shader(std::shared_ptr<shader>(shdr)); }

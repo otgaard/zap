@@ -5,7 +5,7 @@
 #include <maths/algebra.hpp>
 #include <vector>
 
-namespace zap { namespace engine { namespace renderer {
+namespace zap { namespace engine {
     class render_state {
     public:
         struct alpha_state { };
@@ -26,6 +26,6 @@ namespace zap { namespace engine { namespace renderer {
         multisample_state* multisample_state_;
         wire_state* wire_state_;
     };
-}}}
+}}
 
 #endif //ZAP_RENDER_STATE_HPP

@@ -4,8 +4,6 @@
 #include "generator.hpp"
 #include <maths/simd.hpp>
 #include <graphics2/quad.hpp>
-#include <engine/sampler.hpp>
-#include <engine/texture.hpp>
 #include <maths/io.hpp>
 #include <engine/framebuffer.hpp>
 
@@ -189,7 +187,7 @@ std::future<generator::pixmap<float>> generator::render(const render_task& req, 
 
 pixmap<float> generator::render_cpu(const render_task& req) {
     pixmap<float> image{req.width, req.height, (req.project == render_task::projection::CUBE_MAP ? 6 : 1)};
-    LOG(image.width(), image.height(), image.depth(), image.size());
+    LOG("Generating Image:", image.width(), image.height(), image.depth(), image.size());
 
     if(req.project == render_task::projection::PLANAR) {
         const float inv_x = req.scale.x/req.width;
