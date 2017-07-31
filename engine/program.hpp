@@ -12,18 +12,18 @@
 
 namespace zap { namespace engine {
     struct parameter {
-        uint32_t index = INVALID_IDX;
+        int32_t location = -1;
         std::string name;
         parameter_type type;
-        int32_t size;
+        int32_t count;
 
-        bool is_valid() const { return index != INVALID_IDX; }
-        bool is_array() const { return size > 1; }
+        bool is_valid() const { return location != INVALID_IDX; }
+        bool is_array() const { return count > 1; }
         size_t bytesize() const { return pt_bytesize[int(type)]; }
 
         parameter() = default;
-        explicit parameter(uint32_t i) : index(i) { }
-        parameter(uint32_t i, const std::string& n, parameter_type t, int32_t s) : index(i), name(n), type(t), size(s) { }
+        explicit parameter(int32_t l) : location(l) { }
+        parameter(int32_t l, const std::string& n, parameter_type t, int32_t c) : location(l), name(n), type(t), count(c) { }
     };
 
     class program {
@@ -60,7 +60,7 @@ namespace zap { namespace engine {
         }
         bool link(bool clear=true);
 
-        void bind_uniform(int location, parameter_type type, size_t count, const char* data);
+        void bind_uniform(int location, parameter_type type, int count, const char* data);
         template <typename T> void bind_uniform(int location, const T& type);
         template <typename T> void bind_uniform(const char* name, const T& type);
         void bind_texture_unit(int location, int unit);
@@ -100,6 +100,7 @@ namespace zap { namespace engine {
     template <> void program::bind_uniform<std::vector<int>>(int location, const std::vector<int>& type);
     template <> void program::bind_uniform<std::vector<zap::maths::vec2f>>(int location, const std::vector<zap::maths::vec2f>& type);
     template <> void program::bind_uniform<std::vector<zap::maths::vec3f>>(int location, const std::vector<zap::maths::vec3f>& type);
+    template <> void program::bind_uniform<std::vector<zap::maths::vec4f>>(int location, const std::vector<zap::maths::vec4f>& type);
     template <> void program::bind_uniform<std::vector<float>>(int location, const std::vector<float>& type);
 
     template <> void program::bind_uniform<int>(const char* name, const int& value);
@@ -112,6 +113,7 @@ namespace zap { namespace engine {
     template <> void program::bind_uniform<std::vector<int>>(const char* name, const std::vector<int>& type);
     template <> void program::bind_uniform<std::vector<zap::maths::vec2f>>(const char* name, const std::vector<zap::maths::vec2f>& type);
     template <> void program::bind_uniform<std::vector<zap::maths::vec3f>>(const char* name, const std::vector<zap::maths::vec3f>& type);
+    template <> void program::bind_uniform<std::vector<zap::maths::vec4f>>(const char* name, const std::vector<zap::maths::vec4f>& type);
     template <> void program::bind_uniform<std::vector<float>>(const char* name, const std::vector<float>& type);
 
 }}

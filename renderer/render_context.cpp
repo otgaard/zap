@@ -4,8 +4,10 @@
 
 #include "render_context.hpp"
 #include "engine/gl_api.hpp"
+#include "tools/log.hpp"
 
 using namespace zap;
+using namespace zap::engine;
 using namespace zap::renderer;
 
 void render_context::bind() const {
@@ -24,7 +26,8 @@ void render_context::bind() const {
     if(dirty_) {
         for(int i = 0; i != parameters_.size(); ++i) {
             if(dirty_flags_[i]) {
-                program_->bind_uniform(i, parameters_[i].type, parameters_[i].size, &uniforms_[offsets_[i]]);
+                program_->bind_uniform(parameters_[i].location, parameters_[i].type, parameters_[i].count, &uniforms_[offsets_[i]]);
+                if(gl_error_check()) LOG_ERR("Error binding parameter:", parameters_[i].name, gl::gl_typename(parameters_[i].type), parameters_[i].count);
                 dirty_flags_[i] = false;
             }
         }

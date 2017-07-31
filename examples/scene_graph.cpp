@@ -38,10 +38,12 @@ const char* const basic_vshdr = GLSL(
 
 const char* const basic_fshdr = GLSL(
     uniform samplerCube diffuse_tex;
+    uniform vec3 colour[2];
+
     in vec3 tex;
     out vec4 frag_colour;
     void main() {
-        frag_colour = texture(diffuse_tex, tex);
+        frag_colour = vec4(mix(colour[0], colour[1], texture(diffuse_tex, tex).r), 1.);
     }
 );
 
@@ -115,11 +117,6 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-
-    auto parms = prog1_.get_parameters();
-    //return false;
-
-
     render_task req{256, 256};
     req.scale.set(40.f, 40.f);
     req.project = render_task::projection::CUBE_MAP;
@@ -148,7 +145,7 @@ bool scene_graph_test::initialise() {
     context_.set_program(&prog1_);
     context_.add_sampler(&tex1_, &samp1_);
     context_.initialise();
-    context_.set_parameter("PVM", make_translation(1.f, 2.f, 3.f));
+    context_.set_parameter("colour[0]", {vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 0.f, 0.f}});
 
     //wire_frame(true);
     //bf_culling(false);
@@ -163,15 +160,10 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
 
-    context_.set_parameter("PVM", cam_.proj_view());
+    // This is a hack until I can properly link the texture to the name
     prog1_.bind();
     prog1_.bind_texture_unit("diffuse_tex", 0);
     prog1_.release();
-
-    //prog1_.bind();
-    //prog1_.bind_uniform("PVM", cam_.proj_view());
-    //prog1_.bind_texture_unit("diffuse_tex", 0);
-    //prog1_.release();
 
     gl_error_check();
 }
@@ -182,35 +174,18 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
-    prog1_.bind();
-
-    /*
-    prog1_.bind_uniform("PVM", cam_.proj_view()
-                               * make_translation(0.f, 0.f, -2.f)
-                               * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-                               * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
-    */
-
-    mesh1_.bind();
-    //tex1_.bind(0);
-    //samp1_.bind(0);
-
-
+    context_.set_parameter("PVM", cam_.proj_view()
+        * make_translation(0.f, 0.f, -2.f)
+        * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+        * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
 
     context_.bind();
-
-
+    mesh1_.bind();
     mesh1_.draw();
-
-
+    mesh1_.release();
     context_.release();
 
-
-    //samp1_.release(0);
-    //tex1_.release();
-    mesh1_.release();
-
-    prog1_.release();
+    gl_error_check();
 }
 
 void scene_graph_test::shutdown() {

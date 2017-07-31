@@ -86,15 +86,16 @@ std::vector<parameter> program::get_parameters() const {
     int32_t uniform_count;
     gl::glGetProgramiv(id_, GL_ACTIVE_UNIFORMS, &uniform_count);
     for(uint32_t i = 0; i != uniform_count; ++i) {
-        parameter p{i};
+        parameter p{-1};
         int len;
         gl::GLenum gltype;
 
-        gl::glGetActiveUniform(id_, i, bufsize, &len, &p.size, &gltype, buffer);
+        gl::glGetActiveUniform(id_, i, bufsize, &len, &p.count, &gltype, buffer);
         if(gl::internal_type(gltype, gl::gl_parameter_type, gl::gl_parameter_type+int(parameter_type::PT_SIZE), p.type)) {
             p.name = std::string{buffer, size_t(len)};
+            p.location = gl::glGetUniformLocation(id_, p.name.c_str());
+            LOG("Parameter:", p.location, LOG_BLUE, p.name, LOG_YELLOW, gl::gl_typename(p.type), LOG_GREEN, "count:", p.count);
             parms.emplace_back(p);
-            LOG("Parameter:", LOG_BLUE, p.name, LOG_YELLOW, gl::gl_typename(p.type), LOG_GREEN, "size:", p.size);
         } else {
             LOG_ERR("Unsupported uniform type:", i, buffer);
         }
@@ -102,7 +103,7 @@ std::vector<parameter> program::get_parameters() const {
     return parms;
 }
 
-void program::bind_uniform(int location, parameter_type type, size_t count, const char* data) {
+void program::bind_uniform(int location, parameter_type type, int count, const char* data) {
     switch(type) {
         case parameter_type::PT_FLOAT: gl::glUniform1fv(location, count, reinterpret_cast<const float*>(data)); return;
         case parameter_type::PT_FLOAT_VEC2: gl::glUniform2fv(location, count, reinterpret_cast<const float*>(data)); return;
@@ -167,6 +168,10 @@ template <> void program::bind_uniform<std::vector<zap::maths::vec3f>>(int locat
     gl::glUniform3fv(location, type.size(), type.data()->data());
 }
 
+template <> void program::bind_uniform<std::vector<zap::maths::vec4f>>(int location, const std::vector<zap::maths::vec4f>& type) {
+    gl::glUniform4fv(location, type.size(), type.data()->data());
+}
+
 template <> void zap::engine::program::bind_uniform<std::vector<float>>(int location, const std::vector<float>& type) {
     gl::glUniform1fv(location, type.size(), type.data());
 }
@@ -223,6 +228,12 @@ template <> void zap::engine::program::bind_uniform<std::vector<zap::maths::vec3
     auto loc = uniform_location(name);
     assert(loc != -1 && "Invalid vector<vec3f> uniform specified");
     if(loc != -1) gl::glUniform3fv(loc, type.size(), type.data()->data());
+}
+
+template <> void zap::engine::program::bind_uniform<std::vector<zap::maths::vec4f>>(const char* name, const std::vector<zap::maths::vec4f>& type) {
+    auto loc = uniform_location(name);
+    assert(loc != -1 && "Invalid vector<vec3f> uniform specified");
+    if(loc != -1) gl::glUniform4fv(loc, type.size(), type.data()->data());
 }
 
 template <> void zap::engine::program::bind_uniform<int>(const char* name, const int& value) {

@@ -55,9 +55,9 @@ public:
         parameters_ = program_->get_parameters();
         size_t total = 0;
         offsets_.resize(parameters_.size(), 0);
-        for(const auto& p : parameters_) {
-            offsets_[p.index] = int(total);
-            total += p.bytesize();
+        for(int i = 0; i != parameters_.size(); ++i) {
+            offsets_[i] = int(total);
+            total += parameters_[i].count * parameters_[i].bytesize();
 
         }
         uniforms_.resize(total);
@@ -67,12 +67,12 @@ public:
     }
 
     template <typename T>
-    void set_parameter(int idx, const T& value) {
+    void set_parameter(int idx, const T* value) {
         assert(idx < parameters_.size() && "Invalid parameter specified");
         auto& parm = parameters_[idx];
         int offset = offsets_[idx];
         if(((engine::parameter_type)engine::pt_descriptor<T>::value) == parm.type) {
-            *reinterpret_cast<T*>(uniforms_.data()+offset) = value;
+            memcpy(uniforms_.data()+offset, value, parm.bytesize() * parm.count);
             dirty_flags_[idx] = true;
             dirty_ = true;
         } else {
@@ -81,10 +81,30 @@ public:
     }
 
     template <typename T>
-    void set_parameter(const std::string& name, const T& value) {
+    void set_parameter(int idx, const T& value) {
+        set_parameter(idx, &value);
+    }
+
+    template <typename T>
+    void set_parameter(int idx, const std::initializer_list<T>& value) {
+        set_parameter(idx, value.begin());
+    }
+
+    template <typename T>
+    void set_parameter(const std::string& name, const T* value) {
         auto it = std::find_if(parameters_.begin(), parameters_.end(), [&name](const auto& parm) { return parm.name == name; });
         if(it != parameters_.end()) set_parameter(int(it - parameters_.begin()), value);
         else                        LOG_ERR("Parameter does not exist in program:", LOG_GREEN, name);
+    }
+
+    template <typename T>
+    void set_parameter(const std::string& name, const T& value) {
+        set_parameter(name, &value);
+    }
+
+    template <typename T>
+    void set_parameter(const std::string& name, const std::initializer_list<T>& value) {
+        set_parameter(name, value.begin());
     }
 
     void add_sampler(texture* tex_ptr, sampler* smp_ptr) {
