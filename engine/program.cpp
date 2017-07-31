@@ -124,6 +124,11 @@ void program::bind_uniform(int location, parameter_type type, int count, const c
         case parameter_type::PT_FLOAT_MAT2: gl::glUniformMatrix2fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
         case parameter_type::PT_FLOAT_MAT3: gl::glUniformMatrix3fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
         case parameter_type::PT_FLOAT_MAT4: gl::glUniformMatrix4fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_SAMPLER_1D: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_SAMPLER_2D: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_SAMPLER_3D: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_SAMPLER_CUBE: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+
         default: LOG_ERR("Tried to bind invalid uniform at location:", location);
     }
 }

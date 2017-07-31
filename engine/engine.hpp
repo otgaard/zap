@@ -303,6 +303,8 @@ namespace zap { namespace engine {
         PT_SIZE
     };
 
+    // TODO:  Complete these tables
+
     template <typename T> struct pt_descriptor { enum { value = int(parameter_type::PT_VOID) }; };
     template <> struct pt_descriptor<float> { enum { value = int(parameter_type::PT_FLOAT) }; };
     template <> struct pt_descriptor<maths::vec2f> { enum { value = int(parameter_type::PT_FLOAT_VEC2) }; };
@@ -366,8 +368,13 @@ namespace zap { namespace engine {
             sizeof(maths::mat2f),
             sizeof(maths::mat3f),
             sizeof(maths::mat4f),
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            0, 0, 0, 0, 0, 0,
+            sizeof(int32_t),
+            sizeof(int32_t),
+            sizeof(int32_t),
+            sizeof(int32_t),
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
     bool init();

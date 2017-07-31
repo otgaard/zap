@@ -66,6 +66,26 @@ public:
         return true;
     }
 
+    void set_texture_unit(int idx, int unit) {
+        assert(idx < parameters_.size() && "Invalid parameter specified");
+        assert(unit < textures_.size() && "No texture specified for requested unit");
+
+        using pt = engine::parameter_type;
+        auto& parm = parameters_[idx];
+        int offset = offsets_[idx];
+        if(is_one_of(parm.type, {pt::PT_SAMPLER_1D, pt::PT_SAMPLER_2D, pt::PT_SAMPLER_3D, pt::PT_SAMPLER_CUBE})) {
+            memcpy(uniforms_.data()+offset, &unit, parm.bytesize() * parm.count);
+            dirty_flags_[idx] = true;
+            dirty_ = true;
+        }
+    }
+
+    void set_texture_unit(const std::string& name, int unit) {
+        auto it = std::find_if(parameters_.begin(), parameters_.end(), [&name](const auto& parm) { return parm.name == name; });
+        if(it != parameters_.end()) set_texture_unit(int(it - parameters_.begin()), unit);
+        else                        LOG_ERR("Parameter does not exist in program:", LOG_GREEN, name);
+    }
+
     template <typename T>
     void set_parameter(int idx, const T* value) {
         assert(idx < parameters_.size() && "Invalid parameter specified");

@@ -78,6 +78,9 @@ protected:
     program prog1_;
     texture tex1_;
     sampler samp1_;
+
+    texture tex2_;
+
     generator gen_;
     render_context context_;
 };
@@ -133,6 +136,14 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
+    req.scale.set(100.f, 100.f);
+    pm = gen_.render_image<rgb888_t>(req).get();
+    tex2_.set_type(texture_type::TT_CUBE_MAP);
+    if(!tex2_.allocate() || !tex2_.initialise(pm,true)) {
+        LOG_ERR("Failed to allocate or initialise texture");
+        return false;
+    }
+
     samp1_.initialise();
     samp1_.set_anisotropy(16.f);
     samp1_.set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
@@ -143,9 +154,10 @@ bool scene_graph_test::initialise() {
     samp1_.release(0);
 
     context_.set_program(&prog1_);
-    context_.add_sampler(&tex1_, &samp1_);
+    context_.add_sampler(&tex1_, &samp1_, &tex2_, &samp1_);
     context_.initialise();
     context_.set_parameter("colour[0]", {vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 0.f, 0.f}});
+    context_.set_texture_unit("diffuse_tex", 0);
 
     //wire_frame(true);
     //bf_culling(false);
@@ -159,12 +171,6 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.frustum(45.f, float(width)/height, .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
-
-    // This is a hack until I can properly link the texture to the name
-    prog1_.bind();
-    prog1_.bind_texture_unit("diffuse_tex", 0);
-    prog1_.release();
-
     gl_error_check();
 }
 
