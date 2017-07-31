@@ -102,6 +102,31 @@ std::vector<parameter> program::get_parameters() const {
     return parms;
 }
 
+void program::bind_uniform(int location, parameter_type type, size_t count, const char* data) {
+    switch(type) {
+        case parameter_type::PT_FLOAT: gl::glUniform1fv(location, count, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_FLOAT_VEC2: gl::glUniform2fv(location, count, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_FLOAT_VEC3: gl::glUniform3fv(location, count, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_FLOAT_VEC4: gl::glUniform4fv(location, count, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_INT: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_INT_VEC2: gl::glUniform2iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_INT_VEC3: gl::glUniform3iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_INT_VEC4: gl::glUniform4iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_UINT: gl::glUniform1uiv(location, count, reinterpret_cast<const uint32_t*>(data)); return;
+        case parameter_type::PT_UINT_VEC2: gl::glUniform2uiv(location, count, reinterpret_cast<const uint32_t*>(data)); return;
+        case parameter_type::PT_UINT_VEC3: gl::glUniform3uiv(location, count, reinterpret_cast<const uint32_t*>(data)); return;
+        case parameter_type::PT_UINT_VEC4: gl::glUniform4uiv(location, count, reinterpret_cast<const uint32_t*>(data)); return;
+        case parameter_type::PT_BOOL: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_BOOL_VEC2: gl::glUniform2iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_BOOL_VEC3: gl::glUniform3iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_BOOL_VEC4: gl::glUniform4iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_FLOAT_MAT2: gl::glUniformMatrix2fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_FLOAT_MAT3: gl::glUniformMatrix3fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
+        case parameter_type::PT_FLOAT_MAT4: gl::glUniformMatrix4fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
+        default: LOG_ERR("Tried to bind invalid uniform at location:", location);
+    }
+}
+
 template <> void zap::engine::program::bind_uniform<int>(int location, const int& value) {
     gl::glUniform1i(location, value);
 }

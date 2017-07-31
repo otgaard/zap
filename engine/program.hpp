@@ -60,6 +60,7 @@ namespace zap { namespace engine {
         }
         bool link(bool clear=true);
 
+        void bind_uniform(int location, parameter_type type, size_t count, const char* data);
         template <typename T> void bind_uniform(int location, const T& type);
         template <typename T> void bind_uniform(const char* name, const T& type);
         void bind_texture_unit(int location, int unit);

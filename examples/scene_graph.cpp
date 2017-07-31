@@ -77,6 +77,7 @@ protected:
     texture tex1_;
     sampler samp1_;
     generator gen_;
+    render_context context_;
 };
 
 bool scene_graph_test::initialise() {
@@ -144,9 +145,10 @@ bool scene_graph_test::initialise() {
     samp1_.set_wrap_r(tex_wrap::TW_MIRRORED_REPEAT);
     samp1_.release(0);
 
-    render_context ctx(&prog1_);
-    ctx.add_sampler(&tex1_, &samp1_, &tex1_, &samp1_, &tex1_, &samp1_);
-    ctx.initialise();
+    context_.set_program(&prog1_);
+    context_.add_sampler(&tex1_, &samp1_);
+    context_.initialise();
+    context_.set_parameter("PVM", make_translation(1.f, 2.f, 3.f));
 
     //wire_frame(true);
     //bf_culling(false);
@@ -161,10 +163,15 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
 
+    context_.set_parameter("PVM", cam_.proj_view());
     prog1_.bind();
-    prog1_.bind_uniform("PVM", cam_.proj_view());
     prog1_.bind_texture_unit("diffuse_tex", 0);
     prog1_.release();
+
+    //prog1_.bind();
+    //prog1_.bind_uniform("PVM", cam_.proj_view());
+    //prog1_.bind_texture_unit("diffuse_tex", 0);
+    //prog1_.release();
 
     gl_error_check();
 }
@@ -177,17 +184,30 @@ void scene_graph_test::update(double t, float dt) {
 void scene_graph_test::draw() {
     prog1_.bind();
 
+    /*
     prog1_.bind_uniform("PVM", cam_.proj_view()
                                * make_translation(0.f, 0.f, -2.f)
                                * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+    */
 
     mesh1_.bind();
-    tex1_.bind(0);
-    samp1_.bind(0);
+    //tex1_.bind(0);
+    //samp1_.bind(0);
+
+
+
+    context_.bind();
+
+
     mesh1_.draw();
-    samp1_.release(0);
-    tex1_.release();
+
+
+    context_.release();
+
+
+    //samp1_.release(0);
+    //tex1_.release();
     mesh1_.release();
 
     prog1_.release();

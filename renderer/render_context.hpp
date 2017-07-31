@@ -16,8 +16,12 @@
  * 2) Support multiple passes
  * 3) Queryable, enumerable, & programmable state (program uniforms, uniform buffers, textures, render_state)
  * 4) State sharing or ownership of resources
- * 5)
-
+ *
+ * Notes:
+ *
+ * 1) It might make sense to store the resource_t directly as a parameter and then bind it without requiring reference
+ *    to the texture or sampler.  That would allow textures to be set more like parameters but would move the ownership
+ *    problem elsewhere.
  */
 
 #include <memory>
@@ -50,11 +54,37 @@ public:
         if(!program_) return false;
         parameters_ = program_->get_parameters();
         size_t total = 0;
+        offsets_.resize(parameters_.size(), 0);
         for(const auto& p : parameters_) {
+            offsets_[p.index] = int(total);
             total += p.bytesize();
+
         }
         uniforms_.resize(total);
+        dirty_flags_.resize(parameters_.size(), true);
+        dirty_ = true;
         return true;
+    }
+
+    template <typename T>
+    void set_parameter(int idx, const T& value) {
+        assert(idx < parameters_.size() && "Invalid parameter specified");
+        auto& parm = parameters_[idx];
+        int offset = offsets_[idx];
+        if(((engine::parameter_type)engine::pt_descriptor<T>::value) == parm.type) {
+            *reinterpret_cast<T*>(uniforms_.data()+offset) = value;
+            dirty_flags_[idx] = true;
+            dirty_ = true;
+        } else {
+            LOG_ERR("Attempted to bind invalid type to parameter:", parm.name);
+        }
+    }
+
+    template <typename T>
+    void set_parameter(const std::string& name, const T& value) {
+        auto it = std::find_if(parameters_.begin(), parameters_.end(), [&name](const auto& parm) { return parm.name == name; });
+        if(it != parameters_.end()) set_parameter(int(it - parameters_.begin()), value);
+        else                        LOG_ERR("Parameter does not exist in program:", LOG_GREEN, name);
     }
 
     void add_sampler(texture* tex_ptr, sampler* smp_ptr) {
@@ -89,11 +119,13 @@ private:
     // no ownership yet
 
     program* program_ = nullptr;
-    std::vector<parameter> parameters_;     // move this to a lookup table in the engine later
+    std::vector<parameter> parameters_;             // move this to a lookup table in the engine later (per program)
     std::vector<texture*> textures_;
     std::vector<sampler*> samplers_;
-    std::vector<char> uniforms_;            // Store all uniforms in a contiguous block
-    //bool dirty_args_ = true;                // If any uniform has been set on the client but not yet on the server
+    std::vector<int> offsets_;                      // Store the offset of each parameter (-1) for none
+    std::vector<char> uniforms_;                    // Store all uniforms in a contiguous block
+    mutable std::vector<bool> dirty_flags_;         // A set of dirty flags for each parameter
+    mutable bool dirty_ = true;                     // If any uniform has been set on the client but not yet on the server
 };
 
 
