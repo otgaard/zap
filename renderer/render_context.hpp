@@ -70,6 +70,12 @@ public:
         return true;
     }
 
+    int32_t get_index(const std::string& name) const {
+        auto it = std::find_if(parameters_.begin(), parameters_.end(), [&name](const auto& parm) { return parm.name == name; });
+        if(it != parameters_.end()) return int32_t(it - parameters_.begin());
+        else                        return -1;
+    }
+
     void set_texture_unit(int idx, int unit) {
         assert(idx < int(parameters_.size()) && "Invalid parameter specified");
         assert(unit < int(textures_.size()) && "No texture specified for requested unit");

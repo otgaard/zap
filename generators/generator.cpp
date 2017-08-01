@@ -19,15 +19,9 @@ vec3f cube_to_sphere(const vec3f& P) {
     const float inv3 = 1.f/3.f, x2 = P.x*P.x, y2 = P.y*P.y, z2 = P.z*P.z;
     const float y2z2inv3 = y2*z2*inv3, z2x2inv3 = z2*x2*inv3, x2y2inv3 = x2*y2*inv3;
     return vec3f{
-#if defined(__APPLE__) || defined(_WIN32)
-            P.x * std::sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
-            P.y * std::sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
-            P.z * std::sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
-#else
             P.x * sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
             P.y * sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
             P.z * sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
-#endif
     };
 }
 
@@ -135,11 +129,6 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
     if(!s.initialise(seed)) {
         LOG_ERR("Failed to initialise noise tables");
         return false;
-    }
-
-    // Test that the gradients coordinates are initialised in the same order across platforms
-    for(int i = 0; i != 10; ++i) {
-        LOG(s.grad2_table[i].x, s.grad2_table[i].y);
     }
 
     // Initialise GPU resources

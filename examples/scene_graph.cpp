@@ -83,6 +83,10 @@ protected:
 
     generator gen_;
     render_context context_;
+
+    int tex_idx = -1;
+    int pvm_idx = -1;
+    float inc = 0.f;
 };
 
 bool scene_graph_test::initialise() {
@@ -159,8 +163,8 @@ bool scene_graph_test::initialise() {
     context_.set_parameter("colour[0]", {vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 0.f, 0.f}});
     context_.set_texture_unit("diffuse_tex", 0);
 
-    //wire_frame(true);
-    //bf_culling(false);
+    tex_idx = context_.get_index("diffuse_tex");
+    pvm_idx = context_.get_index("PVM");
 
     gl_error_check();
 
@@ -174,7 +178,6 @@ void scene_graph_test::on_resize(int width, int height) {
     gl_error_check();
 }
 
-float inc = 0;
 void scene_graph_test::update(double t, float dt) {
     inc += .2f*dt;
 }
@@ -183,19 +186,20 @@ void scene_graph_test::draw() {
     mesh1_.bind();
     context_.bind();
 
-    context_.set_parameter("PVM", cam_.proj_view()
-                                  * make_translation(+2.f, 0.f, -4.f)
-                                  * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-                                  * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
-    context_.set_texture_unit("diffuse_tex", 0);
-
-    mesh1_.draw();
-
-    context_.set_parameter("PVM", cam_.proj_view()
+    // Low frequency tex
+    context_.set_parameter(pvm_idx, cam_.proj_view()
                                   * make_translation(-2.f, 0.f, -4.f)
                                   * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                   * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
-    context_.set_texture_unit("diffuse_tex", 1);
+    context_.set_texture_unit(tex_idx, 0);
+    mesh1_.draw();
+
+    // High frequency tex
+    context_.set_parameter(pvm_idx, cam_.proj_view()
+                                  * make_translation(+2.f, 0.f, -4.f)
+                                  * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                  * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+    context_.set_texture_unit(tex_idx, 1);
     mesh1_.draw();
 
     context_.release();
