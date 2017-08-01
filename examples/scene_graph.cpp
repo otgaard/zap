@@ -38,12 +38,16 @@ const char* const basic_vshdr = GLSL(
 
 const char* const basic_fshdr = GLSL(
     uniform samplerCube diffuse_tex;
-    uniform vec3 colour[2];
+    uniform vec3 colour[4];
 
     in vec3 tex;
     out vec4 frag_colour;
     void main() {
-        frag_colour = vec4(mix(colour[0], colour[1], texture(diffuse_tex, tex).r), 1.);
+        float h = 4*texture(diffuse_tex, tex).r;
+        int A = int(floor(h));
+        int B = min(A+1, 3);
+        h = h - float(A);
+        frag_colour = vec4(mix(colour[A], colour[B], h), 1.);
     }
 );
 
@@ -160,7 +164,7 @@ bool scene_graph_test::initialise() {
     context_.set_program(&prog1_);
     context_.add_sampler(&tex1_, &samp1_, &tex2_, &samp1_);
     context_.initialise();
-    context_.set_parameter("colour[0]", {vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 0.f, 0.f}});
+    context_.set_parameter("colour[0]", {vec3f{.2f, 0.f, 0.f}, vec3f{.8f, 1.f, 0.f}, vec3f{1.f, 0.f, 1.f}, vec3f{0.f, 1.f, 0.f}});
     context_.set_texture_unit("diffuse_tex", 0);
 
     tex_idx = context_.get_index("diffuse_tex");
