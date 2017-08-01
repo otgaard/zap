@@ -85,7 +85,7 @@ std::vector<parameter> program::get_parameters() const {
 
     int32_t uniform_count;
     gl::glGetProgramiv(id_, GL_ACTIVE_UNIFORMS, &uniform_count);
-    for(uint32_t i = 0; i != uniform_count; ++i) {
+    for(int i = 0; i != uniform_count; ++i) {
         parameter p{-1};
         int len;
         gl::GLenum gltype;

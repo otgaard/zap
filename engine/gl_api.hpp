@@ -3,6 +3,7 @@
 #define ZAP_GL_API_HPP
 
 #include "engine.hpp"
+#include <algorithm>
 #include <maths/maths.hpp>
 
 namespace zap { namespace engine { namespace gl {

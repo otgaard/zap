@@ -14,9 +14,9 @@ void render_context::bind() const {
     program_->bind();
     if(!textures_.empty()) {
         if(samplers_.empty()) {
-            for(int i = 0; i != textures_.size(); ++i) textures_[i]->bind(i);
+            for(size_t i = 0; i != textures_.size(); ++i) textures_[i]->bind(i);
         } else {
-            for(int i = 0; i != textures_.size(); ++i) {
+            for(size_t i = 0; i != textures_.size(); ++i) {
                 textures_[i]->bind(i);
                 samplers_[i]->bind(i);
             }
@@ -24,7 +24,7 @@ void render_context::bind() const {
     }
 
     if(dirty_) {
-        for(int i = 0; i != parameters_.size(); ++i) {
+        for(size_t i = 0; i != parameters_.size(); ++i) {
             if(dirty_flags_[i]) {
                 program_->bind_uniform(parameters_[i].location, parameters_[i].type, parameters_[i].count, &uniforms_[offsets_[i]]);
                 if(gl_error_check()) LOG_ERR("Error binding parameter:", parameters_[i].name, gl::gl_typename(parameters_[i].type), parameters_[i].count);
@@ -38,11 +38,11 @@ void render_context::bind() const {
 void render_context::release() const {
     if(!textures_.empty()) {
         if(samplers_.empty()) {
-            for(int i = 0; i != textures_.size(); ++i) {
+            for(size_t i = 0; i != textures_.size(); ++i) {
                 textures_[i]->release();
             }
         } else {
-            for(int i = 0; i != textures_.size(); ++i) {
+            for(size_t i = 0; i != textures_.size(); ++i) {
                 samplers_[i]->release(i);
                 textures_[i]->release();
             }

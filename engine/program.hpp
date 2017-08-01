@@ -17,7 +17,7 @@ namespace zap { namespace engine {
         parameter_type type;
         int32_t count;
 
-        bool is_valid() const { return location != INVALID_IDX; }
+        bool is_valid() const { return location != -1; }
         bool is_array() const { return count > 1; }
         size_t bytesize() const { return pt_bytesize[int(type)]; }
 

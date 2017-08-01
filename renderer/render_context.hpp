@@ -25,6 +25,8 @@
  */
 
 #include <memory>
+#include <cstring>
+#include <algorithm>
 #include <engine/program.hpp>
 #include <engine/texture.hpp>
 #include <engine/sampler.hpp>
@@ -55,7 +57,7 @@ public:
         parameters_ = program_->get_parameters();
         size_t total = 0;
         offsets_.resize(parameters_.size(), 0);
-        for(int i = 0; i != parameters_.size(); ++i) {
+        for(size_t i = 0; i != parameters_.size(); ++i) {
             offsets_[i] = int(total);
             total += parameters_[i].count * parameters_[i].bytesize();
 
@@ -67,8 +69,8 @@ public:
     }
 
     void set_texture_unit(int idx, int unit) {
-        assert(idx < parameters_.size() && "Invalid parameter specified");
-        assert(unit < textures_.size() && "No texture specified for requested unit");
+        assert(idx < int(parameters_.size()) && "Invalid parameter specified");
+        assert(unit < int(textures_.size()) && "No texture specified for requested unit");
 
         using pt = engine::parameter_type;
         auto& parm = parameters_[idx];
@@ -88,7 +90,7 @@ public:
 
     template <typename T>
     void set_parameter(int idx, const T* value) {
-        assert(idx < parameters_.size() && "Invalid parameter specified");
+        assert(idx < int(parameters_.size()) && "Invalid parameter specified");
         auto& parm = parameters_[idx];
         int offset = offsets_[idx];
         if(((engine::parameter_type)engine::pt_descriptor<T>::value) == parm.type) {
