@@ -12,6 +12,7 @@ using namespace zap::renderer;
 
 void render_context::bind() const {
     program_->bind();
+    is_bound_ = true;
     if(!textures_.empty()) {
         if(samplers_.empty()) {
             for(size_t i = 0; i != textures_.size(); ++i) textures_[i]->bind(i);
@@ -49,4 +50,5 @@ void render_context::release() const {
         }
     }
     program_->release();
+    is_bound_ = false;
 }

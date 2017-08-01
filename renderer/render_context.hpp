@@ -52,6 +52,8 @@ public:
     explicit render_context(program* prog) : program_{prog} { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
 
+    bool is_bound() const { return is_bound_; }
+
     bool initialise() {
         if(!program_) return false;
         parameters_ = program_->get_parameters();
@@ -77,8 +79,12 @@ public:
         int offset = offsets_[idx];
         if(is_one_of(parm.type, {pt::PT_SAMPLER_1D, pt::PT_SAMPLER_2D, pt::PT_SAMPLER_3D, pt::PT_SAMPLER_CUBE})) {
             memcpy(uniforms_.data()+offset, &unit, parm.bytesize() * parm.count);
-            dirty_flags_[idx] = true;
-            dirty_ = true;
+            if(is_bound_) {
+                program_->bind_uniform(parm.location, parm.type, parm.count, &uniforms_[offset]);
+            } else {
+                dirty_flags_[idx] = true;
+                dirty_ = true;
+            }
         }
     }
 
@@ -95,8 +101,12 @@ public:
         int offset = offsets_[idx];
         if(((engine::parameter_type)engine::pt_descriptor<T>::value) == parm.type) {
             memcpy(uniforms_.data()+offset, value, parm.bytesize() * parm.count);
-            dirty_flags_[idx] = true;
-            dirty_ = true;
+            if(is_bound_) {
+                program_->bind_uniform(parm.location, parm.type, parm.count, &uniforms_[offset]);
+            } else {
+                dirty_flags_[idx] = true;
+                dirty_ = true;
+            }
         } else {
             LOG_ERR("Attempted to bind invalid type to parameter:", parm.name);
         }
@@ -168,9 +178,8 @@ private:
     std::vector<char> uniforms_;                    // Store all uniforms in a contiguous block
     mutable std::vector<bool> dirty_flags_;         // A set of dirty flags for each parameter
     mutable bool dirty_ = true;                     // If any uniform has been set on the client but not yet on the server
+    mutable bool is_bound_ = false;
 };
-
-
 
 }}
 

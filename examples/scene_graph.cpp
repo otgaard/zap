@@ -180,26 +180,26 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
+    mesh1_.bind();
+    context_.bind();
+
     context_.set_parameter("PVM", cam_.proj_view()
-        * make_translation(+2.f, 0.f, -4.f)
-        * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-        * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+                                  * make_translation(+2.f, 0.f, -4.f)
+                                  * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                  * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit("diffuse_tex", 0);
 
-    context_.bind();
-    mesh1_.bind();
     mesh1_.draw();
-    context_.release();
 
     context_.set_parameter("PVM", cam_.proj_view()
                                   * make_translation(-2.f, 0.f, -4.f)
                                   * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                   * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit("diffuse_tex", 1);
-    context_.bind();
     mesh1_.draw();
-    mesh1_.release();
+
     context_.release();
+    mesh1_.release();
 
     gl_error_check();
 }
