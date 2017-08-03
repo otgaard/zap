@@ -43,7 +43,7 @@ const char* const basic_fshdr = GLSL(
     in vec3 tex;
     out vec4 frag_colour;
     void main() {
-        float h = 4*texture(diffuse_tex, tex).r;
+        float h = 3*texture(diffuse_tex, tex).r;
         int A = int(floor(h));
         int B = min(A+1, 3);
         h = h - float(A);

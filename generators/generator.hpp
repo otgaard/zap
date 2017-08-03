@@ -97,10 +97,14 @@ public:
     pixmap<float> render_simd(const render_task& req);
     pixmap<float> render_gpu(const render_task& req);
 
-protected:
     float vnoise(float dx, int x) const;
     float vnoise(float dx, float dy, int x, int y) const;
     float vnoise(float dx, float dy, float dz, int x, int y, int z) const;
+    float pnoise(float dx, int x) const;
+    float pnoise(float dx, float dy, int x, int y) const;
+    float pnoise(float dx, float dy, float dz, int x, int y, int z) const;
+
+    inline float easing_curve(float value) const { return value * value * (3.f - 2.f * value); }
 
 private:
     threadpool* pool_ptr_ = nullptr;

@@ -74,6 +74,7 @@ struct generator::state_t {
             prn_table[i] = byte(i);
             grad1_table[i] = prn.random_s();
             grad2_table[i] = maths::normalise(maths::vec2f{prn.random_s(), prn.random_s()});
+            grad3_table[i] = maths::normalise(maths::vec3f{prn.random_s(), prn.random_s(), prn.random_s()});
         }
 
         prn.shuffle(prn_table, prn_table+RND_TBL);
@@ -89,6 +90,7 @@ struct generator::state_t {
 #else
     float __attribute__((aligned(16))) grad1_table[RND_TBL] = {};
     maths::vec2f __attribute__((aligned(16))) grad2_table[RND_TBL] = {};
+    maths::vec3f __attribute__((aligned(16))) grad3_table[RND_TBL] = {};
 #endif
 
     // OpenGL Resources
@@ -108,6 +110,8 @@ struct generator::state_t {
     float grad1(int x, int y) const { return grad1_table[perm(x,y)]; }
     float grad1(int x, int y, int z) const { return grad1_table[perm(x,y,z)]; }
     float grad1(int x, int y, int z, int w) const { return grad1_table[perm(x,y,z,w)]; }
+    vec2f grad2(int x, int y) const { return grad2_table[perm(x,y)]; }
+    vec3f grad3(int x, int y, int z) const { return grad3_table[perm(x,y,z)]; }
 };
 
 generator::generator() : state_(new state_t()), s(*state_.get()) {
@@ -190,7 +194,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 float x = inv_x * c;
                 int ix = maths::floor(x);
                 float dx = x - float(ix);
-                image(c,r) = vnoise(dx, dy, ix, iy);
+                image(c,r) = pnoise(dx, dy, ix, iy);
             }
         }
     } else if(req.project == render_task::projection::SPHERICAL) {
@@ -205,7 +209,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 float x = radius * stheta * cphi, y = radius * ctheta, z = radius * stheta * sphi;
                 int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
                 float dx = x - float(ix), dy = y - float(iy), dz = z - float(iz);
-                image(c,r) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
     } else if(req.project == render_task::projection::CUBE_MAP) {
@@ -221,7 +225,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{1.f, y, x});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
-                image(c,r,0) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r,0) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
 
@@ -233,7 +237,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{-1.f, y, x});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
-                image(c,r,1) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r,1) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
 
@@ -245,7 +249,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, -1.f, y});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
-                image(c,r,2) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r,2) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
 
@@ -257,7 +261,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, 1.f, y});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
-                image(c,r,3) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r,3) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
 
@@ -269,7 +273,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, 1.f});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
-                image(c,r,4) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r,4) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
 
@@ -281,7 +285,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
                 vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, -1.f});
                 int ix = maths::floor(sP.x), iy = maths::floor(sP.y), iz = maths::floor(sP.z);
                 float dx = sP.x - float(ix), dy = sP.y - float(iy), dz = sP.z - float(iz);
-                image(c,r,5) = vnoise(dx, dy, dz, ix, iy, iz);
+                image(c,r,5) = pnoise(dx, dy, dz, ix, iy, iz);
             }
         }
     }
@@ -433,5 +437,58 @@ float generator::vnoise(float dx, float dy, float dz, int x, int y, int z) const
     int x1 = x+1, y1 = y+1, z1 = z+1;
     return maths::trilinear(dx, dy, dz, s.grad1(x,y,z),  s.grad1(x1,y,z),  s.grad1(x,y1,z),  s.grad1(x1,y1,z),
                                         s.grad1(x,y,z1), s.grad1(x1,y,z1), s.grad1(x,y1,z1), s.grad1(x1,y1,z1));
+}
+
+float generator::pnoise(float dx, int x) const {
+    int bx0, bx1;
+    float rx0, rx1, sx, u, v;
+    //t = x + RND_MASK;
+    bx0 = x & RND_MASK;
+    bx1 = (bx0+1) & RND_MASK;
+    rx0 = dx;
+    rx1 = rx0 - 1.f;
+
+    sx = easing_curve(rx0);
+    u = rx0 * s.grad1(bx0);
+    v = rx1 * s.grad1(bx1);
+    return lerp(sx, u, v);
+}
+
+float generator::pnoise(float dx, float dy, int x, int y) const {
+    return 0;
+}
+
+float generator::pnoise(float dx, float dy, float dz, int x, int y, int z) const {
+    float sx, sy, sz, a, b, c, d, u, v;
+
+    maths::vec3i b0{x & RND_MASK,y & RND_MASK, z & RND_MASK};
+    maths::vec3i b1{(b0.x + 1) & RND_MASK, (b0.y + 1) & RND_MASK, (b0.z + 1) & RND_MASK};
+    maths::vec3f r0{dx, dy, dz};
+    maths::vec3f r1 = r0 - maths::vec3f{1.f, 1.f, 1.f};
+
+    sx = easing_curve(r0.x);
+    sy = easing_curve(r0.y);
+    sz = easing_curve(r0.z);
+
+    u = dot(s.grad3(b0.x, b0.y, b0.z), r0);
+    v = dot(s.grad3(b1.x, b0.y, b0.z), r1.x, r0.y, r0.z);
+    a = lerp(sx, u, v);
+
+    u = dot(s.grad3(b0.x, b1.y, b0.z), r0.x, r1.y, r0.z);
+    v = dot(s.grad3(b1.x, b1.y, b0.z), r1.x, r1.y, r0.z);
+    b = lerp(sx, u, v);
+
+    c = lerp(sy, a, b);
+
+    u = dot(s.grad3(b0.x, b0.y, b1.z), r0.x, r0.y, r1.z);
+    v = dot(s.grad3(b1.x, b0.y, b1.z), r1.x, r0.y, r1.z);
+    a = lerp(sx, u, v);
+
+    u = dot(s.grad3(b0.x, b1.y, b1.z), r0.x, r1.y, r1.z);
+    v = dot(s.grad3(b1.x, b1.y, b1.z), r1);
+    b = lerp(sx, u, v);
+
+    d = lerp(sy, a, b);
+    return lerp(sz, c, d);
 }
 
