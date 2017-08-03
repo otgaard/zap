@@ -129,7 +129,7 @@ bool scene_graph_test::initialise() {
     }
 
     render_task req{256, 256};
-    req.scale.set(40.f, 40.f);
+    req.scale.set(20.f, 20.f);
     req.project = render_task::projection::CUBE_MAP;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
@@ -144,7 +144,7 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    req.scale.set(100.f, 100.f);
+    req.scale.set(40.f, 40.f);
     pm = gen_.render_image<rgb888_t>(req).get();
     tex2_.set_type(texture_type::TT_CUBE_MAP);
     if(!tex2_.allocate() || !tex2_.initialise(pm,true)) {

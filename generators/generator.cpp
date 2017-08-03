@@ -87,6 +87,7 @@ struct generator::state_t {
 #if defined(_WIN32)
     __declspec(align(16)) float grad1_table[RND_TBL];
     __declspec(align(16)) maths::vec2f grad2_table[RND_TBL];
+    __declspec(align(16)) maths::vec3f grad3_table[RND_TBL];
 #else
     float __attribute__((aligned(16))) grad1_table[RND_TBL] = {};
     maths::vec2f __attribute__((aligned(16))) grad2_table[RND_TBL] = {};
