@@ -442,9 +442,8 @@ float generator::vnoise(float dx, float dy, float dz, int x, int y, int z) const
 float generator::pnoise(float dx, int x) const {
     int bx0, bx1;
     float rx0, rx1, sx, u, v;
-    //t = x + RND_MASK;
-    bx0 = x & RND_MASK;
-    bx1 = (bx0+1) & RND_MASK;
+    bx0 = x;
+    bx1 = bx0 + 1;
     rx0 = dx;
     rx1 = rx0 - 1.f;
 
@@ -455,16 +454,34 @@ float generator::pnoise(float dx, int x) const {
 }
 
 float generator::pnoise(float dx, float dy, int x, int y) const {
-    return 0;
+    float sx, sy, a, b, u, v;
+
+    vec2i b0(x, y);
+    vec2i b1 = b0 + vec2i{1, 1};
+    vec2f r0(dx, dy);
+    vec2f r1 = r0 - vec2f{1.f, 1.f};
+
+    sx = easing_curve(r0.x);
+    sy = easing_curve(r0.y);
+
+    u = dot(s.grad2(b0.x, b0.y), r0);
+    v = dot(s.grad2(b1.x, b0.y), r1.x, r0.y);
+    a = lerp(sx, u, v);
+
+    u = dot(s.grad2(b0.x, b1.y), r0.x, r1.y);
+    v = dot(s.grad2(b1.x, b1.y), r1);
+    b = lerp(sx, u, v);
+
+    return lerp(sy, a, b);
 }
 
 float generator::pnoise(float dx, float dy, float dz, int x, int y, int z) const {
     float sx, sy, sz, a, b, c, d, u, v;
 
-    maths::vec3i b0{x & RND_MASK,y & RND_MASK, z & RND_MASK};
-    maths::vec3i b1{(b0.x + 1) & RND_MASK, (b0.y + 1) & RND_MASK, (b0.z + 1) & RND_MASK};
-    maths::vec3f r0{dx, dy, dz};
-    maths::vec3f r1 = r0 - maths::vec3f{1.f, 1.f, 1.f};
+    vec3i b0{x, y, z};
+    vec3i b1 = b0 + vec3i{1, 1, 1};
+    vec3f r0{dx, dy, dz};
+    vec3f r1 = r0 - vec3f{1.f, 1.f, 1.f};
 
     sx = easing_curve(r0.x);
     sy = easing_curve(r0.y);
