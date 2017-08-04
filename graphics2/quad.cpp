@@ -137,7 +137,8 @@ void quad::draw() {
 
     program_.bind();
     gl_error_check();
-    if(frag_shdr_ == nullptr) texture_.bind(0);
+    if(frag_shdr_ == nullptr && !tex_override_) texture_.bind(0);
+    else if(tex_override_) tex_override_->bind(0);
 
     mesh_.bind();
     gl_error_check();
@@ -150,6 +151,11 @@ void quad::draw() {
     mesh_.release();
     gl_error_check();
 
-    if(frag_shdr_ == nullptr) texture_.release();
+    if(frag_shdr_ == nullptr && !tex_override_) texture_.release();
+    else if(tex_override_) tex_override_->release();
     program_.release();
+}
+
+bool quad::initialise(const std::string& frag_shdr_src) {
+    return initialise(new shader(shader_type::ST_FRAGMENT, frag_shdr_src));
 }

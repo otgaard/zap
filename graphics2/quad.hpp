@@ -19,8 +19,13 @@ public:
     engine::texture& get_texture() { return texture_; }
 
     bool initialise(engine::shader* frag_shdr=nullptr);
+    bool initialise(const std::string& frag_shdr_src);
     void update(double t, float dt);
     void draw();
+
+    void set_override(const engine::texture* override) { tex_override_ = override; }
+    const engine::texture* get_override() const { return tex_override_; }
+    void clear_override() { tex_override_ = nullptr; }
 
     int get_width() const { return screen_.x; }
     int get_height() const { return screen_.y; }
@@ -34,6 +39,7 @@ public:
 private:
     engine::program program_;
     engine::shader* frag_shdr_ = nullptr;
+    const engine::texture* tex_override_ = nullptr;
     engine::texture texture_;
     vbuf_p2t2_t vbuf_;
     mesh_p2t2_tfan_t mesh_;

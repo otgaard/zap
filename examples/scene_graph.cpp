@@ -14,11 +14,13 @@
 
 #include <renderer/camera.hpp>
 #include <engine/sampler.hpp>
+#include <engine/framebuffer.hpp>
 
 #include <scene_graph/spatial.hpp>
 #include <scene_graph/visual.hpp>
 #include <scene_graph/node.hpp>
 
+#include <graphics2/quad.hpp>
 #include <graphics3/g3_types.hpp>
 #include <generators/geometry/geometry3.hpp>
 #include <generators/generator.hpp>
@@ -48,6 +50,34 @@ const char* const basic_fshdr = GLSL(
         int B = min(A+1, 3);
         h = h - float(A);
         frag_colour = vec4(mix(colour[A], colour[B], h), 1.);
+    }
+);
+
+// Adapted from Advanced Image Processing with DirectX 9 Pixel Shaders
+
+const char* const blur_fshdr = GLSL(
+    uniform sampler2D input_tex;
+    uniform float blur_factor;
+    uniform int direction;
+
+    in vec2 tex;
+
+    const float gaussian[5] = float[5](.0162162162, .0540540541, .1216216216, .1945945946, .2270270270);
+    float disp[4] = float[4](1. * blur_factor, 2. * blur_factor, 3. * blur_factor, 4. * blur_factor);
+
+    out vec4 frag_colour;
+
+    void main() {
+        frag_colour = vec4(0.);
+        if(direction == 0) {    // Horizontal
+            for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x - disp[3 - i], tex.y)) * gaussian[i];
+            frag_colour += texture(input_tex, tex) * gaussian[4];
+            for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x + disp[i], tex.y)) * gaussian[3 - i];
+        } else {                // Vertical
+            for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x, tex.y - disp[3 - i])) * gaussian[i];
+            frag_colour += texture(input_tex, tex) * gaussian[4];
+            for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x, tex.y + disp[i])) * gaussian[3 - i];
+        }
     }
 );
 
@@ -87,6 +117,11 @@ protected:
 
     generator gen_;
     render_context context_;
+
+    framebuffer fbuffer1_;
+    framebuffer fbuffer2_;
+    quad quad1_;
+    quad quad2_;
 
     int tex_idx = -1;
     int pvm_idx = -1;
@@ -129,7 +164,7 @@ bool scene_graph_test::initialise() {
     }
 
     render_task req{256, 256};
-    req.scale.set(20.f, 20.f);
+    req.scale.set(5.f, 5.f);
     req.project = render_task::projection::CUBE_MAP;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
@@ -144,7 +179,7 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    req.scale.set(40.f, 40.f);
+    req.scale.set(10.f, 10.f);
     pm = gen_.render_image<rgb888_t>(req).get();
     tex2_.set_type(texture_type::TT_CUBE_MAP);
     if(!tex2_.allocate() || !tex2_.initialise(pm,true)) {
@@ -170,6 +205,30 @@ bool scene_graph_test::initialise() {
     tex_idx = context_.get_index("diffuse_tex");
     pvm_idx = context_.get_index("PVM");
 
+    // Initialise a framebuffer so we can test blurring
+    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
+        LOG_ERR("Failed to initialise the framebuffer");
+        return false;
+    }
+
+    if(!fbuffer2_.allocate() || !fbuffer2_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false)) {
+        LOG_ERR("Failed to initialise the framebuffer");
+        return false;
+    }
+
+    if(!quad1_.initialise(blur_fshdr) || !quad2_.initialise()) {
+        LOG_ERR("Failed to initialise quad");
+        return false;
+    }
+
+    quad2_.set_override(&fbuffer2_.get_attachment(0));
+
+    quad1_.get_program()->bind();
+    quad1_.get_program()->bind_uniform("blur_factor", 4.f/sc_width_);
+    quad1_.get_program()->bind_uniform("direction", 0);
+    quad1_.get_program()->bind_texture_unit("input_tex", 0);
+    quad1_.get_program()->release();
+
     gl_error_check();
 
     return true;
@@ -179,16 +238,21 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.frustum(45.f, float(width)/height, .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
+    fbuffer1_.initialise(1, width, height, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
+    fbuffer2_.initialise(1, width, height, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
+    quad1_.resize(width, height);
+    quad2_.resize(width, height);
     gl_error_check();
 }
 
 void scene_graph_test::update(double t, float dt) {
-    inc += .2f*dt;
+    inc += dt;
 }
 
 void scene_graph_test::draw() {
     mesh1_.bind();
     context_.bind();
+    fbuffer1_.bind();
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -206,8 +270,19 @@ void scene_graph_test::draw() {
     context_.set_texture_unit(tex_idx, 1);
     mesh1_.draw();
 
+    fbuffer1_.release();
     context_.release();
     mesh1_.release();
+
+    fbuffer2_.bind();
+    fbuffer1_.get_attachment(0).bind(0);
+
+    quad1_.draw();
+
+    fbuffer1_.get_attachment(0).release();
+    fbuffer2_.release();
+
+    quad2_.draw();
 
     gl_error_check();
 }

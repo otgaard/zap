@@ -19,6 +19,7 @@
 zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap::engine::pixel_datatype datatype) {
     using namespace zap::engine; using namespace gl;
     if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) return gl_type(format);
+    else if(datatype == pixel_datatype::PD_UNSIGNED_INT_24_8) return GL_DEPTH24_STENCIL8;
     else if(datatype == pixel_datatype::PD_UNSIGNED_BYTE_3_3_2) return gl_type(format);
     else if(datatype == pixel_datatype::PD_DN_UNSIGNED_BYTE) {
         if(format == pixel_format::PF_RED_INTEGER)  return GL_R8UI;
