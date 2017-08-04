@@ -78,6 +78,8 @@ const char* const blur_fshdr = GLSL(
             frag_colour += texture(input_tex, tex) * gaussian[4];
             for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x, tex.y + disp[i])) * gaussian[3 - i];
         }
+
+        frag_colour.a = .90;
     }
 );
 
@@ -208,7 +210,7 @@ bool scene_graph_test::initialise() {
     pvm_idx = context_.get_index("PVM");
 
     // Initialise a framebuffer so we can test blurring
-    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_/2, sc_height_/2, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
+    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_/8, sc_height_/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
         LOG_ERR("Failed to initialise the framebuffer");
         return false;
     }
@@ -231,7 +233,7 @@ bool scene_graph_test::initialise() {
     quad2_.set_override(&fbuffer3_.get_attachment(0));
 
     quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("blur_factor", 2.f/sc_width_);
+    quad1_.get_program()->bind_uniform("blur_factor", 8.f/sc_width_);
     quad1_.get_program()->bind_uniform("direction", 0);
     quad1_.get_program()->bind_texture_unit("input_tex", 0);
     quad1_.get_program()->release();
@@ -244,6 +246,9 @@ bool scene_graph_test::initialise() {
 
     gl_error_check();
 
+    alpha_blending(true);
+    //depth_test(true);
+
     return true;
 }
 
@@ -251,7 +256,7 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.frustum(45.f, float(width)/height, .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
-    fbuffer1_.initialise(1, width/2, height/2, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
+    fbuffer1_.initialise(1, width/8, height/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
     fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     quad1_.resize(width, height);
@@ -267,7 +272,7 @@ void scene_graph_test::draw() {
     mesh1_.bind();
     context_.bind();
     fbuffer1_.bind();
-    clear(0.f, 0.f, 0.f, 0.f);
+    //clear(0.f, 0.f, 0.f, 0.f);
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -291,6 +296,7 @@ void scene_graph_test::draw() {
 
     // Horizontal Pass
     fbuffer2_.bind();
+    clear(0.f, 0.f, 0.f, 0.f);
     fbuffer1_.get_attachment(0).bind(0);
     samp2_.bind(0);
     quad1_.get_program()->bind();
@@ -302,6 +308,7 @@ void scene_graph_test::draw() {
 
     // Vertical Pass
     fbuffer3_.bind();
+    clear(0.f, 0.f, 0.f, 0.f);
     fbuffer2_.get_attachment(0).bind(0);
     samp2_.bind(0);
     quad1_.get_program()->bind();
@@ -311,10 +318,32 @@ void scene_graph_test::draw() {
     fbuffer2_.get_attachment(0).release();
     fbuffer3_.release();
 
+    mesh1_.bind();
+    context_.bind();
+
+    // Low frequency tex
+    context_.set_parameter(pvm_idx, cam_.proj_view()
+                                    * make_translation(-2.f, 0.f, -4.f)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+    context_.set_texture_unit(tex_idx, 0);
+    mesh1_.draw();
+
+    // High frequency tex
+    context_.set_parameter(pvm_idx, cam_.proj_view()
+                                    * make_translation(+2.f, 0.f, -4.f)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+    context_.set_texture_unit(tex_idx, 1);
+    mesh1_.draw();
+
+    context_.release();
+    mesh1_.release();
 
     samp2_.bind(0);
     quad2_.draw();
     samp2_.release(0);
+
     gl_error_check();
 }
 
