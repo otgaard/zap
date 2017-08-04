@@ -120,8 +120,10 @@ protected:
 
     framebuffer fbuffer1_;
     framebuffer fbuffer2_;
+    framebuffer fbuffer3_;
     quad quad1_;
     quad quad2_;
+    sampler samp2_;
 
     int tex_idx = -1;
     int pvm_idx = -1;
@@ -206,7 +208,7 @@ bool scene_graph_test::initialise() {
     pvm_idx = context_.get_index("PVM");
 
     // Initialise a framebuffer so we can test blurring
-    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
+    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_/2, sc_height_/2, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
         LOG_ERR("Failed to initialise the framebuffer");
         return false;
     }
@@ -216,18 +218,29 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
+    if(!fbuffer3_.allocate() || !fbuffer3_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false)) {
+        LOG_ERR("Failed to initialise the framebuffer");
+        return false;
+    }
+
     if(!quad1_.initialise(blur_fshdr) || !quad2_.initialise()) {
         LOG_ERR("Failed to initialise quad");
         return false;
     }
 
-    quad2_.set_override(&fbuffer2_.get_attachment(0));
+    quad2_.set_override(&fbuffer3_.get_attachment(0));
 
     quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("blur_factor", 4.f/sc_width_);
+    quad1_.get_program()->bind_uniform("blur_factor", 2.f/sc_width_);
     quad1_.get_program()->bind_uniform("direction", 0);
     quad1_.get_program()->bind_texture_unit("input_tex", 0);
     quad1_.get_program()->release();
+
+    samp2_.allocate();
+    samp2_.initialise();
+    samp2_.set_min_filter(tex_filter::TF_LINEAR);
+    samp2_.set_mag_filter(tex_filter::TF_LINEAR);
+    samp2_.release(0);
 
     gl_error_check();
 
@@ -238,8 +251,9 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.frustum(45.f, float(width)/height, .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
-    fbuffer1_.initialise(1, width, height, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
-    fbuffer2_.initialise(1, width, height, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
+    fbuffer1_.initialise(1, width/2, height/2, pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
+    fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
+    fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     quad1_.resize(width, height);
     quad2_.resize(width, height);
     gl_error_check();
@@ -253,6 +267,7 @@ void scene_graph_test::draw() {
     mesh1_.bind();
     context_.bind();
     fbuffer1_.bind();
+    clear(0.f, 0.f, 0.f, 0.f);
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -274,16 +289,32 @@ void scene_graph_test::draw() {
     context_.release();
     mesh1_.release();
 
+    // Horizontal Pass
     fbuffer2_.bind();
     fbuffer1_.get_attachment(0).bind(0);
-
+    samp2_.bind(0);
+    quad1_.get_program()->bind();
+    quad1_.get_program()->bind_uniform("direction", 0);
     quad1_.draw();
-
+    samp2_.release(0);
     fbuffer1_.get_attachment(0).release();
     fbuffer2_.release();
 
-    quad2_.draw();
+    // Vertical Pass
+    fbuffer3_.bind();
+    fbuffer2_.get_attachment(0).bind(0);
+    samp2_.bind(0);
+    quad1_.get_program()->bind();
+    quad1_.get_program()->bind_uniform("direction", 1);
+    quad1_.draw();
+    samp2_.release(0);
+    fbuffer2_.get_attachment(0).release();
+    fbuffer3_.release();
 
+
+    samp2_.bind(0);
+    quad2_.draw();
+    samp2_.release(0);
     gl_error_check();
 }
 
