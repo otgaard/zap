@@ -256,6 +256,9 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.frustum(45.f, float(width)/height, .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
+    quad1_.get_program()->bind();
+    quad1_.get_program()->bind_uniform("blur_factor", 8.f/width);
+    quad1_.get_program()->bind();
     fbuffer1_.initialise(1, width/8, height/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
     fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
