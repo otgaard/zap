@@ -7,6 +7,7 @@
 
 #include <core/enumfield.hpp>
 #include <maths/transform.hpp>
+#include <scene_graph/bounds/bound.hpp>
 
 namespace zap { namespace scene_graph {
     template <typename SpatialT, typename PtrT=std::unique_ptr<SpatialT>> class node;
@@ -23,11 +24,11 @@ namespace zap { namespace scene_graph {
         SS_BOUND_INVALID = 1 << 1
     };
 
-    template <typename TransformT, typename BoundT>
+    template <typename TransformT, typename GeoT>
     class spatial {
     public:
         using transform_t = TransformT;
-        using bound_t = BoundT;
+        using bound_t = bound<GeoT, TransformT>;
         using type = typename transform_t::type;
         using affine_t = typename transform_t::affine_t;
         using vec_t = typename transform_t::vec_t;
@@ -57,7 +58,7 @@ namespace zap { namespace scene_graph {
 
         const spatial* parent() const { return parent_; }
 
-        virtual void update(double t, float dt) = 0;
+        virtual void update(double t, float dt) { }
 
     protected:
         friend class node<spatial>;
@@ -82,56 +83,56 @@ namespace zap { namespace scene_graph {
         cull_mode culling_;
     };
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::translate(const vec_t& T) {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::translate(const vec_t& T) {
         model_transform_.translate(T);
         invalidate_transform();
     };
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::rotate(const rot_t& R) {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::rotate(const rot_t& R) {
         model_transform_.rotate(R);
         invalidate_transform();
     }
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::rotate(const affine_t& R) {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::rotate(const affine_t& R) {
         model_transform_.rotate(R);
         invalidate_transform();
     }
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::matrix(const rot_t& M) {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::matrix(const rot_t& M) {
         model_transform_.matrix(M);
         invalidate_transform();
     }
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::uniform_scale(type S) {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::uniform_scale(type S) {
         model_transform_.uniform_scale(S);
         invalidate_transform();
     }
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::scale(const vec_t& S) {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::scale(const vec_t& S) {
         model_transform_.scale(S);
         invalidate_transform();
     }
 
-    template <typename TransformT, typename BoundT>
-    const TransformT& spatial<TransformT,BoundT>::world_transform() const {
+    template <typename TransformT, typename GeoT>
+    const TransformT& spatial<TransformT,GeoT>::world_transform() const {
         update_transform();
         return world_transform_;
     }
 
-    template <typename TransformT, typename BoundT>
-    const BoundT& spatial<TransformT,BoundT>::world_bound() const {
+    template <typename TransformT, typename GeoT>
+    const typename spatial<TransformT,GeoT>::bound_t& spatial<TransformT,GeoT>::world_bound() const {
         update_bound();
         return world_bound_;
     }
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::update_transform() const {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::update_transform() const {
         if(parent_ && parent_->cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) {
             parent_->update_transform();
             cache_state_.set(spatial_state::SS_TRANS_INVALID);
@@ -146,8 +147,8 @@ namespace zap { namespace scene_graph {
         if(parent_) parent_->invalidate_bound();
     }
 
-    template <typename TransformT, typename BoundT>
-    void spatial<TransformT,BoundT>::update_bound() const {
+    template <typename TransformT, typename GeoT>
+    void spatial<TransformT,GeoT>::update_bound() const {
         if(!cache_state_.is_set(spatial_state::SS_BOUND_INVALID)) return;
 
         if(cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) update_transform();

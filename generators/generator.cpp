@@ -278,7 +278,7 @@ pixmap<float> generator::render_cpu(const render_task& req) {
             }
         }
 
-        // Z+ Plane
+        // Z- Plane
         for(int r = 0; r != req.height; ++r) {
             float y = 2.f * (r - h_dim) * inv_dim;
             for(int c = 0; c != req.width; ++c) {

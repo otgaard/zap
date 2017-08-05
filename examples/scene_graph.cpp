@@ -53,6 +53,14 @@ const char* const basic_fshdr = GLSL(
     }
 );
 
+const char* const skybox_fshdr = GLSL(
+    in vec3 tex;
+    out vec4 frag_colour;
+    void main() {
+        frag_colour = mix(vec4(.1, .2, .5, 1.), vec4(.3, .4, .7, 1.), dot(tex, vec3(0., 1., 0.)));
+    }
+);
+
 // Adapted from Advanced Image Processing with DirectX 9 Pixel Shaders
 
 const char* const blur_fshdr = GLSL(
@@ -79,7 +87,7 @@ const char* const blur_fshdr = GLSL(
             for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x, tex.y + disp[i])) * gaussian[3 - i];
         }
 
-        frag_colour.a = .90;
+        frag_colour.a = .95;
     }
 );
 
@@ -105,12 +113,14 @@ public:
 
     void on_resize(int width, int height) final;
 
+    void draw_scene();
+
 protected:
     camera cam_;
     visual_t vis1_;
     vbuf_p3_t vbuf1_;
     ibuf_tri4_t ibuf1_;
-    mesh_p3_trii_t mesh1_;
+    mesh_p3_tri4_t mesh1_;
     program prog1_;
     texture tex1_;
     sampler samp1_;
@@ -130,6 +140,13 @@ protected:
     int tex_idx = -1;
     int pvm_idx = -1;
     float inc = 0.f;
+
+    // Skybox
+    vbuf_p3_t skybox_vbuf_;
+    ibuf_tri2_t skybox_ibuf_;
+    mesh_p3_tri2_t skybox_mesh_;
+    program skybox_prog_;
+    render_context skybox_ctx_;
 };
 
 bool scene_graph_test::initialise() {
@@ -144,7 +161,7 @@ bool scene_graph_test::initialise() {
     mesh1_.set_stream(&vbuf1_);
     mesh1_.set_index(&ibuf1_);
 
-    auto sphere = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(30, 60, 1.f, false);
+    auto sphere = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(100, 200, 1.f, false);
     if(!vbuf1_.initialise(get<0>(sphere))) {
         LOG_ERR("Failed to initialise sphere");
         return false;
@@ -203,13 +220,12 @@ bool scene_graph_test::initialise() {
     context_.set_program(&prog1_);
     context_.add_sampler(&tex1_, &samp1_, &tex2_, &samp1_);
     context_.initialise();
-    context_.set_parameter("colour[0]", {vec3f{.2f, 0.f, 0.f}, vec3f{.8f, 1.f, 0.f}, vec3f{1.f, 0.f, 1.f}, vec3f{0.f, 1.f, 0.f}});
+    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
     context_.set_texture_unit("diffuse_tex", 0);
 
     tex_idx = context_.get_index("diffuse_tex");
     pvm_idx = context_.get_index("PVM");
 
-    // Initialise a framebuffer so we can test blurring
     if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_/8, sc_height_/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
         LOG_ERR("Failed to initialise the framebuffer");
         return false;
@@ -244,16 +260,37 @@ bool scene_graph_test::initialise() {
     samp2_.set_mag_filter(tex_filter::TF_LINEAR);
     samp2_.release(0);
 
+    auto skybox = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_skybox();
+    if(!skybox_mesh_.allocate() || !skybox_vbuf_.allocate() || !skybox_ibuf_.allocate()) {
+        LOG_ERR("Error building skybox");
+        return false;
+    }
+
+    skybox_mesh_.bind(); skybox_vbuf_.bind(), skybox_ibuf_.bind();
+    skybox_mesh_.set_stream(&skybox_vbuf_);
+    skybox_mesh_.set_index(&skybox_ibuf_);
+
+    if(!skybox_vbuf_.initialise(get<0>(skybox)) || !skybox_ibuf_.initialise(get<1>(skybox))) {
+        LOG_ERR("Failed to initialise skybox");
+        return false;
+    }
+
+    skybox_prog_.add_shader(shader_type::ST_VERTEX, basic_vshdr);
+    skybox_prog_.add_shader(shader_type::ST_FRAGMENT, skybox_fshdr);
+    if(!skybox_prog_.link()) {
+        LOG_ERR("Failed to build skybox fragment shader");
+        return false;
+    }
+
     gl_error_check();
 
     alpha_blending(true);
-    //depth_test(true);
 
     return true;
 }
 
 void scene_graph_test::on_resize(int width, int height) {
-    cam_.frustum(45.f, float(width)/height, .5f, 100.f);
+    cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
     quad1_.get_program()->bind();
@@ -269,27 +306,35 @@ void scene_graph_test::on_resize(int width, int height) {
 
 void scene_graph_test::update(double t, float dt) {
     inc += dt;
+    vec3f dir{cosf(inc), 0.f, sinf(inc)};
+    cam_.orthogonolise(dir);
 }
 
-void scene_graph_test::draw() {
+void scene_graph_test::draw_scene() {
+    fbuffer1_.bind();
+    skybox_prog_.bind();
+    skybox_prog_.bind_uniform("PVM", cam_.proj_view()*make_scale(95.f, 95.f, 95.f));
+    skybox_mesh_.bind();
+    skybox_mesh_.draw();
+    skybox_mesh_.release();
+    skybox_prog_.release();
+
     mesh1_.bind();
     context_.bind();
-    fbuffer1_.bind();
-    //clear(0.f, 0.f, 0.f, 0.f);
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
-                                  * make_translation(-2.f, 0.f, -4.f)
-                                  * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-                                  * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+                                    * make_translation(-4.f, 0.f, -8.f)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
     context_.set_texture_unit(tex_idx, 0);
     mesh1_.draw();
 
     // High frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
-                                  * make_translation(+2.f, 0.f, -4.f)
-                                  * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-                                  * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+                                    * make_translation(+0.f, 0.f, -4.f)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
     mesh1_.draw();
 
@@ -326,15 +371,15 @@ void scene_graph_test::draw() {
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
-                                    * make_translation(-2.f, 0.f, -4.f)
+                                    * make_translation(-4.f, 0.f, -8.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-                                    * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
+                                    * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
     context_.set_texture_unit(tex_idx, 0);
     mesh1_.draw();
 
     // High frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
-                                    * make_translation(+2.f, 0.f, -4.f)
+                                    * make_translation(+0.f, 0.f, -4.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
@@ -348,6 +393,10 @@ void scene_graph_test::draw() {
     samp2_.release(0);
 
     gl_error_check();
+}
+
+void scene_graph_test::draw() {
+    draw_scene();
 }
 
 void scene_graph_test::shutdown() {

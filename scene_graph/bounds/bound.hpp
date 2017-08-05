@@ -11,7 +11,7 @@
 #include <maths/geometry/disc.hpp>
 #include <maths/geometry/AABB.hpp>
 
-namespace zap { namespace engine {
+namespace zap { namespace scene_graph {
     template <typename GeoT, typename TransformT>
     class bound {
     public:
@@ -28,7 +28,7 @@ namespace zap { namespace engine {
 
         bound& operator=(const bound& rhs) = default;
 
-        bound& transform(const transform_t& T);
+        bound& transform(const transform_t& T) { return *this; }
         const bound transform(const transform_t& T) const;
         bound& transform(const affine_t& A);
         const bound transform(const affine_t& A) const;

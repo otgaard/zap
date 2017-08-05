@@ -4,10 +4,11 @@
 
 // The OpenGL renderer
 
-class renderer {
-public:
-    renderer();
-    ~renderer();
-};
-
+namespace zap {
+    class renderer {
+    public:
+        renderer() = default;
+        ~renderer() = default;
+    };
+}
 #endif //ZAP_RENDERER_HPP

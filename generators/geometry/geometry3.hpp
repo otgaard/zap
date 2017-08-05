@@ -13,6 +13,7 @@
 
 namespace zap { namespace generators {
     using prim_t = zap::engine::primitive_type;
+    using maths::vec3f;
     using maths::vec3;
     using maths::vec2;
 
@@ -21,7 +22,49 @@ namespace zap { namespace generators {
     public:
         constexpr static prim_t primitive = Primitive;
 
-        template <typename T> static std::vector<VertexT> make_cube(const vec3<T>& dimensions={1,1,1}) {
+        static std::tuple<std::vector<VertexT>, std::vector<uint16_t>> make_skybox(const vec3f& dims={1.f, 1.f, 1.f}) {
+            static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_skybox expects PT_TRIANGLES");
+            const auto hdims = .5f*dims;
+
+            std::vector<VertexT> vertices(8);
+            std::vector<uint16_t> index{};
+
+            // Bottom
+            vertices[0].position.set(-hdims.x, -hdims.y, -hdims.z);
+            vertices[1].position.set(-hdims.x, -hdims.y, +hdims.z);
+            vertices[2].position.set(+hdims.x, -hdims.y, +hdims.z);
+            vertices[3].position.set(+hdims.x, -hdims.y, -hdims.z);
+
+            // Top
+            vertices[4].position.set(-hdims.x, +hdims.y, -hdims.z);
+            vertices[5].position.set(-hdims.x, +hdims.y, +hdims.z);
+            vertices[6].position.set(+hdims.x, +hdims.y, +hdims.z);
+            vertices[7].position.set(+hdims.x, +hdims.y, -hdims.z);
+
+            // X+ X- Y+ Y- Z+ Z-
+            index.emplace_back(3); index.emplace_back(2); index.emplace_back(6);        // +X
+            index.emplace_back(3); index.emplace_back(6); index.emplace_back(7);
+
+            index.emplace_back(1); index.emplace_back(0); index.emplace_back(4);        // -X
+            index.emplace_back(1); index.emplace_back(4); index.emplace_back(5);
+
+            index.emplace_back(4); index.emplace_back(7); index.emplace_back(6);        // +Y
+            index.emplace_back(4); index.emplace_back(6); index.emplace_back(5);
+
+            index.emplace_back(0); index.emplace_back(2); index.emplace_back(3);        // -Y
+            index.emplace_back(0); index.emplace_back(1); index.emplace_back(2);
+
+            index.emplace_back(1); index.emplace_back(6); index.emplace_back(2);        // +Z
+            index.emplace_back(1); index.emplace_back(5); index.emplace_back(6);
+
+            index.emplace_back(0); index.emplace_back(3); index.emplace_back(7);        // -Z
+            index.emplace_back(0); index.emplace_back(7); index.emplace_back(4);
+
+            return std::make_tuple(vertices, index);
+        }
+
+        template <typename T>
+        static std::vector<VertexT> make_cube(const vec3<T>& dimensions={1.f, 1.f, 1.f}) {
             static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_cube expects PT_TRIANGLES");
             std::vector<VertexT> vertices(36);
             const auto normal = VertexT::find(engine::attribute_type::AT_NORMAL);
