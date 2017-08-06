@@ -60,10 +60,13 @@ namespace zap { namespace scene_graph {
 
         virtual void update(double t, float dt) { }
 
+        // TODO: Remove temporary code.  The scene graph should not draw itself, it should be drawn by the renderer (after culling, ordering, etc)
+        virtual void draw() const = 0;
+
     protected:
         friend class node<spatial>;
 
-        spatial() : parent_(nullptr), culling_(cull_mode::CM_DYNAMIC) { }
+        spatial() = default;
         void set_parent(spatial* parent) { parent_ = parent; }
         void invalidate_bound() const { cache_state_.set(spatial_state::SS_BOUND_INVALID); }
         virtual void invalidate_transform() const {
@@ -74,13 +77,13 @@ namespace zap { namespace scene_graph {
         virtual void update_transform() const;
         virtual void update_bound() const;
 
-        spatial* parent_;
+        spatial* parent_ = nullptr;
         transform_t model_transform_;
         mutable bound_t model_bound_;
         mutable core::enumfield<int, spatial_state> cache_state_;
         mutable transform_t world_transform_;
         mutable bound_t world_bound_;
-        cull_mode culling_;
+        cull_mode culling_ = cull_mode::CM_DYNAMIC;
     };
 
     template <typename TransformT, typename GeoT>

@@ -6,21 +6,45 @@
 #include "index_buffer.hpp"
 #include "vertex_buffer.hpp"
 
+/*
+ * TODO: These classes need serious work.  The intention is to remain strongly-typed wherever possible.
+ */
+
 namespace zap { namespace engine {
 
 class mesh_base {
 public:
-    mesh_base() = default;
+    mesh_base(primitive_type prim_type, size_t vertex_count, data_type idx_type=data_type::DT_VOID, size_t index_count=0)
+            : prim_type_(prim_type), idx_type_(idx_type), vertex_count_(vertex_count), index_count_(index_count) {
+    }
     mesh_base(const mesh_base&) = delete;
-    mesh_base(mesh_base&& rhs) noexcept : vao_(rhs.vao_) { rhs.vao_ = INVALID_RESOURCE; }
+    mesh_base(mesh_base&& rhs) noexcept : vao_(rhs.vao_), prim_type_(rhs.prim_type_), idx_type_(rhs.idx_type_),
+                                          vertex_count_(rhs.vertex_count_), index_count_(rhs.index_count_) {
+        rhs.vao_ = INVALID_RESOURCE;
+    }
     virtual ~mesh_base() { if(is_allocated()) deallocate(); vao_ = INVALID_RESOURCE; }
 
     mesh_base& operator=(mesh_base&& rhs) noexcept {
-        if(this != &rhs) std::swap(vao_, rhs.vao_);
+        if(this != &rhs) {
+            std::swap(vao_, rhs.vao_);
+            prim_type_ = rhs.prim_type_;
+            idx_type_ = rhs.idx_type_;
+            vertex_count_ = rhs.vertex_count_;
+            index_count_ = rhs.index_count_;
+            rhs.vao_ = INVALID_IDX;
+        }
         return *this;
     }
 
     bool is_allocated() const { return vao_ != INVALID_RESOURCE; }
+    bool is_indexed() const { return idx_type_ != data_type::DT_VOID; }
+
+    primitive_type get_primitive_type() const { return prim_type_; }
+    data_type get_index_type() const { return idx_type_; }
+    void set_vertex_count(size_t count) { vertex_count_ = count; }
+    size_t get_vertex_count() const { return index_count_; }
+    void set_index_count(size_t count) { index_count_ = count; }
+    size_t get_index_count() const { return index_count_; }
 
     bool allocate();
     void deallocate();
@@ -28,12 +52,20 @@ public:
     void bind() const;
     void release() const;
 
-    void draw_arrays_impl(primitive_type type, size_t first, size_t count);
-    void draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count);
-    void draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances);
+    void draw_arrays_impl(primitive_type type, size_t first, size_t count) const ;
+    void draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count) const;
+    void draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances) const;
+
+    void draw() const {
+        is_indexed() ? draw_elements_impl(prim_type_, idx_type_, 0, index_count_) : draw_arrays_impl(prim_type_, 0, vertex_count_);
+    }
 
 private:
     resource_t vao_ = INVALID_RESOURCE;
+    primitive_type prim_type_;
+    data_type idx_type_;
+    size_t vertex_count_;
+    size_t index_count_;
 };
 
 template <typename... VBuffers>
@@ -80,12 +112,13 @@ public:
     static_assert(is_index_buffer<Index>::value, "Index must be of type index_buffer<>");
     using vertex_stream_t = VtxStream;
     using index_buffer_t = Index;
+    constexpr static data_type idx_t = (data_type)dt_descriptor<typename Index::type>::value;
     constexpr static primitive_type primitive = Index::primitive;
 
-    mesh() : mesh_base(), idx_buffer_ptr(nullptr) { }
+    mesh() : mesh_base(primitive, 0, idx_t, 0), idx_buffer_ptr(nullptr) { }
     explicit mesh(const mesh&) = delete;
     mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr)
-            : mesh_base(), vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
+            : mesh_base(primitive, 0, idx_t, 0), vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
     mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream), idx_buffer_ptr(rhs.idx_buffer_ptr) { }
     ~mesh() override = default;
 
@@ -99,9 +132,15 @@ public:
         return *this;
     }
 
-    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
-    void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; }
+    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; set_vertex_count(vstream.ptr->vertex_count()); }
+    void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; set_index_count(idx_buffer_ptr->index_count()); }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
+    size_t index_count() const { return idx_buffer_ptr->index_count(); }
+    // This interface is really broken
+    void update_counts() {
+        set_vertex_count(vstream.ptr->vertex_count());
+        set_index_count(idx_buffer_ptr->index_count());
+    }
 
     void draw(size_t start=0, size_t count=0) {
         if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
@@ -132,8 +171,8 @@ public:
     using vertex_stream_t = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
-    mesh() : mesh_base(), vstream() { }
-    explicit mesh(const vertex_stream_t& vtxstream) : mesh_base(), vstream(vtxstream) { }
+    mesh() : mesh_base(primitive, 0), vstream() { }
+    explicit mesh(const vertex_stream_t& vtxstream) : mesh_base(primitive, 0), vstream(vtxstream) { }
     explicit mesh(const mesh&) = delete;
     mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
     ~mesh() override = default;
@@ -147,9 +186,9 @@ public:
         return *this;
     }
 
-    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; }
-
+    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; set_vertex_count(vstream.ptr->vertex_count()); }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
+    void update_counts() { set_vertex_count(vstream.ptr->vertex_count()); }
 
     void draw(primitive_type prim=primitive, size_t start=0, size_t count=0, bool no_null_stream=true) {
         if(no_null_stream && !vstream.ptr) { LOG("No vertex stream specified"); return; }

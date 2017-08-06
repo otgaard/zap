@@ -9,6 +9,12 @@ namespace zap {
     public:
         renderer() = default;
         ~renderer() = default;
+
+        template <typename NodeT>
+        void render(const NodeT& node) const {
+
+        }
+
     };
 }
 #endif //ZAP_RENDERER_HPP

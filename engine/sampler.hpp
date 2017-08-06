@@ -24,8 +24,8 @@ public:
     void deallocate();
     bool is_allocated() const { return id_ != INVALID_IDX; }
 
-    void bind(uint32_t unit);
-    void release(uint32_t unit);
+    void bind(uint32_t unit) const;
+    void release(uint32_t unit) const;
 
     void set_wrap_s(tex_wrap w);
     void set_wrap_t(tex_wrap w);

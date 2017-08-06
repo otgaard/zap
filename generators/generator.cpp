@@ -510,3 +510,12 @@ float generator::pnoise(float dx, float dy, float dz, int x, int y, int z) const
     return lerp(sz, c, d);
 }
 
+const texture* generator::prn_table() const {
+    return s.initialised ? &s.prn_tex : nullptr;
+}
+
+const texture* generator::grad1_table() const {
+    return s.initialised ? &s.grad1_tex : nullptr;
+}
+
+

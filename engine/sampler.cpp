@@ -26,11 +26,11 @@ void sampler::initialise() {
     set_border_colour(0.f, 0.f, 0.f, 0.f);
 }
 
-void zap::engine::sampler::bind(uint32_t unit) {
+void zap::engine::sampler::bind(uint32_t unit) const {
     gl::glBindSampler(unit, id_);
 }
 
-void zap::engine::sampler::release(uint32_t unit) {
+void zap::engine::sampler::release(uint32_t unit) const {
     gl::glBindSampler(unit, 0);
 }
 

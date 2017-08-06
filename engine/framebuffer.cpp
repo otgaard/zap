@@ -128,6 +128,7 @@ bool framebuffer::initialise() {
             break;
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return !gl_error_check();
 }
 

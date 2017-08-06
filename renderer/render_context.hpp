@@ -145,22 +145,22 @@ public:
         set_parameter(name, value.begin());
     }
 
-    void add_sampler(texture* tex_ptr, sampler* smp_ptr) {
+    void add_sampler(const texture* tex_ptr, const sampler* smp_ptr) {
         textures_.emplace_back(tex_ptr);
         samplers_.emplace_back(smp_ptr);
     }
     template <typename... Args>
-    void add_sampler(texture* tex_ptr, sampler* smp_ptr, Args... ptrs) {
+    void add_sampler(const texture* tex_ptr, const sampler* smp_ptr, Args... ptrs) {
         textures_.emplace_back(tex_ptr);
         samplers_.emplace_back(smp_ptr);
         add_sampler(ptrs...);
     }
 
-    void add_texture(texture* tex_ptr) {
+    void add_texture(const texture* tex_ptr) {
         textures_.emplace_back(tex_ptr);
     }
     template <typename... Args>
-    void add_texture(texture* tex_ptr, Args... ptrs) {
+    void add_texture(const texture* tex_ptr, Args... ptrs) {
         textures_.emplace_back(tex_ptr);
         add_texture(ptrs...);
     }
@@ -178,8 +178,8 @@ private:
 
     program* program_ = nullptr;
     std::vector<parameter> parameters_;             // move this to a lookup table in the engine later (per program)
-    std::vector<texture*> textures_;
-    std::vector<sampler*> samplers_;
+    std::vector<const texture*> textures_;
+    std::vector<const sampler*> samplers_;
     std::vector<int> offsets_;                      // Store the offset of each parameter (-1) for none
     std::vector<char> uniforms_;                    // Store all uniforms in a contiguous block
     mutable std::vector<bool> dirty_flags_;         // A set of dirty flags for each parameter

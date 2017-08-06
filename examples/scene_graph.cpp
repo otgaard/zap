@@ -54,10 +54,26 @@ const char* const basic_fshdr = GLSL(
 );
 
 const char* const skybox_fshdr = GLSL(
+    const int MASK = 0xFF;
+    uniform usampler1D perm;
+    uniform sampler1D grad;
+
     in vec3 tex;
+
     out vec4 frag_colour;
+
+    int perm1(int x) { return int(texelFetch(perm, x & MASK, 0).r); }
+    int perm2(int x, int y) { return int(texelFetch(perm, (x + perm1(y)) & MASK, 0).r); }
+    int perm3(int x, int y, int z) { return int(texelFetch(perm, (x + perm2(y, z)) & MASK, 0).r); }
+    float grad1(int x) { return texelFetch(grad, perm1(x), 0).r; }
+    float grad2(int x, int y) { return texelFetch(grad, perm2(x, y), 0).r; }
+    float grad3(int x, int y, int z) { return texelFetch(grad, perm3(x, y, z), 0).r; }
+
     void main() {
-        frag_colour = mix(vec4(.1, .2, .5, 1.), vec4(.3, .4, .7, 1.), dot(tex, vec3(0., 1., 0.)));
+        float theta = dot(tex, vec3(0., 1., 0));
+        float threshold = grad3(int(1000*tex.x), int(1000*tex.y), int(1000*tex.z));
+        frag_colour = mix(vec4(.0, .0, .0, 1.), vec4(.0, .0, .14, 1.), .5 + .5*dot(tex, vec3(0., 1., 0.)));
+        frag_colour = theta > 0 && threshold < -.995 ? vec4(1., 1., 1., 1.) : frag_colour;
     }
 );
 
@@ -147,6 +163,7 @@ protected:
     mesh_p3_tri2_t skybox_mesh_;
     program skybox_prog_;
     render_context skybox_ctx_;
+    visual_t skybox_;
 };
 
 bool scene_graph_test::initialise() {
@@ -282,6 +299,16 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
+    skybox_ctx_.set_program(&skybox_prog_);
+    skybox_ctx_.add_texture(gen_.prn_table(), gen_.grad1_table());
+    skybox_ctx_.initialise();
+    skybox_ctx_.set_texture_unit("perm", 0);
+    skybox_ctx_.set_texture_unit("grad", 1);
+
+    skybox_.set_context(&skybox_ctx_);
+    skybox_.set_mesh(&skybox_mesh_);
+    skybox_mesh_.update_counts();
+
     gl_error_check();
 
     alpha_blending(true);
@@ -290,13 +317,14 @@ bool scene_graph_test::initialise() {
 }
 
 void scene_graph_test::on_resize(int width, int height) {
+    const int blur_radius = 8;
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
     quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("blur_factor", 8.f/width);
+    quad1_.get_program()->bind_uniform("blur_factor", float(blur_radius)/width);
     quad1_.get_program()->bind();
-    fbuffer1_.initialise(1, width/8, height/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
+    fbuffer1_.initialise(1, width/blur_radius, height/blur_radius, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
     fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     quad1_.resize(width, height);
@@ -307,18 +335,11 @@ void scene_graph_test::on_resize(int width, int height) {
 void scene_graph_test::update(double t, float dt) {
     inc += dt;
     vec3f dir{cosf(inc), 0.f, sinf(inc)};
-    cam_.orthogonolise(dir);
+    cam_.orthogonolise(normalise(dir));
 }
 
 void scene_graph_test::draw_scene() {
     fbuffer1_.bind();
-    skybox_prog_.bind();
-    skybox_prog_.bind_uniform("PVM", cam_.proj_view()*make_scale(95.f, 95.f, 95.f));
-    skybox_mesh_.bind();
-    skybox_mesh_.draw();
-    skybox_mesh_.release();
-    skybox_prog_.release();
-
     mesh1_.bind();
     context_.bind();
 
@@ -396,7 +417,8 @@ void scene_graph_test::draw_scene() {
 }
 
 void scene_graph_test::draw() {
-    draw_scene();
+    skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
+    skybox_.draw();
 }
 
 void scene_graph_test::shutdown() {

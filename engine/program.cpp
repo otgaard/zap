@@ -124,10 +124,43 @@ void program::bind_uniform(int location, parameter_type type, int count, const c
         case parameter_type::PT_FLOAT_MAT2: gl::glUniformMatrix2fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
         case parameter_type::PT_FLOAT_MAT3: gl::glUniformMatrix3fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
         case parameter_type::PT_FLOAT_MAT4: gl::glUniformMatrix4fv(location, count, GL_FALSE, reinterpret_cast<const float*>(data)); return;
-        case parameter_type::PT_SAMPLER_1D: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
-        case parameter_type::PT_SAMPLER_2D: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
-        case parameter_type::PT_SAMPLER_3D: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
-        case parameter_type::PT_SAMPLER_CUBE: gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
+        case parameter_type::PT_SAMPLER_1D:
+        case parameter_type::PT_SAMPLER_2D:
+        case parameter_type::PT_SAMPLER_3D:
+        case parameter_type::PT_SAMPLER_CUBE:
+        case parameter_type::PT_SAMPLER_1D_SHADOW:
+        case parameter_type::PT_SAMPLER_2D_SHADOW:
+        case parameter_type::PT_SAMPLER_1D_ARRAY:
+        case parameter_type::PT_SAMPLER_2D_ARRAY:
+        case parameter_type::PT_SAMPLER_1D_ARRAY_SHADOW:
+        case parameter_type::PT_SAMPLER_2D_ARRAY_SHADOW:
+        case parameter_type::PT_SAMPLER_2D_MULTISAMPLE:
+        case parameter_type::PT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+        case parameter_type::PT_SAMPLER_CUBE_SHADOW:
+        case parameter_type::PT_SAMPLER_BUFFER:
+        case parameter_type::PT_SAMPLER_2D_RECT:
+        case parameter_type::PT_SAMPLER_2D_RECT_SHADOW:
+        case parameter_type::PT_INT_SAMPLER_1D:
+        case parameter_type::PT_INT_SAMPLER_2D:
+        case parameter_type::PT_INT_SAMPLER_3D:
+        case parameter_type::PT_INT_SAMPLER_CUBE:
+        case parameter_type::PT_INT_SAMPLER_1D_ARRAY:
+        case parameter_type::PT_INT_SAMPLER_2D_ARRAY:
+        case parameter_type::PT_INT_SAMPLER_2D_MULTISAMPLE:
+        case parameter_type::PT_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+        case parameter_type::PT_INT_SAMPLER_BUFFER:
+        case parameter_type::PT_INT_SAMPLER_2D_RECT:
+        case parameter_type::PT_UINT_SAMPLER_1D:
+        case parameter_type::PT_UINT_SAMPLER_2D:
+        case parameter_type::PT_UINT_SAMPLER_3D:
+        case parameter_type::PT_UINT_SAMPLER_CUBE:
+        case parameter_type::PT_UINT_SAMPLER_1D_ARRAY:
+        case parameter_type::PT_UINT_SAMPLER_2D_ARRAY:
+        case parameter_type::PT_UINT_SAMPLER_2D_MULTISAMPLE:
+        case parameter_type::PT_UINT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+        case parameter_type::PT_UINT_SAMPLER_BUFFER:
+        case parameter_type::PT_UINT_SAMPLER_2D_RECT:
+                    gl::glUniform1iv(location, count, reinterpret_cast<const int32_t*>(data)); return;
 
         default: LOG_ERR("Tried to bind invalid uniform at location:", location);
     }

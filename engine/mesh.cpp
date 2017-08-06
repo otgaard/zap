@@ -28,15 +28,15 @@ void mesh_base::release() const {
     gl_error_check();
 }
 
-void mesh_base::draw_arrays_impl(primitive_type type, size_t first, size_t count) {
+void mesh_base::draw_arrays_impl(primitive_type type, size_t first, size_t count) const {
     glDrawArrays(gl_type(type), first, count);
 }
 
-void mesh_base::draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count) {
+void mesh_base::draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count) const {
     glDrawElements(gl_type(type), count, gl_type(index_type), reinterpret_cast<void*>(first*dt_bytesize(index_type)));
 }
 
-void mesh_base::draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances) {
+void mesh_base::draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances) const {
     glDrawElementsInstanced(gl_type(type), count, gl_type(index_type), reinterpret_cast<void*>(first*dt_bytesize(index_type)), instances);
 }
 
