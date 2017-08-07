@@ -26,7 +26,6 @@
 #include <generators/generator.hpp>
 #include <generators/textures/planar.hpp>
 #include <renderer/colour.hpp>
-#include <renderer/render_context.hpp>
 
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
@@ -72,8 +71,8 @@ const char* const skybox_fshdr = GLSL(
     void main() {
         float theta = dot(tex, vec3(0., 1., 0));
         float threshold = grad3(int(1000*tex.x), int(1000*tex.y), int(1000*tex.z));
-        frag_colour = mix(vec4(.0, .0, .0, 1.), vec4(.0, .0, .14, 1.), .5 + .5*dot(tex, vec3(0., 1., 0.)));
-        frag_colour = theta > 0 && threshold < -.995 ? vec4(1., 1., 1., 1.) : frag_colour;
+        frag_colour = mix(vec4(.0, .0, .0, 1.), vec4(.0, .0, .0, 1.), .5 + .5*dot(tex, vec3(0., 1., 0.)));
+        frag_colour = threshold < -.995 ? vec4(1., 1., 1., 1.) : frag_colour;
     }
 );
 
@@ -102,8 +101,22 @@ const char* const blur_fshdr = GLSL(
             frag_colour += texture(input_tex, tex) * gaussian[4];
             for(int i = 0; i != 4; ++i) frag_colour += texture(input_tex, vec2(tex.x, tex.y + disp[i])) * gaussian[3 - i];
         }
+    }
+);
 
-        frag_colour.a = .95;
+// Blend to images (glow post-processing)
+const char* const blend_fshdr = GLSL(
+    uniform sampler2D texA;
+    uniform sampler2D texB;
+
+    in vec2 tex;
+
+    out vec4 frag_colour;
+
+    void main() {
+        vec4 colA = texture(texA, tex);
+        vec4 colB = texture(texB, tex);
+        frag_colour = min((colA + colB) - (colA*colB), 1.);
     }
 );
 
@@ -150,7 +163,7 @@ protected:
     framebuffer fbuffer2_;
     framebuffer fbuffer3_;
     quad quad1_;
-    quad quad2_;
+    //quad quad2_;
     sampler samp2_;
 
     int tex_idx = -1;
@@ -164,6 +177,8 @@ protected:
     program skybox_prog_;
     render_context skybox_ctx_;
     visual_t skybox_;
+
+    quad output_;   // The final output (the blend shader)
 };
 
 bool scene_graph_test::initialise() {
@@ -258,12 +273,12 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    if(!quad1_.initialise(blur_fshdr) || !quad2_.initialise()) {
+    if(!quad1_.initialise(blur_fshdr) || !output_.initialise(blend_fshdr)) {
         LOG_ERR("Failed to initialise quad");
         return false;
     }
 
-    quad2_.set_override(&fbuffer3_.get_attachment(0));
+    //quad2_.set_override(&fbuffer3_.get_attachment(0));
 
     quad1_.get_program()->bind();
     quad1_.get_program()->bind_uniform("blur_factor", 8.f/sc_width_);
@@ -275,6 +290,9 @@ bool scene_graph_test::initialise() {
     samp2_.initialise();
     samp2_.set_min_filter(tex_filter::TF_LINEAR);
     samp2_.set_mag_filter(tex_filter::TF_LINEAR);
+    samp2_.set_wrap_s(tex_wrap::TW_CLAMP_TO_EDGE);
+    samp2_.set_wrap_t(tex_wrap::TW_CLAMP_TO_EDGE);
+    samp2_.set_wrap_r(tex_wrap::TW_CLAMP_TO_EDGE);
     samp2_.release(0);
 
     auto skybox = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_skybox();
@@ -309,9 +327,12 @@ bool scene_graph_test::initialise() {
     skybox_.set_mesh(&skybox_mesh_);
     skybox_mesh_.update_counts();
 
-    gl_error_check();
+    output_.get_program()->bind();
+    output_.get_program()->bind_texture_unit("texA", 0);
+    output_.get_program()->bind_texture_unit("texB", 1);
+    output_.get_program()->release();
 
-    alpha_blending(true);
+    gl_error_check();
 
     return true;
 }
@@ -328,18 +349,19 @@ void scene_graph_test::on_resize(int width, int height) {
     fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
     quad1_.resize(width, height);
-    quad2_.resize(width, height);
+    output_.resize(width, height);
     gl_error_check();
 }
 
 void scene_graph_test::update(double t, float dt) {
-    inc += dt;
-    vec3f dir{cosf(inc), 0.f, sinf(inc)};
-    cam_.orthogonolise(normalise(dir));
+    inc += .4f*dt;
+    //vec3f dir{cosf(inc), 0.f, sinf(inc)};
+    //cam_.orthogonolise(normalise(dir));
 }
 
 void scene_graph_test::draw_scene() {
     fbuffer1_.bind();
+
     mesh1_.bind();
     context_.bind();
 
@@ -387,13 +409,18 @@ void scene_graph_test::draw_scene() {
     fbuffer2_.get_attachment(0).release();
     fbuffer3_.release();
 
+    fbuffer2_.bind();
+
+    skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
+    skybox_.draw();
+
     mesh1_.bind();
     context_.bind();
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
-                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f},  PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
     context_.set_texture_unit(tex_idx, 0);
     mesh1_.draw();
@@ -409,9 +436,19 @@ void scene_graph_test::draw_scene() {
     context_.release();
     mesh1_.release();
 
+    fbuffer2_.release();
+
+    alpha_blending(true);
     samp2_.bind(0);
-    quad2_.draw();
+
+    fbuffer3_.get_attachment(0).bind(0);
+    fbuffer2_.get_attachment(0).bind(1);
+    output_.draw();
+    fbuffer2_.get_attachment(0).release();
+    fbuffer3_.get_attachment(0).release();
+
     samp2_.release(0);
+    alpha_blending(false);
 
     gl_error_check();
 }
@@ -419,6 +456,7 @@ void scene_graph_test::draw_scene() {
 void scene_graph_test::draw() {
     skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
     skybox_.draw();
+    draw_scene();
 }
 
 void scene_graph_test::shutdown() {
