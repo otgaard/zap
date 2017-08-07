@@ -450,7 +450,7 @@ void scene_graph_test::draw_scene() {
 
     fbuffer2_.release();
 
-    alpha_blending(true);
+    //alpha_blending(true);
     samp2_.bind(0);
 
     fbuffer3_.get_attachment(0).bind(0);
