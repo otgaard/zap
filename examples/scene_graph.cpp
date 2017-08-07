@@ -371,6 +371,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
     context_.set_texture_unit(tex_idx, 0);
+    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
     mesh1_.draw();
 
     // High frequency tex
@@ -379,6 +380,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
+    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}});
     mesh1_.draw();
 
     fbuffer1_.release();
@@ -423,6 +425,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f},  PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
     context_.set_texture_unit(tex_idx, 0);
+    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
     mesh1_.draw();
 
     // High frequency tex
@@ -431,6 +434,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
+    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}});
     mesh1_.draw();
 
     context_.release();
@@ -454,8 +458,6 @@ void scene_graph_test::draw_scene() {
 }
 
 void scene_graph_test::draw() {
-    skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
-    skybox_.draw();
     draw_scene();
 }
 
