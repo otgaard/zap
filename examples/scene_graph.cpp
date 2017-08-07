@@ -70,9 +70,17 @@ const char* const skybox_fshdr = GLSL(
 
     void main() {
         float theta = dot(tex, vec3(0., 1., 0));
-        float threshold = grad3(int(1000*tex.x), int(1000*tex.y), int(1000*tex.z));
-        frag_colour = mix(vec4(.0, .0, .0, 1.), vec4(.0, .0, .0, 1.), .5 + .5*dot(tex, vec3(0., 1., 0.)));
-        frag_colour = threshold < -.995 ? vec4(1., 1., 1., 1.) : frag_colour;
+        vec3 pos = 300. * normalize(tex);
+        vec3 fpos = floor(pos) + vec3(.5);
+        ivec3 ipos = ivec3(int(fpos.x), int(fpos.y), int(fpos.z));
+        float d = .5 - length(fpos - pos);
+        int threshold = perm3(ipos.x, ipos.y, ipos.z);
+        frag_colour = threshold > 253
+                      ? vec4(d * (1.25 + .5*grad1(ipos.x)),
+                             d * (1.25 + .5*grad1(ipos.y)),
+                             d * (1.25 + .5*grad1(ipos.z)),
+                             1.)
+                      : mix(vec4(.0, .0, .0, 1.), vec4(.0, .0, .0, 1.), .5 + .5*theta);
     }
 );
 
@@ -217,7 +225,7 @@ bool scene_graph_test::initialise() {
     }
 
     render_task req{256, 256};
-    req.scale.set(5.f, 5.f);
+    req.scale.set(15.f, 15.f);
     req.project = render_task::projection::CUBE_MAP;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
@@ -232,7 +240,7 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    req.scale.set(10.f, 10.f);
+    req.scale.set(30.f, 30.f);
     pm = gen_.render_image<rgb888_t>(req).get();
     tex2_.set_type(texture_type::TT_CUBE_MAP);
     if(!tex2_.allocate() || !tex2_.initialise(pm,true)) {
@@ -338,7 +346,7 @@ bool scene_graph_test::initialise() {
 }
 
 void scene_graph_test::on_resize(int width, int height) {
-    const int blur_radius = 8;
+    const int blur_radius = 6;
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
@@ -354,14 +362,14 @@ void scene_graph_test::on_resize(int width, int height) {
 }
 
 void scene_graph_test::update(double t, float dt) {
-    inc += .4f*dt;
-    //vec3f dir{cosf(inc), 0.f, sinf(inc)};
+    inc += .5f*dt;
+    //vec3f dir{cosf(inc + PI/2), 0.f, -sinf(inc + PI/2)};
     //cam_.orthogonolise(normalise(dir));
 }
 
 void scene_graph_test::draw_scene() {
     fbuffer1_.bind();
-
+    clear(0.f, 0.f, 0.f, 0.f);
     mesh1_.bind();
     context_.bind();
 
@@ -369,7 +377,7 @@ void scene_graph_test::draw_scene() {
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
-                                    * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
+                                    * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
     context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
     mesh1_.draw();
@@ -423,7 +431,7 @@ void scene_graph_test::draw_scene() {
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f},  PI/2)
-                                    * make_rotation(vec3f{0.f, 0.f, -1.f}, inc));
+                                    * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
     context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
     mesh1_.draw();
