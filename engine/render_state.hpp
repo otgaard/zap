@@ -57,24 +57,9 @@ namespace zap { namespace engine {
                 DBM_SIZE
             };
 
-            enum class compare_mode {
-                CM_NEVER,
-                CM_LESS,
-                CM_EQUAL,
-                CM_LEQUAL,
-                CM_GREATER,
-                CM_NOTEQUAL,
-                CM_GEQUAL,
-                CM_ALWAYS,
-                CM_SIZE
-            };
-
             bool blend_enabled;
             src_blend_mode src_mode;
             dst_blend_mode dst_mode;
-            bool compare_enabled;
-            compare_mode cmp_mode;
-            float reference;
             maths::vec4f colour;
 
             // TODO: Move to allocator + constructor
@@ -82,9 +67,6 @@ namespace zap { namespace engine {
                 blend_enabled = true;
                 src_mode = src_blend_mode::SBM_SRC_ALPHA;
                 dst_mode = dst_blend_mode::DBM_ONE_MINUS_SRC_ALPHA;
-                compare_enabled = false;
-                cmp_mode = compare_mode::CM_NEVER;
-                reference = 0.f;
                 colour.set(0.f, 0.f, 0.f, 0.f);
             }
         };
@@ -97,6 +79,18 @@ namespace zap { namespace engine {
         struct wire_state { };
 
         blend_state* get_blend_state() const { return blend_state_; }
+
+        enum class compare_mode {
+            CM_NEVER,
+            CM_LESS,
+            CM_EQUAL,
+            CM_LEQUAL,
+            CM_GREATER,
+            CM_NOTEQUAL,
+            CM_GEQUAL,
+            CM_ALWAYS,
+            CM_SIZE
+        };
 
     protected:
         std::vector<char> storage_;

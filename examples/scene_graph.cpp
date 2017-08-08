@@ -26,6 +26,7 @@
 #include <generators/generator.hpp>
 #include <generators/textures/planar.hpp>
 #include <renderer/colour.hpp>
+#include <engine/state_stack.hpp>
 
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
@@ -187,6 +188,8 @@ protected:
     visual_t skybox_;
 
     quad output_;   // The final output (the blend shader)
+
+    state_stack stack;
 };
 
 bool scene_graph_test::initialise() {
@@ -340,6 +343,17 @@ bool scene_graph_test::initialise() {
     output_.get_program()->bind_texture_unit("texB", 1);
     output_.get_program()->release();
 
+    stack.initialise();
+
+    render_state new_state(true);
+    new_state.get_blend_state()->blend_enabled = true;
+    new_state.get_blend_state()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_COLOUR;
+    new_state.get_blend_state()->dst_mode = render_state::blend_state::dst_blend_mode::DBM_DST_COLOUR;
+    new_state.get_blend_state()->colour = vec4f(1.f, 1.f, 1.f, 1.f);
+
+    stack.push_state(&new_state);
+    stack.pop();
+
     gl_error_check();
 
     return true;
@@ -462,7 +476,6 @@ void scene_graph_test::draw_scene() {
     fbuffer3_.get_attachment(0).release();
 
     samp2_.release(0);
-    alpha_blending(false);
 
     gl_error_check();
 }
