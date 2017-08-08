@@ -70,17 +70,26 @@ private:
 
 template <typename... VBuffers>
 struct vertex_stream {
+    virtual void free() { }
+    virtual void bind() { }
 };
 
-template <typename VBuf, class... VBuffers>
+template <typename VBuf, typename... VBuffers>
 struct vertex_stream<VBuf, VBuffers...> : vertex_stream<VBuffers...> {
     static_assert(is_vertex_buffer<VBuf>::value, "VBuf must be of type vertex_buffer<>");
     using type = VBuf;
     using ptr_t = VBuf*;
+    static const size_t count = sizeof...(VBuffers) + 1;
     vertex_stream() : ptr(nullptr) { }
-    vertex_stream(VBuf* vbuf_ptr, VBuffers*... vbuffers)
+    vertex_stream(ptr_t vbuf_ptr, VBuffers*... vbuffers)
             : vertex_stream<VBuffers...>(vbuffers...), ptr(vbuf_ptr) { }
-    VBuf* ptr;
+    virtual ~vertex_stream() = default;
+    virtual void free() {
+        vertex_stream<VBuffers...>::free();
+        delete ptr;
+    }
+
+    ptr_t ptr;
 };
 
 template <size_t k, typename... VBuffers> struct stream_query;
@@ -117,10 +126,24 @@ public:
 
     mesh() : mesh_base(primitive, 0, idx_t, 0), idx_buffer_ptr(nullptr) { }
     explicit mesh(const mesh&) = delete;
-    mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr)
-            : mesh_base(primitive, 0, idx_t, 0), vstream(vtxstream), idx_buffer_ptr(idx_ptr) { }
-    mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream), idx_buffer_ptr(rhs.idx_buffer_ptr) { }
-    ~mesh() override = default;
+    mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr, bool own_vstream=false, bool own_ibuffer=false) :
+            mesh_base(primitive, 0, idx_t, 0),
+            vstream(vtxstream),
+            idx_buffer_ptr(idx_ptr),
+            own_vstream(own_vstream),
+            own_ibuffer(own_ibuffer) {
+    }
+    mesh(mesh&& rhs) noexcept :
+            mesh_base(std::move(rhs)),
+            vstream(rhs.vstream),
+            idx_buffer_ptr(rhs.idx_buffer_ptr),
+            own_vstream(rhs.own_vstream),
+            own_ibuffer(rhs.own_ibuffer) {
+    }
+    ~mesh() override {
+        if(own_vstream) vstream.free();
+        if(own_ibuffer) delete idx_buffer_ptr;
+    }
 
     mesh& operator=(const mesh&) = delete;
     mesh& operator=(mesh&& rhs) noexcept {
@@ -132,8 +155,16 @@ public:
         return *this;
     }
 
-    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; set_vertex_count(vstream.ptr->vertex_count()); }
-    void set_index(index_buffer_t* idx_ptr) { idx_buffer_ptr = idx_ptr; set_index_count(idx_buffer_ptr->index_count()); }
+    void set_stream(const vertex_stream_t& vtxstream, bool own=false) {
+        vstream = vtxstream;
+        set_vertex_count(vstream.ptr->vertex_count());
+        own_vstream = own;
+    }
+    void set_index(index_buffer_t* idx_ptr, bool own=false) {
+        idx_buffer_ptr = idx_ptr;
+        set_index_count(idx_buffer_ptr->index_count());
+        own_ibuffer = own;
+    }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
     size_t index_count() const { return idx_buffer_ptr->index_count(); }
     // This interface is really broken
@@ -163,6 +194,8 @@ public:
 
     vertex_stream_t vstream;
     Index* idx_buffer_ptr = nullptr;
+    bool own_vstream = false;
+    bool own_ibuffer = false;
 };
 
 template <typename VtxStream, primitive_type Primitive>
@@ -171,11 +204,17 @@ public:
     using vertex_stream_t = VtxStream;
     constexpr static primitive_type primitive = Primitive;
 
-    mesh() : mesh_base(primitive, 0), vstream() { }
-    explicit mesh(const vertex_stream_t& vtxstream) : mesh_base(primitive, 0), vstream(vtxstream) { }
-    explicit mesh(const mesh&) = delete;
+    mesh() : mesh_base(primitive, 0) { }
+    explicit mesh(const vertex_stream_t& vtxstream, bool own=false) :
+            mesh_base(primitive, 0),
+            vstream(vtxstream),
+            own_vstream(own) {
+    }
+    mesh(const mesh&) = delete;
     mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
-    ~mesh() override = default;
+    ~mesh() override {
+        if(own_vstream) vstream.free();
+    }
 
     mesh& operator=(const mesh&) = delete;
     mesh& operator=(mesh&& rhs) noexcept {
@@ -186,7 +225,11 @@ public:
         return *this;
     }
 
-    void set_stream(const vertex_stream_t& vtxstream) { vstream = vtxstream; set_vertex_count(vstream.ptr->vertex_count()); }
+    void set_stream(const vertex_stream_t& vtxstream, bool own=false) {
+        vstream = vtxstream;
+        set_vertex_count(vstream.ptr->vertex_count());
+        own_vstream = own;
+    }
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
     void update_counts() { set_vertex_count(vstream.ptr->vertex_count()); }
 
@@ -196,7 +239,34 @@ public:
     }
 
     vertex_stream_t vstream;
+    bool own_vstream = false;
 };
+
+template <typename VertexT, primitive_type Primitive>
+mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive> make_mesh(const std::vector<VertexT>& buffer) {
+    mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive> m{};
+    if(!m.allocate()) {
+        LOG_ERR("Failed to construct mesh");
+        return m;
+    }
+    auto* vbuf_ptr = new vertex_buffer<VertexT>{};
+    if(!vbuf_ptr->allocate()) {
+        LOG_ERR("Failed to construct vertex_buffer");
+        delete vbuf_ptr;
+        return m;
+    }
+    m.bind();
+    vbuf_ptr->bind();
+    if(!vbuf_ptr->initialise(buffer)) {
+        LOG_ERR("Failed to initialise vertex_buffer");
+        delete vbuf_ptr;
+        return m;
+    }
+    m.set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+    m.release();
+    gl_error_check();
+    return m;
+}
 
 }}
 

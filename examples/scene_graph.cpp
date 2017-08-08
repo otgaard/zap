@@ -15,10 +15,12 @@
 #include <scene_graph/visual.hpp>
 
 #include <renderer/camera.hpp>
+#include <generators/geometry/geometry3.hpp>
 
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
+using namespace zap::graphics;
 using namespace zap::renderer;
 using namespace zap::scene_graph;
 
@@ -26,6 +28,7 @@ using spheref = geometry::sphere<float>;
 using spatial_t = spatial<transform4f, spheref>;
 using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
+using p3_geo3 = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>;
 
 class scene_graph_test : public application {
 public:
@@ -38,14 +41,20 @@ public:
 
     void on_resize(int width, int height) final;
 
-    void draw_scene();
-
 protected:
     camera cam_;
 };
 
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
+
+    auto cube = p3_geo3::make_cube(vec3f(1.f, 1.f, 1.f));
+    auto cube_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES>(cube);
+
+
+
+
+
     gl_error_check();
     return true;
 }
@@ -58,12 +67,7 @@ void scene_graph_test::update(double t, float dt) {
     gl_error_check();
 }
 
-void scene_graph_test::draw_scene() {
-    gl_error_check();
-}
-
 void scene_graph_test::draw() {
-    draw_scene();
     gl_error_check();
 }
 

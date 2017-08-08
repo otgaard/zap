@@ -10,6 +10,7 @@
 #include <maths/vec2.hpp>
 #include <maths/vec3.hpp>
 #include <engine/engine.hpp>
+#include <graphics3/g3_types.hpp>
 
 namespace zap { namespace generators {
     using prim_t = zap::engine::primitive_type;
