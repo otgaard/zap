@@ -11,10 +11,10 @@
 #include <host/GLFW/application.hpp>
 
 #include <scene_graph/node.hpp>
-#include <scene_graph/bound.hpp>
 #include <scene_graph/visual.hpp>
 
 #include <renderer/camera.hpp>
+#include <renderer/render_context.hpp>
 #include <generators/geometry/geometry3.hpp>
 
 using namespace zap;
@@ -65,17 +65,31 @@ protected:
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
 
-    auto cube = p3_geo3::make_cube(vec3f(1.f, 1.f, 1.f));
+    auto cube = p3_geo3::make_cube(vec3f(.1f, .5f, .25f));
     auto cube_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES>(cube);
+    meshes_.emplace_back(std::move(cube_mesh));
 
-    auto sphere = p3_geo3::make_UVsphere<float, uint32_t>(30, 60, 1.f, true);
+    auto sphere = p3_geo3::make_UVsphere<float, uint32_t>(30, 60, .2f, true);
     auto sphere_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES, uint32_t>(sphere);
+    meshes_.emplace_back(std::move(sphere_mesh));
+
+    contexts_.emplace_back(basic_vshdr, basic_fshdr);
+    if(!contexts_.back().initialise()) {
+        LOG_ERR("Failed to initialise context");
+        return false;
+    }
 
     gl_error_check();
     return true;
 }
 
 void scene_graph_test::on_resize(int width, int height) {
+    cam_.viewport(0, 0, width, height);
+    cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
+    cam_.frustum(45.f, width/float(height), .5f, 100.f);
+    for(auto& ctx : contexts_) {
+        if(ctx.has_parameter("PVM")) ctx.set_parameter("PVM", cam_.proj_view());
+    }
     gl_error_check();
 }
 
@@ -84,6 +98,13 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
+    contexts_.back().bind();
+    for(auto& mesh : meshes_) {
+        mesh->bind();
+        mesh->draw();
+        mesh->release();
+    }
+    contexts_.back().release();
     gl_error_check();
 }
 

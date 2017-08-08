@@ -50,12 +50,19 @@ public:
 
     render_context() = default;
     explicit render_context(program* prog) : program_{prog} { }
+    render_context(const std::string& vshdr, const std::string& fshdr) : program_{new program{vshdr, fshdr}}, owns_program_(true) { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
+    ~render_context() {
+        if(owns_program_) delete program_;
+    }
 
     bool is_bound() const { return is_bound_; }
 
     bool initialise() {
         if(!program_) return false;
+        if(!program_->is_allocated()) {
+            if(!program_->link()) return false;
+        }
         parameters_ = program_->get_parameters();
         size_t total = 0;
         offsets_.resize(parameters_.size(), 0);
@@ -75,6 +82,8 @@ public:
         if(it != parameters_.end()) return int32_t(it - parameters_.begin());
         else                        return -1;
     }
+
+    bool has_parameter(const std::string& name) const { return get_index(name) != -1; }
 
     void set_texture_unit(int idx, int unit) {
         assert(idx < int(parameters_.size()) && "Invalid parameter specified");
@@ -159,6 +168,7 @@ public:
     void add_texture(const texture* tex_ptr) {
         textures_.emplace_back(tex_ptr);
     }
+
     template <typename... Args>
     void add_texture(const texture* tex_ptr, Args... ptrs) {
         textures_.emplace_back(tex_ptr);
@@ -166,6 +176,11 @@ public:
     }
 
     void set_program(program* ptr) { program_ = ptr; }
+    void set_program(const std::string& vshdr, const std::string& fshdr) {
+        if(program_ && owns_program_) delete program_;
+        program_ = new program{vshdr, fshdr};
+        owns_program_ = true;
+    }
     program* get_program() const { return program_; }
 
     void bind() const;
@@ -185,6 +200,7 @@ private:
     mutable std::vector<bool> dirty_flags_;         // A set of dirty flags for each parameter
     mutable bool dirty_ = true;                     // If any uniform has been set on the client but not yet on the server
     mutable bool is_bound_ = false;
+    bool owns_program_ = false;                     // If set, this context owns the program and must delete it
 };
 
 }}

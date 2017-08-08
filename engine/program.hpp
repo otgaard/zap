@@ -31,6 +31,7 @@ namespace zap { namespace engine {
         program();
         explicit program(const std::vector<shader_ptr>& shaders);
         explicit program(std::vector<shader_ptr>&& shaders);
+        program(const std::string& vshdr, const std::string& fshdr);
         program(program&& rhs) noexcept;
         program& operator=(program&& rhs) noexcept;
         ~program();
@@ -67,18 +68,19 @@ namespace zap { namespace engine {
         void bind_texture_unit(const char* name, int unit);
 
     protected:
-        resource_t id_;
-        bool linked_;
+        resource_t id_ = 0;
+        bool linked_ = false;
         std::vector<shader_ptr> shaders_;
     };
 
     using program_ptr = std::shared_ptr<program>;
 
-    inline program::program() : id_(INVALID_RESOURCE), linked_(false) { }
-    inline program::program(const std::vector<shader_ptr>& shaders) : id_(INVALID_RESOURCE), linked_(false),
-                                                                      shaders_(std::move(shaders)) { }
-    inline program::program(std::vector<shader_ptr>&& shaders) : id_(INVALID_RESOURCE), linked_(false),
-                                                                 shaders_(std::move(shaders)) { }
+    inline program::program() = default;
+    inline program::program(const std::vector<shader_ptr>& shaders) : shaders_(std::move(shaders)) { }
+    inline program::program(std::vector<shader_ptr>&& shaders) : shaders_(std::move(shaders)) { }
+    inline program::program(const std::string& vshdr, const std::string& fshdr) :
+            shaders_{{shader_ptr{new shader{shader_type::ST_VERTEX, vshdr}},
+                      shader_ptr{new shader{shader_type::ST_FRAGMENT, fshdr}}}} { }
     inline program::program(program&& rhs) noexcept : id_(rhs.id_), linked_(rhs.linked_), shaders_(std::move(rhs.shaders_)) {
         rhs.id_ = INVALID_RESOURCE; rhs.linked_ = false;
     }
