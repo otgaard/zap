@@ -30,6 +30,21 @@ using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
 using p3_geo3 = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>;
 
+const char* const basic_vshdr = GLSL(
+    uniform mat4 PVM;
+    in vec3 position;
+    void main() {
+        gl_Position = PVM * vec4(position, 1.0);
+    }
+);
+
+const char* const basic_fshdr = GLSL(
+    out vec4 frag_colour;
+    void main() {
+        frag_colour = vec4(1., 1., 1., 1.);
+    }
+);
+
 class scene_graph_test : public application {
 public:
     scene_graph_test() : application{"scene_graph_test", 1280, 900, false}, cam_{true} { }
@@ -43,6 +58,8 @@ public:
 
 protected:
     camera cam_;
+    std::vector<std::unique_ptr<mesh_base>> meshes_;
+    std::vector<render_context> contexts_;
 };
 
 bool scene_graph_test::initialise() {
