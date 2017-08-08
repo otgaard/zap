@@ -10,6 +10,7 @@
 #include <maths/geometry/ray.hpp>
 #include <maths/geometry/disc.hpp>
 #include <maths/geometry/AABB.hpp>
+#include <maths/geometry/sphere.hpp>
 
 namespace zap { namespace scene_graph {
     template <typename GeoT, typename TransformT>

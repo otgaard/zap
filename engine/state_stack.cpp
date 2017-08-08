@@ -56,10 +56,10 @@ void zap::engine::state_stack::initialise(const blend_state* state) {
     if(state == nullptr) return;
     if(state->blend_enabled) glEnable(GL_BLEND);
     else                     glDisable(GL_BLEND);
-    gl_error_check();
     glBlendFunc(gl_src_blend_mode[(int)state->src_mode], gl_dst_blend_mode[(int)state->dst_mode]);
-    gl_error_check();
     glBlendColor(state->colour.x, state->colour.y, state->colour.z, state->colour.w);
+
+    gl_error_check();
 }
 
 void zap::engine::state_stack::transition(const blend_state* source, const blend_state* target) {
@@ -73,6 +73,8 @@ void zap::engine::state_stack::transition(const blend_state* source, const blend
         glBlendFunc(gl_src_blend_mode[(int)target->src_mode], gl_dst_blend_mode[(int)target->dst_mode]);
     if(target->colour != source->colour)
         glBlendColor(target->colour.x, target->colour.y, target->colour.z, target->colour.w);
+
+    gl_error_check();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

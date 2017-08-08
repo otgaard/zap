@@ -63,8 +63,8 @@ namespace zap { namespace engine {
             maths::vec4f colour;
 
             // TODO: Move to allocator + constructor
-            void init() {   // Default to alpha blending
-                blend_enabled = true;
+            void init() {   // Default to alpha blending turned off
+                blend_enabled = false;
                 src_mode = src_blend_mode::SBM_SRC_ALPHA;
                 dst_mode = dst_blend_mode::DBM_ONE_MINUS_SRC_ALPHA;
                 colour.set(0.f, 0.f, 0.f, 0.f);

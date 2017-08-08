@@ -7,7 +7,7 @@
 
 #include <core/enumfield.hpp>
 #include <maths/transform.hpp>
-#include <scene_graph/bounds/bound.hpp>
+#include <scene_graph/bound.hpp>
 
 namespace zap { namespace scene_graph {
     template <typename SpatialT, typename PtrT=std::unique_ptr<SpatialT>> class node;
