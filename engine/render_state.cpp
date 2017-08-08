@@ -48,3 +48,22 @@ GLenum gl_compare_mode[(int)render_state::blend_state::compare_mode::CM_SIZE] = 
         GL_ALWAYS
 };
 
+void render_state::blend_state::set() {
+    if(blend_enabled) {
+        glEnable(GL_BLEND);
+        glBlendFunc(gl_src_blend_mode[(int) src_mode], gl_dst_blend_mode[(int) dst_mode]);
+        glBlendColor(colour.x, colour.y, colour.z, colour.w);
+        gl_error_check();
+    }
+
+    if(compare_enabled) {
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(gl_compare_mode[(int)cmp_mode], reference);
+        gl_error_check();
+    }
+}
+
+void render_state::blend_state::clear() {
+    if(blend_enabled) glDisable(GL_BLEND);
+    if(compare_enabled) glDisable(GL_ALPHA_TEST);
+}

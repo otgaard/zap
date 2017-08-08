@@ -13,6 +13,7 @@ namespace zap { namespace engine {
             if(blend) alloc += sizeof(blend_state);
 
             storage_.resize(alloc);
+
             if(blend) {
                 blend_state_ = reinterpret_cast<blend_state*>(storage_.data());
                 blend_state_->init();
@@ -86,6 +87,9 @@ namespace zap { namespace engine {
                 reference = 0.f;
                 colour.set(0.f, 0.f, 0.f, 0.f);
             }
+
+            void set();
+            void clear();
         };
 
         struct cull_state { };
@@ -94,6 +98,8 @@ namespace zap { namespace engine {
         struct stencil_state { };
         struct multisample_state { };
         struct wire_state { };
+
+        blend_state* get_blend_state() const { return blend_state_; }
 
     protected:
         std::vector<char> storage_;

@@ -368,6 +368,8 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw_scene() {
+    const auto red_colour_table = {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}};
+    const auto blue_colour_table = {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}};
     fbuffer1_.bind();
     clear(0.f, 0.f, 0.f, 0.f);
     mesh1_.bind();
@@ -379,7 +381,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
-    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
+    context_.set_parameter("colour[0]", red_colour_table);
     mesh1_.draw();
 
     // High frequency tex
@@ -388,7 +390,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
-    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}});
+    context_.set_parameter("colour[0]", blue_colour_table);
     mesh1_.draw();
 
     fbuffer1_.release();
@@ -433,7 +435,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f},  PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
-    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
+    context_.set_parameter("colour[0]", red_colour_table);
     mesh1_.draw();
 
     // High frequency tex
@@ -442,7 +444,7 @@ void scene_graph_test::draw_scene() {
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
-    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}});
+    context_.set_parameter("colour[0]", blue_colour_table);
     mesh1_.draw();
 
     context_.release();
