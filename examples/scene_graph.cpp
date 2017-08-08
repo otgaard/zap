@@ -39,9 +39,10 @@ const char* const basic_vshdr = GLSL(
 );
 
 const char* const basic_fshdr = GLSL(
+    uniform vec4 colour = vec4(1., 1., 1., 1.);
     out vec4 frag_colour;
     void main() {
-        frag_colour = vec4(1., 1., 1., 1.);
+        frag_colour = colour;
     }
 );
 
@@ -85,6 +86,7 @@ bool scene_graph_test::initialise() {
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
+
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     for(auto& ctx : contexts_) {
@@ -98,9 +100,12 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
+    const vec4f colours[2] = {vec4f{1.f, 1.f, 0.f, 1.f}, vec4f{0.f, 0.f, 1.f, 1.f}};
     contexts_.back().bind();
+    int counter = 0;
     for(auto& mesh : meshes_) {
         mesh->bind();
+        contexts_.back().set_parameter("colour", colours[counter++]);
         mesh->draw();
         mesh->release();
     }

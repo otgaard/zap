@@ -9,6 +9,7 @@ using namespace zap::engine;
 
 program::~program() {
     if(is_linked()) gl::glDeleteProgram(id_);
+    LOG("Program Deallocated:", id_);
 }
 
 std::int32_t program::uniform_location(const char* name) {

@@ -123,7 +123,7 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         scene_graph/spatial.hpp
         scene_graph/node.hpp
         scene_graph/visual.hpp
-        scene_graph/bounds/bound.hpp
+        scene_graph/bound.hpp
         renderer/style.hpp
         engine/render_state.hpp
         tools/os.hpp
@@ -153,7 +153,9 @@ set(ZAP_ENGINE_FILES
         renderer/style.cpp
         tools/os.cpp
         engine/sampler.cpp
-        renderer/render_context.cpp engine/state_stack.cpp engine/state_stack.hpp)
+        renderer/render_context.cpp
+        engine/state_stack.cpp
+        engine/state_stack.hpp)
 
 set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/quad.hpp
