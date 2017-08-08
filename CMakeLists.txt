@@ -151,7 +151,6 @@ set(ZAP_ENGINE_FILES
         renderer/material.cpp
         renderer/light.cpp
         renderer/style.cpp
-        engine/render_state.cpp
         tools/os.cpp
         engine/sampler.cpp
         renderer/render_context.cpp engine/state_stack.cpp engine/state_stack.hpp)

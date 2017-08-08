@@ -87,9 +87,6 @@ namespace zap { namespace engine {
                 reference = 0.f;
                 colour.set(0.f, 0.f, 0.f, 0.f);
             }
-
-            void set();
-            void clear();
         };
 
         struct cull_state { };

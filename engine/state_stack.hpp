@@ -17,11 +17,17 @@ public:
     using stack_t = std::stack<const render_state*>;
     using blend_state = render_state::blend_state;
 
+    state_stack();
+
+    bool initialise();
+    bool is_initialised() const { return !blend_stack_.empty(); }
+
     void push_state(const render_state* state);
     const render_state* peek() const { return stack_.top(); }
     void pop();
 
     const blend_state* peek_blend_state() const { return peek()->get_blend_state(); }
+    const blend_state* curr_blend_state() const { return blend_stack_.top(); }
 
 protected:
     void push_blend_state(const blend_state* state);
@@ -30,6 +36,8 @@ protected:
     void transition(const blend_state* source, const blend_state* target);
 
     stack_t stack_;
+    render_state base_state_;
+    std::stack<const blend_state*> blend_stack_;
 };
 
 }}
