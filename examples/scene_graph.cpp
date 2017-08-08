@@ -51,9 +51,8 @@ bool scene_graph_test::initialise() {
     auto cube = p3_geo3::make_cube(vec3f(1.f, 1.f, 1.f));
     auto cube_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES>(cube);
 
-
-
-
+    auto sphere = p3_geo3::make_UVsphere<float, uint32_t>(30, 60, 1.f, true);
+    auto sphere_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES, uint32_t>(sphere);
 
     gl_error_check();
     return true;

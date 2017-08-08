@@ -255,14 +255,47 @@ mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive> make_mesh(const std::vect
         delete vbuf_ptr;
         return m;
     }
-    m.bind();
-    vbuf_ptr->bind();
+    m.bind(); vbuf_ptr->bind();
     if(!vbuf_ptr->initialise(buffer)) {
         LOG_ERR("Failed to initialise vertex_buffer");
         delete vbuf_ptr;
         return m;
     }
     m.set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+    m.release();
+    gl_error_check();
+    return m;
+}
+
+template <typename VertexT, primitive_type Primitive, typename IndexT>
+mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>> make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& def) {
+    mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>> m{};
+    if(!m.allocate()) {
+        LOG_ERR("Failed to construct mesh");
+        return m;
+    }
+    auto* vbuf_ptr = new vertex_buffer<VertexT>{};
+    if(!vbuf_ptr->allocate()) {
+        LOG_ERR("Failed to construct vertex_buffer");
+        delete vbuf_ptr;
+        return m;
+    }
+    auto* ibuf_ptr = new index_buffer<IndexT, Primitive>();
+    if(!ibuf_ptr->allocate()) {
+        LOG_ERR("Failed to construct index_buffer");
+        delete vbuf_ptr;
+        delete ibuf_ptr;
+        return m;
+    }
+    m.bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
+    if(!vbuf_ptr->initialise(get<0>(def)) || !ibuf_ptr->initialise(get<1>(def))) {
+        LOG_ERR("Failed to initialise vertex_buffer or index_buffer");
+        delete vbuf_ptr;
+        delete ibuf_ptr;
+        return m;
+    }
+    m.set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+    m.set_index(ibuf_ptr, true);
     m.release();
     gl_error_check();
     return m;
