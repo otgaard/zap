@@ -43,9 +43,11 @@ using render_state_ptr = std::unique_ptr<engine::render_state>;
 class render_context {
 public:
     using parameter = engine::parameter;
+    using block = engine::block;
     using program = engine::program;
     using texture = engine::texture;
     using sampler = engine::sampler;
+    using ubuffer_base = engine::ubuffer_base;
     using render_state = engine::render_state;
 
     render_context() = default;
@@ -63,6 +65,12 @@ public:
         if(!program_->is_allocated()) {
             if(!program_->link()) return false;
         }
+
+        // Get uniform blocks
+        blocks_ = program_->get_uniform_blocks();
+
+        // Get uniform parameters
+
         parameters_ = program_->get_parameters();
         size_t total = 0;
         offsets_.resize(parameters_.size(), 0);
@@ -175,6 +183,16 @@ public:
         add_texture(ptrs...);
     }
 
+    void add_uniform_buffer(const ubuffer_base* ubuf_ptr) {
+        ubuffers_.emplace_back(ubuf_ptr);
+    }
+
+    template <typename... Args>
+    void add_uniform_buffer(const ubuffer_base* ubuf_ptr, Args... ptrs) {
+        ubuffers_.emplace_back(ubuf_ptr);
+        add_uniform_buffer(ptrs...);
+    }
+
     void set_program(program* ptr) { program_ = ptr; }
     void set_program(const std::string& vshdr, const std::string& fshdr) {
         if(program_ && owns_program_) delete program_;
@@ -193,8 +211,10 @@ private:
 
     program* program_ = nullptr;
     std::vector<parameter> parameters_;         // move this to a lookup table in the engine later (per program)
+    std::vector<block> blocks_;                 // uniform blocks used by this program
     std::vector<const texture*> textures_;
     std::vector<const sampler*> samplers_;
+    std::vector<const ubuffer_base*> ubuffers_;
     std::vector<int> offsets_;                  // Store the offset of each parameter (-1) for none
     std::vector<char> uniforms_;                // Store all uniforms in a contiguous block
     mutable std::vector<bool> dirty_flags_;     // A set of dirty flags for each parameter

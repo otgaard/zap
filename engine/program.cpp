@@ -84,6 +84,8 @@ std::vector<parameter> program::get_parameters() const {
 
     std::vector<parameter> parms{};
 
+    // Query the uniforms
+
     int32_t uniform_count;
     gl::glGetProgramiv(id_, GL_ACTIVE_UNIFORMS, &uniform_count);
     for(int i = 0; i != uniform_count; ++i) {
@@ -95,13 +97,40 @@ std::vector<parameter> program::get_parameters() const {
         if(gl::internal_type(gltype, gl::gl_parameter_type, gl::gl_parameter_type+int(parameter_type::PT_SIZE), p.type)) {
             p.name = std::string{buffer, size_t(len)};
             p.location = gl::glGetUniformLocation(id_, p.name.c_str());
-            LOG("Parameter:", p.location, LOG_BLUE, p.name, LOG_YELLOW, gl::gl_typename(p.type), LOG_GREEN, "count:", p.count);
-            parms.emplace_back(p);
+            if(p.location != -1) {
+                LOG("Parameter:", p.location, LOG_BLUE, p.name, LOG_YELLOW, gl::gl_typename(p.type), LOG_GREEN, "count:", p.count);
+                parms.emplace_back(p);
+            }
         } else {
             LOG_ERR("Unsupported uniform type:", i, buffer);
         }
     }
+
+    gl_error_check();
     return parms;
+}
+
+std::vector<block> program::get_uniform_blocks() const {
+    const uint32_t bufsize = 128;
+    char buffer[bufsize] = {0};
+
+    std::vector<block> uni_blocks{};
+
+    // Query the uniform buffers
+    int32_t block_count;
+    gl::glGetProgramiv(id_, GL_ACTIVE_UNIFORM_BLOCKS, &block_count);
+    for(int i = 0; i != block_count; ++i) {
+        block b{};
+        int len;
+        gl::glGetActiveUniformBlockName(id_, i, bufsize, &len, buffer);
+        b.name = std::string{buffer, size_t(len)};
+        gl::glGetActiveUniformBlockiv(id_, i, GL_UNIFORM_BLOCK_DATA_SIZE, &b.size);
+        LOG("Uniform Block:", LOG_BLUE, b.name, LOG_YELLOW, "size:", LOG_RED, b.size);
+        uni_blocks.emplace_back(std::move(b));
+    }
+
+    gl_error_check();
+    return uni_blocks;
 }
 
 void program::bind_uniform(int location, parameter_type type, int count, const char* data) {

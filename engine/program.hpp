@@ -11,6 +11,16 @@
 #include <maths/algebra.hpp>
 
 namespace zap { namespace engine {
+    struct block {
+        std::string name;
+        int32_t size = 0;
+
+        bool is_valid() const { return size != 0; }
+
+        block() = default;
+        block(const std::string& n, int32_t s) : name(n), size(s) { }
+    };
+
     struct parameter {
         int32_t location = -1;
         std::string name;
@@ -50,6 +60,7 @@ namespace zap { namespace engine {
         void release() const;
 
         std::vector<parameter> get_parameters() const;
+        std::vector<block> get_uniform_blocks() const;
 
         void add_shader(shader_type type, const std::string& src) { add_shader(std::make_shared<shader>(type,src)); }
         void add_shader(shader* shdr) { add_shader(std::shared_ptr<shader>(shdr)); }
