@@ -192,15 +192,15 @@ private:
     // no ownership yet
 
     program* program_ = nullptr;
-    std::vector<parameter> parameters_;             // move this to a lookup table in the engine later (per program)
+    std::vector<parameter> parameters_;         // move this to a lookup table in the engine later (per program)
     std::vector<const texture*> textures_;
     std::vector<const sampler*> samplers_;
-    std::vector<int> offsets_;                      // Store the offset of each parameter (-1) for none
-    std::vector<char> uniforms_;                    // Store all uniforms in a contiguous block
-    mutable std::vector<bool> dirty_flags_;         // A set of dirty flags for each parameter
-    mutable bool dirty_ = true;                     // If any uniform has been set on the client but not yet on the server
+    std::vector<int> offsets_;                  // Store the offset of each parameter (-1) for none
+    std::vector<char> uniforms_;                // Store all uniforms in a contiguous block
+    mutable std::vector<bool> dirty_flags_;     // A set of dirty flags for each parameter
+    mutable bool dirty_ = true;                 // If any uniform has been set on the client but not yet on the server
     mutable bool is_bound_ = false;
-    bool owns_program_ = false;                     // If set, this context owns the program and must delete it
+    bool owns_program_ = false;                 // If set, this context owns the program and must delete it
 };
 
 }}

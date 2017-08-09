@@ -16,23 +16,25 @@ struct uniform_block : core::pod<Args...> {
     constexpr static size_t bytesize() { return sizeof(uniform_block); }
     using offsets = typename core::generate_table<size, pod_t, core::pod_offset>::result;
 
-    uniform_block() { }
+    uniform_block() = default;
     uniform_block(const Args&... args) : core::pod<Args...>(args...) { }
 };
 
 enum class ublock_attribute : size_t {
     UA_SCALE,                   // Common Variables
     UA_OFFSET,
-    UA_SCREEN_DIMS,             // Screen/Window Data [x, y, width, height]
+    UA_VIEWPORT,                // Screen/Window Data [x, y, width, height]
     UA_CAM_POSITION,            // Camera will bind here
     UA_CAM_RIGHT,
     UA_CAM_UP,
     UA_CAM_DIR,
     UA_CAM_VIEW,
     UA_CAM_PROJECTION,
+    UA_CAM_PROJ_VIEW,
     UA_MODEL_MATRIX,            // Transforms will bind here
     UA_MVP_MATRIX,
     UA_MV_MATRIX,
+    UA_VIEW_MATRIX,
     UA_NORMAL_MATRIX,
     UA_USERDATA1,               // Use for special parameters, testing, etc.
     UA_USERDATA2
@@ -43,16 +45,18 @@ enum class ublock_attribute : size_t {
 namespace core {
     MAKE_PODFIELD(scale, engine::ublock_attribute, engine::ublock_attribute::UA_SCALE)
     MAKE_PODFIELD(offset, engine::ublock_attribute, engine::ublock_attribute::UA_OFFSET)
-    MAKE_PODFIELD(screen_dims, engine::ublock_attribute, engine::ublock_attribute::UA_SCREEN_DIMS)
+    MAKE_PODFIELD(viewport, engine::ublock_attribute, engine::ublock_attribute::UA_VIEWPORT)
     MAKE_PODFIELD(cam_position, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_POSITION)
     MAKE_PODFIELD(cam_right, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_RIGHT)
     MAKE_PODFIELD(cam_up, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_UP)
     MAKE_PODFIELD(cam_dir, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_DIR)
     MAKE_PODFIELD(cam_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_VIEW)
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
+    MAKE_PODFIELD(cam_proj_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJ_VIEW)
     MAKE_PODFIELD(model_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MODEL_MATRIX)
     MAKE_PODFIELD(mvp_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MVP_MATRIX)
     MAKE_PODFIELD(mv_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MV_MATRIX)
+    MAKE_PODFIELD(view_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_VIEW_MATRIX);
     MAKE_PODFIELD(normal_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_NORMAL_MATRIX)
     MAKE_PODFIELD(userdata1, engine::ublock_attribute, engine::ublock_attribute::UA_USERDATA1)
     MAKE_PODFIELD(userdata2, engine::ublock_attribute, engine::ublock_attribute::UA_USERDATA2)

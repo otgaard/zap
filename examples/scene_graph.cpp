@@ -14,7 +14,6 @@
 #include <scene_graph/visual.hpp>
 
 #include <renderer/camera.hpp>
-#include <renderer/render_context.hpp>
 #include <generators/geometry/geometry3.hpp>
 
 using namespace zap;
@@ -30,11 +29,25 @@ using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
 using p3_geo3 = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>;
 
+using cam_block = uniform_block<
+    core::cam_view<mat4f>,
+    core::cam_projection<mat4f>,
+    core::cam_proj_view<mat4f>,
+    core::viewport<vec4i>
+>;
+using cam_ubuffer = uniform_buffer<cam_block>;
+
 const char* const basic_vshdr = GLSL(
-    uniform mat4 PVM;
+    layout (std140) uniform cam_block {
+        mat4 cam_view;
+        mat4 cam_projection;
+        mat4 cam_proj_view;
+        vec4 viewport;
+    };
+
     in vec3 position;
     void main() {
-        gl_Position = PVM * vec4(position, 1.0);
+        gl_Position = cam_proj_view * vec4(position, 1.0);
     }
 );
 
@@ -61,6 +74,7 @@ protected:
     camera cam_;
     std::vector<std::unique_ptr<mesh_base>> meshes_;
     std::vector<render_context> contexts_;
+
 };
 
 bool scene_graph_test::initialise() {
@@ -80,17 +94,21 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
+    //wire_frame(true);
+    depth_test(true);
+    bf_culling(false);
+
     gl_error_check();
     return true;
 }
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-
-    cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
+    cam_.world_pos(vec3f{2.f, 2.f, 5.f});
+    cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     for(auto& ctx : contexts_) {
-        if(ctx.has_parameter("PVM")) ctx.set_parameter("PVM", cam_.proj_view());
+        if(ctx.has_parameter("PVM")) ctx.set_parameter("PVM", cam_.proj_view()*make_scale(3.f, 3.f, 3.f));
     }
     gl_error_check();
 }

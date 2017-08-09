@@ -245,66 +245,51 @@ public:
 template <typename VertexT, primitive_type Primitive>
 std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mesh(const std::vector<VertexT>& buffer) {
     auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>();
-    if(!m->allocate()) {
-        LOG_ERR("Failed to construct mesh");
-        m.release();
-        return m;
-    }
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
-    if(!vbuf_ptr->allocate()) {
-        LOG_ERR("Failed to construct vertex_buffer");
-        delete vbuf_ptr;
-        m.release();
-        return m;
+
+    if(m->allocate() && vbuf_ptr->allocate()) {
+        m->bind(); vbuf_ptr->bind();
+        if(vbuf_ptr->initialise(buffer)) {
+            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+            m->release();
+            gl_error_check();
+            return m;
+        } else {
+            LOG_ERR("Failed to initialise vertex_buffer");
+        }
+    } else {
+        LOG_ERR("Failed to allocate mesh resources");
     }
-    m->bind(); vbuf_ptr->bind();
-    if(!vbuf_ptr->initialise(buffer)) {
-        LOG_ERR("Failed to initialise vertex_buffer");
-        delete vbuf_ptr;
-        m.release();
-        return m;
-    }
-    m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
-    m->release();
-    gl_error_check();
+
+    delete vbuf_ptr;
+    m.release();
     return m;
 }
 
 template <typename VertexT, primitive_type Primitive, typename IndexT>
 std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>> make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& def) {
     auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>>();
-    if(!m->allocate()) {
-        LOG_ERR("Failed to construct mesh");
-        m.release();
-        return m;
-    }
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
-    if(!vbuf_ptr->allocate()) {
-        LOG_ERR("Failed to construct vertex_buffer");
-        delete vbuf_ptr;
-        m.release();
-        return m;
-    }
     auto* ibuf_ptr = new index_buffer<IndexT, Primitive>();
-    if(!ibuf_ptr->allocate()) {
-        LOG_ERR("Failed to construct index_buffer");
-        delete vbuf_ptr;
-        delete ibuf_ptr;
-        m.release();
-        return m;
+
+    if(m->allocate() && vbuf_ptr->allocate() && ibuf_ptr->allocate()) {
+        m->bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
+        if(vbuf_ptr->initialise(get<0>(def)) && ibuf_ptr->initialise(get<1>(def))) {
+            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+            m->set_index(ibuf_ptr, true);
+            m->release();
+            gl_error_check();
+            return m;
+        } else {
+            LOG_ERR("Failed to initialise vertex_buffer or index_buffer");
+        }
+    } else {
+        LOG_ERR("Failed to allocate mesh resources");
     }
-    m->bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
-    if(!vbuf_ptr->initialise(get<0>(def)) || !ibuf_ptr->initialise(get<1>(def))) {
-        LOG_ERR("Failed to initialise vertex_buffer or index_buffer");
-        delete vbuf_ptr;
-        delete ibuf_ptr;
-        m.release();
-        return m;
-    }
-    m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
-    m->set_index(ibuf_ptr, true);
-    m->release();
-    gl_error_check();
+
+    delete vbuf_ptr;
+    delete ibuf_ptr;
+    m.release();
     return m;
 }
 

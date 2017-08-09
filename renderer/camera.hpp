@@ -47,7 +47,11 @@ namespace zap { namespace renderer {
             update_view();
         }
 
-        void orthogonolise(const vec3f& d, const vec3f& world_up=vec3f(0.f, 1.f, 0.f)) {
+        void look_at(const vec3f& P, const vec3f& world_up=vec3f{0.f, 1.f, 0.f}) {
+            orthogonolise(maths::normalise(P - world_pos()), world_up);
+        }
+
+        void orthogonolise(const vec3f& d, const vec3f& world_up=vec3f{0.f, 1.f, 0.f}) {
             assert(maths::eq(d.length_sqr(), 1.f, 8*std::numeric_limits<float>::epsilon()) && "Direction vector must be unit length");
             auto up = maths::normalise(world_up - maths::dot(world_up, d)*d);
             view_to_world_.column(2, d);
