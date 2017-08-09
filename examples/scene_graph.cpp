@@ -157,12 +157,14 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    rndr_state_ = std::make_unique<render_state>(true);
+    rndr_state_ = std::make_unique<render_state>(true, true);
     contexts_.back().set_state(rndr_state_.get());
     if(!rndr_.initialise()) {
         LOG_ERR("Error initialising renderer");
         return false;
     }
+
+    //bf_culling(false);
 
     gl_error_check();
     return true;

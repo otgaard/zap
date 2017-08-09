@@ -16,6 +16,7 @@ public:
     constexpr static size_t max_depth = 16;
     using stack_t = std::stack<const render_state*>;
     using blend_state = render_state::blend_state;
+    using depth_state = render_state::depth_state;
 
     state_stack();
 
@@ -29,15 +30,26 @@ public:
     const blend_state* peek_blend_state() const { return peek()->get_blend_state(); }
     const blend_state* curr_blend_state() const { return blend_stack_.top(); }
 
+    const depth_state* peek_depth_state() const { return peek()->get_depth_state(); }
+    const depth_state* curr_depth_state() const { return depth_stack_.top(); }
+
 protected:
-    void push_blend_state(const blend_state* state);
+    // Blending state
+    void push_state(const blend_state* state);
     void pop_blend_state();
     void initialise(const blend_state* state);
     void transition(const blend_state* source, const blend_state* target);
 
+    // Depth state
+    void push_state(const depth_state* state);
+    void pop_depth_state();
+    void initialise(const depth_state* state);
+    void transition(const depth_state* source, const depth_state* target);
+
     stack_t stack_;
     render_state base_state_;
     std::stack<const blend_state*> blend_stack_;
+    std::stack<const depth_state*> depth_stack_;
 };
 
 }}
