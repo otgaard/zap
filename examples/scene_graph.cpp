@@ -117,7 +117,7 @@ bool scene_graph_test::initialise() {
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{2.f, 2.f, 5.f});
+    cam_.world_pos(vec3f{1.f, 1.f, 3.f});
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_uniforms_.bind();

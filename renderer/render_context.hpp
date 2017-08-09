@@ -22,6 +22,11 @@
  * 1) It might make sense to store the resource_t directly as a parameter and then bind it without requiring reference
  *    to the texture or sampler.  That would allow textures to be set more like parameters but would move the ownership
  *    problem elsewhere.
+ *
+ * TODO:
+ * 1) Provide better ownership model (make ptr_t a template parameter?).
+ * 2) Allow specialisation based on what the context needs (i.e. don't provide textures_ if no textures are used)
+ * 3) Provide verification and warnings when using context with missing parameters/blocks/textures/etc.
  */
 
 #include <memory>
@@ -66,10 +71,7 @@ public:
             if(!program_->link()) return false;
         }
 
-        // Get uniform blocks
         blocks_ = program_->get_uniform_blocks();
-
-        // Get uniform parameters
 
         parameters_ = program_->get_parameters();
         size_t total = 0;
@@ -207,9 +209,8 @@ public:
 protected:
 
 private:
-    // no ownership yet
-
     program* program_ = nullptr;
+    render_state* rndr_state_ = nullptr;        // The render_state for this context (may be nullptr)
     std::vector<parameter> parameters_;         // move this to a lookup table in the engine later (per program)
     std::vector<block> blocks_;                 // uniform blocks used by this program
     std::vector<const texture*> textures_;

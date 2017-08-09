@@ -5,6 +5,7 @@
 #include "render_context.hpp"
 #include "engine/gl_api.hpp"
 #include "tools/log.hpp"
+#include "renderer.hpp"
 
 using namespace zap;
 using namespace zap::engine;
@@ -41,9 +42,13 @@ void render_context::bind() const {
         }
         dirty_ = false;
     }
+
+    if(rndr_state_) renderer::instance()->push_state(rndr_state_);
 }
 
 void render_context::release() const {
+    if(rndr_state_) renderer::instance()->pop_state();
+
     if(!textures_.empty()) {
         if(samplers_.empty()) {
             for(size_t i = 0; i != textures_.size(); ++i) {
