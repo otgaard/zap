@@ -222,7 +222,7 @@ private:
     std::vector<block> blocks_;                 // uniform blocks used by this program
     std::vector<const texture*> textures_;
     std::vector<const sampler*> samplers_;
-    std::vector<const std::string> ubname_;     // The names of the buffers
+    std::vector<std::string> ubname_;           // The names of the buffers
     std::vector<const ubuffer_base*> ubuffers_;
     std::vector<int> offsets_;                  // Store the offset of each parameter (-1) for none
     std::vector<char> uniforms_;                // Store all uniforms in a contiguous block
