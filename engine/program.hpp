@@ -12,13 +12,15 @@
 
 namespace zap { namespace engine {
     struct block {
+        int32_t location = -1;
         std::string name;
-        int32_t size = 0;
+        int32_t size;
 
-        bool is_valid() const { return size != 0; }
+        bool is_valid() const { return location != -1; }
 
         block() = default;
-        block(const std::string& n, int32_t s) : name(n), size(s) { }
+        explicit block(int32_t l) : location(l) { }
+        block(int32_t l, const std::string& n, int32_t s) : location(l), name(n), size(s) { }
     };
 
     struct parameter {

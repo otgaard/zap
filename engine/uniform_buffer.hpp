@@ -19,10 +19,12 @@ public:
     constexpr static auto buf_type = buffer_type::BT_UNIFORM;
 
     explicit ubuffer_base(buffer_usage use=buffer_usage::BU_STREAM_COPY) : buffer(use) { }
+    ~ubuffer_base() override = default;
 
     void bind() const { buffer::bind(buf_type); }
     void release() const { buffer::release(buf_type); }
 
+    void bind_point(int location) const { gl::bind_buffer_base(buf_type, location, id_); }
 };
 
 template <typename UBlock>
@@ -34,6 +36,7 @@ public:
     using pod_t = typename block_t::pod_t;
 
     explicit uniform_buffer(buffer_usage use=buffer_usage::BU_STREAM_COPY) : ubuffer_base(use) { }
+    ~uniform_buffer() override = default;
 
     bool initialise(const char* data=nullptr) {
         return buffer::initialise(buf_type, usage(), block_t::bytesize(), data);
@@ -41,10 +44,6 @@ public:
 
     bool initialise(const block_t& data) {
         return buffer::initialise(buf_type, usage(), block_t::bytesize(), reinterpret_cast<const char*>(&data));
-    }
-
-    void bind_point(int idx) {
-        gl::bind_buffer_base(buf_type, idx, id_);
     }
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }

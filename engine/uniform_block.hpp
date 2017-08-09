@@ -28,7 +28,7 @@ enum class ublock_attribute : size_t {
     UA_CAM_RIGHT,
     UA_CAM_UP,
     UA_CAM_DIR,
-    UA_CAM_VIEW,
+    UA_CAM_WORLD_TO_VIEW,
     UA_CAM_PROJECTION,
     UA_CAM_PROJ_VIEW,
     UA_MODEL_MATRIX,            // Transforms will bind here
@@ -50,7 +50,7 @@ namespace core {
     MAKE_PODFIELD(cam_right, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_RIGHT)
     MAKE_PODFIELD(cam_up, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_UP)
     MAKE_PODFIELD(cam_dir, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_DIR)
-    MAKE_PODFIELD(cam_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_VIEW)
+    MAKE_PODFIELD(cam_world_to_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_WORLD_TO_VIEW)
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
     MAKE_PODFIELD(cam_proj_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJ_VIEW)
     MAKE_PODFIELD(model_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MODEL_MATRIX)

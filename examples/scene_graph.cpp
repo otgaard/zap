@@ -30,7 +30,7 @@ using visual_t = visual<spatial_t>;
 using p3_geo3 = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>;
 
 using cam_block = uniform_block<
-    core::cam_view<mat4f>,
+    core::cam_world_to_view<mat4f>,
     core::cam_projection<mat4f>,
     core::cam_proj_view<mat4f>,
     core::viewport<vec4i>
@@ -74,11 +74,23 @@ protected:
     camera cam_;
     std::vector<std::unique_ptr<mesh_base>> meshes_;
     std::vector<render_context> contexts_;
-
+    cam_ubuffer cam_uniforms_;
 };
 
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
+
+    if(!cam_uniforms_.allocate()) {
+        LOG_ERR("Failed to allocate cam_uniform block");
+        return false;
+    }
+
+    cam_uniforms_.bind();
+    if(!cam_uniforms_.initialise()) {
+        LOG_ERR("Failed to initialise cam_uniform");
+        return false;
+    }
+    cam_uniforms_.release();
 
     auto cube = p3_geo3::make_cube(vec3f(.1f, .5f, .25f));
     auto cube_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES>(cube);
@@ -89,6 +101,7 @@ bool scene_graph_test::initialise() {
     meshes_.emplace_back(std::move(sphere_mesh));
 
     contexts_.emplace_back(basic_vshdr, basic_fshdr);
+    contexts_.back().add_uniform_buffer(&cam_uniforms_);
     if(!contexts_.back().initialise()) {
         LOG_ERR("Failed to initialise context");
         return false;
@@ -107,9 +120,15 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.world_pos(vec3f{2.f, 2.f, 5.f});
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
-    for(auto& ctx : contexts_) {
-        if(ctx.has_parameter("PVM")) ctx.set_parameter("PVM", cam_.proj_view()*make_scale(3.f, 3.f, 3.f));
+    cam_uniforms_.bind();
+    if(cam_uniforms_.map(buffer_access::BA_READ_WRITE)) {
+        cam_uniforms_.ref().cam_world_to_view = cam_.world_to_view();
+        cam_uniforms_.ref().cam_projection = cam_.projection();
+        cam_uniforms_.ref().cam_proj_view = cam_.proj_view();
+        cam_uniforms_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
+        cam_uniforms_.unmap();
     }
+    cam_uniforms_.release();
     gl_error_check();
 }
 

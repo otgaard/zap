@@ -120,12 +120,13 @@ std::vector<block> program::get_uniform_blocks() const {
     int32_t block_count;
     gl::glGetProgramiv(id_, GL_ACTIVE_UNIFORM_BLOCKS, &block_count);
     for(int i = 0; i != block_count; ++i) {
-        block b{};
+        block b{-1};
         int len;
         gl::glGetActiveUniformBlockName(id_, i, bufsize, &len, buffer);
         b.name = std::string{buffer, size_t(len)};
         gl::glGetActiveUniformBlockiv(id_, i, GL_UNIFORM_BLOCK_DATA_SIZE, &b.size);
-        LOG("Uniform Block:", LOG_BLUE, b.name, LOG_YELLOW, "size:", LOG_RED, b.size);
+        b.location = gl::glGetUniformBlockIndex(id_, buffer);
+        LOG("Uniform Block:", b.location, LOG_BLUE, b.name, LOG_YELLOW, "size:", LOG_RED, b.size);
         uni_blocks.emplace_back(std::move(b));
     }
 

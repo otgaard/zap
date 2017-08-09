@@ -24,6 +24,13 @@ void render_context::bind() const {
         }
     }
 
+    if(!ubuffers_.empty()) {
+        for(size_t i = 0; i != ubuffers_.size(); ++i) {
+            ubuffers_[i]->bind_point(i);    // TODO: Try to avoid this by reusing same location across ublocks
+            ubuffers_[i]->bind();
+        }
+    }
+
     if(dirty_) {
         for(size_t i = 0; i != parameters_.size(); ++i) {
             if(dirty_flags_[i]) {
@@ -49,6 +56,11 @@ void render_context::release() const {
             }
         }
     }
+
+    if(!ubuffers_.empty()) {
+        for(size_t i = 0; i != ubuffers_.size(); ++i) ubuffers_[i]->release();
+    }
+
     program_->release();
     is_bound_ = false;
 }
