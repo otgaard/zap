@@ -35,7 +35,8 @@ using cam_block = uniform_block<
     core::cam_projection<mat4f>,
     core::cam_proj_view<mat4f>,
     core::viewport<vec4i>,
-    core::cam_position<vec3f>
+    core::cam_position<vec3f>,
+    core::eye_dir<vec3f>
 >;
 using cam_ubuffer = uniform_buffer<cam_block>;
 
@@ -43,7 +44,7 @@ using model_block = uniform_block<
     core::mvp_matrix<mat4f>,
     core::mv_matrix<mat4f>,
     core::model_matrix<mat4f>,
-    core::normal_matrix<mat3f>
+    core::normal_matrix<mat4f>
 >;
 using model_ubuffer = uniform_buffer<model_block>;
 
@@ -54,24 +55,27 @@ const char* const basic_vshdr = GLSL(
         mat4 cam_proj_view;
         vec4 viewport;
         vec3 cam_position;
+        vec3 eye_dir;
     };
 
     layout (std140) uniform model_ublock {
         mat4 mvp_matrix;
         mat4 mv_matrix;
         mat4 model_matrix;
-        mat3 normal_matrix;
+        mat4 normal_matrix;
     };
 
     in vec3 position;
     in vec3 normal;
     in vec2 texcoord1;
 
+    out vec3 pos;
     out vec3 nor;
     out vec2 tex;
 
     void main() {
-        nor = normal_matrix * normal;
+        pos = (mv_matrix * vec4(position, 1.)).xyz;
+        nor = normalize((normal_matrix * vec4(normal, 0.)).xyz);
         tex = texcoord1;
         gl_Position = mvp_matrix * vec4(position, 1.0);
     }
@@ -84,16 +88,23 @@ const char* const basic_fshdr = GLSL(
         mat4 cam_proj_view;
         vec4 viewport;
         vec3 cam_position;
+        vec3 eye_dir;
     };
 
     uniform vec4 colour = vec4(1., 1., 1., 1.);
+    uniform vec3 light_dir = vec3(0., 1., 0.);
 
+    in vec3 pos;
     in vec3 nor;
     in vec2 tex;
 
     out vec4 frag_colour;
     void main() {
-        frag_colour = max(dot(nor, -cam_position), 0.) * colour;
+        vec3 vP = normalize(cam_position - pos);
+        float Ld = max(0, dot(light_dir, nor));
+        vec3 H = normalize(light_dir + vP);
+        float Ls = pow(max(0., dot(H, nor)), 100.) * Ld;
+        frag_colour = Ld * colour + Ls * vec4(1., 1., 1., 1.);
     }
 );
 
@@ -140,7 +151,7 @@ bool scene_graph_test::initialise() {
     }
     model_ublock_.release();
 
-    auto cube = p3n3t2_geo3::make_cube(vec3f(.1f, .5f, .25f));
+    auto cube = p3n3t2_geo3::make_cube(vec3f(.1f, .5f, .1f));
     auto cube_mesh = make_mesh<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>(cube);
     meshes_.emplace_back(std::move(cube_mesh));
 
@@ -178,6 +189,8 @@ void scene_graph_test::on_resize(int width, int height) {
         camera_ublock_.ref().cam_proj_view = cam_.proj_view();
         camera_ublock_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
         camera_ublock_.ref().cam_position = cam_.world_pos();
+        camera_ublock_.ref().eye_dir = -cam_.dir();
+        contexts_.back().set_parameter("light_dir", cam_.world_to_view() * normalise(vec3f{1.f, 1.f, 1.f}));
         camera_ublock_.unmap();
     }
     camera_ublock_.release();
@@ -191,7 +204,7 @@ void scene_graph_test::update(double t, float dt) {
         model_ublock_.ref().model_matrix = make_rotation(vec3f{0.f, 1.f, 0.f}, rot) * make_scale(2.f, 2.f, 2.f);
         model_ublock_.ref().mv_matrix = cam_.world_to_view() * model_ublock_.ref().model_matrix;
         model_ublock_.ref().mvp_matrix = cam_.projection() * model_ublock_.ref().mv_matrix;
-        model_ublock_.ref().normal_matrix = transpose(model_ublock_.ref().mv_matrix.inverse()).rotation();
+        model_ublock_.ref().normal_matrix = transpose(model_ublock_.ref().mv_matrix.inverse());
         model_ublock_.unmap();
     }
     model_ublock_.release();
