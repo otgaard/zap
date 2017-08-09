@@ -28,7 +28,7 @@ using spheref = geometry::sphere<float>;
 using spatial_t = spatial<transform4f, spheref>;
 using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
-using p3_geo3 = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>;
+using p3n3t2_geo3 = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>;
 
 using cam_block = uniform_block<
     core::cam_world_to_view<mat4f>,
@@ -64,11 +64,15 @@ const char* const basic_vshdr = GLSL(
     };
 
     in vec3 position;
+    in vec3 normal;
+    in vec2 texcoord1;
 
-    out float distance;
+    out vec3 nor;
+    out vec2 tex;
 
     void main() {
-        distance = 3.6f - length(position - cam_position);
+        nor = normal_matrix * normal;
+        tex = texcoord1;
         gl_Position = mvp_matrix * vec4(position, 1.0);
     }
 );
@@ -82,20 +86,14 @@ const char* const basic_fshdr = GLSL(
         vec3 cam_position;
     };
 
-    layout (std140) uniform model_ublock {
-        mat4 mvp_matrix;
-        mat4 mv_matrix;
-        mat4 model_matrix;
-        mat3 normal_matrix;
-    };
-
     uniform vec4 colour = vec4(1., 1., 1., 1.);
 
-    in float distance;
+    in vec3 nor;
+    in vec2 tex;
 
     out vec4 frag_colour;
     void main() {
-        frag_colour = distance * colour;
+        frag_colour = max(dot(nor, -cam_position), 0.) * colour;
     }
 );
 
@@ -142,12 +140,12 @@ bool scene_graph_test::initialise() {
     }
     model_ublock_.release();
 
-    auto cube = p3_geo3::make_cube(vec3f(.1f, .5f, .25f));
-    auto cube_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES>(cube);
+    auto cube = p3n3t2_geo3::make_cube(vec3f(.1f, .5f, .25f));
+    auto cube_mesh = make_mesh<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>(cube);
     meshes_.emplace_back(std::move(cube_mesh));
 
-    auto sphere = p3_geo3::make_UVsphere<float, uint32_t>(30, 60, .2f, true);
-    auto sphere_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES, uint32_t>(sphere);
+    auto sphere = p3n3t2_geo3::make_UVsphere<float, uint32_t>(30, 60, .2f, false);
+    auto sphere_mesh = make_mesh<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES, uint32_t>(sphere);
     meshes_.emplace_back(std::move(sphere_mesh));
 
     contexts_.emplace_back(basic_vshdr, basic_fshdr);
@@ -163,8 +161,6 @@ bool scene_graph_test::initialise() {
         LOG_ERR("Error initialising renderer");
         return false;
     }
-
-    bf_culling(false);
 
     gl_error_check();
     return true;
