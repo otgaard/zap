@@ -29,15 +29,8 @@ namespace zap { namespace scene_graph {
         void set_context(render_context* context) { context_ = context; }
         mesh_base* get_mesh() { return mesh_; }
         render_context* get_context() { return context_; }
-
-        // TODO: Temporary interface, move to renderer
-        void draw() const override {
-            context_->bind();
-            mesh_->bind();
-            mesh_->draw();
-            mesh_->release();
-            context_->release();
-        }
+        const mesh_base* get_mesh() const { return mesh_; }
+        const render_context* get_context() const { return context_; }
 
     protected:
         mesh_base* mesh_ = nullptr;

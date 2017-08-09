@@ -15,6 +15,7 @@
 
 #include <renderer/camera.hpp>
 #include <generators/geometry/geometry3.hpp>
+#include <renderer/renderer.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -67,12 +68,27 @@ const char* const basic_vshdr = GLSL(
     out float distance;
 
     void main() {
-        distance = 3.3f - length(position - cam_position);
+        distance = 3.6f - length(position - cam_position);
         gl_Position = mvp_matrix * vec4(position, 1.0);
     }
 );
 
 const char* const basic_fshdr = GLSL(
+    layout (std140) uniform cam_block {
+        mat4 cam_view;
+        mat4 cam_projection;
+        mat4 cam_proj_view;
+        vec4 viewport;
+        vec3 cam_position;
+    };
+
+    layout (std140) uniform model_block {
+        mat4 mvp_matrix;
+        mat4 mv_matrix;
+        mat4 model_matrix;
+        mat3 normal_matrix;
+    };
+
     uniform vec4 colour = vec4(1., 1., 1., 1.);
 
     in float distance;
@@ -100,6 +116,8 @@ protected:
     std::vector<render_context> contexts_;
     cam_ubuffer cam_uniforms_;
     model_ubuffer model_uniforms_;
+    zap::renderer::renderer rndr_;
+    std::unique_ptr<render_state> rndr_state_;
 };
 
 bool scene_graph_test::initialise() {
@@ -134,15 +152,17 @@ bool scene_graph_test::initialise() {
 
     contexts_.emplace_back(basic_vshdr, basic_fshdr);
     contexts_.back().add_uniform_buffer(&cam_uniforms_, &model_uniforms_);
-    //contexts_.back().add_uniform_buffer(&model_uniforms_);
     if(!contexts_.back().initialise()) {
         LOG_ERR("Failed to initialise context");
         return false;
     }
 
-    //wire_frame(true);
-    depth_test(true);
-    bf_culling(false);
+    rndr_state_ = std::make_unique<render_state>(true);
+    contexts_.back().set_state(rndr_state_.get());
+    if(!rndr_.initialise()) {
+        LOG_ERR("Error initialising renderer");
+        return false;
+    }
 
     gl_error_check();
     return true;
@@ -183,7 +203,7 @@ void scene_graph_test::update(double t, float dt) {
 
 void scene_graph_test::draw() {
     const vec4f colours[2] = {vec4f{1.f, 1.f, 0.f, 1.f}, vec4f{0.f, 0.f, 1.f, 1.f}};
-    contexts_.back().bind();
+    contexts_.back().bind(rndr_);
     int counter = 0;
     for(auto& mesh : meshes_) {
         mesh->bind();
@@ -191,7 +211,7 @@ void scene_graph_test::draw() {
         mesh->draw();
         mesh->release();
     }
-    contexts_.back().release();
+    contexts_.back().release(rndr_);
     gl_error_check();
 }
 

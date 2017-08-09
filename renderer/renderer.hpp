@@ -15,8 +15,6 @@ namespace zap { namespace renderer {
         renderer() = default;
         ~renderer() = default;
 
-        static renderer* instance();
-
         bool initialise();
 
         void push_state(const render_state* rndr_state) { state_stack_.push_state(rndr_state); }
@@ -24,8 +22,6 @@ namespace zap { namespace renderer {
         void pop_state() { state_stack_.pop(); }
 
     protected:
-        static renderer* inst_;
-
         bool initialised_ = false;
         state_stack state_stack_;
     };

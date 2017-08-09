@@ -11,7 +11,7 @@ using namespace zap;
 using namespace zap::engine;
 using namespace zap::renderer;
 
-void render_context::bind() const {
+void render_context::bind(renderer& rndr) const {
     program_->bind();
     is_bound_ = true;
     if(!textures_.empty()) {
@@ -45,11 +45,11 @@ void render_context::bind() const {
         dirty_ = false;
     }
 
-    if(rndr_state_) renderer::instance()->push_state(rndr_state_);
+    if(rndr_state_) rndr.push_state(rndr_state_);
 }
 
-void render_context::release() const {
-    if(rndr_state_) renderer::instance()->pop_state();
+void render_context::release(renderer& rndr) const {
+    if(rndr_state_) rndr.pop_state();
 
     if(!textures_.empty()) {
         if(samplers_.empty()) {

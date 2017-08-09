@@ -40,6 +40,8 @@
 
 namespace zap { namespace renderer {
 
+class renderer;
+
 using program_ptr = std::unique_ptr<engine::program>;
 using texture_ptr = std::unique_ptr<engine::texture>;
 using sampler_ptr = std::unique_ptr<engine::sampler>;
@@ -203,14 +205,17 @@ public:
     }
     program* get_program() const { return program_; }
 
-    void bind() const;
-    void release() const;
+    void set_state(const render_state* rndr_state) { rndr_state_ = rndr_state; }
+    const render_state* get_state() const { return rndr_state_; }
+
+    void bind(renderer& rndr) const;
+    void release(renderer& rndr) const;
 
 protected:
 
 private:
     program* program_ = nullptr;
-    render_state* rndr_state_ = nullptr;        // The render_state for this context (may be nullptr)
+    const render_state* rndr_state_ = nullptr;  // The render_state for this context (may be nullptr)
     std::vector<parameter> parameters_;         // move this to a lookup table in the engine later (per program)
     std::vector<block> blocks_;                 // uniform blocks used by this program
     std::vector<const texture*> textures_;
