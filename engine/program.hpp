@@ -12,15 +12,15 @@
 
 namespace zap { namespace engine {
     struct block {
-        int32_t location = -1;
+        int32_t index = -1;
         std::string name;
         int32_t size;
 
-        bool is_valid() const { return location != -1; }
+        bool is_valid() const { return index != -1; }
 
         block() = default;
-        explicit block(int32_t l) : location(l) { }
-        block(int32_t l, const std::string& n, int32_t s) : location(l), name(n), size(s) { }
+        explicit block(int32_t i) : index(i) { }
+        block(int32_t i, const std::string& n, int32_t s) : index(i), name(n), size(s) { }
     };
 
     struct parameter {
@@ -79,6 +79,7 @@ namespace zap { namespace engine {
         template <typename T> void bind_uniform(const char* name, const T& type);
         void bind_texture_unit(int location, int unit);
         void bind_texture_unit(const char* name, int unit);
+        void bind_block(int index, int location);
 
     protected:
         resource_t id_ = 0;

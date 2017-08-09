@@ -27,7 +27,9 @@ void render_context::bind() const {
 
     if(!ubuffers_.empty()) {
         for(size_t i = 0; i != ubuffers_.size(); ++i) {
-            ubuffers_[i]->bind_point(i);    // TODO: Try to avoid this by reusing same location across ublocks
+            // TODO: Try to avoid these two steps per frame by reusing same location across shader programs
+            program_->bind_block(blocks_[i].index, i);
+            ubuffers_[i]->bind_point(i);
             ubuffers_[i]->bind();
         }
     }

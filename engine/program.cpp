@@ -125,8 +125,8 @@ std::vector<block> program::get_uniform_blocks() const {
         gl::glGetActiveUniformBlockName(id_, i, bufsize, &len, buffer);
         b.name = std::string{buffer, size_t(len)};
         gl::glGetActiveUniformBlockiv(id_, i, GL_UNIFORM_BLOCK_DATA_SIZE, &b.size);
-        b.location = gl::glGetUniformBlockIndex(id_, buffer);
-        LOG("Uniform Block:", b.location, LOG_BLUE, b.name, LOG_YELLOW, "size:", LOG_RED, b.size);
+        b.index = gl::glGetUniformBlockIndex(id_, buffer);
+        LOG("Uniform Block:", b.index, LOG_BLUE, b.name, LOG_YELLOW, "size:", LOG_RED, b.size);
         uni_blocks.emplace_back(std::move(b));
     }
 
@@ -195,6 +195,10 @@ void program::bind_uniform(int location, parameter_type type, int count, const c
 
         default: LOG_ERR("Tried to bind invalid uniform at location:", location);
     }
+}
+
+void program::bind_block(int index, int location) {
+    gl::glUniformBlockBinding(id_, index, location);
 }
 
 template <> void zap::engine::program::bind_uniform<int>(int location, const int& value) {
