@@ -165,8 +165,11 @@ bool scene_graph_test::initialise() {
         LOG_ERR("Failed to initialise context");
         return false;
     }
-
+#if defined(__APPLE__) || defined(_WIN32)
     rndr_state_ = std::make_unique<render_state>(true, true);
+#else
+    rndr_state_ = std::unique_ptr<render_state>(new render_state{true, true});
+#endif
     contexts_.back().set_state(rndr_state_.get());
     if(!rndr_.initialise()) {
         LOG_ERR("Error initialising renderer");

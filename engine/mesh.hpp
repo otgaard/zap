@@ -244,7 +244,11 @@ public:
 
 template <typename VertexT, primitive_type Primitive>
 std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mesh(const std::vector<VertexT>& buffer) {
+#if defined(__APPLE__) || defined(_WIN32)
     auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>();
+#else
+    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>{});
+#endif
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
 
     if(m->allocate() && vbuf_ptr->allocate()) {
@@ -268,7 +272,11 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mes
 
 template <typename VertexT, primitive_type Primitive, typename IndexT>
 std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>> make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& def) {
+#if defined(__APPLE__) || defined(_WIN32)
     auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>>();
+#else
+    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>{});
+#endif
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
     auto* ibuf_ptr = new index_buffer<IndexT, Primitive>();
 
