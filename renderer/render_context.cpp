@@ -28,7 +28,11 @@ void render_context::bind(renderer& rndr) const {
     if(!ubuffers_.empty()) {
         for(size_t i = 0; i != ubuffers_.size(); ++i) {
             // TODO: Try to avoid these two steps per frame by reusing same location across shader programs
-            program_->bind_block(blocks_[i].index, i);
+            const auto& name = ubname_[i];
+            auto it = std::find_if(blocks_.begin(), blocks_.end(), [&name](const auto& b) { return name == b.name; });
+            if(it == blocks_.end()) continue;
+            auto idx = it - blocks_.begin();
+            program_->bind_block(blocks_[idx].index, i);
             ubuffers_[i]->bind_point(i);
             ubuffers_[i]->bind();
         }

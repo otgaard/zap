@@ -48,7 +48,7 @@ using model_block = uniform_block<
 using model_ubuffer = uniform_buffer<model_block>;
 
 const char* const basic_vshdr = GLSL(
-    layout (std140) uniform cam_block {
+    layout (std140) uniform camera_ublock {
         mat4 cam_view;
         mat4 cam_projection;
         mat4 cam_proj_view;
@@ -56,7 +56,7 @@ const char* const basic_vshdr = GLSL(
         vec3 cam_position;
     };
 
-    layout (std140) uniform model_block {
+    layout (std140) uniform model_ublock {
         mat4 mvp_matrix;
         mat4 mv_matrix;
         mat4 model_matrix;
@@ -74,7 +74,7 @@ const char* const basic_vshdr = GLSL(
 );
 
 const char* const basic_fshdr = GLSL(
-    layout (std140) uniform cam_block {
+    layout (std140) uniform camera_ublock {
         mat4 cam_view;
         mat4 cam_projection;
         mat4 cam_proj_view;
@@ -82,7 +82,7 @@ const char* const basic_fshdr = GLSL(
         vec3 cam_position;
     };
 
-    layout (std140) uniform model_block {
+    layout (std140) uniform model_ublock {
         mat4 mvp_matrix;
         mat4 mv_matrix;
         mat4 model_matrix;
@@ -114,8 +114,8 @@ protected:
     camera cam_;
     std::vector<std::unique_ptr<mesh_base>> meshes_;
     std::vector<render_context> contexts_;
-    cam_ubuffer cam_uniforms_;
-    model_ubuffer model_uniforms_;
+    cam_ubuffer camera_ublock_;
+    model_ubuffer model_ublock_;
     zap::renderer::renderer rndr_;
     std::unique_ptr<render_state> rndr_state_;
 };
@@ -123,24 +123,24 @@ protected:
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
 
-    if(!cam_uniforms_.allocate() || !model_uniforms_.allocate()) {
+    if(!camera_ublock_.allocate() || !model_ublock_.allocate()) {
         LOG_ERR("Failed to allocate uniform block");
         return false;
     }
 
-    cam_uniforms_.bind();
-    if(!cam_uniforms_.initialise()) {
+    camera_ublock_.bind();
+    if(!camera_ublock_.initialise()) {
         LOG_ERR("Failed to initialise cam_uniform");
         return false;
     }
-    cam_uniforms_.release();
+    camera_ublock_.release();
 
-    model_uniforms_.bind();
-    if(!model_uniforms_.initialise()) {
+    model_ublock_.bind();
+    if(!model_ublock_.initialise()) {
         LOG_ERR("Failed to initialise model_uniform");
         return false;
     }
-    model_uniforms_.release();
+    model_ublock_.release();
 
     auto cube = p3_geo3::make_cube(vec3f(.1f, .5f, .25f));
     auto cube_mesh = make_mesh<vtx_p3_t, primitive_type::PT_TRIANGLES>(cube);
@@ -151,7 +151,7 @@ bool scene_graph_test::initialise() {
     meshes_.emplace_back(std::move(sphere_mesh));
 
     contexts_.emplace_back(basic_vshdr, basic_fshdr);
-    contexts_.back().add_uniform_buffer(&cam_uniforms_, &model_uniforms_);
+    contexts_.back().add_uniform_buffer("camera_ublock", &camera_ublock_, "model_ublock", &model_ublock_);
     if(!contexts_.back().initialise()) {
         LOG_ERR("Failed to initialise context");
         return false;
@@ -164,7 +164,7 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    //bf_culling(false);
+    bf_culling(false);
 
     gl_error_check();
     return true;
@@ -175,30 +175,30 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.world_pos(vec3f{1.f, 1.f, 3.f});
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
-    cam_uniforms_.bind();
-    if(cam_uniforms_.map(buffer_access::BA_READ_WRITE)) {
-        cam_uniforms_.ref().cam_world_to_view = cam_.world_to_view();
-        cam_uniforms_.ref().cam_projection = cam_.projection();
-        cam_uniforms_.ref().cam_proj_view = cam_.proj_view();
-        cam_uniforms_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
-        cam_uniforms_.ref().cam_position = cam_.world_pos();
-        cam_uniforms_.unmap();
+    camera_ublock_.bind();
+    if(camera_ublock_.map(buffer_access::BA_READ_WRITE)) {
+        camera_ublock_.ref().cam_world_to_view = cam_.world_to_view();
+        camera_ublock_.ref().cam_projection = cam_.projection();
+        camera_ublock_.ref().cam_proj_view = cam_.proj_view();
+        camera_ublock_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
+        camera_ublock_.ref().cam_position = cam_.world_pos();
+        camera_ublock_.unmap();
     }
-    cam_uniforms_.release();
+    camera_ublock_.release();
     gl_error_check();
 }
 
 void scene_graph_test::update(double t, float dt) {
     static float rot = 0.f;
-    model_uniforms_.bind();
-    if(model_uniforms_.map(buffer_access::BA_READ_WRITE)) {
-        model_uniforms_.ref().model_matrix = make_rotation(vec3f{0.f, 1.f, 0.f}, rot) * make_scale(2.f, 2.f, 2.f);
-        model_uniforms_.ref().mv_matrix = cam_.world_to_view() * model_uniforms_.ref().model_matrix;
-        model_uniforms_.ref().mvp_matrix = cam_.projection() * model_uniforms_.ref().mv_matrix;
-        model_uniforms_.ref().normal_matrix = transpose(model_uniforms_.ref().mv_matrix.inverse()).rotation();
-        model_uniforms_.unmap();
+    model_ublock_.bind();
+    if(model_ublock_.map(buffer_access::BA_READ_WRITE)) {
+        model_ublock_.ref().model_matrix = make_rotation(vec3f{0.f, 1.f, 0.f}, rot) * make_scale(2.f, 2.f, 2.f);
+        model_ublock_.ref().mv_matrix = cam_.world_to_view() * model_ublock_.ref().model_matrix;
+        model_ublock_.ref().mvp_matrix = cam_.projection() * model_ublock_.ref().mv_matrix;
+        model_ublock_.ref().normal_matrix = transpose(model_ublock_.ref().mv_matrix.inverse()).rotation();
+        model_ublock_.unmap();
     }
-    model_uniforms_.release();
+    model_ublock_.release();
 
     gl_error_check();
 }
