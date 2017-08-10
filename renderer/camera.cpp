@@ -52,6 +52,8 @@ void camera::update_view() {
     projection_view_ = projection_ * world_to_view_;
     if(cam_state_.is_set(camera_state::CS_PRE_VIEW))  projection_view_ = projection_view_ * pre_view_;
     if(cam_state_.is_set(camera_state::CS_POST_VIEW)) projection_view_ = post_view_ * projection_view_;
+    eye_pos_ = world_pos();
+    eye_dir_ = -dir();
 }
 
 void camera::update_frustum() {
@@ -129,4 +131,17 @@ bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
     d = dd*dir() + dr*right() + du*up();
     d.normalise();
     return true;
+}
+
+const std::string camera::get_ublock_def() const {
+    return
+        "layout (std140) uniform camera {"
+            "mat4 world_to_view;"
+            "mat4 view_to_world;"
+            "mat4 projection;"
+            "mat4 proj_view;"
+            "vec4 viewport;"
+            "vec3 eye_position;"
+            "vec3 eye_dir;"
+        "};";
 }

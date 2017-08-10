@@ -109,6 +109,9 @@ namespace zap { namespace renderer {
 
         bool pick_ray(int x, int y, vec3f& origin, vec3f& dir) const;
 
+        const camera_block& get_ublock() const { return block_; }
+        const std::string get_ublock_def() const;
+
     protected:
         enum frustum_plane {
             FP_DMIN = 0,

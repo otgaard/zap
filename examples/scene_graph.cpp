@@ -31,15 +31,7 @@ using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
 using p3n3t2_geo3 = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>;
 
-using cam_block = uniform_block<
-    core::cam_world_to_view<mat4f>,
-    core::cam_projection<mat4f>,
-    core::cam_proj_view<mat4f>,
-    core::viewport<vec4i>,
-    core::eye_position<vec3f>,
-    core::eye_dir<vec3f>
->;
-using cam_ubuffer = uniform_buffer<cam_block>;
+using cam_ubuffer = uniform_buffer<zap::renderer::camera_block>;
 
 using model_block = uniform_block<
     core::mvp_matrix<mat4f>,
@@ -50,8 +42,9 @@ using model_block = uniform_block<
 using model_ubuffer = uniform_buffer<model_block>;
 
 const char* const basic_vshdr = GLSL(
-    layout (std140) uniform camera_ublock {
-        mat4 cam_view;
+    layout (std140) uniform camera {
+        mat4 cam_world_to_view;
+        mat4 cam_view_to_world;
         mat4 cam_projection;
         mat4 cam_proj_view;
         vec4 viewport;
@@ -83,8 +76,9 @@ const char* const basic_vshdr = GLSL(
 );
 
 const char* const basic_fshdr = GLSL(
-    layout (std140) uniform camera_ublock {
-        mat4 cam_view;
+    layout (std140) uniform camera {
+        mat4 cam_world_to_view;
+        mat4 cam_view_to_world;
         mat4 cam_projection;
         mat4 cam_proj_view;
         vec4 viewport;
@@ -167,7 +161,7 @@ bool scene_graph_test::initialise() {
     meshes_.emplace_back(std::move(sphere_mesh));
 
     contexts_.emplace_back(basic_vshdr, basic_fshdr);
-    contexts_.back().add_uniform_buffer("camera_ublock", &camera_ublock_, "model_ublock", &model_ublock_);
+    contexts_.back().add_uniform_buffer("camera", &camera_ublock_, "model_ublock", &model_ublock_);
     if(!contexts_.back().initialise()) {
         LOG_ERR("Failed to initialise context");
         return false;
@@ -193,6 +187,8 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     camera_ublock_.bind();
+    camera_ublock_.initialise(cam_.get_ublock());
+    /*
     if(camera_ublock_.map(buffer_access::BA_READ_WRITE)) {
         camera_ublock_.ref().cam_world_to_view = cam_.world_to_view();
         camera_ublock_.ref().cam_projection = cam_.projection();
@@ -200,10 +196,13 @@ void scene_graph_test::on_resize(int width, int height) {
         camera_ublock_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
         camera_ublock_.ref().eye_position = cam_.world_pos();
         camera_ublock_.ref().eye_dir = -cam_.dir();
-        contexts_.back().set_parameter("light_dir", cam_.world_to_view() * normalise(vec3f{1.f, 1.f, 1.f}));
         camera_ublock_.unmap();
     }
+    */
     camera_ublock_.release();
+
+    contexts_.back().set_parameter("light_dir", cam_.world_to_view() * normalise(vec3f{1.f, 1.f, 1.f}));
+
     gl_error_check();
 }
 
