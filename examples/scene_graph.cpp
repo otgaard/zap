@@ -34,17 +34,17 @@ using p3n3t2_geo3 = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIAN
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
     in vec3 position;
-    in vec2 texcoord1;
-    out vec2 tex;
+    in vec3 normal;
+    out vec3 tex;
     void main() {
-        tex = texcoord1;
+        tex = normal;
         gl_Position = PVM * vec4(position, 1.);
     }
 );
 
 const char* const basic_fshdr = GLSL(
-    uniform sampler2D diffuse_tex;
-    in vec2 tex;
+    uniform samplerCube diffuse_tex;
+    in vec3 tex;
     out vec4 frag_colour;
     void main() {
         frag_colour = texture(diffuse_tex, tex);
@@ -86,10 +86,10 @@ bool scene_graph_test::initialise() {
 
     contexts_.emplace_back(new render_context(basic_vshdr, basic_fshdr));
 
-    render_task req{1024, 1024};
-    req.scale.set(200.f, 200.f);
-    textures_.emplace_back(gen_.render_planar(req, [](float x, float y, generator& gen) {
-        return std::abs(x - y) < 0.5f ? rgb888_t{0, 0, 0} : rgb888_t{255, 255, 0};
+    render_task req{1024, 1024, render_task::basis_function::FUNCTION};
+    req.scale.set(255.f, 255.f);
+    textures_.emplace_back(gen_.render_cubemap(req, [](float x, float y, float z, generator& gen) {
+        return rgb888_t{abs(x), abs(y), abs(z)};
     }));
     contexts_.back()->add_texture(&textures_.back());
 

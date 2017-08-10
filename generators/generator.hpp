@@ -221,7 +221,7 @@ engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float x = 2.f * (h_dim - c) * inv_dim;
             vec3f sP = req.scale.x * cube_to_sphere(vec3f{1.f, y, x});
-            image(c,r,0) = fnc(sP.x, sP.y, sP.z, this);
+            image(c,r,0) = fnc(sP.x, sP.y, sP.z, *this);
         }
     }
 
@@ -231,7 +231,7 @@ engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float x = 2.f * (c - h_dim) * inv_dim;
             vec3f sP = req.scale.x * cube_to_sphere(vec3f{-1.f, y, x});
-            image(c,r,1) = fnc(sP.x, sP.y, sP.z, this);
+            image(c,r,1) = fnc(sP.x, sP.y, sP.z, *this);
         }
     }
 
@@ -241,7 +241,7 @@ engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float x = 2.f * (c - h_dim) * inv_dim;
             vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, -1.f, y});
-            image(c,r,2) = fnc(sP.x, sP.y, sP.z, this);
+            image(c,r,2) = fnc(sP.x, sP.y, sP.z, *this);
         }
     }
 
@@ -251,7 +251,7 @@ engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float x = 2.f * (c - h_dim) * inv_dim;
             vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, 1.f, y});
-            image(c,r,3) = fnc(sP.x, sP.y, sP.z, this);
+            image(c,r,3) = fnc(sP.x, sP.y, sP.z, *this);
         }
     }
 
@@ -261,7 +261,7 @@ engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float x = 2.f * (c - h_dim) * inv_dim;
             vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, 1.f});
-            image(c,r,4) = fnc(sP.x, sP.y, sP.z, this);
+            image(c,r,4) = fnc(sP.x, sP.y, sP.z, *this);
         }
     }
 
@@ -271,12 +271,12 @@ engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float x = 2.f * (h_dim - c) * inv_dim;
             vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, -1.f});
-            image(c,r,5) = fnc(sP.x, sP.y, sP.z, this);
+            image(c,r,5) = fnc(sP.x, sP.y, sP.z, *this);
         }
     }
 
-    texture tex{};
-    if(!tex.allocate() || !tex.initialise(image)) LOG_ERR("Failed to create cube_map texture");
+    texture tex{engine::texture_type::TT_CUBE_MAP};
+    if(!tex.allocate() || !tex.initialise(image, req.mipmaps)) LOG_ERR("Failed to create cube_map texture");
     return tex;
 }
 
