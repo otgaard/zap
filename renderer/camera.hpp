@@ -52,6 +52,9 @@ namespace zap { namespace renderer {
         void dir(const vec3f& d) { block_.cam_view_to_world.column(2,d); update_view(); }
         void world_pos(const vec3f& P) { block_.cam_view_to_world.column(3,P); update_view(); }
 
+        bool is_dirty() const { return cam_state_.is_set(camera_state::CS_DIRTY); }
+        void clear_dirty() const { cam_state_.clear(camera_state::CS_DIRTY); }
+
         void frame(const vec3f& u, const vec3f& d, const vec3f& P) {
             assert(maths::is_zero(maths::dot(u, d), 2*std::numeric_limits<float>::epsilon()) && "Frame requires orthogonal vectors");
             block_.cam_view_to_world.column(0, maths::cross(d, u));
@@ -110,7 +113,7 @@ namespace zap { namespace renderer {
 
         bool pick_ray(int x, int y, vec3f& origin, vec3f& dir) const;
 
-        const camera_block& get_ublock() const { return block_; }
+        const camera_block& get_ublock(bool clear=true) const { if(clear) clear_dirty(); return block_; }
         const std::string get_ublock_def() const;
 
     protected:
@@ -131,7 +134,7 @@ namespace zap { namespace renderer {
         mat4f pre_view_;
         mat4f post_view_;
         frustum_t frustum_;
-        core::enumfield<int, camera_state> cam_state_;
+        mutable core::enumfield<int, camera_state> cam_state_;
     };
 }}
 

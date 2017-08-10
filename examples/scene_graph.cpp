@@ -42,16 +42,6 @@ using model_block = uniform_block<
 using model_ubuffer = uniform_buffer<model_block>;
 
 const char* const basic_vshdr = GLSL(
-    layout (std140) uniform camera {
-        mat4 cam_world_to_view;
-        mat4 cam_view_to_world;
-        mat4 cam_projection;
-        mat4 cam_proj_view;
-        vec4 viewport;
-        vec4 eye_position;
-        vec4 eye_dir;
-    };
-
     layout (std140) uniform model_ublock {
         mat4 mvp_matrix;
         mat4 mv_matrix;
@@ -87,7 +77,8 @@ const char* const basic_fshdr = GLSL(
     };
 
     uniform vec4 colour = vec4(1., 1., 1., 1.);
-    uniform vec3 light_dir = vec3(0., 1., 0.);
+    uniform vec3 light_pos;
+    const float sExp = 40.;
 
     in vec3 pos;
     in vec3 nor;
@@ -95,11 +86,13 @@ const char* const basic_fshdr = GLSL(
 
     out vec4 frag_colour;
     void main() {
-        vec3 vP = normalize(eye_position.xyz - pos);
-        float Ld = max(0, dot(light_dir, nor));
-        vec3 H = normalize(light_dir + vP);
-        float Ls = pow(max(0., dot(H, nor)), 100.) * Ld;
-        frag_colour = Ld * colour + Ls * vec4(1., 1., 1., 1.);
+        vec3 L = normalize(light_pos - pos);
+        vec3 V = normalize(eye_position.xyz - pos);
+        vec3 H = normalize(V + L);
+        float Ls = pow(max(dot(nor, H), 0.), sExp);
+        float Ld = max(dot(nor, L), 0.);
+        frag_colour = ((colour + vec4(1., 1., 1., 1.) * Ls) * Ld);
+
     }
 );
 
@@ -152,7 +145,7 @@ bool scene_graph_test::initialise() {
     }
     model_ublock_.release();
 
-    auto cube = p3n3t2_geo3::make_cube(vec3f(.1f, .5f, .1f));
+    auto cube = p3n3t2_geo3::make_cube(vec3f{.1f, .5f, .1f});
     auto cube_mesh = make_mesh<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>(cube);
     meshes_.emplace_back(std::move(cube_mesh));
 
@@ -189,7 +182,7 @@ void scene_graph_test::on_resize(int width, int height) {
     camera_ublock_.bind();
     camera_ublock_.initialise(cam_.get_ublock());
     camera_ublock_.release();
-    contexts_.back().set_parameter("light_dir", cam_.world_to_view() * normalise(vec3f{1.f, 1.f, 1.f}));
+    contexts_.back().set_parameter("light_pos", cam_.world_to_view().transform(vec3f{2.f, 2.f, 3.f}));
     gl_error_check();
 }
 
@@ -197,13 +190,19 @@ void scene_graph_test::update(double t, float dt) {
     static float rot = 0.f;
     model_ublock_.bind();
     if(model_ublock_.map(buffer_access::BA_READ_WRITE)) {
-        model_ublock_.ref().model_matrix = make_rotation(vec3f{0.f, 1.f, 0.f}, rot) * make_scale(2.f, 2.f, 2.f);
-        model_ublock_.ref().mv_matrix = cam_.world_to_view() * model_ublock_.ref().model_matrix;
-        model_ublock_.ref().mvp_matrix = cam_.projection() * model_ublock_.ref().mv_matrix;
-        model_ublock_.ref().normal_matrix = transpose(model_ublock_.ref().mv_matrix.inverse());
+        model_ublock_.get()->model_matrix = make_rotation(vec3f{0.f, 1.f, 0.f}, rot) * make_scale(2.f, 2.f, 2.f);
+        model_ublock_.get()->mv_matrix = cam_.world_to_view() * model_ublock_.get()->model_matrix;
+        model_ublock_.get()->mvp_matrix = cam_.projection() * model_ublock_.get()->mv_matrix;
+        model_ublock_.get()->normal_matrix = transpose(model_ublock_.get()->mv_matrix.inverse());
         model_ublock_.unmap();
     }
     model_ublock_.release();
+
+    if(cam_.is_dirty()) {
+        camera_ublock_.bind();
+        camera_ublock_.initialise(cam_.get_ublock());
+        camera_ublock_.release();
+    }
 
     rot += dt;
     gl_error_check();

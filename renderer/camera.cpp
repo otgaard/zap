@@ -54,6 +54,7 @@ void camera::update_view() {
     if(cam_state_.is_set(camera_state::CS_POST_VIEW)) block_.cam_proj_view = post_view_ * block_.cam_proj_view;
     block_.eye_position = vec4f{world_pos(), 1.f};
     block_.eye_dir = vec4f{-dir(), 0.f};
+    cam_state_.set(camera_state::CS_DIRTY);
 }
 
 void camera::update_frustum() {
