@@ -4,8 +4,19 @@
 
 #include <maths/algebra.hpp>
 #include <core/enumfield.hpp>
+#include <engine/uniform_block.hpp>
 
 namespace zap { namespace renderer {
+    using camera_block = engine::uniform_block<
+            core::cam_world_to_view<maths::mat4f>,
+            core::cam_view_to_world<maths::mat4f>,
+            core::cam_projection<maths::mat4f>,
+            core::cam_proj_view<maths::mat4f>,
+            core::viewport<maths::vec4i>,
+            core::eye_position<maths::vec3f>,
+            core::eye_dir<maths::vec3f>
+    >;
+
     class camera {
     protected:
         enum class camera_state {
@@ -17,11 +28,13 @@ namespace zap { namespace renderer {
 
     public:
         using vec2f = maths::vec2f;
+        using vec2i = maths::vec2i;
         using vec3f = maths::vec3f;
         using vec4f = maths::vec4f;
+        using vec4i = maths::vec4i;
         using mat4f = maths::mat4f;
         using frustum_t = maths::vector<float, 6>;
-        using viewport_t = maths::vector<float, 4>;
+        using viewport_t = maths::vec4i; //maths::vector<float, 4>;
 
         camera(bool perspective=true);
         camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective=true);
@@ -84,15 +97,15 @@ namespace zap { namespace renderer {
             update_frustum();
         }
 
-        void viewport(float left, float bottom, float right, float top) {
+        void viewport(int left, int bottom, int right, int top) {
             viewport(viewport_t({{left, bottom, right, top}}));
         }
         void viewport(const viewport_t& vp);
         viewport_t viewport() const { return viewport_; }
 
-        float width() const { return viewport_[2] - viewport_[0]; }
-        float height() const { return viewport_[3] - viewport_[1]; }
-        vec2f dims() const { return vec2f(width(), height()); }
+        int width() const { return viewport_[2] - viewport_[0]; }
+        int height() const { return viewport_[3] - viewport_[1]; }
+        vec2i dims() const { return vec2i(width(), height()); }
 
         bool pick_ray(int x, int y, vec3f& origin, vec3f& dir) const;
 
@@ -109,14 +122,27 @@ namespace zap { namespace renderer {
         void update_view();
         void update_frustum();
 
+        /*
         mat4f world_to_view_;
         mat4f view_to_world_;
         mat4f projection_;
         mat4f projection_view_;
+        //viewport_t viewport_;
+        */
+
+        camera_block block_ = { };
+
+        mat4f& world_to_view_ = block_.cam_world_to_view;
+        mat4f& view_to_world_ = block_.cam_view_to_world;
+        mat4f& projection_ = block_.cam_projection;
+        mat4f& projection_view_ = block_.cam_proj_view;
+        viewport_t& viewport_ = block_.viewport;
+        vec3f& eye_pos_ = block_.eye_position;
+        vec3f& eye_dir_ = block_.eye_dir;
+
         mat4f pre_view_;
         mat4f post_view_;
         frustum_t frustum_;
-        viewport_t viewport_;
         core::enumfield<int, camera_state> cam_state_;
     };
 }}

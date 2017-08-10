@@ -104,7 +104,8 @@ public:
         using pt = engine::parameter_type;
         auto& parm = parameters_[idx];
         int offset = offsets_[idx];
-        if(is_one_of(parm.type, {pt::PT_SAMPLER_1D, pt::PT_SAMPLER_2D, pt::PT_SAMPLER_3D, pt::PT_SAMPLER_CUBE})) {
+        if(//is_one_of(parm.type, {pt::PT_SAMPLER_1D, pt::PT_SAMPLER_2D, pt::PT_SAMPLER_3D, pt::PT_SAMPLER_CUBE}) ||
+           parm.is_sampler()) {
             memcpy(uniforms_.data()+offset, &unit, parm.bytesize() * parm.count);
             if(is_bound_) {
                 program_->bind_uniform(parm.location, parm.type, parm.count, &uniforms_[offset]);

@@ -24,12 +24,13 @@ enum class ublock_attribute : size_t {
     UA_SCALE,                   // Common Variables
     UA_OFFSET,
     UA_VIEWPORT,                // Screen/Window Data [x, y, width, height]
-    UA_CAM_POSITION,            // Camera will bind here
     UA_CAM_RIGHT,
     UA_CAM_UP,
     UA_CAM_DIR,
+    UA_EYE_POSITION,
     UA_EYE_DIR,
     UA_CAM_WORLD_TO_VIEW,
+    UA_CAM_VIEW_TO_WORLD,
     UA_CAM_PROJECTION,
     UA_CAM_PROJ_VIEW,
     UA_MODEL_MATRIX,            // Transforms will bind here
@@ -47,12 +48,13 @@ namespace core {
     MAKE_PODFIELD(scale, engine::ublock_attribute, engine::ublock_attribute::UA_SCALE)
     MAKE_PODFIELD(offset, engine::ublock_attribute, engine::ublock_attribute::UA_OFFSET)
     MAKE_PODFIELD(viewport, engine::ublock_attribute, engine::ublock_attribute::UA_VIEWPORT)
-    MAKE_PODFIELD(cam_position, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_POSITION)
     MAKE_PODFIELD(cam_right, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_RIGHT)
     MAKE_PODFIELD(cam_up, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_UP)
     MAKE_PODFIELD(cam_dir, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_DIR)
+    MAKE_PODFIELD(eye_position, engine::ublock_attribute, engine::ublock_attribute::UA_EYE_POSITION)
     MAKE_PODFIELD(eye_dir, engine::ublock_attribute, engine::ublock_attribute::UA_EYE_DIR)
     MAKE_PODFIELD(cam_world_to_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_WORLD_TO_VIEW)
+    MAKE_PODFIELD(cam_view_to_world, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_VIEW_TO_WORLD)
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
     MAKE_PODFIELD(cam_proj_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJ_VIEW)
     MAKE_PODFIELD(model_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MODEL_MATRIX)

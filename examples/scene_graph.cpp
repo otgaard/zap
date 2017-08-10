@@ -16,6 +16,7 @@
 #include <renderer/camera.hpp>
 #include <generators/geometry/geometry3.hpp>
 #include <renderer/renderer.hpp>
+#include <generators/generator.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -35,7 +36,7 @@ using cam_block = uniform_block<
     core::cam_projection<mat4f>,
     core::cam_proj_view<mat4f>,
     core::viewport<vec4i>,
-    core::cam_position<vec3f>,
+    core::eye_position<vec3f>,
     core::eye_dir<vec3f>
 >;
 using cam_ubuffer = uniform_buffer<cam_block>;
@@ -54,7 +55,7 @@ const char* const basic_vshdr = GLSL(
         mat4 cam_projection;
         mat4 cam_proj_view;
         vec4 viewport;
-        vec3 cam_position;
+        vec3 eye_position;
         vec3 eye_dir;
     };
 
@@ -87,7 +88,7 @@ const char* const basic_fshdr = GLSL(
         mat4 cam_projection;
         mat4 cam_proj_view;
         vec4 viewport;
-        vec3 cam_position;
+        vec3 eye_position;
         vec3 eye_dir;
     };
 
@@ -100,7 +101,7 @@ const char* const basic_fshdr = GLSL(
 
     out vec4 frag_colour;
     void main() {
-        vec3 vP = normalize(cam_position - pos);
+        vec3 vP = normalize(eye_position - pos);
         float Ld = max(0, dot(light_dir, nor));
         vec3 H = normalize(light_dir + vP);
         float Ls = pow(max(0., dot(H, nor)), 100.) * Ld;
@@ -127,10 +128,16 @@ protected:
     model_ubuffer model_ublock_;
     zap::renderer::renderer rndr_;
     std::unique_ptr<render_state> rndr_state_;
+    generator tex_gen_;
 };
 
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
+
+    if(!tex_gen_.initialise()) {
+        LOG_ERR("Failed to initialise texture generator");
+        return false;
+    }
 
     if(!camera_ublock_.allocate() || !model_ublock_.allocate()) {
         LOG_ERR("Failed to allocate uniform block");
@@ -191,7 +198,7 @@ void scene_graph_test::on_resize(int width, int height) {
         camera_ublock_.ref().cam_projection = cam_.projection();
         camera_ublock_.ref().cam_proj_view = cam_.proj_view();
         camera_ublock_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
-        camera_ublock_.ref().cam_position = cam_.world_pos();
+        camera_ublock_.ref().eye_position = cam_.world_pos();
         camera_ublock_.ref().eye_dir = -cam_.dir();
         contexts_.back().set_parameter("light_dir", cam_.world_to_view() * normalise(vec3f{1.f, 1.f, 1.f}));
         camera_ublock_.unmap();

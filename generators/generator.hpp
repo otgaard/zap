@@ -60,14 +60,11 @@ struct render_task {
     }
 };
 
-// Starting with Linear Value Noise
 class generator {
 public:
     using texture = zap::engine::texture;
-    template <typename PixelT>
-    using pixmap = engine::pixmap<PixelT>;
-    template <typename PixelT>
-    using pixmap_future = std::future<pixmap<PixelT>>;
+    template <typename PixelT> using pixmap = engine::pixmap<PixelT>;
+    template <typename PixelT> using pixmap_future = std::future<pixmap<PixelT>>;
 
     enum class gen_method {
         CPU,

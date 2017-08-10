@@ -17,7 +17,10 @@ constexpr zap::maths::mat4f default_frame = {
         0.f, 0.f,  0.f, 1.f
 };
 
-camera::camera(bool perspective) : world_to_view_(1,1,-1,1), view_to_world_(default_frame) {
+camera::camera(bool perspective) { //world_to_view_(1,1,-1,1), view_to_world_(default_frame) {
+    world_to_view_ = mat4f{1.f, 1.f, -1.f, 1.f};
+    view_to_world_ = default_frame;
+
     cam_state_.set(camera_state::CS_IDENTITY);
     if(perspective) {
         cam_state_.set(camera_state::CS_PERSPECTIVE);
@@ -28,7 +31,8 @@ camera::camera(bool perspective) : world_to_view_(1,1,-1,1), view_to_world_(defa
     update_view();
 }
 
-camera::camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective) : world_to_view_(1,1,-1,1) {
+camera::camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective) { // : world_to_view_(1,1,-1,1) {
+    world_to_view_ = mat4f{1.f, 1.f, -1.f, 1.f};
     view_to_world_.frame(maths::cross(dir,up).normalise(), up, dir, pos);
     frustum(90.f, 1.f, 1.f, 100.f);
     update_view();

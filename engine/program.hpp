@@ -32,6 +32,10 @@ namespace zap { namespace engine {
         bool is_valid() const { return location != -1; }
         bool is_array() const { return count > 1; }
         size_t bytesize() const { return pt_bytesize[int(type)]; }
+        bool is_sampler() const {
+            return (int)parameter_type::PT_SAMPLER_1D <= (int)type
+                   && (int)type <= (int)parameter_type::PT_UINT_SAMPLER_2D_RECT;
+        }
 
         parameter() = default;
         explicit parameter(int32_t l) : location(l) { }
