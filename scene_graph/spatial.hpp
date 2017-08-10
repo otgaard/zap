@@ -60,9 +60,6 @@ namespace zap { namespace scene_graph {
 
         virtual void update(double t, float dt) { }
 
-        // TODO: Remove temporary code.  The scene graph should not draw itself, it should be drawn by the renderer (after culling, ordering, etc)
-        virtual void draw() const = 0;
-
     protected:
         friend class node<spatial>;
 

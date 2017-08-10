@@ -23,6 +23,15 @@ namespace zap { namespace generators {
     public:
         constexpr static prim_t primitive = Primitive;
 
+        template <typename IndexT>
+        static auto make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& m) {
+            return engine::make_mesh<VertexT, Primitive, IndexT>(m);
+        }
+
+        static auto make_mesh(const std::vector<VertexT>& m) {
+            return engine::make_mesh<VertexT, Primitive>(m);
+        }
+
         static std::tuple<std::vector<VertexT>, std::vector<uint16_t>> make_skybox(const vec3f& dims={1.f, 1.f, 1.f}) {
             static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_skybox expects PT_TRIANGLES");
             const auto hdims = .5f*dims;

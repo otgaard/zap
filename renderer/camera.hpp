@@ -4,7 +4,7 @@
 
 #include <maths/algebra.hpp>
 #include <core/enumfield.hpp>
-#include <engine/uniform_block.hpp>
+#include <engine/uniform_buffer.hpp>
 
 namespace zap { namespace renderer {
     using camera_block = engine::uniform_block<
@@ -16,6 +16,8 @@ namespace zap { namespace renderer {
             core::eye_position<maths::vec4f>,
             core::eye_dir<maths::vec4f>
     >;
+
+    using camera_ubuffer = engine::uniform_buffer<camera_block>;
 
     class camera {
     protected:
