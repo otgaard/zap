@@ -14,17 +14,6 @@ using namespace engine;
 const int RND_TBL = 256;
 const int RND_MASK = 255;
 
-// Convert cube coordinates to spherical
-vec3f cube_to_sphere(const vec3f& P) {
-    const float inv3 = 1.f/3.f, x2 = P.x*P.x, y2 = P.y*P.y, z2 = P.z*P.z;
-    const float y2z2inv3 = y2*z2*inv3, z2x2inv3 = z2*x2*inv3, x2y2inv3 = x2*y2*inv3;
-    return vec3f{
-            P.x * sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
-            P.y * sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
-            P.z * sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
-    };
-}
-
 const simd::veci RND_MASK_V = simd::load(0xFF);
 
 const char* const value_noise_fshdr = GLSL(

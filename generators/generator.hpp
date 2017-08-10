@@ -19,6 +19,16 @@
 
 namespace zap {
 
+inline maths::vec3f cube_to_sphere(const maths::vec3f& P) {
+    const float inv3 = 1.f/3.f, x2 = P.x*P.x, y2 = P.y*P.y, z2 = P.z*P.z;
+    const float y2z2inv3 = y2*z2*inv3, z2x2inv3 = z2*x2*inv3, x2y2inv3 = x2*y2*inv3;
+    return maths::vec3f{
+            P.x * sqrtf(1.f - .5f*y2 - .5f*z2 + y2z2inv3),
+            P.y * sqrtf(1.f - .5f*z2 - .5f*x2 + z2x2inv3),
+            P.z * sqrtf(1.f - .5f*x2 - .5f*y2 + x2y2inv3)
+    };
+}
+
 struct render_task {
     using vec2f = maths::vec2f;
     using mat2f = maths::mat2f;
@@ -28,7 +38,8 @@ struct render_task {
         PERLIN,
         SIMPLEX,
         WORLEY,
-        WHITE
+        WHITE,
+        FUNCTION
     } basis_fnc;
 
     enum class interpolation {
@@ -52,6 +63,7 @@ struct render_task {
                       0.f, 1.f};
     vec2f scale = {1.f, 1.f};
     bool is_unit[3] = {true, true, true};
+    bool mipmaps = false;
 
     render_task(int width, int height, basis_function bf=basis_function::VALUE) :
             basis_fnc{bf},
@@ -88,6 +100,17 @@ public:
 
     // Creates a R32F floating point texture i.e. pixmap<float>
     texture render_texture(const render_task& req, gen_method method=gen_method::GPU);
+
+    // Note:
+    // These functions require the following signatures:
+    // Planar: PixelT fnc(float x, float y, generator& gen);
+    // Spherical: PixelT fnc(float x, float y, float z, generator& gen);
+    // Cube Map: PixelT fnc(float x, float y, float z, generator& gen);
+
+    template <typename PixelT, typename Fnc> texture render(const render_task& req, Fnc&& fnc);
+    template <typename PixelT, typename Fnc> texture render_planar(const render_task& req, Fnc&& fnc);
+    template <typename PixelT, typename Fnc> texture render_spherical(const render_task& req, Fnc&& fnc);
+    template <typename PixelT, typename Fnc> texture render_cubemap(const render_task& req, Fnc&& fnc);
 
     template <typename PixelT>
     pixmap_future<PixelT> render_image(const render_task& req, gen_method method=gen_method::CPU);
@@ -126,6 +149,133 @@ generator::pixmap_future<PixelT> generator::render_image(const render_task& req,
 
     return pool_ptr_->run_function(fnc, req);
 }
+
+template <typename PixelT, typename Fnc>
+engine::texture generator::render(const render_task& req, Fnc&& fnc) {
+    switch(req.project) {
+        case render_task::projection::PLANAR: return render_planar(req, std::forward(fnc));
+        case render_task::projection::SPHERICAL: return render_spherical(req, std::forward(fnc));
+        case render_task::projection::CUBE_MAP: return render_cubemap(req, std::forward(fnc));
+        default: return texture{};
+    }
+}
+
+template <typename PixelT, typename Fnc>
+engine::texture generator::render_planar(const render_task& req, Fnc&& fnc) {
+    const float inv_x = req.scale.x/req.width;
+    const float inv_y = req.scale.y/req.height;
+
+    pixmap<PixelT> image{req.width, req.height};
+
+    for(int r = 0; r != req.height; ++r) {
+        float y = inv_y * r;
+        for(int c = 0; c != req.width; ++c) {
+            float x = inv_x * c;
+            image(c,r) = fnc(x, y, this);
+        }
+    }
+
+    texture tex{};
+    if(!tex.allocate() || !tex.initialise(image, req.mipmaps)) LOG_ERR("Failed to create planar texture");
+    return tex;
+}
+
+template <typename PixelT, typename Fnc>
+engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
+    const float inv_x = float(maths::TWO_PI)/req.width;
+    const float inv_y = float(maths::PI)/req.height;
+    const float radius = req.scale.x;
+
+    pixmap<PixelT> image{req.width, req.height};
+
+    for(int r = 0; r != req.height; ++r) {
+        float theta = inv_y * r, ctheta = cosf(theta), stheta = sinf(theta);
+        for(int c = 0; c != req.width; ++c) {
+            float phi = inv_x * c, cphi = cosf(phi), sphi = sinf(phi);
+            float x = radius * stheta * cphi, y = radius * ctheta, z = radius * stheta * sphi;
+            image(c,r) = fnc(x, y, z, this);
+        }
+    }
+
+    texture tex{};
+    if(!tex.allocate() || !tex.initialise(image, req.mipmaps)) LOG_ERR("Failed to create spherical texture");
+    return tex;
+}
+
+template <typename PixelT, typename Fnc>
+engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
+    using vec3f = maths::vec3f;
+    assert(req.width == req.height && "Cube Map requires width == height");
+    const float inv_dim = 1.f/req.width;
+    const int h_dim = req.width/2;
+
+    pixmap<PixelT> image{req.width, req.height, 6};
+
+    // X+ Plane
+    for(int r = 0; r != req.height; ++r) {
+        float y = 2.f * (r - h_dim) * inv_dim;
+        for(int c = 0; c != req.width; ++c) {
+            float x = 2.f * (h_dim - c) * inv_dim;
+            vec3f sP = req.scale.x * cube_to_sphere(vec3f{1.f, y, x});
+            image(c,r,0) = fnc(sP.x, sP.y, sP.z, this);
+        }
+    }
+
+    // X- Plane
+    for(int r = 0; r != req.height; ++r) {
+        float y = 2.f * (r - h_dim) * inv_dim;
+        for(int c = 0; c != req.width; ++c) {
+            float x = 2.f * (c - h_dim) * inv_dim;
+            vec3f sP = req.scale.x * cube_to_sphere(vec3f{-1.f, y, x});
+            image(c,r,1) = fnc(sP.x, sP.y, sP.z, this);
+        }
+    }
+
+    // Y+ Plane
+    for(int r = 0; r != req.height; ++r) {
+        float y = 2.f * (r - h_dim) * inv_dim;
+        for(int c = 0; c != req.width; ++c) {
+            float x = 2.f * (c - h_dim) * inv_dim;
+            vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, -1.f, y});
+            image(c,r,2) = fnc(sP.x, sP.y, sP.z, this);
+        }
+    }
+
+    // Y- Plane
+    for(int r = 0; r != req.height; ++r) {
+        float y = 2.f * (h_dim - r) * inv_dim;
+        for(int c = 0; c != req.width; ++c) {
+            float x = 2.f * (c - h_dim) * inv_dim;
+            vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, 1.f, y});
+            image(c,r,3) = fnc(sP.x, sP.y, sP.z, this);
+        }
+    }
+
+    // Z+ Plane
+    for(int r = 0; r != req.height; ++r) {
+        float y = 2.f * (r - h_dim) * inv_dim;
+        for(int c = 0; c != req.width; ++c) {
+            float x = 2.f * (c - h_dim) * inv_dim;
+            vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, 1.f});
+            image(c,r,4) = fnc(sP.x, sP.y, sP.z, this);
+        }
+    }
+
+    // Z- Plane
+    for(int r = 0; r != req.height; ++r) {
+        float y = 2.f * (r - h_dim) * inv_dim;
+        for(int c = 0; c != req.width; ++c) {
+            float x = 2.f * (h_dim - c) * inv_dim;
+            vec3f sP = req.scale.x * cube_to_sphere(vec3f{x, y, -1.f});
+            image(c,r,5) = fnc(sP.x, sP.y, sP.z, this);
+        }
+    }
+
+    texture tex{};
+    if(!tex.allocate() || !tex.initialise(image)) LOG_ERR("Failed to create cube_map texture");
+    return tex;
+}
+
 
 }
 #endif //ZAP_GENERATOR_HPP

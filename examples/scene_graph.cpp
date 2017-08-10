@@ -33,16 +33,21 @@ using p3n3t2_geo3 = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIAN
 
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
-    in vec3 pos;
+    in vec3 position;
+    in vec2 texcoord1;
+    out vec2 tex;
     void main() {
-        gl_Position = PVM * vec4(pos, 1.);
+        tex = texcoord1;
+        gl_Position = PVM * vec4(position, 1.);
     }
 );
 
 const char* const basic_fshdr = GLSL(
+    uniform sampler2D diffuse_tex;
+    in vec2 tex;
     out vec4 frag_colour;
     void main() {
-        frag_colour = vec4(1., 1., 0., 1.);
+        frag_colour = texture(diffuse_tex, tex);
     }
 );
 
@@ -61,18 +66,31 @@ protected:
     camera cam_;
     visual_t sphere_;
     zap::renderer::renderer rndr_;
+    generator gen_;
     std::vector<std::unique_ptr<mesh_base>> meshes_;
     std::vector<std::unique_ptr<render_context>> contexts_;
+    std::vector<texture> textures_;
 };
 
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
+
+    if(!gen_.initialise()) {
+        LOG_ERR("Failed to initialise generator");
+        return false;
+    }
 
     auto sphere_mesh = p3n3t2_geo3::make_mesh(p3n3t2_geo3::make_UVsphere(30, 60, 1.f, false));
     sphere_.set_mesh(sphere_mesh.get());
     meshes_.emplace_back(std::move(sphere_mesh));
 
     contexts_.emplace_back(new render_context(basic_vshdr, basic_fshdr));
+
+    render_task req{1024, 1024};
+    req.scale.set(200.f, 200.f);
+    textures_.emplace_back(gen_.render_texture(req));
+    contexts_.back()->add_texture(&textures_.back());
+
     if(!contexts_.back()->initialise()) {
         LOG_ERR("Failed to initialise render_context");
         return false;
@@ -86,10 +104,10 @@ bool scene_graph_test::initialise() {
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{1.f, 1.f, 3.f});
+    cam_.world_pos(vec3f{0.f, 0.f, 5.f});
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
-    contexts_.back()->set_parameter("PVM", cam_.proj_view());
+    contexts_.back()->set_parameter("PVM", cam_.proj_view() * sphere_.world_transform().gl_matrix());
     gl_error_check();
 }
 
