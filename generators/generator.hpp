@@ -107,10 +107,10 @@ public:
     // Spherical: PixelT fnc(float x, float y, float z, generator& gen);
     // Cube Map: PixelT fnc(float x, float y, float z, generator& gen);
 
-    template <typename PixelT, typename Fnc> texture render(const render_task& req, Fnc&& fnc);
-    template <typename PixelT, typename Fnc> texture render_planar(const render_task& req, Fnc&& fnc);
-    template <typename PixelT, typename Fnc> texture render_spherical(const render_task& req, Fnc&& fnc);
-    template <typename PixelT, typename Fnc> texture render_cubemap(const render_task& req, Fnc&& fnc);
+    //template <typename Fnc> texture render(const render_task& req, Fnc&& fnc);
+    template <typename Fnc> texture render_planar(const render_task& req, Fnc&& fnc);
+    template <typename Fnc> texture render_spherical(const render_task& req, Fnc&& fnc);
+    template <typename Fnc> texture render_cubemap(const render_task& req, Fnc&& fnc);
 
     template <typename PixelT>
     pixmap_future<PixelT> render_image(const render_task& req, gen_method method=gen_method::CPU);
@@ -150,28 +150,30 @@ generator::pixmap_future<PixelT> generator::render_image(const render_task& req,
     return pool_ptr_->run_function(fnc, req);
 }
 
-template <typename PixelT, typename Fnc>
+/*
+template <typename Fnc>
 engine::texture generator::render(const render_task& req, Fnc&& fnc) {
     switch(req.project) {
-        case render_task::projection::PLANAR: return render_planar(req, std::forward(fnc));
-        case render_task::projection::SPHERICAL: return render_spherical(req, std::forward(fnc));
-        case render_task::projection::CUBE_MAP: return render_cubemap(req, std::forward(fnc));
+        case render_task::projection::PLANAR: return render_planar(req, fnc);
+        case render_task::projection::SPHERICAL: return render_spherical(req, fnc);
+        case render_task::projection::CUBE_MAP: return render_cubemap(req, fnc);
         default: return texture{};
     }
 }
-
-template <typename PixelT, typename Fnc>
+*/
+template <typename Fnc>
 engine::texture generator::render_planar(const render_task& req, Fnc&& fnc) {
     const float inv_x = req.scale.x/req.width;
     const float inv_y = req.scale.y/req.height;
 
+    using PixelT = typename std::result_of<Fnc(float, float, generator&)>::type;
     pixmap<PixelT> image{req.width, req.height};
 
     for(int r = 0; r != req.height; ++r) {
         float y = inv_y * r;
         for(int c = 0; c != req.width; ++c) {
             float x = inv_x * c;
-            image(c,r) = fnc(x, y, this);
+            image(c,r) = fnc(x, y, *this);
         }
     }
 
@@ -180,12 +182,13 @@ engine::texture generator::render_planar(const render_task& req, Fnc&& fnc) {
     return tex;
 }
 
-template <typename PixelT, typename Fnc>
+template <typename Fnc>
 engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
     const float inv_x = float(maths::TWO_PI)/req.width;
     const float inv_y = float(maths::PI)/req.height;
     const float radius = req.scale.x;
 
+    using PixelT = typename std::result_of<Fnc(float, float, float, generator&)>::type;
     pixmap<PixelT> image{req.width, req.height};
 
     for(int r = 0; r != req.height; ++r) {
@@ -193,7 +196,7 @@ engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
         for(int c = 0; c != req.width; ++c) {
             float phi = inv_x * c, cphi = cosf(phi), sphi = sinf(phi);
             float x = radius * stheta * cphi, y = radius * ctheta, z = radius * stheta * sphi;
-            image(c,r) = fnc(x, y, z, this);
+            image(c,r) = fnc(x, y, z, *this);
         }
     }
 
@@ -202,13 +205,14 @@ engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
     return tex;
 }
 
-template <typename PixelT, typename Fnc>
+template <typename Fnc>
 engine::texture generator::render_cubemap(const render_task& req, Fnc&& fnc) {
     using vec3f = maths::vec3f;
     assert(req.width == req.height && "Cube Map requires width == height");
     const float inv_dim = 1.f/req.width;
     const int h_dim = req.width/2;
 
+    using PixelT = typename std::result_of<Fnc(float, float, float, generator&)>::type;
     pixmap<PixelT> image{req.width, req.height, 6};
 
     // X+ Plane

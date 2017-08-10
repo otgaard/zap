@@ -88,7 +88,9 @@ bool scene_graph_test::initialise() {
 
     render_task req{1024, 1024};
     req.scale.set(200.f, 200.f);
-    textures_.emplace_back(gen_.render_texture(req));
+    textures_.emplace_back(gen_.render_planar(req, [](float x, float y, generator& gen) {
+        return std::abs(x - y) < 0.5f ? rgb888_t{0, 0, 0} : rgb888_t{255, 255, 0};
+    }));
     contexts_.back()->add_texture(&textures_.back());
 
     if(!contexts_.back()->initialise()) {
