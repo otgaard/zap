@@ -17,9 +17,9 @@ constexpr zap::maths::mat4f default_frame = {
         0.f, 0.f,  0.f, 1.f
 };
 
-camera::camera(bool perspective) { //world_to_view_(1,1,-1,1), view_to_world_(default_frame) {
-    world_to_view_ = mat4f{1.f, 1.f, -1.f, 1.f};
-    view_to_world_ = default_frame;
+camera::camera(bool perspective) {
+    block_.cam_world_to_view = mat4f{1.f, 1.f, -1.f, 1.f};
+    block_.cam_view_to_world = default_frame;
 
     cam_state_.set(camera_state::CS_IDENTITY);
     if(perspective) {
@@ -32,28 +32,28 @@ camera::camera(bool perspective) { //world_to_view_(1,1,-1,1), view_to_world_(de
 }
 
 camera::camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective) { // : world_to_view_(1,1,-1,1) {
-    world_to_view_ = mat4f{1.f, 1.f, -1.f, 1.f};
-    view_to_world_.frame(maths::cross(dir,up).normalise(), up, dir, pos);
+    block_.cam_world_to_view = mat4f{1.f, 1.f, -1.f, 1.f};
+    block_.cam_view_to_world.frame(maths::cross(dir,up).normalise(), up, dir, pos);
     frustum(90.f, 1.f, 1.f, 100.f);
     update_view();
 }
 
 void camera::viewport(const viewport_t& vp) {
-    viewport_ = vp;
+    block_.viewport = vp;
     glViewport((size_t)vp[0], (size_t)vp[1], (size_t)vp[2], (size_t)vp[3]);
 }
 
 void camera::update_view() {
-    maths::mat3f R(view_to_world_.col3(0), view_to_world_.col3(1), view_to_world_.col3(2));
+    maths::mat3f R(block_.cam_view_to_world.col3(0), block_.cam_view_to_world.col3(1), block_.cam_view_to_world.col3(2));
     R.transpose();
-    world_to_view_.column(3, -(R * view_to_world_.col3(3)));
-    world_to_view_.rotation(R);
+    block_.cam_world_to_view.column(3, -(R * block_.cam_view_to_world.col3(3)));
+    block_.cam_world_to_view.rotation(R);
 
-    projection_view_ = projection_ * world_to_view_;
-    if(cam_state_.is_set(camera_state::CS_PRE_VIEW))  projection_view_ = projection_view_ * pre_view_;
-    if(cam_state_.is_set(camera_state::CS_POST_VIEW)) projection_view_ = post_view_ * projection_view_;
-    eye_pos_ = world_pos();
-    eye_dir_ = -dir();
+    block_.cam_proj_view = block_.cam_projection * block_.cam_world_to_view;
+    if(cam_state_.is_set(camera_state::CS_PRE_VIEW))  block_.cam_proj_view = block_.cam_proj_view * pre_view_;
+    if(cam_state_.is_set(camera_state::CS_POST_VIEW)) block_.cam_proj_view = post_view_ * block_.cam_proj_view;
+    block_.eye_position = vec4f{world_pos(), 1.f};
+    block_.eye_dir = vec4f{-dir(), 0.f};
 }
 
 void camera::update_frustum() {
@@ -79,50 +79,50 @@ void camera::update_frustum() {
         float dmin_dmax_inv_D_diff = d_min * dmax_inv_D_diff;
         float two_dmin_dmax_inv_D_diff = 2.0f * dmin_dmax_inv_D_diff;
 
-        projection_(0, 0) = two_dmin_inv_R_diff;
-        projection_(0, 1) = 0.0f;
-        projection_(0, 2) = -sumR;
-        projection_(0, 3) = 0.0f;
-        projection_(1, 0) = 0.0f;
-        projection_(1, 1) = two_dmin_inv_U_diff;
-        projection_(1, 2) = -sumU;
-        projection_(1, 3) = 0.0f;
-        projection_(2, 0) = 0.0f;
-        projection_(2, 1) = 0.0f;
-        projection_(2, 2) = sumD;
-        projection_(2, 3) = -two_dmin_dmax_inv_D_diff;
-        projection_(3, 0) = 0.0f;
-        projection_(3, 1) = 0.0f;
-        projection_(3, 2) = 1.0f;
-        projection_(3, 3) = 0.0f;
+        block_.cam_projection(0, 0) = two_dmin_inv_R_diff;
+        block_.cam_projection(0, 1) = 0.0f;
+        block_.cam_projection(0, 2) = -sumR;
+        block_.cam_projection(0, 3) = 0.0f;
+        block_.cam_projection(1, 0) = 0.0f;
+        block_.cam_projection(1, 1) = two_dmin_inv_U_diff;
+        block_.cam_projection(1, 2) = -sumU;
+        block_.cam_projection(1, 3) = 0.0f;
+        block_.cam_projection(2, 0) = 0.0f;
+        block_.cam_projection(2, 1) = 0.0f;
+        block_.cam_projection(2, 2) = sumD;
+        block_.cam_projection(2, 3) = -two_dmin_dmax_inv_D_diff;
+        block_.cam_projection(3, 0) = 0.0f;
+        block_.cam_projection(3, 1) = 0.0f;
+        block_.cam_projection(3, 2) = 1.0f;
+        block_.cam_projection(3, 3) = 0.0f;
     } else {
         float two_inv_R_diff = 2.0f * inv_R_diff;
         float two_inv_U_diff = 2.0f * inv_U_diff;
         float two_inv_D_diff = 2.0f * inv_D_diff;
 
-        projection_(0, 0) = two_inv_R_diff;
-        projection_(0, 1) = 0.0f;
-        projection_(0, 2) = 0.0;
-        projection_(0, 3) = -sumR;
-        projection_(1, 0) = 0.0f;
-        projection_(1, 1) = two_inv_U_diff;
-        projection_(1, 2) = 0.0f;
-        projection_(1, 3) = -sumU;
-        projection_(2, 0) = 0.0f;
-        projection_(2, 1) = 0.0f;
-        projection_(2, 2) = two_inv_D_diff;
-        projection_(2, 3) = -sumD;
-        projection_(3, 0) = 0.0f;
-        projection_(3, 1) = 0.0f;
-        projection_(3, 2) = 0.0f;
-        projection_(3, 3) = 1.0f;
+        block_.cam_projection(0, 0) = two_inv_R_diff;
+        block_.cam_projection(0, 1) = 0.0f;
+        block_.cam_projection(0, 2) = 0.0;
+        block_.cam_projection(0, 3) = -sumR;
+        block_.cam_projection(1, 0) = 0.0f;
+        block_.cam_projection(1, 1) = two_inv_U_diff;
+        block_.cam_projection(1, 2) = 0.0f;
+        block_.cam_projection(1, 3) = -sumU;
+        block_.cam_projection(2, 0) = 0.0f;
+        block_.cam_projection(2, 1) = 0.0f;
+        block_.cam_projection(2, 2) = two_inv_D_diff;
+        block_.cam_projection(2, 3) = -sumD;
+        block_.cam_projection(3, 0) = 0.0f;
+        block_.cam_projection(3, 1) = 0.0f;
+        block_.cam_projection(3, 2) = 0.0f;
+        block_.cam_projection(3, 3) = 1.0f;
     }
     update_view();
 }
 
 bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
-    if(x < viewport_[0] || x > viewport_[2] || y < viewport_[1] || y > viewport_[3]) return false;
-    auto r = (x - viewport_[0])/viewport_[2]; auto u = (y - viewport_[1])/viewport_[3];
+    if(x < block_.viewport[0] || x > block_.viewport[2] || y < block_.viewport[1] || y > block_.viewport[3]) return false;
+    auto r = (x - block_.viewport[0])/block_.viewport[2]; auto u = (y - block_.viewport[1])/block_.viewport[3];
     float dr = maths::lerp(r, frustum_[FP_RMIN], frustum_[FP_RMAX]);
     float du = maths::lerp(u, frustum_[FP_UMIN], frustum_[FP_UMAX]);
     float dd = frustum_[FP_DMIN];

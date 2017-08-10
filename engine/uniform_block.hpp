@@ -9,6 +9,8 @@
 
 namespace zap { namespace engine {
 
+// NOTE:  Prefer memory aligned on a 16-byte boundary.
+
 template <typename... Args>
 struct uniform_block : core::pod<Args...> {
     using pod_t = core::pod<Args...>;

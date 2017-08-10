@@ -13,8 +13,8 @@ namespace zap { namespace renderer {
             core::cam_projection<maths::mat4f>,
             core::cam_proj_view<maths::mat4f>,
             core::viewport<maths::vec4i>,
-            core::eye_position<maths::vec3f>,
-            core::eye_dir<maths::vec3f>
+            core::eye_position<maths::vec4f>,
+            core::eye_dir<maths::vec4f>
     >;
 
     class camera {
@@ -23,7 +23,8 @@ namespace zap { namespace renderer {
             CS_IDENTITY = 1 << 0,        // The camera is the identity matrix
             CS_PERSPECTIVE = 1 << 1,     // The camera is using perspective projection
             CS_PRE_VIEW = 1 << 2,        // The camera requires a pre-view matrix multiplication
-            CS_POST_VIEW = 1 << 3        // The camera requires a post-view matrix multiplication
+            CS_POST_VIEW = 1 << 3,       // The camera requires a post-view matrix multiplication
+            CS_DIRTY = 1 << 4            // The camera state has changed since the last clear
         };
 
     public:
@@ -34,29 +35,29 @@ namespace zap { namespace renderer {
         using vec4i = maths::vec4i;
         using mat4f = maths::mat4f;
         using frustum_t = maths::vector<float, 6>;
-        using viewport_t = maths::vec4i; //maths::vector<float, 4>;
+        using viewport_t = maths::vec4i;
 
         camera(bool perspective=true);
         camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective=true);
 
         bool is_perspective() const { return cam_state_.is_set(camera_state::CS_PERSPECTIVE); }
         void set_perspective(bool p) { p ? cam_state_.set(camera_state::CS_PERSPECTIVE) : cam_state_.clear(camera_state::CS_PERSPECTIVE); }
-        vec3f right() const { return view_to_world_.col3(0); }
-        vec3f up() const { return view_to_world_.col3(1); }
-        vec3f dir() const { return view_to_world_.col3(2); }
-        vec3f world_pos() const { return view_to_world_.col3(3); }
-        vec3f local_pos() const { return world_to_view_.col3(3); }
-        void right(const vec3f& r) { view_to_world_.column(0,r); update_view(); }
-        void up(const vec3f& u) { view_to_world_.column(1,u); update_view(); }
-        void dir(const vec3f& d) { view_to_world_.column(2,d); update_view(); }
-        void world_pos(const vec3f& P) { view_to_world_.column(3,P); update_view(); }
+        vec3f right() const { return block_.cam_view_to_world.col3(0); }
+        vec3f up() const { return block_.cam_view_to_world.col3(1); }
+        vec3f dir() const { return block_.cam_view_to_world.col3(2); }
+        vec3f world_pos() const { return block_.cam_view_to_world.col3(3); }
+        vec3f local_pos() const { return block_.cam_world_to_view.col3(3); }
+        void right(const vec3f& r) { block_.cam_view_to_world.column(0,r); update_view(); }
+        void up(const vec3f& u) { block_.cam_view_to_world.column(1,u); update_view(); }
+        void dir(const vec3f& d) { block_.cam_view_to_world.column(2,d); update_view(); }
+        void world_pos(const vec3f& P) { block_.cam_view_to_world.column(3,P); update_view(); }
 
         void frame(const vec3f& u, const vec3f& d, const vec3f& P) {
             assert(maths::is_zero(maths::dot(u, d), 2*std::numeric_limits<float>::epsilon()) && "Frame requires orthogonal vectors");
-            view_to_world_.column(0, maths::cross(d, u));
-            view_to_world_.column(1,u);
-            view_to_world_.column(2,d);
-            view_to_world_.column(3,P);
+            block_.cam_view_to_world.column(0, maths::cross(d, u));
+            block_.cam_view_to_world.column(1,u);
+            block_.cam_view_to_world.column(2,d);
+            block_.cam_view_to_world.column(3,P);
             update_view();
         }
 
@@ -67,16 +68,16 @@ namespace zap { namespace renderer {
         void orthogonolise(const vec3f& d, const vec3f& world_up=vec3f{0.f, 1.f, 0.f}) {
             assert(maths::eq(d.length_sqr(), 1.f, 8*std::numeric_limits<float>::epsilon()) && "Direction vector must be unit length");
             auto up = maths::normalise(world_up - maths::dot(world_up, d)*d);
-            view_to_world_.column(2, d);
-            view_to_world_.column(1, up);
-            view_to_world_.column(0, maths::cross(d, up));
+            block_.cam_view_to_world.column(2, d);
+            block_.cam_view_to_world.column(1, up);
+            block_.cam_view_to_world.column(0, maths::cross(d, up));
             update_view();
         }
 
-        const mat4f& projection() const { return projection_; }
-        const mat4f& proj_view() const { return projection_view_; }
-        const mat4f& world_to_view() const { return world_to_view_; }
-        const mat4f& view_to_world() const { return view_to_world_; }
+        const mat4f& projection() const { return block_.cam_projection; }
+        const mat4f& proj_view() const { return block_.cam_proj_view; }
+        const mat4f& world_to_view() const { return block_.cam_world_to_view; }
+        const mat4f& view_to_world() const { return block_.cam_view_to_world; }
 
         void frustum(float r_min, float r_max, float u_min, float u_max, float d_min, float d_max) {
             cam_state_.clear(camera_state::CS_PERSPECTIVE);
@@ -101,10 +102,10 @@ namespace zap { namespace renderer {
             viewport(viewport_t({{left, bottom, right, top}}));
         }
         void viewport(const viewport_t& vp);
-        viewport_t viewport() const { return viewport_; }
+        viewport_t viewport() const { return block_.viewport; }
 
-        int width() const { return viewport_[2] - viewport_[0]; }
-        int height() const { return viewport_[3] - viewport_[1]; }
+        int width() const { return block_.viewport[2] - block_.viewport[0]; }
+        int height() const { return block_.viewport[3] - block_.viewport[1]; }
         vec2i dims() const { return vec2i(width(), height()); }
 
         bool pick_ray(int x, int y, vec3f& origin, vec3f& dir) const;
@@ -125,23 +126,7 @@ namespace zap { namespace renderer {
         void update_view();
         void update_frustum();
 
-        /*
-        mat4f world_to_view_;
-        mat4f view_to_world_;
-        mat4f projection_;
-        mat4f projection_view_;
-        //viewport_t viewport_;
-        */
-
         camera_block block_ = { };
-
-        mat4f& world_to_view_ = block_.cam_world_to_view;
-        mat4f& view_to_world_ = block_.cam_view_to_world;
-        mat4f& projection_ = block_.cam_projection;
-        mat4f& projection_view_ = block_.cam_proj_view;
-        viewport_t& viewport_ = block_.viewport;
-        vec3f& eye_pos_ = block_.eye_position;
-        vec3f& eye_dir_ = block_.eye_dir;
 
         mat4f pre_view_;
         mat4f post_view_;

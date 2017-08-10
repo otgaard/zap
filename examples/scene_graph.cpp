@@ -48,8 +48,8 @@ const char* const basic_vshdr = GLSL(
         mat4 cam_projection;
         mat4 cam_proj_view;
         vec4 viewport;
-        vec3 eye_position;
-        vec3 eye_dir;
+        vec4 eye_position;
+        vec4 eye_dir;
     };
 
     layout (std140) uniform model_ublock {
@@ -82,8 +82,8 @@ const char* const basic_fshdr = GLSL(
         mat4 cam_projection;
         mat4 cam_proj_view;
         vec4 viewport;
-        vec3 eye_position;
-        vec3 eye_dir;
+        vec4 eye_position;
+        vec4 eye_dir;
     };
 
     uniform vec4 colour = vec4(1., 1., 1., 1.);
@@ -95,7 +95,7 @@ const char* const basic_fshdr = GLSL(
 
     out vec4 frag_colour;
     void main() {
-        vec3 vP = normalize(eye_position - pos);
+        vec3 vP = normalize(eye_position.xyz - pos);
         float Ld = max(0, dot(light_dir, nor));
         vec3 H = normalize(light_dir + vP);
         float Ls = pow(max(0., dot(H, nor)), 100.) * Ld;
@@ -188,21 +188,8 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     camera_ublock_.bind();
     camera_ublock_.initialise(cam_.get_ublock());
-    /*
-    if(camera_ublock_.map(buffer_access::BA_READ_WRITE)) {
-        camera_ublock_.ref().cam_world_to_view = cam_.world_to_view();
-        camera_ublock_.ref().cam_projection = cam_.projection();
-        camera_ublock_.ref().cam_proj_view = cam_.proj_view();
-        camera_ublock_.ref().viewport = vec4i{int(cam_.viewport()[0]), int(cam_.viewport()[1]), int(cam_.viewport()[2]), int(cam_.viewport()[3])};
-        camera_ublock_.ref().eye_position = cam_.world_pos();
-        camera_ublock_.ref().eye_dir = -cam_.dir();
-        camera_ublock_.unmap();
-    }
-    */
     camera_ublock_.release();
-
     contexts_.back().set_parameter("light_dir", cam_.world_to_view() * normalise(vec3f{1.f, 1.f, 1.f}));
-
     gl_error_check();
 }
 
@@ -218,6 +205,7 @@ void scene_graph_test::update(double t, float dt) {
     }
     model_ublock_.release();
 
+    rot += dt;
     gl_error_check();
 }
 
