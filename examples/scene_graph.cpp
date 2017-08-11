@@ -104,7 +104,15 @@ bool scene_graph_test::initialise() {
         float lon = .4f*TWO_PI<float>*std::atan(x/z);
         int ilat = maths::floor(lat), ilon = maths::floor(lon);
         bool parity = ((ilat+1)+ilon)%2 == 0;
-        return rgb888_t{parity ? vec3b{255,0,0} : vec3b{0,0,255}};
+        return rgb888_t{parity ? vec3b{255, 0, 0} : vec3b{0, 0, 255}};
+    }));
+
+    req.scale.set(20.f, 20.f);
+    textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
+        int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+        float value = clamp(.707f + .5f*gen.vnoise(x - ix, y - iy, z - iz, ix, iy, iz));
+        vec3b colour = lerp(value, vec3b(0, 255, 0), vec3b(128, 128, 64));
+        return rgb888_t{colour};
     }));
 
     samplers_.emplace_back();
@@ -113,24 +121,35 @@ bool scene_graph_test::initialise() {
     samplers_[0].set_mag_filter(tex_filter::TF_LINEAR);
     samplers_[0].set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
 
-    context_->add_sampler(&textures_[0], &samplers_[0], &textures_[1], &samplers_[0]);
+    // Warning: Don't realloc textures or samplers after this...
+    context_->add_sampler(&textures_[0], &samplers_[0], &textures_[1], &samplers_[0], &textures_[2], &samplers_[0]);
 
     if(!context_->initialise()) {
         LOG_ERR("Failed to initialise render_context");
         return false;
     }
 
-    auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere(30, 60, 1.f, false));
+    auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere<float,uint32_t>(30, 60, 1.f, false));
     visual_t sphere{sphere_mesh.get(), context_.get()};
-    sphere.translate(vec3f{-1.f, 0.f, -2.f});
     meshes_.emplace_back(std::move(sphere_mesh));
-    visuals_.emplace_back(std::move(sphere));
+
+    sphere.translate(vec3f{-2.f, 1.2f, -2.f});
+    visuals_.push_back(sphere);
+    sphere.translate(vec3f{+0.f, 1.2f, -2.f});
+    visuals_.push_back(sphere);
+    sphere.translate(vec3f{+2.f, 1.2f, -2.f});
+    visuals_.push_back(sphere);
 
     auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 2.f, 1.f, false));
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
-    cylinder.translate(vec3f{+1.f, 0.f, -2.f});
     meshes_.emplace_back(std::move(cylinder_mesh));
-    visuals_.emplace_back(std::move(cylinder));
+
+    cylinder.translate(vec3f{-2.f, -1.2f, -2.f});
+    visuals_.push_back(cylinder);
+    cylinder.translate(vec3f{+0.f, -1.2f, -2.f});
+    visuals_.push_back(cylinder);
+    cylinder.translate(vec3f{+2.f, -1.2f, -2.f});
+    visuals_.push_back(cylinder);
 
     gl_error_check();
     return true;
@@ -138,7 +157,7 @@ bool scene_graph_test::initialise() {
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{0.f, 2.f, 5.f});
+    cam_.world_pos(vec3f{0.f, 0.f, 5.f});
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     gl_error_check();
@@ -146,19 +165,18 @@ void scene_graph_test::on_resize(int width, int height) {
 
 void scene_graph_test::update(double t, float dt) {
     static float inc = 0.f;
-    visuals_[0].rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2));
-    visuals_[1].rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2));
+    auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2);
+    for(auto& v : visuals_) v.rotate(rot);
     inc += dt;
     gl_error_check();
 }
 
 void scene_graph_test::draw() {
-    context_->set_parameter("PVM", cam_.proj_view() * visuals_[0].world_transform().gl_matrix());
-    context_->set_texture_unit("diffuse_tex", 1);
-    visuals_[0].draw(rndr_);
-    context_->set_parameter("PVM", cam_.proj_view() * visuals_[1].world_transform().gl_matrix());
-    context_->set_texture_unit("diffuse_tex", 0);
-    visuals_[1].draw(rndr_);
+    for(int i = 0; i != 6; ++i) {
+        context_->set_parameter("PVM", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
+        context_->set_texture_unit("diffuse_tex", i%3);
+        visuals_[i].draw(rndr_);
+    }
     gl_error_check();
 }
 

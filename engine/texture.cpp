@@ -2,18 +2,6 @@
 #include "texture.hpp"
 #include "gl_api.hpp"
 
-/*
- *  Functions I need:
- *  glGenTextures
- *  glBindTexture
- *  glActiveTexture
- *  glIsTexture
- *  glDeleteTextures
- *  glTexImage1D, glTexImage2D, glTexImage3D,
- *  glTexImage2DMultisample, glTexImage3DMultisample
- *  glTexSubImage2D, glTexSubImage3D
- */
-
 /* TODO: Implement correct type handling for pixel formats */
 
 zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap::engine::pixel_datatype datatype) {

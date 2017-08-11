@@ -7,7 +7,7 @@ directly in the third_party folder.
 macOS/Linux Build Instructions
 ------------------------------
 
-Tested on GCC 5.4.0 && Apple LLVM 7.3.0. Please create an issue if you have problems pertaining to building.
+Tested on GCC 5.4.0 && Apple LLVM 7.3.0.
 
 Checkout repository:
 
