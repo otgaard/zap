@@ -96,8 +96,8 @@ bool scene_graph_test::initialise() {
     }));
 
     textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
-        float lat = TWO_PI<float>*acosf(y/10.f);
-        float lon = TWO_PI<float>*atanf(x/z);
+        float lat = TWO_PI<float>*std::acos(y/10.f);
+        float lon = TWO_PI<float>*std::atan(x/z);
         int ilat = maths::floor(lat), ilon = maths::floor(lon);
         bool parity = ((ilat+1)+ilon)%2 == 0;
         return rgb888_t{parity ? vec3b{255,0,0} : vec3b{0,0,255}};
@@ -135,6 +135,7 @@ void scene_graph_test::update(double t, float dt) {
 
 void scene_graph_test::draw() {
     context_->set_parameter("PVM", cam_.proj_view() * visuals_[0].world_transform().gl_matrix());
+    context_->set_texture_unit("diffuse_tex", 0);
     visuals_[0].draw(rndr_);
     gl_error_check();
 }

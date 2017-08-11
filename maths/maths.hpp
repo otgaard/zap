@@ -21,6 +21,16 @@
 #endif //_WIN32
 
 namespace zap { namespace maths {
+#if defined(_WIN32)
+    template <typename T> const T PI = T(3.14159265358979323846);
+    template <typename T> const T TWO_PI = T(2) * PI<T>;
+    template <typename T> const T HALF_PI = PI<T>/T(2);
+    template <typename T> const T degrees_to_radians = PI<T>/T(180);
+    template <typename T> const T radians_to_degrees = T(180)/PI<T>;
+
+    template <typename T> const T deg_to_rad(T v) { return T(v * degrees_to_radians<T>); }
+    template <typename T> const T rad_to_deg(T v) { return T(v * radians_to_degrees<T>); }
+#else
     template <typename T> constexpr T PI = T(3.14159265358979323846);
     template <typename T> constexpr T TWO_PI = T(2) * PI<T>;
     template <typename T> constexpr T HALF_PI = PI<T>/T(2);
@@ -29,6 +39,7 @@ namespace zap { namespace maths {
 
     template <typename T> constexpr T deg_to_rad(T v) { return T(v * degrees_to_radians<T>); }
     template <typename T> constexpr T rad_to_deg(T v) { return T(v * radians_to_degrees<T>); }
+#endif
 
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }

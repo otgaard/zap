@@ -13,14 +13,15 @@
 #include <graphics3/g3_types.hpp>
 
 namespace zap { namespace generators {
-    using primitive_type = zap::engine::primitive_type;
-    template <typename T> using vec2 = zap::maths::vec2<T>;
-    template <typename T> using vec3 = zap::maths::vec3<T>;
-    using vec2f = zap::maths::vec2f;
-    using vec3f = zap::maths::vec3f;
+    using zap::engine::primitive_type;
 
     template <typename VertexT, primitive_type Primitive>
     struct geometry_traits {
+        template <typename T> using vec2 = zap::maths::vec2<T>;
+        template <typename T> using vec3 = zap::maths::vec3<T>;
+        using vec2f = zap::maths::vec2f;
+        using vec3f = zap::maths::vec3f;
+
         using primitive_type = primitive_type;
 
         constexpr static primitive_type primitive = Primitive;

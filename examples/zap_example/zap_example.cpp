@@ -14,6 +14,7 @@
 
 using namespace zap;
 using namespace zap::maths;
+using namespace zap::engine;
 using namespace zap::graphics;
 using namespace zap::renderer;
 using namespace zap::generators;
