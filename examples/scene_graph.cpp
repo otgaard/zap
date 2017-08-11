@@ -108,7 +108,7 @@ bool scene_graph_test::initialise() {
     }));
 
     req.scale.set(20.f, 20.f);
-    textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
+    textures_.emplace_back(gen_.render_cylindrical(req, [](float x, float y, float z, generator& gen) {
         int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
         float value = clamp(.707f + .5f*gen.vnoise(x - ix, y - iy, z - iz, ix, iy, iz));
         vec3b colour = lerp(value, vec3b(0, 255, 0), vec3b(128, 128, 64));
@@ -133,22 +133,22 @@ bool scene_graph_test::initialise() {
     visual_t sphere{sphere_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(sphere_mesh));
 
-    sphere.translate(vec3f{-2.f, 1.2f, -2.f});
+    sphere.translate(vec3f{-2.f, 1.2f, -3.f});
     visuals_.push_back(sphere);
-    sphere.translate(vec3f{+0.f, 1.2f, -2.f});
+    sphere.translate(vec3f{+0.f, 1.2f, -3.f});
     visuals_.push_back(sphere);
-    sphere.translate(vec3f{+2.f, 1.2f, -2.f});
+    sphere.translate(vec3f{+2.f, 1.2f, -3.f});
     visuals_.push_back(sphere);
 
     auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 2.f, 1.f, false));
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(cylinder_mesh));
 
-    cylinder.translate(vec3f{-2.f, -1.2f, -2.f});
+    cylinder.translate(vec3f{-2.f, -1.2f, -3.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+0.f, -1.2f, -2.f});
+    cylinder.translate(vec3f{+0.f, -1.2f, -3.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+2.f, -1.2f, -2.f});
+    cylinder.translate(vec3f{+2.f, -1.2f, -3.f});
     visuals_.push_back(cylinder);
 
     gl_error_check();
@@ -188,5 +188,3 @@ int main(int argc, char* argv[]) {
     scene_graph_test app;
     return app.run();
 }
-
-// Generators

@@ -110,6 +110,7 @@ public:
     //template <typename Fnc> texture render(const render_task& req, Fnc&& fnc);
     template <typename Fnc> texture render_planar(const render_task& req, Fnc&& fnc);
     template <typename Fnc> texture render_spherical(const render_task& req, Fnc&& fnc);
+    template <typename Fnc> texture render_cylindrical(const render_task& req, Fnc&& fnc);
     template <typename Fnc> texture render_cubemap(const render_task& req, Fnc&& fnc);
 
     template <typename PixelT>
@@ -184,8 +185,8 @@ engine::texture generator::render_planar(const render_task& req, Fnc&& fnc) {
 
 template <typename Fnc>
 engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
-    const float inv_x = maths::TWO_PI<float>/req.width;
-    const float inv_y = maths::PI<float>/req.height;
+    const float inv_x = maths::TWO_PI<float>/(req.width-1);
+    const float inv_y = maths::PI<float>/(req.height-1);
     const float radius = req.scale.x;
 
     using PixelT = typename std::result_of<Fnc(float, float, float, generator&)>::type;
@@ -202,6 +203,29 @@ engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
 
     texture tex{};
     if(!tex.allocate() || !tex.initialise(image, req.mipmaps)) LOG_ERR("Failed to create spherical texture");
+    return tex;
+}
+
+template <typename Fnc>
+engine::texture generator::render_cylindrical(const render_task& req, Fnc&& fnc){
+    const float inv_x = maths::TWO_PI<float>/(req.width-1);
+    const float inv_y = req.scale.y/(req.height-1);
+    const float radius = req.scale.x;
+
+    using PixelT = typename std::result_of<Fnc(float, float, float, generator&)>::type;
+    pixmap<PixelT> image{req.width, req.height};
+
+    for(int r = 0; r != req.height; ++r) {
+        float y = inv_y * r;
+        for(int c = 0; c != req.width; ++c) {
+            float theta = inv_x * c;
+            float x = radius * std::cosf(theta), z = radius * std::sinf(theta);
+            image(c,r) = fnc(x, y, z, *this);
+        }
+    }
+
+    texture tex{};
+    if(!tex.allocate() || !tex.initialise(image, req.mipmaps)) LOG_ERR("Failed to create cylindrical texture");
     return tex;
 }
 
