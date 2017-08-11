@@ -108,12 +108,10 @@ bool scene_graph_test::initialise() {
     }));
 
     samplers_.emplace_back();
-    samplers_.back().allocate();
-    samplers_.back().initialise();
-    samplers_.back().bind(0);
-    samplers_.back().set_mag_filter(tex_filter::TF_LINEAR);
-    samplers_.back().set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
-    samplers_.back().release(0);
+    samplers_[0].allocate();
+    samplers_[0].initialise();
+    samplers_[0].set_mag_filter(tex_filter::TF_LINEAR);
+    samplers_[0].set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
 
     context_->add_sampler(&textures_[0], &samplers_[0], &textures_[1], &samplers_[0]);
 
@@ -124,13 +122,16 @@ bool scene_graph_test::initialise() {
 
     auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere(30, 60, 1.f, false));
     visual_t sphere{sphere_mesh.get(), context_.get()};
+    sphere.translate(vec3f{-1.f, 0.f, -2.f});
     meshes_.emplace_back(std::move(sphere_mesh));
     visuals_.emplace_back(std::move(sphere));
 
-    auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 2.f, 1.f, true));
+    auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 2.f, 1.f, false));
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
+    cylinder.translate(vec3f{+1.f, 0.f, -2.f});
     meshes_.emplace_back(std::move(cylinder_mesh));
     visuals_.emplace_back(std::move(cylinder));
+
     gl_error_check();
     return true;
 }

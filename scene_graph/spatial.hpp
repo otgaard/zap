@@ -34,9 +34,12 @@ namespace zap { namespace scene_graph {
         using vec_t = typename transform_t::vec_t;
         using rot_t = typename transform_t::rot_t;
 
-        spatial(const spatial& rhs) = delete;
+        spatial(const spatial& rhs);
+        spatial(spatial&& rhs) noexcept;
         virtual ~spatial() = default;
-        spatial& operator=(const spatial& rhs) = delete;
+
+        spatial& operator=(const spatial& rhs);
+        spatial& operator=(spatial&& rhs) noexcept;
 
         void translate(const vec_t& T);
         void rotate(const rot_t& R);
@@ -82,6 +85,46 @@ namespace zap { namespace scene_graph {
         mutable bound_t world_bound_;
         cull_mode culling_ = cull_mode::CM_DYNAMIC;
     };
+
+    template <typename TransformT, typename GeoT>
+    spatial<TransformT, GeoT>::spatial(const spatial& rhs) :
+        parent_(nullptr),
+        model_transform_(rhs.model_transform_),
+        model_bound_(rhs.model_bound_),
+        culling_(rhs.culling_) {
+    }
+
+    template <typename TransformT, typename GeoT>
+    spatial<TransformT, GeoT>::spatial(spatial&& rhs) noexcept :
+        parent_(rhs.parent_),
+        model_transform_(rhs.model_transform_),
+        model_bound_(rhs.model_bound_),
+        culling_(rhs.culling_) {
+        LOG_WARN("Moving node elements is not entirely implemented.");
+    }
+
+    template <typename TransformT, typename GeoT>
+    spatial<TransformT, GeoT>& spatial<TransformT, GeoT>::operator=(const spatial& rhs) {
+        if(this != &rhs) {
+            parent_ = nullptr;
+            model_transform_ = rhs.model_transform_;
+            model_bound_ = rhs.model_bound_;
+            culling_ = rhs.culling_;
+        }
+        return *this;
+    }
+
+    template <typename TransformT, typename GeoT>
+    spatial<TransformT, GeoT>& spatial<TransformT, GeoT>::operator=(spatial&& rhs) noexcept {
+        if(this != &rhs) {
+            parent_ = rhs.parent_;
+            LOG_WARN("Moving node elements is not entirely implemented.");
+            model_transform_ = rhs.model_transform_;
+            model_bound_ = rhs.model_bound_;
+            culling_ = rhs.culling_;
+        }
+        return *this;
+    }
 
     template <typename TransformT, typename GeoT>
     void spatial<TransformT,GeoT>::translate(const vec_t& T) {
