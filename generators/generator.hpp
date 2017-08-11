@@ -39,7 +39,7 @@ struct render_task {
         SIMPLEX,
         WORLEY,
         WHITE,
-        FUNCTION
+        USER_FUNCTION
     } basis_fnc;
 
     enum class interpolation {

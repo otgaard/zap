@@ -19,9 +19,18 @@ namespace zap { namespace scene_graph {
 
         visual() = default;
         visual(mesh_base* mesh, render_context* context) : mesh_{mesh}, context_(context) { }
-        visual(const visual& rhs) = delete;
+        visual(const visual& rhs) : mesh_(rhs.mesh_), context_(rhs.context_) { }
+        visual(visual&& rhs) noexcept : mesh_(rhs.mesh_), context_(rhs.context_) { }
 
-        visual& operator=(const visual& rhs) = delete;
+        visual& operator=(const visual& rhs) {
+            if(this != &rhs) {
+                mesh_ = rhs.mesh_;
+                context_ = rhs.context_;
+            }
+            return *this;
+        }
+
+        visual& operator=(visual&& rhs) noexcept { return operator=(std::cref(rhs)); }
 
         bool is_valid() const { return mesh_ != nullptr && context_ != nullptr; }
 

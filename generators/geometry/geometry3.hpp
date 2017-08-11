@@ -73,6 +73,10 @@ namespace zap { namespace generators {
             return std::make_tuple(vertices, index);
         }
 
+        template <typename IndexT>
+        static std::tuple<std::vector<VertexT>, std::vector<IndexT>>
+        make_cylinder(int stacks, int slices, float height, float radius, bool inside=false);
+
         template <typename T>
         static std::vector<VertexT> make_cube(const vec3<T>& dimensions={1.f, 1.f, 1.f}) {
             static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_cube expects PT_TRIANGLES");
@@ -192,57 +196,6 @@ namespace zap { namespace generators {
             return vertices;
         }
 
-        // PT_TRIANGLE_STRIP
-        template <typename IndexT=uint16_t>
-        static std::tuple<std::vector<VertexT>,std::vector<IndexT>> make_cylinder(float radius, float height,
-                                                                                  size_t slices, size_t stacks,
-                                                                                  bool inside=false) {
-            const auto dt = float(maths::TWO_PI)/slices;
-            const auto dh = height/stacks;
-            const auto hh = height/2;
-
-            const auto slicesp1 = slices+1, stacksp1 = stacks+1;
-            const auto vertex_count = slicesp1 * stacksp1;
-            const auto index_count = stacks*(2*slicesp1 + 1); // Primitive Restart
-
-            assert(index_count <= std::numeric_limits<IndexT>::max() && "Index type too small for mesh");
-
-            std::vector<VertexT> vertices(vertex_count);
-            std::vector<uint16_t> indices(index_count);
-
-            // Calculate the first coords once & copy
-            for(size_t t = 0; t != slicesp1; ++t) {
-                const auto theta = (t%slices)*dt, ctheta = std::cos(theta), stheta = std::sin(theta);
-                vertices[t].position.set(radius*ctheta, radius*stheta, hh);
-                inside ? vertices[t].normal.set(-ctheta, -stheta, 0) : vertices[t].normal.set(ctheta, stheta, 0);
-                vertices[t].texcoord1.set(t/float(slices), 0.f);
-            }
-
-            for(size_t h = 1, h_end = stacksp1; h != h_end; ++h) {
-                const auto v_offset = h*slicesp1;
-                const auto i_offset = (h-1)*(2*slicesp1 + 1);
-                const auto hgt = hh - h*dh;
-                const auto v = h/float(stacks);
-                std::copy(vertices.begin(), vertices.begin()+slicesp1, vertices.begin()+v_offset);
-                for(size_t t = 0; t != slicesp1; ++t) {
-                    const auto idx = v_offset+t;
-                    vertices[idx].position.z = hgt;
-                    vertices[idx].texcoord1.y = v;
-                    if(inside) {
-                        indices[i_offset + 2 * t] = IndexT(idx);
-                        indices[i_offset + 2 * t + 1] = IndexT(idx - slicesp1);
-                    } else {
-                        indices[i_offset + 2 * t] = IndexT(idx - slicesp1);
-                        indices[i_offset + 2 * t + 1] = IndexT(idx);
-                    }
-                }
-
-                indices[i_offset+2*slicesp1] = std::numeric_limits<uint16_t>::max();
-            }
-
-            return std::make_tuple(vertices, indices);
-        }
-
         template <typename T, typename IndexT=uint16_t>
         static std::tuple<std::vector<VertexT>,std::vector<IndexT>> make_icosahedron(T size=1.f) {
             static_assert(primitive == engine::primitive_type::PT_TRIANGLES, "make_icosahedron expects PT_TRIANGLES");
@@ -330,7 +283,7 @@ namespace zap { namespace generators {
         }
 
         template <typename T, typename IndexT=uint16_t>
-        static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_UVsphere(int z_samples, int radial_samples, T radius, bool inside) {
+        static std::tuple<std::vector<VertexT>, std::vector<IndexT>> make_UVsphere(int z_samples, int radial_samples, T radius, bool inside=false) {
             int zsm1 = z_samples-1, zsm2 = z_samples-2, zsm3 = z_samples-3;
             int rsp1 = radial_samples+1;
             int vertex_count = zsm2*rsp1 + 2;
@@ -457,6 +410,66 @@ namespace zap { namespace generators {
             return std::make_tuple(vbuf, ibuf);
         }
     };
+
+    // PT_TRIANGLES + Index Implementation
+    template <typename VertexT, prim_t Primitive>
+    template <typename IndexT>
+    std::tuple<std::vector<VertexT>, std::vector<IndexT>>
+    geometry3<VertexT, Primitive>::make_cylinder(int stacks, int slices, float height, float radius, bool inside) {
+        return std::make_tuple(std::vector<VertexT>{}, std::vector<IndexT>{});
+    }
+    /*
+    // PT_TRIANGLE_STRIP + Index Implementation
+    template <typename VertexT>
+    template <typename IndexT=uint16_t>
+    std::tuple<std::vector<VertexT>, std::vector<IndexT>>
+    geometry3<VertexT, prim_t::PT_TRIANGLE_STRIP>::make_cylinder(int stacks, int slices, float height, float radius, bool inside=false) {
+        const auto dt = float(maths::TWO_PI)/slices;
+        const auto dh = height/stacks;
+        const auto hh = height/2;
+
+        const auto slicesp1 = slices+1, stacksp1 = stacks+1;
+        const auto vertex_count = slicesp1 * stacksp1;
+        const auto index_count = stacks*(2*slicesp1 + 1); // Primitive Restart
+
+        assert(index_count <= std::numeric_limits<IndexT>::max() && "Index type too small for mesh");
+
+        std::vector<VertexT> vertices(vertex_count);
+        std::vector<uint16_t> indices(index_count);
+
+        // Calculate the first coords once & copy
+        for(size_t t = 0; t != slicesp1; ++t) {
+            const auto theta = (t%slices)*dt, ctheta = std::cos(theta), stheta = std::sin(theta);
+            vertices[t].position.set(radius*ctheta, radius*stheta, hh);
+            inside ? vertices[t].normal.set(-ctheta, -stheta, 0) : vertices[t].normal.set(ctheta, stheta, 0);
+            vertices[t].texcoord1.set(t/float(slices), 0.f);
+        }
+
+        for(size_t h = 1, h_end = stacksp1; h != h_end; ++h) {
+            const auto v_offset = h*slicesp1;
+            const auto i_offset = (h-1)*(2*slicesp1 + 1);
+            const auto hgt = hh - h*dh;
+            const auto v = h/float(stacks);
+            std::copy(vertices.begin(), vertices.begin()+slicesp1, vertices.begin()+v_offset);
+            for(size_t t = 0; t != slicesp1; ++t) {
+                const auto idx = v_offset+t;
+                vertices[idx].position.z = hgt;
+                vertices[idx].texcoord1.y = v;
+                if(inside) {
+                    indices[i_offset + 2 * t] = IndexT(idx);
+                    indices[i_offset + 2 * t + 1] = IndexT(idx - slicesp1);
+                } else {
+                    indices[i_offset + 2 * t] = IndexT(idx - slicesp1);
+                    indices[i_offset + 2 * t + 1] = IndexT(idx);
+                }
+            }
+
+            indices[i_offset+2*slicesp1] = std::numeric_limits<uint16_t>::max();
+        }
+
+        return std::make_tuple(vertices, indices);
+    }
+    */
 }}
 
 #endif //ZAP_GEOMETRY3_HPP

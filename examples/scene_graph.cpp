@@ -35,19 +35,22 @@ const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
     in vec3 position;
     in vec3 normal;
-    out vec3 tex;
+    in vec2 texcoord1;
+    out vec2 tex2;
+    out vec3 tex3;
     void main() {
-        tex = normal;
+        tex2 = texcoord1;
+        tex3 = normal;
         gl_Position = PVM * vec4(position, 1.);
     }
 );
 
 const char* const basic_fshdr = GLSL(
-    uniform samplerCube diffuse_tex;
-    in vec3 tex;
+    uniform sampler2D diffuse_tex;
+    in vec2 tex2;
     out vec4 frag_colour;
     void main() {
-        frag_colour = texture(diffuse_tex, tex);
+        frag_colour = texture(diffuse_tex, tex2);
     }
 );
 
@@ -64,11 +67,11 @@ public:
 
 protected:
     camera cam_;
-    visual_t sphere_;
+    std::vector<visual_t> visuals_;
     zap::renderer::renderer rndr_;
     generator gen_;
     std::vector<std::unique_ptr<mesh_base>> meshes_;
-    std::vector<std::unique_ptr<render_context>> contexts_;
+    std::unique_ptr<render_context> context_;
     std::vector<texture> textures_;
 };
 
@@ -80,45 +83,47 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    auto sphere_mesh = p3n3t2_geo3::make_mesh(p3n3t2_geo3::make_UVsphere(30, 60, 1.f, false));
-    sphere_.set_mesh(sphere_mesh.get());
-    meshes_.emplace_back(std::move(sphere_mesh));
-
-    contexts_.emplace_back(new render_context(basic_vshdr, basic_fshdr));
-
-    render_task req{1024, 1024, render_task::basis_function::FUNCTION};
-    req.scale.set(255.f, 255.f);
-    textures_.emplace_back(gen_.render_cubemap(req, [](float x, float y, float z, generator& gen) {
-        return rgb888_t{abs(x), abs(y), abs(z)};
+    // Setup the shared context (reuse same one until Context supports instances)
+    context_ = std::make_unique<render_context>(basic_vshdr, basic_fshdr);
+    render_task req{512, 256, render_task::basis_function::USER_FUNCTION};
+    req.scale.set(20.f, 20.f);
+    textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
+        int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+        return rgb888_t{128 + 127*gen.pnoise(x - ix, y - iy, z - iz, ix, iy, iz), 0, 0};
     }));
-    contexts_.back()->add_texture(&textures_.back());
-
-    if(!contexts_.back()->initialise()) {
+    context_->add_texture(&textures_.back());
+    if(!context_->initialise()) {
         LOG_ERR("Failed to initialise render_context");
         return false;
     }
 
-    sphere_.set_context(contexts_.back().get());
-
+    auto sphere_mesh = p3n3t2_geo3::make_mesh(p3n3t2_geo3::make_UVsphere(30, 60, 1.f, false));
+    visual_t sphere{sphere_mesh.get(), context_.get()};
+    sphere.set_mesh(sphere_mesh.get());
+    meshes_.emplace_back(std::move(sphere_mesh));
+    visuals_.emplace_back(std::move(sphere));
     gl_error_check();
     return true;
 }
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{0.f, 0.f, 5.f});
+    cam_.world_pos(vec3f{0.f, 2.f, 5.f});
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
-    contexts_.back()->set_parameter("PVM", cam_.proj_view() * sphere_.world_transform().gl_matrix());
     gl_error_check();
 }
 
 void scene_graph_test::update(double t, float dt) {
+    static float inc = 0.f;
+    visuals_[0].rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, float(PI)/2));
+    inc += dt;
     gl_error_check();
 }
 
 void scene_graph_test::draw() {
-    sphere_.draw(rndr_);
+    context_->set_parameter("PVM", cam_.proj_view() * visuals_[0].world_transform().gl_matrix());
+    visuals_[0].draw(rndr_);
     gl_error_check();
 }
 
