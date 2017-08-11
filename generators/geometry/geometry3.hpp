@@ -40,6 +40,11 @@ namespace zap { namespace generators {
 
     template <typename VertexT>
     struct geometry3<VertexT, primitive_type::PT_TRIANGLES> : public geometry_traits<VertexT, primitive_type::PT_TRIANGLES> {
+        template <typename T> using vec2 = zap::maths::vec2<T>;
+        template <typename T> using vec3 = zap::maths::vec3<T>;
+        using vec2f = zap::maths::vec2f;
+        using vec3f = zap::maths::vec3f;
+
         template <typename T>
         static std::tuple<std::vector<VertexT>, std::vector<uint16_t>> make_skybox(const vec3<T>& dims={T(1), T(1), T(1)});
 

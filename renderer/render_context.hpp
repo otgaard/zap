@@ -167,23 +167,23 @@ public:
     }
 
     void add_sampler(const texture* tex_ptr, const sampler* smp_ptr) {
-        textures_.emplace_back(tex_ptr);
-        samplers_.emplace_back(smp_ptr);
+        textures_.push_back(tex_ptr);
+        samplers_.push_back(smp_ptr);
     }
     template <typename... Args>
     void add_sampler(const texture* tex_ptr, const sampler* smp_ptr, Args... ptrs) {
-        textures_.emplace_back(tex_ptr);
-        samplers_.emplace_back(smp_ptr);
+        textures_.push_back(tex_ptr);
+        samplers_.push_back(smp_ptr);
         add_sampler(ptrs...);
     }
 
     void add_texture(const texture* tex_ptr) {
-        textures_.emplace_back(tex_ptr);
+        textures_.push_back(tex_ptr);
     }
 
     template <typename... Args>
     void add_texture(const texture* tex_ptr, Args... ptrs) {
-        textures_.emplace_back(tex_ptr);
+        textures_.push_back(tex_ptr);
         add_texture(ptrs...);
     }
 
@@ -195,7 +195,7 @@ public:
     template <typename... Args>
     void add_uniform_buffer(const std::string& name, const ubuffer_base* ubuf_ptr, Args... ptrs) {
         ubname_.push_back(name);
-        ubuffers_.emplace_back(ubuf_ptr);
+        ubuffers_.push_back(ubuf_ptr);
         add_uniform_buffer(ptrs...);
     }
 
