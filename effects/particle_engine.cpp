@@ -277,7 +277,7 @@ void particle_engine::draw(const renderer::camera& cam) {
     s.active_buffer == 0 ? s.buffers[1].get_attachment(2).release() : s.buffers[0].get_attachment(2).release();
     s.rndr_pass.release();
 
-    s.angle = maths::wrap(s.angle + 0.2f, float(-PI), float(PI));
+    s.angle = maths::wrap(s.angle + 0.2f, -PI<float>, PI<float>);
 }
 
 const char* const particle_sim_vshdr = GLSL(

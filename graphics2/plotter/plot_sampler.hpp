@@ -26,7 +26,7 @@ namespace zap { namespace graphics {
 
         template <typename T>
         T cosine(const T& A, const T& B, float parm) {
-            float val = (1.f - std::cos(parm*float(zap::maths::PI)))*.5f;
+            float val = (1.f - std::cos(parm*zap::maths::PI<float>))*.5f;
             return (1.f - val) * A + val * B;
         }
 

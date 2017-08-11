@@ -184,8 +184,8 @@ engine::texture generator::render_planar(const render_task& req, Fnc&& fnc) {
 
 template <typename Fnc>
 engine::texture generator::render_spherical(const render_task& req, Fnc&& fnc) {
-    const float inv_x = float(maths::TWO_PI)/req.width;
-    const float inv_y = float(maths::PI)/req.height;
+    const float inv_x = maths::TWO_PI<float>/req.width;
+    const float inv_y = maths::PI<float>/req.height;
     const float radius = req.scale.x;
 
     using PixelT = typename std::result_of<Fnc(float, float, float, generator&)>::type;

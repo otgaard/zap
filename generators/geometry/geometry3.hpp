@@ -40,8 +40,7 @@ namespace zap { namespace generators {
     template <typename VertexT>
     struct geometry3<VertexT, primitive_type::PT_TRIANGLES> : public geometry_traits<VertexT, primitive_type::PT_TRIANGLES> {
         template <typename T>
-        static std::tuple<std::vector<VertexT>, std::vector<uint16_t>>
-        make_skybox(const vec3<T>& dims={T(1), T(1), T(1)});
+        static std::tuple<std::vector<VertexT>, std::vector<uint16_t>> make_skybox(const vec3<T>& dims={T(1), T(1), T(1)});
 
         template <typename IndexT=uint16_t>
         static std::tuple<std::vector<VertexT>, std::vector<IndexT>>
@@ -344,7 +343,7 @@ namespace zap { namespace generators {
         std::vector<T> cs(rsp1);
 
         for(r = 0; r < radial_samples; ++r) {
-            T angle = T(maths::TWO_PI)*invRS*r;
+            T angle = maths::TWO_PI<T>*invRS*r;
             cs[r] = std::cos(angle); sn[r] = std::sin(angle);
         }
 
@@ -466,7 +465,7 @@ namespace zap { namespace generators {
     template <typename IndexT>
     std::tuple<std::vector<VertexT>, std::vector<IndexT>>
     geometry3<VertexT, primitive_type::PT_TRIANGLE_STRIP>::make_cylinder(int stacks, int slices, float height, float radius, bool inside) {
-        const auto dt = float(maths::TWO_PI)/slices;
+        const auto dt = maths::TWO_PI<float>/slices;
         const auto dh = height/stacks;
         const auto hh = height/2;
 

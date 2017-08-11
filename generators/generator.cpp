@@ -188,8 +188,8 @@ pixmap<float> generator::render_cpu(const render_task& req) {
             }
         }
     } else if(req.project == render_task::projection::SPHERICAL) {
-        const float inv_x = float(TWO_PI)/req.width;
-        const float inv_y = float(PI)/req.height;
+        const float inv_x = TWO_PI<float>/req.width;
+        const float inv_y = PI<float>/req.height;
         const float radius = req.scale.x;
 
         for(int r = 0; r != req.height; ++r) {

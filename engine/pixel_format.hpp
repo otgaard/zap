@@ -82,6 +82,11 @@ namespace zap { namespace engine {
         using bits = typename core::generate_table<data_t::size, channels, bits_query>::result;
 
         pixel() = default;
+        explicit pixel(const T& a) { set1(a); }
+        explicit pixel(const maths::vec2<T>& v) { set2(v.x, v.y); }
+        explicit pixel(const maths::vec3<T>& v) { set3(v.x, v.y, v.z); }
+        explicit pixel(const maths::vec4<T>& v) { set4(v.x, v.y, v.z, v.w); }
+        pixel(const T& a, const T& b) { set2(a,b); }
         pixel(const T& a, const T& b, const T& c) { set3(a,b,c); }
         pixel(const T& a, const T& b, const T& c, const T& d) { set4(a,b,c,d); }
 

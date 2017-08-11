@@ -36,7 +36,7 @@ namespace zap { namespace generators {
                 size_t row_offset = row*width;
                 for(size_t col = 0; col != width; ++col) {
                     float x = inv_w*col - .5f; float y = inv_h*row - .5f;
-                    bool parity = (int(maths::rad_to_deg(std::atan2(y,x)+maths::PI)) / mod) % 2 == 0;
+                    bool parity = (int(maths::rad_to_deg(std::atan2(y,x)+maths::PI<float>)) / mod) % 2 == 0;
                     for(int ch = 0; ch != Pixel::size; ++ch)
                         image[row_offset + col].set(ch, parity ? colour_a[ch] : colour_b[ch]);
                 }

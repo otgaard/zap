@@ -20,7 +20,7 @@ raytracer::~raytracer() {
 std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
     const float inv_w = 1.f/w, inv_h = 1.f/h;
 
-    const float z_min = -.1f, z_max = 100.f, fov = float(PI)/2.f, ar = float(h)/w;
+    const float z_min = -.1f, z_max = 100.f, fov = HALF_PI<float>, ar = float(h)/w;
     const float s = -2.f * std::tan(.5f*fov);
 
     const vec3f light_pos = vec3f(0,2,-4.f);

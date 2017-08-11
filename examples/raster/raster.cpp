@@ -52,7 +52,7 @@ void raster::update(double t, float dt) {
 std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
     std::vector<vec2f> points(5);
 
-    float dt = float(TWO_PI/5.f);
+    float dt = float(TWO_PI<float> /5.f);
     for(int i = 0; i != 5; ++i) {
         auto theta = dt*i;
         auto ct = std::cos(theta), st = std::sin(theta);

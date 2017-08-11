@@ -21,13 +21,14 @@
 #endif //_WIN32
 
 namespace zap { namespace maths {
-	constexpr double PI = 3.14159265358979323846;
-    constexpr double TWO_PI = 2.*PI;
-    constexpr double degrees_to_radians = PI/180;
-    constexpr double radians_to_degrees = 180/PI;
+    template <typename T> constexpr T PI = T(3.14159265358979323846);
+    template <typename T> constexpr T TWO_PI = T(2) * PI<T>;
+    template <typename T> constexpr T HALF_PI = PI<T>/T(2);
+    template <typename T> constexpr T degrees_to_radians = PI<T>/T(180);
+    template <typename T> constexpr T radians_to_degrees = T(180)/PI<T>;
 
-    template <typename T> constexpr T deg_to_rad(T v) { return T(v * degrees_to_radians); }
-    template <typename T> constexpr T rad_to_deg(T v) { return T(v * radians_to_degrees); }
+    template <typename T> constexpr T deg_to_rad(T v) { return T(v * degrees_to_radians<T>); }
+    template <typename T> constexpr T rad_to_deg(T v) { return T(v * radians_to_degrees<T>); }
 
     template <typename T> inline bool eq(const T& a, const T& b) { return std::abs(a - b) < std::numeric_limits<T>::epsilon(); }
     template <typename T> inline bool eq(const T& a, const T& b, const T& epsilon) { return std::abs(a - b) < epsilon; }

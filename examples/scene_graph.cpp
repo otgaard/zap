@@ -86,11 +86,23 @@ bool scene_graph_test::initialise() {
     // Setup the shared context (reuse same one until Context supports instances)
     context_ = std::make_unique<render_context>(basic_vshdr, basic_fshdr);
     render_task req{512, 256, render_task::basis_function::USER_FUNCTION};
-    req.scale.set(20.f, 20.f);
+    req.scale.set(10.f, 10.f);
+
     textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
         int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
-        return rgb888_t{128 + 127*gen.pnoise(x - ix, y - iy, z - iz, ix, iy, iz), 0, 0};
+        float value = clamp(.707f + .5f*gen.pnoise(x - ix, y - iy, z - iz, ix, iy, iz));
+        vec3b colour = lerp(value, vec3b(255, 0, 0), vec3b(255, 255, 0));
+        return rgb888_t{colour};
     }));
+
+    textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
+        float lat = TWO_PI<float>*acosf(y/10.f);
+        float lon = TWO_PI<float>*atanf(x/z);
+        int ilat = maths::floor(lat), ilon = maths::floor(lon);
+        bool parity = ((ilat+1)+ilon)%2 == 0;
+        return rgb888_t{parity ? vec3b{255,0,0} : vec3b{0,0,255}};
+    }));
+
     context_->add_texture(&textures_.back());
     if(!context_->initialise()) {
         LOG_ERR("Failed to initialise render_context");
@@ -116,7 +128,7 @@ void scene_graph_test::on_resize(int width, int height) {
 
 void scene_graph_test::update(double t, float dt) {
     static float inc = 0.f;
-    visuals_[0].rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, float(PI)/2));
+    visuals_[0].rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2));
     inc += dt;
     gl_error_check();
 }
