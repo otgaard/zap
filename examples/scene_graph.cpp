@@ -77,7 +77,7 @@ protected:
     std::vector<sampler> samplers_;
 };
 
-bool scene_graph_test::initialise() {
+bool scene_graph_test::initialise(){
     clear(0.f, 0.f, 0.f, 0.f);
 
     if(!gen_.initialise() || !rndr_.initialise()) {
@@ -86,7 +86,7 @@ bool scene_graph_test::initialise() {
     }
 
     // Setup the shared context (reuse same one until Context supports instances)
-    context_ = std::make_unique<render_context>(basic_vshdr, basic_fshdr);
+    context_ = std::unique_ptr<render_context>(new render_context{basic_vshdr, basic_fshdr});
     render_task req{256, 128, render_task::basis_function::USER_FUNCTION};
     req.mipmaps = true;
 

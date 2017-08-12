@@ -101,7 +101,6 @@ public:
         assert(idx < int(parameters_.size()) && "Invalid parameter specified");
         assert(unit < int(textures_.size()) && "No texture specified for requested unit");
 
-        using pt = engine::parameter_type;
         auto& parm = parameters_[idx];
         int offset = offsets_[idx];
         if(parm.is_sampler()) {

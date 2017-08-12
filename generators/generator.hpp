@@ -219,7 +219,7 @@ engine::texture generator::render_cylindrical(const render_task& req, Fnc&& fnc)
         float y = inv_y * r;
         for(int c = 0; c != req.width; ++c) {
             float theta = inv_x * c;
-            float x = radius * std::cosf(theta), z = radius * std::sinf(theta);
+            float x = radius * cosf(theta), z = radius * sinf(theta);
             image(c,r) = fnc(x, y, z, *this);
         }
     }

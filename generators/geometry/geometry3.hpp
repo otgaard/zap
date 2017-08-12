@@ -22,8 +22,6 @@ namespace zap { namespace generators {
         using vec2f = zap::maths::vec2f;
         using vec3f = zap::maths::vec3f;
 
-        using primitive_type = primitive_type;
-
         constexpr static primitive_type primitive = Primitive;
 
         template <typename IndexT>
@@ -485,20 +483,20 @@ namespace zap { namespace generators {
         std::vector<uint16_t> indices(index_count);
 
         // Calculate the first coords once & copy
-        for(size_t t = 0; t != slicesp1; ++t) {
+        for(int t = 0; t != slicesp1; ++t) {
             const auto theta = (t%slices)*dt, ctheta = std::cos(theta), stheta = std::sin(theta);
             vertices[t].position.set(radius*ctheta, radius*stheta, hh);
             inside ? vertices[t].normal.set(-ctheta, -stheta, 0) : vertices[t].normal.set(ctheta, stheta, 0);
             vertices[t].texcoord1.set(t/float(slices), 0.f);
         }
 
-        for(size_t h = 1, h_end = stacksp1; h != h_end; ++h) {
+        for(int h = 1, h_end = stacksp1; h != h_end; ++h) {
             const auto v_offset = h*slicesp1;
             const auto i_offset = (h-1)*(2*slicesp1 + 1);
             const auto hgt = hh - h*dh;
             const auto v = h/float(stacks);
             std::copy(vertices.begin(), vertices.begin()+slicesp1, vertices.begin()+v_offset);
-            for(size_t t = 0; t != slicesp1; ++t) {
+            for(int t = 0; t != slicesp1; ++t) {
                 const auto idx = v_offset+t;
                 vertices[idx].position.z = hgt;
                 vertices[idx].texcoord1.y = v;
