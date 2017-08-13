@@ -355,7 +355,7 @@ target_link_libraries(frustum zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS
 add_executable(noises examples/noises.cpp)
 target_link_libraries(noises zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
-add_executable(scene_graph examples/scene_graph.cpp)
+add_executable(scene_graph examples/old_scene_graph.cpp)
 target_link_libraries(scene_graph zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 if(APPLE)

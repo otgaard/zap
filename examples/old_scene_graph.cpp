@@ -27,6 +27,7 @@
 #include <generators/textures/planar.hpp>
 #include <renderer/colour.hpp>
 #include <engine/state_stack.hpp>
+#include <renderer/renderer.hpp>
 
 const char* const basic_vshdr = GLSL(
         uniform mat4 PVM;
@@ -190,10 +191,13 @@ protected:
     quad output_;   // The final output (the blend shader)
 
     state_stack stack;
+    zap::renderer::renderer rndr_;
 };
 
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
+
+    rndr_.initialise();
 
     if(!vbuf1_.allocate() || !ibuf1_.allocate() || !mesh1_.allocate()) {
         LOG_ERR("Failed to initialise vbuf or mesh");
@@ -306,7 +310,7 @@ bool scene_graph_test::initialise() {
     samp2_.set_wrap_r(tex_wrap::TW_CLAMP_TO_EDGE);
     samp2_.release(0);
 
-    auto skybox = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_skybox();
+    auto skybox = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_skybox<float>();
     if(!skybox_mesh_.allocate() || !skybox_vbuf_.allocate() || !skybox_ibuf_.allocate()) {
         LOG_ERR("Error building skybox");
         return false;
@@ -345,8 +349,8 @@ bool scene_graph_test::initialise() {
 
     stack.initialise();
 
-    render_state new_state(true);
-    new_state.get_blend_state()->blend_enabled = false;
+    render_state new_state(true, true);
+    new_state.get_blend_state()->enabled = false;
     new_state.get_blend_state()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_ALPHA;
     new_state.get_blend_state()->dst_mode = render_state::blend_state::dst_blend_mode::DBM_DST_ALPHA;
 
@@ -385,12 +389,12 @@ void scene_graph_test::draw_scene() {
     fbuffer1_.bind();
     clear(0.f, 0.f, 0.f, 0.f);
     mesh1_.bind();
-    context_.bind();
+    context_.bind(rndr_);
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
-                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
     context_.set_parameter("colour[0]", red_colour_table);
@@ -399,14 +403,14 @@ void scene_graph_test::draw_scene() {
     // High frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(+0.f, 0.f, -4.f)
-                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
     context_.set_parameter("colour[0]", blue_colour_table);
     mesh1_.draw();
 
     fbuffer1_.release();
-    context_.release();
+    context_.release(rndr_);
     mesh1_.release();
 
     // Horizontal Pass
@@ -436,15 +440,15 @@ void scene_graph_test::draw_scene() {
     fbuffer2_.bind();
 
     skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
-    skybox_.draw();
+    skybox_.draw(rndr_);
 
     mesh1_.bind();
-    context_.bind();
+    context_.bind(rndr_);
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
-                                    * make_rotation(vec3f{1.f, 0.f, 0.f},  PI/2)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f},  PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
     context_.set_parameter("colour[0]", red_colour_table);
@@ -453,13 +457,13 @@ void scene_graph_test::draw_scene() {
     // High frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(+0.f, 0.f, -4.f)
-                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI/2)
+                                    * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
     context_.set_parameter("colour[0]", blue_colour_table);
     mesh1_.draw();
 
-    context_.release();
+    context_.release(rndr_);
     mesh1_.release();
 
     fbuffer2_.release();

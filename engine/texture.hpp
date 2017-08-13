@@ -48,15 +48,39 @@ public:
     bool copy(size_t col, size_t row, size_t width, size_t height, int level, bool update_mipmaps, pixel_format format,
         pixel_datatype datatype, const char* data=nullptr);
 
-    // Test Function
-    template <typename Pixel>
-    bool initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps=false);
-    bool initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
-                    const void* data=nullptr);
+    bool initialise(texture_type type, int width, int height, int depth, pixel_format format,
+                    pixel_datatype datatype, bool mipmaps, const char* data=nullptr);
+
+
     template <typename PixelT>
-    bool initialise(const pixel_buffer<PixelT>& pixbuf, bool generate_mipmaps=false);
+    bool initialise(size_t width, size_t height, const std::vector<PixelT>& buffer, bool generate_mipmaps=false) {
+        return initialise(texture_type::TT_TEX2D, width, height, 1, pixel_type<PixelT>::format,
+                          pixel_type<PixelT>::datatype, generate_mipmaps, reinterpret_cast<const char*>(buffer.data()));
+    }
+
     template <typename PixelT>
-    bool initialise(const pixmap<PixelT>& pmap, bool generate_mipmaps=false);
+    bool initialise(const pixel_buffer<PixelT>& pixbuf, bool generate_mipmaps=false) {
+        texture_type type;
+        if(pixbuf.depth() > 1) type = texture_type::TT_TEX3D;
+        else if(pixbuf.height() > 1) type = texture_type::TT_TEX2D;
+        else type = texture_type::TT_TEX1D;
+        pixbuf.bind();
+        auto err = initialise(type, pixbuf.width(), pixbuf.height(), pixbuf.depth(), pixel_type<PixelT>::format,
+            pixel_type<PixelT>::datatype, generate_mipmaps, nullptr);
+        pixbuf.release();
+        release();
+        return err;
+    }
+
+    template <typename PixelT>
+    bool initialise(const pixmap<PixelT>& pmap, bool generate_mipmaps=false) {
+        texture_type type;
+        if(pmap.depth() > 1) type = texture_type::TT_TEX3D;
+        else if(pmap.height() > 1) type = texture_type::TT_TEX2D;
+        else type = texture_type::TT_TEX1D;
+        return initialise(type, pmap.width(), pmap.height(), pmap.depth(), pixel_type<PixelT>::format,
+                          pixel_type<PixelT>::datatype, generate_mipmaps, reinterpret_cast<const char*>(pmap.data()));
+    }
 
     template <typename PixelT>
     bool copy(const pixel_buffer<PixelT>& pixbuf, size_t col, size_t row, size_t width, size_t height,

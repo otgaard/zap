@@ -74,11 +74,11 @@ public:
 
     bool initialise();
     bool initialise(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
-        bool mipmaps, bool depthstencil);
+                    bool mipmaps, bool depthstencil);
     template <typename PixelT>
     bool initialise(size_t target_count, size_t width, size_t height, bool mipmaps, bool depthstencil) {
         return initialise(target_count, width, height, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype,
-            mipmaps, depthstencil);
+            PixelT::bytesize, mipmaps, depthstencil);
     }
     bool is_initialised() const { return attachments_.size() > 0; }
 
@@ -101,8 +101,11 @@ protected:
 };
 
 inline framebuffer::framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
-        bool mipmaps, bool depthstencil) : target_count_(target_count), width_(width), height_(height), pix_format_(format),
-        pix_dtype_(datatype), mipmaps_(mipmaps), depthstencil_(depthstencil) {
+                                bool mipmaps, bool depthstencil) :
+                                      target_count_(target_count), width_(width),
+                                      height_(height), pix_format_(format),
+                                      pix_dtype_(datatype), mipmaps_(mipmaps),
+                                      depthstencil_(depthstencil) {
 }
 
 

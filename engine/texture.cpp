@@ -4,6 +4,55 @@
 
 /* TODO: Implement correct type handling for pixel formats */
 
+int pixel_size(zap::engine::pixel_format format, zap::engine::pixel_datatype datatype) {
+    using namespace zap::engine;
+    int base, channels;
+
+    // Packed types can't be calculated like the below
+    if(datatype == pixel_datatype::PD_UNSIGNED_BYTE_3_3_2) return 1;
+    else if(datatype == pixel_datatype::PD_UNSIGNED_INT_24_8) return 4;
+
+    switch(datatype) {
+        case pixel_datatype::PD_UNSIGNED_BYTE:
+        case pixel_datatype::PD_DN_UNSIGNED_BYTE:
+            base = 1; break;
+        case pixel_datatype::PD_FLOAT:
+        case pixel_datatype::PD_UNSIGNED_INT:
+            base = 4; break;
+        default:
+            base = 0; break;
+    }
+
+    assert(base != 0 && "Unknown base type for Pixel");
+
+    switch(format) {
+        case pixel_format::PF_RED:
+        case pixel_format::PF_RED_INTEGER:
+        case pixel_format::PF_DEPTH_COMPONENT:
+            channels = 1; break;
+        case pixel_format::PF_RG:
+        case pixel_format::PF_RG_INTEGER:
+        case pixel_format::PF_DEPTH_STENCIL:
+            channels = 2; break;
+        case pixel_format::PF_RGB:
+        case pixel_format::PF_BGR:
+        case pixel_format::PF_RGB_INTEGER:
+        case pixel_format::PF_BGR_INTEGER:
+            channels = 3; break;
+        case pixel_format::PF_RGBA:
+        case pixel_format::PF_BGRA:
+        case pixel_format::PF_RGBA_INTEGER:
+        case pixel_format::PF_BGRA_INTEGER:
+            channels = 4; break;
+        default:
+            channels = 0; break;
+    }
+
+    return base * channels;
+
+    assert(channels != 0 && "Unknown channels in Pixel");
+}
+
 zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap::engine::pixel_datatype datatype) {
     using namespace zap::engine; using namespace gl;
     if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) return gl_type(format);
@@ -25,7 +74,7 @@ zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap
 }
 
 /* TODO: Fix all this code and build a proper set of reflection structures to automate binding. */
-
+/*
 template <typename Pixel>
 bool zap::engine::texture::initialise(size_t width, size_t height, const std::vector<Pixel>& buffer, bool generate_mipmaps) {
     using namespace gl;
@@ -153,6 +202,7 @@ namespace zap { namespace engine {
     template bool texture::initialise<rgb32f_t>(const pixel_buffer<rgb32f_t>& pixbuf, bool generate_mipmaps);
     template bool texture::initialise<rgba32f_t>(const pixel_buffer<rgba32f_t>& pixbuf, bool generate_mipmaps);
 }}
+*/
 
 using namespace zap::engine;
 using namespace zap::engine::gl;
@@ -196,33 +246,50 @@ bool texture::is_bound() const {
     return id_ == (resource_t)bound;
 }
 
-bool texture::initialise(texture_type type, size_t width, size_t height, pixel_format format, pixel_datatype datatype, const void* data) {
+bool texture::initialise(texture_type type, int width, int height, int depth, pixel_format format,
+        pixel_datatype datatype, bool generate_mipmaps, const char* data) {
     using namespace gl;
-
-    type_ = type;
-    auto gltype = gl_type(type);
 
     bind();
     initialise_default();
 
-    // TODO: Fix texture alignment (let float use 4 for now)
+    const int px_size = pixel_size(format, datatype);
+
+    const auto gl_format =  gl_type(format);
+    const auto gl_datatype = gl_type(datatype);
+
     int pixel_alignment = 0;
-    if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) {
+    if(px_size % 4 != 0) {
         glGetIntegerv(GL_UNPACK_ALIGNMENT, &pixel_alignment);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 
     const auto internal_fmt = gl_internal_format(format, datatype);
-    const auto gl_format = gl_type(format);
-    const auto gl_datatype = gl_type(datatype);
+    if(type_ == texture_type::TT_TEX1D) {
+        glTexImage1D(GL_TEXTURE_1D, 0, internal_fmt, width, 0, gl_format, gl_datatype, data);
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_1D);
+    } else if(type_ == texture_type::TT_TEX2D) {
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, width, height, 0, gl_format, gl_datatype, data);
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+    } else if(type_ == texture_type::TT_TEX3D) {
+        glTexImage3D(GL_TEXTURE_3D, 0, internal_fmt, width, height, depth, 0, gl_format, gl_datatype, data);
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_3D);
+    } else if(type_ == texture_type::TT_CUBE_MAP) {
+        assert(depth == 6 && "Cube Map must consist of six 2D textures stored in depth");
+        const int offset = width * height * px_size;
+        for(int i = 0; i != 6; ++i) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, internal_fmt, width, height, 0,
+                         gl_format, gl_datatype, data+(i*offset));
+            gl_error_check();
+        }
 
-    if(type_ == texture_type::TT_TEX1D) glTexImage1D(gltype, 0, internal_fmt, width, 0, gl_format, gl_datatype, data);
-    else if(type_ == texture_type::TT_TEX2D) glTexImage2D(gltype, 0, internal_fmt, width, height, 0, gl_format, gl_datatype, data);
+        if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    }
 
-    w_ = width; h_ = height; d_ = 1;
+    w_ = width; h_ = height; d_ = depth;
 
     release();
-    if(pixel_alignment) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
+    if(pixel_alignment != 0) glPixelStorei(GL_UNPACK_ALIGNMENT, pixel_alignment);
     return !gl_error_check();
 }
 

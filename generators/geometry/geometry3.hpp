@@ -69,7 +69,7 @@ namespace zap { namespace generators {
     geometry3<VertexT, primitive_type::PT_TRIANGLES>::make_skybox(const vec3<T>& dims) {
         static_assert(std::is_signed<T>::value, "Skybox dimensions must be signed type");
 
-        const auto hdims = dims/2;
+        const auto hdims = dims/T(2);
         assert(hdims.x > T(0) && "Invalid dimensions set for skybox position");
 
         std::vector<VertexT> vertices(8);

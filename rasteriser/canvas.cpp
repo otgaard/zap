@@ -50,7 +50,7 @@ void canvas::update(texture& tex) {
     auto w = max_.x - min_.x, h = max_.y - min_.y;
     if(w > 0 && h > 0) {
         if(tex.width() != width() || tex.height() != height()) {
-            tex.initialise(texture_type::TT_TEX2D,width(),height(),pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE);
+            tex.initialise(texture_type::TT_TEX2D,width(),height(),1,pixel_format::PF_RGB, pixel_datatype::PD_UNSIGNED_BYTE,false);
         }
 
         if(w == width() && h == height()) {

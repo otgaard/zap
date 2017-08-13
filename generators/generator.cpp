@@ -133,10 +133,10 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
     }
 
     s.prn_tex.allocate();
-    s.prn_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, pixel_format::PF_RED_INTEGER, pixel_datatype::PD_DN_UNSIGNED_BYTE, s.prn_table);
+    s.prn_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, 1, pixel_format::PF_RED_INTEGER, pixel_datatype::PD_DN_UNSIGNED_BYTE, false, (char*)s.prn_table);
 
     s.grad1_tex.allocate();
-    s.grad1_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, pixel_format::PF_RED, pixel_datatype::PD_FLOAT, s.grad1_table);
+    s.grad1_tex.initialise(texture_type::TT_TEX1D, RND_TBL, 1, 1, pixel_format::PF_RED, pixel_datatype::PD_FLOAT, false, (char*)s.grad1_table);
 
     s.quad.get_program()->bind();
     s.quad.get_program()->bind_texture_unit("perm", 0);
