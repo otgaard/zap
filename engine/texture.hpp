@@ -61,9 +61,10 @@ public:
     template <typename PixelT>
     bool initialise(const pixel_buffer<PixelT>& pixbuf, bool generate_mipmaps=false) {
         texture_type type;
-        if(pixbuf.depth() > 1) type = texture_type::TT_TEX3D;
+        if(pixbuf.depth() == 6)      type = texture_type::TT_CUBE_MAP;
+        else if(pixbuf.depth() > 1)  type = texture_type::TT_TEX3D;
         else if(pixbuf.height() > 1) type = texture_type::TT_TEX2D;
-        else type = texture_type::TT_TEX1D;
+        else                         type = texture_type::TT_TEX1D;
         pixbuf.bind();
         auto err = initialise(type, pixbuf.width(), pixbuf.height(), pixbuf.depth(), pixel_type<PixelT>::format,
             pixel_type<PixelT>::datatype, generate_mipmaps, nullptr);
@@ -75,9 +76,10 @@ public:
     template <typename PixelT>
     bool initialise(const pixmap<PixelT>& pmap, bool generate_mipmaps=false) {
         texture_type type;
-        if(pmap.depth() > 1) type = texture_type::TT_TEX3D;
+        if(pmap.depth() == 6)      type = texture_type::TT_CUBE_MAP;
+        else if(pmap.depth() > 1)  type = texture_type::TT_TEX3D;
         else if(pmap.height() > 1) type = texture_type::TT_TEX2D;
-        else type = texture_type::TT_TEX1D;
+        else                       type = texture_type::TT_TEX1D;
         return initialise(type, pmap.width(), pmap.height(), pmap.depth(), pixel_type<PixelT>::format,
                           pixel_type<PixelT>::datatype, generate_mipmaps, reinterpret_cast<const char*>(pmap.data()));
     }

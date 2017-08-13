@@ -249,6 +249,7 @@ bool texture::is_bound() const {
 bool texture::initialise(texture_type type, int width, int height, int depth, pixel_format format,
         pixel_datatype datatype, bool generate_mipmaps, const char* data) {
     using namespace gl;
+    type_ = type;
 
     bind();
     initialise_default();

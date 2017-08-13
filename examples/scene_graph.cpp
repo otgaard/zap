@@ -66,9 +66,9 @@ public:
 
 protected:
     camera cam_;
+    generator gen_;
     std::vector<visual_t> visuals_;
     zap::renderer::renderer rndr_;
-    generator gen_;
     std::vector<std::unique_ptr<mesh_base>> meshes_;
     std::unique_ptr<render_context> context_;
     std::vector<texture> textures_;
@@ -78,7 +78,7 @@ protected:
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
 
-    if(!gen_.initialise() || !rndr_.initialise()) {
+    if(!gen_.initialise()) {
         LOG_ERR("Failed to initialise generator or renderer");
         return false;
     }
