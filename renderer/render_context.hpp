@@ -61,9 +61,14 @@ public:
     explicit render_context(program* prog) : program_{prog} { }
     render_context(const std::string& vshdr, const std::string& fshdr) : program_{new program{vshdr, fshdr}}, owns_program_(true) { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
+    render_context(const render_context&) = delete; // for now
+    render_context(render_context&&) = delete;
     ~render_context() {
         if(owns_program_) delete program_;
     }
+
+    render_context& operator=(const render_context&) = delete;
+    render_context& operator=(render_context&&) = delete;
 
     bool is_bound() const { return is_bound_; }
 

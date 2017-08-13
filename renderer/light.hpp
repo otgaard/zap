@@ -2,10 +2,22 @@
 #ifndef ZAP_LIGHT_HPP
 #define ZAP_LIGHT_HPP
 
+#include <maths/algebra.hpp>
+#include <engine/uniform_buffer.hpp>
 
-class light {
+namespace zap { namespace renderer {
+    using light_dir_basic = engine::uniform_block<
 
-};
+    >;
 
+    struct light_base {
+
+    };
+
+    template <typename BlockT>
+    struct light {
+
+    };
+}}
 
 #endif //ZAP_LIGHT_HPP

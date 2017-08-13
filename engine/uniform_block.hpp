@@ -35,6 +35,20 @@ enum class ublock_attribute : size_t {
     UA_CAM_VIEW_TO_WORLD,
     UA_CAM_PROJECTION,
     UA_CAM_PROJ_VIEW,
+    UA_LIGHT_TYPE,              // 0 - dir, 1 - point, 2 - spot
+    UA_LIGHT_EMISSIVE,
+    UA_LIGHT_AMBIENT,
+    UA_LIGHT_DIFFUSE,
+    UA_LIGHT_SPECULAR,
+    UA_LIGHT_ATTENUATION,       // [Kc, Kl, Kq, ?]
+    UA_LIGHT_INTENSITY,
+    UA_LIGHT_ANGLE,
+    UA_LIGHT_COS_ANGLE,
+    UA_LIGHT_SIN_ANGLE,
+    UA_LIGHT_EXPONENT,
+    UA_LIGHT_TRANSFORM,
+    UA_PROJECTOR,
+    UA_SCALE_BIAS,
     UA_MODEL_MATRIX,            // Transforms will bind here
     UA_MVP_MATRIX,
     UA_MV_MATRIX,
@@ -59,6 +73,20 @@ namespace core {
     MAKE_PODFIELD(cam_view_to_world, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_VIEW_TO_WORLD)
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
     MAKE_PODFIELD(cam_proj_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJ_VIEW)
+    MAKE_PODFIELD(light_type, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_TYPE)
+    MAKE_PODFIELD(light_emissive, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EMISSIVE)
+    MAKE_PODFIELD(light_ambient, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_AMBIENT)
+    MAKE_PODFIELD(light_diffuse, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIFFUSE)
+    MAKE_PODFIELD(light_specular, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_SPECULAR)
+    MAKE_PODFIELD(light_attenuation, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_ATTENUATION)
+    MAKE_PODFIELD(light_intensity, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_INTENSITY)
+    MAKE_PODFIELD(light_angle, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_ANGLE)
+    MAKE_PODFIELD(light_cos_angle, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_COS_ANGLE)
+    MAKE_PODFIELD(light_sin_angle, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_SIN_ANGLE)
+    MAKE_PODFIELD(light_exponent, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EXPONENT)
+    MAKE_PODFIELD(light_transform, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_TRANSFORM)
+    MAKE_PODFIELD(projector, engine::ublock_attribute, engine::ublock_attribute::UA_PROJECTOR)
+    MAKE_PODFIELD(scale_bias, engine::ublock_attribute, engine::ublock_attribute::UA_SCALE_BIAS)
     MAKE_PODFIELD(model_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MODEL_MATRIX)
     MAKE_PODFIELD(mvp_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MVP_MATRIX)
     MAKE_PODFIELD(mv_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MV_MATRIX)

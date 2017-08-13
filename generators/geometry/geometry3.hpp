@@ -514,6 +514,47 @@ namespace zap { namespace generators {
 
         return std::make_tuple(vertices, indices);
     }
+
+    ////////////////////////////////////////////
+    // PT_TRIANGLE_FAN
+
+    template <typename VertexT>
+    struct geometry3<VertexT, primitive_type::PT_TRIANGLE_FAN> : public geometry_traits<VertexT, primitive_type::PT_TRIANGLE_FAN> {
+        template <typename T> using vec2 = zap::maths::vec2<T>;
+        template <typename T> using vec3 = zap::maths::vec3<T>;
+        using vec2f = zap::maths::vec2f;
+        using vec3f = zap::maths::vec3f;
+
+        static std::vector<VertexT>
+        make_quad(float width, float height);
+    };
+
+    template <typename VertexT>
+    std::vector<VertexT> geometry3<VertexT, primitive_type::PT_TRIANGLE_FAN>::make_quad(float width, float height) {
+        const auto hwidth = width/2.f, hheight = height/2.f;
+        const auto normal = vec3f{0.f, 0.f, 1.f};
+        const auto normal_idx = VertexT::find(engine::attribute_type::AT_NORMAL);
+        const auto texcoord_idx = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
+        std::vector<VertexT> quad(4);
+
+        quad[0].position.set(-hwidth, -hheight, 0.f);
+        if(normal_idx != INVALID_IDX) quad[0].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[0].set(texcoord_idx, vec2f{0.f, 0.f});
+
+        quad[1].position.set(+hwidth, -hheight, 0.f);
+        if(normal_idx != INVALID_IDX) quad[1].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[1].set(texcoord_idx, vec2f{1.f, 0.f});
+
+        quad[2].position.set(+hwidth, +hheight, 0.f);
+        if(normal_idx != INVALID_IDX) quad[2].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[2].set(texcoord_idx, vec2f{1.f, 1.f});
+
+        quad[3].position.set(-hwidth, +hheight, 0.f);
+        if(normal_idx != INVALID_IDX) quad[3].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[3].set(texcoord_idx, vec2f{0.f, 1.f});
+
+        return quad;
+    }
 }}
 
 #endif //ZAP_GEOMETRY3_HPP

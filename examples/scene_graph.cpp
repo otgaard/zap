@@ -31,17 +31,15 @@ using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
 using p3n3t2_geo3_tri = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>;
 using p3n3t2_geo3_ts = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_STRIP>;
+using p3n3t2_geo3_tf = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_FAN>;
 
 const char* const basic_vshdr = GLSL(
     uniform mat4 PVM;
     in vec3 position;
-    in vec3 normal;
     in vec2 texcoord1;
     out vec2 tex2;
-    out vec3 tex3;
     void main() {
         tex2 = texcoord1;
-        tex3 = normal;
         gl_Position = PVM * vec4(position, 1.);
     }
 );
@@ -77,7 +75,7 @@ protected:
     std::vector<sampler> samplers_;
 };
 
-bool scene_graph_test::initialise(){
+bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
 
     if(!gen_.initialise() || !rndr_.initialise()) {
@@ -87,6 +85,8 @@ bool scene_graph_test::initialise(){
 
     // Setup the shared context (reuse same one until Context supports instances)
     context_ = std::unique_ptr<render_context>(new render_context{basic_vshdr, basic_fshdr});
+
+    // Create some textures
     render_task req{256, 128, render_task::basis_function::USER_FUNCTION};
     req.mipmaps = true;
 
@@ -115,6 +115,13 @@ bool scene_graph_test::initialise(){
         return rgb888_t{colour};
     }));
 
+    req.width = 512; req.height = 512;
+    req.scale.set(1.f, 1.f);
+    textures_.emplace_back(gen_.render_planar(req, [](float x, float y, generator& gen) {
+        int ix = maths::floor(100*x), iy = maths::floor(100*y);
+        return r8_t{ ((ix+1)+iy) % 2 ? 0 : 255 };
+    }));
+
     samplers_.emplace_back();
     samplers_[0].allocate();
     samplers_[0].initialise();
@@ -129,26 +136,33 @@ bool scene_graph_test::initialise(){
         return false;
     }
 
+    auto quad_mesh = p3n3t2_geo3_tf::make_mesh(p3n3t2_geo3_tf::make_quad(200.f, 200.f));
+    visual_t quad{quad_mesh.get(), context_.get()};
+    meshes_.emplace_back(std::move(quad_mesh));
+
+    quad.rotate(make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f));
+    visuals_.push_back(quad);
+
     auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere<float,uint32_t>(30, 60, 1.f, false));
     visual_t sphere{sphere_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(sphere_mesh));
 
-    sphere.translate(vec3f{-2.f, 1.2f, -3.f});
+    sphere.translate(vec3f{-7.f, 4.f, -14.f});
     visuals_.push_back(sphere);
-    sphere.translate(vec3f{+0.f, 1.2f, -3.f});
+    sphere.translate(vec3f{+0.f, 4.f, -14.f});
     visuals_.push_back(sphere);
-    sphere.translate(vec3f{+2.f, 1.2f, -3.f});
+    sphere.translate(vec3f{+7.f, 4.f, -14.f});
     visuals_.push_back(sphere);
 
-    auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 2.f, 1.f, false));
+    auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 1.f, .5f, false));
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(cylinder_mesh));
 
-    cylinder.translate(vec3f{-2.f, -1.2f, -3.f});
+    cylinder.translate(vec3f{-3.f, 1.f, -2.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+0.f, -1.2f, -3.f});
+    cylinder.translate(vec3f{+0.f, 1.f, -2.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+2.f, -1.2f, -3.f});
+    cylinder.translate(vec3f{+3.f, 1.f, -2.f});
     visuals_.push_back(cylinder);
 
     gl_error_check();
@@ -157,8 +171,8 @@ bool scene_graph_test::initialise(){
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{0.f, 0.f, 5.f});
-    cam_.look_at(vec3f{0.f, 0.f, 0.f});
+    cam_.world_pos(vec3f{0.f, 2.f, 10.f});
+    cam_.look_at(vec3f{0.f, 0.f, -100.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     gl_error_check();
 }
@@ -166,13 +180,13 @@ void scene_graph_test::on_resize(int width, int height) {
 void scene_graph_test::update(double t, float dt) {
     static float inc = 0.f;
     auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2);
-    for(auto& v : visuals_) v.rotate(rot);
+    for(int i = 1; i != 7; ++i) visuals_[i].rotate(rot);
     inc += dt;
     gl_error_check();
 }
 
 void scene_graph_test::draw() {
-    for(int i = 0; i != 6; ++i) {
+    for(int i = 0; i != 7; ++i) {
         context_->set_parameter("PVM", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
         context_->set_texture_unit("diffuse_tex", i%3);
         visuals_[i].draw(rndr_);

@@ -92,6 +92,7 @@ namespace zap { namespace scene_graph {
         model_transform_(rhs.model_transform_),
         model_bound_(rhs.model_bound_),
         culling_(rhs.culling_) {
+        cache_state_.set(spatial_state::SS_TRANS_INVALID, spatial_state::SS_BOUND_INVALID);
     }
 
     template <typename TransformT, typename GeoT>
@@ -100,6 +101,7 @@ namespace zap { namespace scene_graph {
         model_transform_(rhs.model_transform_),
         model_bound_(rhs.model_bound_),
         culling_(rhs.culling_) {
+        cache_state_.set(spatial_state::SS_TRANS_INVALID, spatial_state::SS_BOUND_INVALID);
         LOG_WARN("Moving node elements is not entirely implemented.");
     }
 
@@ -110,6 +112,7 @@ namespace zap { namespace scene_graph {
             model_transform_ = rhs.model_transform_;
             model_bound_ = rhs.model_bound_;
             culling_ = rhs.culling_;
+            cache_state_.set(spatial_state::SS_TRANS_INVALID, spatial_state::SS_BOUND_INVALID);
         }
         return *this;
     }
@@ -122,6 +125,7 @@ namespace zap { namespace scene_graph {
             model_transform_ = rhs.model_transform_;
             model_bound_ = rhs.model_bound_;
             culling_ = rhs.culling_;
+            cache_state_.set(spatial_state::SS_TRANS_INVALID, spatial_state::SS_BOUND_INVALID);
         }
         return *this;
     }

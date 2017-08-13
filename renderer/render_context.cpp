@@ -18,6 +18,7 @@ void render_context::bind(zap::renderer::renderer& rndr) const {
         if(samplers_.empty()) {
             for(size_t i = 0; i != textures_.size(); ++i) textures_[i]->bind(i);
         } else {
+            // TODO: Bind only the required textures
             for(size_t i = 0; i != textures_.size(); ++i) {
                 textures_[i]->bind(i);
                 samplers_[i]->bind(i);
