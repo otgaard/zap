@@ -36,6 +36,7 @@ enum class ublock_attribute : size_t {
     UA_CAM_PROJECTION,
     UA_CAM_PROJ_VIEW,
     UA_LIGHT_TYPE,              // 0 - dir, 1 - point, 2 - spot
+    UA_LIGHT_DIR,
     UA_LIGHT_EMISSIVE,
     UA_LIGHT_AMBIENT,
     UA_LIGHT_DIFFUSE,
@@ -74,6 +75,7 @@ namespace core {
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
     MAKE_PODFIELD(cam_proj_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJ_VIEW)
     MAKE_PODFIELD(light_type, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_TYPE)
+    MAKE_PODFIELD(light_dir, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIR)
     MAKE_PODFIELD(light_emissive, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EMISSIVE)
     MAKE_PODFIELD(light_ambient, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_AMBIENT)
     MAKE_PODFIELD(light_diffuse, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIFFUSE)

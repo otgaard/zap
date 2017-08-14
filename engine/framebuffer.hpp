@@ -78,7 +78,7 @@ public:
     template <typename PixelT>
     bool initialise(size_t target_count, size_t width, size_t height, bool mipmaps, bool depthstencil) {
         return initialise(target_count, width, height, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype,
-            PixelT::bytesize, mipmaps, depthstencil);
+                          mipmaps, depthstencil);
     }
     bool is_initialised() const { return attachments_.size() > 0; }
 

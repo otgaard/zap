@@ -7,7 +7,9 @@
 
 namespace zap { namespace renderer {
     using light_dir_basic = engine::uniform_block<
-
+        core::light_dir<maths::vec4f>,
+        core::light_intensity<float>,
+        core::light_exponent<float>
     >;
 
     struct light_base {
@@ -15,9 +17,12 @@ namespace zap { namespace renderer {
     };
 
     template <typename BlockT>
-    struct light {
-
+    struct light : public light_base {
+        using block_t = BlockT;
+        block_t block;
     };
+
+    using dir_light = light<light_dir_basic>;
 }}
 
 #endif //ZAP_LIGHT_HPP
