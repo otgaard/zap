@@ -7,9 +7,12 @@
 
 namespace zap { namespace renderer {
     using light_dir_basic = engine::uniform_block<
-        core::light_dir<maths::vec4f>,
-        core::light_intensity<float>,
-        core::light_exponent<float>
+        core::light_dir<maths::vec3f>,
+        core::light_intensity<float>
+    >;
+
+    using lights_dir = engine::uniform_block<
+            core::lights_dir<std::array<light_dir_basic, 10>>
     >;
 
     struct light_base {
@@ -23,6 +26,7 @@ namespace zap { namespace renderer {
     };
 
     using dir_light = light<light_dir_basic>;
+
 }}
 
 #endif //ZAP_LIGHT_HPP

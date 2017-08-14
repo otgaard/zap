@@ -35,10 +35,13 @@ using p3n3t2_geo3_ts = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TR
 using p3n3t2_geo3_tf = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_FAN>;
 
 const char* const basic_vshdr = GLSL(
-    layout (std140) uniform light_dir_basic {
-        vec4 light_dir;
+    struct light_type {
+        vec3 light_dir;
         float light_intensity;
-        float light_exponent;
+    };
+
+    layout (std140) uniform the_lights {
+        light_type lights[10];
     };
 
     uniform mat4 PVM;
@@ -50,7 +53,7 @@ const char* const basic_vshdr = GLSL(
     out vec2 tex2;
     void main() {
         vec3 N = normal_matrix * normal;
-        lD = light_intensity * max(dot(N, light_dir.xyz), 0.);
+        lD = lights[1].light_intensity * max(dot(N, lights[1].light_dir), 0.);
         tex2 = texcoord1;
         gl_Position = PVM * vec4(position, 1.);
     }
@@ -87,7 +90,8 @@ protected:
     std::vector<texture> textures_;
     std::vector<sampler> samplers_;
     std::vector<dir_light> dir_lights_;
-    uniform_buffer<dir_light::block_t> lights_;
+    lights_dir the_lights_;
+    uniform_buffer<lights_dir> lights_;
 };
 
 bool scene_graph_test::initialise() {
@@ -162,20 +166,13 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    // Add lights
-    dir_lights_.emplace_back();
-    dir_lights_[0].block.light_dir.set(0.f, 10.f, -10.f, 0.f);
-    dir_lights_[0].block.light_dir.normalise();
-    dir_lights_[0].block.light_intensity = 1.f;
-    dir_lights_[0].block.light_exponent = .5f;
-
-    LOG(dir_lights_[0].block.light_dir, sizeof(dir_lights_[0].block));
+    LOG("SIZEOF: the_lights:", sizeof(the_lights_));
 
     lights_.allocate();
     lights_.bind();
-    lights_.initialise(dir_lights_[0].block);
+    lights_.initialise(the_lights_);
     lights_.release();
-    context_->add_uniform_buffer("light_dir_basic", &lights_);
+    context_->add_uniform_buffer("the_lights", &lights_);
 
     auto quad_mesh = p3n3t2_geo3_tf::make_mesh(p3n3t2_geo3_tf::make_quad(200.f, 200.f));
     visual_t quad{quad_mesh.get(), context_.get()};
@@ -218,12 +215,13 @@ void scene_graph_test::on_resize(int width, int height) {
 
     const vec3f lD = normalise(vec3f{0.f, 10.f, 10.f});
     const vec3f vD = cam_.world_to_view() * lD;
-    dir_lights_[0].block.light_dir.set(vD.x, vD.y, vD.z, 0.);
+    the_lights_.lights_dir[0].light_dir.set(0.f, 0.f, 0.f);
+    the_lights_.lights_dir[0].light_intensity = 0;
+    the_lights_.lights_dir[1].light_dir.set(vD.x, vD.y, vD.z);
+    the_lights_.lights_dir[1].light_intensity = .4f;
     lights_.bind();
-    lights_.initialise(dir_lights_[0].block);
+    lights_.initialise(the_lights_);
     lights_.release();
-
-
     gl_error_check();
 }
 

@@ -11,8 +11,18 @@ namespace zap { namespace engine {
 
 // NOTE:  Prefer memory aligned on a 16-byte boundary.
 
+#if defined(_WIN32)
+#define ALIGN __declspec(align(16))
+#else
+#define ALIGN __attribute__((aligned(16)))
+#endif
+
 template <typename... Args>
-struct uniform_block : core::pod<Args...> {
+#if defined(_WIN32)
+ALIGN struct uniform_block : core::pod<Args...> {
+#else
+struct ALIGN uniform_block : core::pod<Args...> {
+#endif
     using pod_t = core::pod<Args...>;
     constexpr static size_t size = sizeof...(Args);
     constexpr static size_t bytesize() { return sizeof(uniform_block); }
@@ -35,6 +45,10 @@ enum class ublock_attribute : size_t {
     UA_CAM_VIEW_TO_WORLD,
     UA_CAM_PROJECTION,
     UA_CAM_PROJ_VIEW,
+    UA_LIGHTS,                  // General light arrays
+    UA_LIGHTS_DIR,              // Directional light arrays
+    UA_LIGHTS_POINT,            // Point light arrays
+    UA_LIGHTS_SPOT,             // Spotlight arrays
     UA_LIGHT_TYPE,              // 0 - dir, 1 - point, 2 - spot
     UA_LIGHT_DIR,
     UA_LIGHT_EMISSIVE,
@@ -74,6 +88,10 @@ namespace core {
     MAKE_PODFIELD(cam_view_to_world, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_VIEW_TO_WORLD)
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
     MAKE_PODFIELD(cam_proj_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJ_VIEW)
+    MAKE_PODFIELD(lights, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHTS)
+    MAKE_PODFIELD(lights_dir, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHTS_DIR)
+    MAKE_PODFIELD(lights_point, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHTS_POINT)
+    MAKE_PODFIELD(lights_spot, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHTS_SPOT)
     MAKE_PODFIELD(light_type, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_TYPE)
     MAKE_PODFIELD(light_dir, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIR)
     MAKE_PODFIELD(light_emissive, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EMISSIVE)
