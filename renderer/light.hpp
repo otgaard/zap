@@ -12,7 +12,7 @@ namespace zap { namespace renderer {
         core::light_intensity<float>
     >;
 
-    using light_pos_basic = engine::uniform_block<
+    using light_point_basic = engine::uniform_block<
         core::light_position<maths::vec4f>,
         core::light_attenuation<maths::vec4f>,
         core::light_colour<maths::vec3f>,
@@ -26,8 +26,8 @@ namespace zap { namespace renderer {
     >;
 
     template<size_t N>
-    using lights_pos = engine::uniform_block<
-        core::lights_point<std::array<light_pos_basic, N>>,
+    using lights_point = engine::uniform_block<
+        core::lights_point<std::array<light_point_basic, N>>,
         core::light_count<int>
     >;
 

@@ -36,26 +36,47 @@ using p3n3t2_geo3_tf = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TR
 
 const char* const basic_vshdr = GLSL(
     layout(std140) struct dir_light {
-        vec4 light_dir;
-        vec4 light_colour;
-        float light_intensity;
+        vec4 dir;
+        vec4 colour;
+        float intensity;
     };
 
-    layout(std140) struct pos_light {
-        vec4 light_position;
-        vec4 light_attenuation;
-        vec3 light_colour;
-        float light_intensity;
+    layout(std140) struct point_light {
+        vec4 position;
+        vec4 attenuation;
+        vec3 colour;
+        float intensity;
     };
 
-    layout(std140)
+    struct light_sample {
+        vec3 L;
+        float i;
+    };
 
     layout (std140) uniform the_lights {
-        dir_light lights[10];
+        point_light lights[10];
         int light_count;
     };
 
+    /*
+    light_sample compute_dir_light(int idx) {
+        light_sample l;
+        l.L = lights[idx].dir.xyz;
+        l.i = lights[idx].dir.intensity;
+        return l;
+    }
+    */
+    light_sample compute_point_light(vec3 P, int idx) {
+        light_sample l;
+        vec3 D =  lights[idx].position.xyz - P;
+        float d = length(D);
+        l.L = D/d;
+        l.i = lights[idx].intensity/dot(vec3(1., d, d*d), lights[idx].attenuation.xyz);
+        return l;
+    }
+
     uniform mat4 PVM;
+    uniform mat4 mv_matrix;
     uniform mat3 normal_matrix;
 
     in vec3 position;
@@ -69,9 +90,11 @@ const char* const basic_vshdr = GLSL(
         vec3 N = normal_matrix * normal;
 
         colour = vec3(0., 0., 0.);
+        vec3 P = (mv_matrix * vec4(position, 1.)).xyz;
         for(int i = 0; i != light_count; ++i) {
-            float lD = lights[i].light_intensity * max(dot(N, lights[i].light_dir.xyz), 0.);
-            colour += lD * lights[i].light_colour.xyz;
+            light_sample l = compute_point_light(P, i);
+            float lD = l.i * max(dot(N, l.L), 0.);
+            colour += lD * lights[i].colour.rgb;
         }
         tex2 = texcoord1;
         gl_Position = PVM * vec4(position, 1.);
@@ -109,8 +132,8 @@ protected:
     std::unique_ptr<render_context> context_;
     std::vector<texture> textures_;
     std::vector<sampler> samplers_;
-    lights_dir<10> the_lights_;
-    uniform_buffer<lights_dir<10>> lights_;
+    lights_point<10> the_lights_;
+    uniform_buffer<lights_point<10>> lights_;
 };
 
 bool scene_graph_test::initialise() {
@@ -142,7 +165,7 @@ bool scene_graph_test::initialise() {
         float lon = .4f*TWO_PI<float>*std::atan(x/z);
         int ilat = maths::floor(lat), ilon = maths::floor(lon);
         bool parity = ((ilat+1)+ilon)%2 == 0;
-        return rgb888_t{parity ? vec3b{255, 0, 0} : vec3b{0, 0, 255}};
+        return rgb888_t{parity ? vec3b{0, 0, 0} : vec3b{255, 255, 255}};
     }));
 
     req.scale.set(20.f, 20.f);
@@ -232,23 +255,26 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.look_at(vec3f{0.f, 0.f, -100.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
 
-    vec3f lD = normalise(vec3f{-10.f, 10.f, 10.f});
-    vec3f vD = cam_.world_to_view() * lD;
-    the_lights_.lights_dir[0].light_dir.set(vD.x, vD.y, vD.z, 0.f);
-    the_lights_.lights_dir[0].light_intensity = .33f;
-    the_lights_.lights_dir[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
+    vec3f lP = vec3f{-10.f, 10.f, 10.f};
+    vec3f vP = cam_.world_to_view() * lP;
+    the_lights_.lights_point[0].light_position.set(vP.x, vP.y, vP.z, 0.f);
+    the_lights_.lights_point[0].light_attenuation.set(1.f, .0f, 0.f, 0.f);
+    the_lights_.lights_point[0].light_colour.set(1.f, 0.f, 0.f);
+    the_lights_.lights_point[0].light_intensity = .33f;
 
-    lD = normalise(vec3f{0.f, 10.f, 10.f});
-    vD = cam_.world_to_view() * lD;
-    the_lights_.lights_dir[1].light_dir.set(vD.x, vD.y, vD.z, 0.f);
-    the_lights_.lights_dir[1].light_intensity = .33f;
-    the_lights_.lights_dir[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
+    lP = vec3f{0.f, 10.f, 10.f};
+    vP = cam_.world_to_view() * lP;
+    the_lights_.lights_point[1].light_position.set(vP.x, vP.y, vP.z, 0.f);
+    the_lights_.lights_point[1].light_attenuation.set(1.f, .0f, 0.f, 0.f);
+    the_lights_.lights_point[1].light_colour.set(0.f, 1.f, 0.f);
+    the_lights_.lights_point[1].light_intensity = .33f;
 
-    lD = normalise(vec3f{+10.f, 10.f, 10.f});
-    vD = cam_.world_to_view() * lD;
-    the_lights_.lights_dir[2].light_dir.set(vD.x, vD.y, vD.z, 0.f);
-    the_lights_.lights_dir[2].light_intensity = .33f;
-    the_lights_.lights_dir[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
+    lP = vec3f{+10.f, 10.f, 10.f};
+    vP = cam_.world_to_view() * lP;
+    the_lights_.lights_point[2].light_position.set(vP.x, vP.y, vP.z, 0.f);
+    the_lights_.lights_point[2].light_attenuation.set(1.f, .0f, 0.f, 0.f);
+    the_lights_.lights_point[2].light_colour.set(0.f, 0.f, 1.f);
+    the_lights_.lights_point[2].light_intensity = .33f;
 
     the_lights_.light_count = 3;
 
@@ -269,15 +295,15 @@ void scene_graph_test::update(double t, float dt) {
     static float timer = 0.f;
     static int counter = 0;
     timer += dt;
-    if((counter != 7 && timer > 1.f) || (counter == 7 && timer > 5.f)) {
+    if((counter != 7 && timer > 3.f) || (counter == 7 && timer > 6.f)) {
         counter++;
         if(counter == 8) counter = 1;
-        if(counter & 0x01) the_lights_.lights_dir[0].light_intensity = .33f;
-        else               the_lights_.lights_dir[0].light_intensity = 0.f;
-        if(counter & 0x02) the_lights_.lights_dir[1].light_intensity = .33f;
-        else               the_lights_.lights_dir[1].light_intensity = 0.f;
-        if(counter & 0x04) the_lights_.lights_dir[2].light_intensity = .33f;
-        else               the_lights_.lights_dir[2].light_intensity = 0.f;
+        if(counter & 0x01) the_lights_.lights_point[0].light_intensity = .75f;
+        else               the_lights_.lights_point[0].light_intensity = 0.f;
+        if(counter & 0x02) the_lights_.lights_point[1].light_intensity = .75f;
+        else               the_lights_.lights_point[1].light_intensity = 0.f;
+        if(counter & 0x04) the_lights_.lights_point[2].light_intensity = .75f;
+        else               the_lights_.lights_point[2].light_intensity = 0.f;
 
         lights_.bind();
         lights_.initialise(the_lights_);
@@ -292,7 +318,9 @@ void scene_graph_test::update(double t, float dt) {
 void scene_graph_test::draw() {
     for(int i = 0; i != 7; ++i) {
         context_->set_parameter("PVM", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
-        context_->set_parameter("normal_matrix", (cam_.world_to_view() * visuals_[i].world_transform().gl_matrix()).inverse().transpose().rotation());
+        auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
+        context_->set_parameter("mv_matrix", MV);
+        context_->set_parameter("normal_matrix", MV.inverse().transpose().rotation());
         context_->set_texture_unit("diffuse_tex", i == 0 ? 3 : (i-1)%3);
         visuals_[i].draw(rndr_);
     }
