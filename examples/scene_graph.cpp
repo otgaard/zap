@@ -235,6 +235,7 @@ bool scene_graph_test::initialise() {
     }
 
     LOG("SIZEOF: the_lights:", sizeof(the_lights_));
+    LOG("Testing:", zap::core::pod_query<0, light_spot_basic::pod_t>::type::name);
 
     lights_.allocate();
     lights_.bind();

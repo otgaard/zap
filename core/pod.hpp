@@ -27,6 +27,7 @@ struct podfield {
     using type = T;
     using id_t = ID_T;
     constexpr static id_t field_id = ID;
+    static const char* const name;
     podfield() { };
     podfield(const T& v) : value(v) { }
     podfield(const podfield& r) : value(r.value) { }
@@ -40,6 +41,7 @@ template <typename T> struct podfield<T, ID_T, ID> { \
     using type = T; \
     using id_t = ID_T; \
     constexpr static id_t field_id = ID; \
+    static const char* const name; \
     podfield() { }; \
     podfield(const T& v) : value(v) { } \
     podfield(const podfield& r) : value(r.value) { } \
@@ -50,7 +52,9 @@ template <typename T> struct podfield<T, ID_T, ID> { \
     }; \
 }; \
 template <typename T> \
-using MemberName = podfield<T, ID_T, ID>;
+using MemberName = podfield<T, ID_T, ID>; \
+template <typename T> \
+const char* const podfield<T, ID_T, ID>::name = #MemberName;
 
 /* The POD class.  This is a variadic structure that is trivially copyable. */
 

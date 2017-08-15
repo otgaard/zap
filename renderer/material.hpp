@@ -7,7 +7,10 @@
 
 namespace zap { namespace renderer {
     using material_block = engine::uniform_block<
-
+        core::material_emissive<maths::vec4f>,
+        core::material_ambient<maths::vec4f>,
+        core::material_diffuse<maths::vec4f>,
+        core::material_specular<maths::vec4f>
     >;
 
     struct material {

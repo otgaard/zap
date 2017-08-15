@@ -52,9 +52,8 @@ enum class ublock_attribute : size_t {
     UA_LIGHT_TYPE,              // 0 - dir, 1 - point, 2 - spot
     UA_LIGHT_COUNT,             // Number of lights in an array
     UA_LIGHT_POSITION,          // Point or spot light position
-    UA_LIGHT_COLOUR,            // Basic light colour
+    UA_LIGHT_COLOUR,            // Basic light colour (* ADS)
     UA_LIGHT_DIR,               // Direction for spot light
-    UA_LIGHT_EMISSIVE,          // Emissive Colour factor
     UA_LIGHT_AMBIENT,           // Ambient Light factor
     UA_LIGHT_DIFFUSE,           // Diffuse Light factor
     UA_LIGHT_SPECULAR,          // Specular Light factor
@@ -65,6 +64,11 @@ enum class ublock_attribute : size_t {
     UA_LIGHT_SIN_ANGLE,         // Sine of Angle for spot light
     UA_LIGHT_EXPONENT,          // Dropoff exponent for spot light
     UA_LIGHT_TRANSFORM,         // Light Frenet frame
+    UA_LIGHT_ADS,               // Light coefficients (ambient, diffuse, specular)
+    UA_MATERIAL_EMISSIVE,       // Emissive Colour factor
+    UA_MATERIAL_AMBIENT,        // Ambient material factor
+    UA_MATERIAL_DIFFUSE,        // Diffuse material factor
+    UA_MATERIAL_SPECULAR,       // Specular material factor
     UA_PROJECTOR,
     UA_SCALE_BIAS,
     UA_MODEL_MATRIX,            // Transforms will bind here
@@ -100,7 +104,6 @@ namespace core {
     MAKE_PODFIELD(light_position, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_POSITION)
     MAKE_PODFIELD(light_colour, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_COLOUR)
     MAKE_PODFIELD(light_dir, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIR)
-    MAKE_PODFIELD(light_emissive, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EMISSIVE)
     MAKE_PODFIELD(light_ambient, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_AMBIENT)
     MAKE_PODFIELD(light_diffuse, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIFFUSE)
     MAKE_PODFIELD(light_specular, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_SPECULAR)
@@ -111,6 +114,11 @@ namespace core {
     MAKE_PODFIELD(light_sin_angle, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_SIN_ANGLE)
     MAKE_PODFIELD(light_exponent, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EXPONENT)
     MAKE_PODFIELD(light_transform, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_TRANSFORM)
+    MAKE_PODFIELD(light_ADS, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_ADS)
+    MAKE_PODFIELD(material_emissive, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_EMISSIVE)
+    MAKE_PODFIELD(material_ambient, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_AMBIENT)
+    MAKE_PODFIELD(material_diffuse, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_DIFFUSE)
+    MAKE_PODFIELD(material_specular, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_SPECULAR)
     MAKE_PODFIELD(projector, engine::ublock_attribute, engine::ublock_attribute::UA_PROJECTOR)
     MAKE_PODFIELD(scale_bias, engine::ublock_attribute, engine::ublock_attribute::UA_SCALE_BIAS)
     MAKE_PODFIELD(model_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MODEL_MATRIX)
