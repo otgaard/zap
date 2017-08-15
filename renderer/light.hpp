@@ -19,15 +19,31 @@ namespace zap { namespace renderer {
         core::light_intensity<float>
     >;
 
+    using light_spot_basic = engine::uniform_block<
+        core::light_position<maths::vec4f>,
+        core::light_dir<maths::vec4f>,
+        core::light_attenuation<maths::vec4f>,
+        core::light_colour<maths::vec4f>,
+        core::light_cos_angle<float>,
+        core::light_exponent<float>,
+        core::light_intensity<float>
+    >;
+
     template <size_t N>
     using lights_dir = engine::uniform_block<
         core::lights_dir<std::array<light_dir_basic, N>>,
         core::light_count<int>
     >;
 
-    template<size_t N>
+    template <size_t N>
     using lights_point = engine::uniform_block<
         core::lights_point<std::array<light_point_basic, N>>,
+        core::light_count<int>
+    >;
+
+    template <size_t N>
+    using lights_spot = engine::uniform_block<
+        core::lights_spot<std::array<light_spot_basic, N>>,
         core::light_count<int>
     >;
 
