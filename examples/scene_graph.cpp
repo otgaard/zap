@@ -35,25 +35,44 @@ using p3n3t2_geo3_ts = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TR
 using p3n3t2_geo3_tf = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_FAN>;
 
 const char* const basic_vshdr = GLSL(
-    struct light_type {
-        vec3 light_dir;
+    layout(std140) struct dir_light {
+        vec4 light_dir;
+        vec4 light_colour;
         float light_intensity;
     };
 
+    layout(std140) struct pos_light {
+        vec4 light_position;
+        vec4 light_attenuation;
+        vec3 light_colour;
+        float light_intensity;
+    };
+
+    layout(std140)
+
     layout (std140) uniform the_lights {
-        light_type lights[10];
+        dir_light lights[10];
+        int light_count;
     };
 
     uniform mat4 PVM;
     uniform mat3 normal_matrix;
+
     in vec3 position;
     in vec3 normal;
     in vec2 texcoord1;
-    out float lD;
+
+    out vec3 colour;
     out vec2 tex2;
+
     void main() {
         vec3 N = normal_matrix * normal;
-        lD = lights[1].light_intensity * max(dot(N, lights[1].light_dir), 0.);
+
+        colour = vec3(0., 0., 0.);
+        for(int i = 0; i != light_count; ++i) {
+            float lD = lights[i].light_intensity * max(dot(N, lights[i].light_dir.xyz), 0.);
+            colour += lD * lights[i].light_colour.xyz;
+        }
         tex2 = texcoord1;
         gl_Position = PVM * vec4(position, 1.);
     }
@@ -62,10 +81,11 @@ const char* const basic_vshdr = GLSL(
 const char* const basic_fshdr = GLSL(
     uniform sampler2D diffuse_tex;
     in float lD;
+    in vec3 colour;
     in vec2 tex2;
     out vec4 frag_colour;
     void main() {
-        frag_colour = lD * texture(diffuse_tex, tex2);
+        frag_colour = vec4(colour * texture(diffuse_tex, tex2).rgb, 1.);
     }
 );
 
@@ -89,9 +109,8 @@ protected:
     std::unique_ptr<render_context> context_;
     std::vector<texture> textures_;
     std::vector<sampler> samplers_;
-    std::vector<dir_light> dir_lights_;
-    lights_dir the_lights_;
-    uniform_buffer<lights_dir> lights_;
+    lights_dir<10> the_lights_;
+    uniform_buffer<lights_dir<10>> lights_;
 };
 
 bool scene_graph_test::initialise() {
@@ -213,15 +232,30 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.look_at(vec3f{0.f, 0.f, -100.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
 
-    const vec3f lD = normalise(vec3f{0.f, 10.f, 10.f});
-    const vec3f vD = cam_.world_to_view() * lD;
-    the_lights_.lights_dir[0].light_dir.set(0.f, 0.f, 0.f);
-    the_lights_.lights_dir[0].light_intensity = 0;
-    the_lights_.lights_dir[1].light_dir.set(vD.x, vD.y, vD.z);
-    the_lights_.lights_dir[1].light_intensity = .4f;
+    vec3f lD = normalise(vec3f{-10.f, 10.f, 10.f});
+    vec3f vD = cam_.world_to_view() * lD;
+    the_lights_.lights_dir[0].light_dir.set(vD.x, vD.y, vD.z, 0.f);
+    the_lights_.lights_dir[0].light_intensity = .33f;
+    the_lights_.lights_dir[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
+
+    lD = normalise(vec3f{0.f, 10.f, 10.f});
+    vD = cam_.world_to_view() * lD;
+    the_lights_.lights_dir[1].light_dir.set(vD.x, vD.y, vD.z, 0.f);
+    the_lights_.lights_dir[1].light_intensity = .33f;
+    the_lights_.lights_dir[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
+
+    lD = normalise(vec3f{+10.f, 10.f, 10.f});
+    vD = cam_.world_to_view() * lD;
+    the_lights_.lights_dir[2].light_dir.set(vD.x, vD.y, vD.z, 0.f);
+    the_lights_.lights_dir[2].light_intensity = .33f;
+    the_lights_.lights_dir[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
+
+    the_lights_.light_count = 3;
+
     lights_.bind();
     lights_.initialise(the_lights_);
     lights_.release();
+
     gl_error_check();
 }
 
@@ -230,6 +264,28 @@ void scene_graph_test::update(double t, float dt) {
     auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2);
     for(int i = 1; i != 7; ++i) visuals_[i].rotate(rot);
     inc += dt;
+
+    // Cycle through the lights
+    static float timer = 0.f;
+    static int counter = 0;
+    timer += dt;
+    if((counter != 7 && timer > 1.f) || (counter == 7 && timer > 5.f)) {
+        counter++;
+        if(counter == 8) counter = 1;
+        if(counter & 0x01) the_lights_.lights_dir[0].light_intensity = .33f;
+        else               the_lights_.lights_dir[0].light_intensity = 0.f;
+        if(counter & 0x02) the_lights_.lights_dir[1].light_intensity = .33f;
+        else               the_lights_.lights_dir[1].light_intensity = 0.f;
+        if(counter & 0x04) the_lights_.lights_dir[2].light_intensity = .33f;
+        else               the_lights_.lights_dir[2].light_intensity = 0.f;
+
+        lights_.bind();
+        lights_.initialise(the_lights_);
+        lights_.release();
+
+        timer = 0.f;
+    }
+
     gl_error_check();
 }
 

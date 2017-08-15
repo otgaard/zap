@@ -15,6 +15,7 @@ public:
 
     explicit index_buffer(buffer_usage use=buffer_usage::BU_STATIC_DRAW) : buffer(use) { }
     index_buffer(const index_buffer&) = delete;
+    index_buffer(index_buffer&& rhs) noexcept : buffer(std::move(rhs)), index_count_(rhs.index_count_) { }
     virtual ~index_buffer() = default;
 
     index_buffer& operator=(const index_buffer&) = delete;

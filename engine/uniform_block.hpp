@@ -48,20 +48,23 @@ enum class ublock_attribute : size_t {
     UA_LIGHTS,                  // General light arrays
     UA_LIGHTS_DIR,              // Directional light arrays
     UA_LIGHTS_POINT,            // Point light arrays
-    UA_LIGHTS_SPOT,             // Spotlight arrays
+    UA_LIGHTS_SPOT,             // Spot light arrays
     UA_LIGHT_TYPE,              // 0 - dir, 1 - point, 2 - spot
-    UA_LIGHT_DIR,
-    UA_LIGHT_EMISSIVE,
-    UA_LIGHT_AMBIENT,
-    UA_LIGHT_DIFFUSE,
-    UA_LIGHT_SPECULAR,
-    UA_LIGHT_ATTENUATION,       // [Kc, Kl, Kq, ?]
-    UA_LIGHT_INTENSITY,
-    UA_LIGHT_ANGLE,
-    UA_LIGHT_COS_ANGLE,
-    UA_LIGHT_SIN_ANGLE,
-    UA_LIGHT_EXPONENT,
-    UA_LIGHT_TRANSFORM,
+    UA_LIGHT_COUNT,             // Number of lights in an array
+    UA_LIGHT_POSITION,          // Point or spot light position
+    UA_LIGHT_COLOUR,            // Basic light colour
+    UA_LIGHT_DIR,               // Direction for spot light
+    UA_LIGHT_EMISSIVE,          // Emissive Colour factor
+    UA_LIGHT_AMBIENT,           // Ambient Light factor
+    UA_LIGHT_DIFFUSE,           // Diffuse Light factor
+    UA_LIGHT_SPECULAR,          // Specular Light factor
+    UA_LIGHT_ATTENUATION,       // [Kc = constant, Kl = linear, Kq = quadratic]
+    UA_LIGHT_INTENSITY,         // Basic intensity
+    UA_LIGHT_ANGLE,             // Angle for spot light
+    UA_LIGHT_COS_ANGLE,         // Cosine of Angle for spot light
+    UA_LIGHT_SIN_ANGLE,         // Sine of Angle for spot light
+    UA_LIGHT_EXPONENT,          // Dropoff exponent for spot light
+    UA_LIGHT_TRANSFORM,         // Light Frenet frame
     UA_PROJECTOR,
     UA_SCALE_BIAS,
     UA_MODEL_MATRIX,            // Transforms will bind here
@@ -93,6 +96,9 @@ namespace core {
     MAKE_PODFIELD(lights_point, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHTS_POINT)
     MAKE_PODFIELD(lights_spot, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHTS_SPOT)
     MAKE_PODFIELD(light_type, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_TYPE)
+    MAKE_PODFIELD(light_count, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_COUNT)
+    MAKE_PODFIELD(light_position, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_POSITION)
+    MAKE_PODFIELD(light_colour, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_COLOUR)
     MAKE_PODFIELD(light_dir, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_DIR)
     MAKE_PODFIELD(light_emissive, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_EMISSIVE)
     MAKE_PODFIELD(light_ambient, engine::ublock_attribute, engine::ublock_attribute::UA_LIGHT_AMBIENT)

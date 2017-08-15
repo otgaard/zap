@@ -7,12 +7,28 @@
 
 namespace zap { namespace renderer {
     using light_dir_basic = engine::uniform_block<
-        core::light_dir<maths::vec3f>,
+        core::light_dir<maths::vec4f>,
+        core::light_colour<maths::vec4f>,
         core::light_intensity<float>
     >;
 
+    using light_pos_basic = engine::uniform_block<
+        core::light_position<maths::vec4f>,
+        core::light_attenuation<maths::vec4f>,
+        core::light_colour<maths::vec3f>,
+        core::light_intensity<float>
+    >;
+
+    template <size_t N>
     using lights_dir = engine::uniform_block<
-            core::lights_dir<std::array<light_dir_basic, 10>>
+        core::lights_dir<std::array<light_dir_basic, N>>,
+        core::light_count<int>
+    >;
+
+    template<size_t N>
+    using lights_pos = engine::uniform_block<
+        core::lights_point<std::array<light_pos_basic, N>>,
+        core::light_count<int>
     >;
 
     struct light_base {

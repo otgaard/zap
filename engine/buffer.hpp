@@ -11,9 +11,11 @@ namespace zap { namespace engine {
     public:
         buffer() = default;
         explicit buffer(buffer_usage usage) : usage_(usage) { }
+        buffer(const buffer&) = delete;
         buffer(buffer&& rhs) noexcept : id_(rhs.id_), usage_(rhs.usage_), size_(rhs.size_), mapped_ptr_(rhs.mapped_ptr_) { rhs.id_ = INVALID_RESOURCE; }
         virtual ~buffer();
 
+        buffer& operator=(const buffer&) = delete;
         buffer& operator=(buffer&& rhs) noexcept {
             if(this != &rhs) {
                 std::swap(id_, rhs.id_);
