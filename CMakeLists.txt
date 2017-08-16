@@ -155,7 +155,7 @@ set(ZAP_ENGINE_FILES
         engine/sampler.cpp
         renderer/render_context.cpp
         engine/state_stack.cpp
-        engine/state_stack.hpp)
+        engine/state_stack.hpp renderer/shader_builder.cpp renderer/shader_builder.hpp)
 
 set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/quad.hpp
