@@ -13,6 +13,12 @@ namespace zap { namespace renderer {
     >;
 
     // TODO: Generate these from the input uniform_block for inclusion into the shader
+    const char* const light_sample_def =
+        "struct light_sample {"
+            "vec3 L;"
+            "float i;"
+        "};";
+
     const char* const light_dir_def =
         "struct dir_light {"
            "vec4 dir;"
@@ -23,8 +29,8 @@ namespace zap { namespace renderer {
     const char* const light_dir_fnc =
     "light_sample compute_dir_light(int idx) {"
         "light_sample l;"
-        "l.L = lights[idx].dir.xyz;"
-        "l.i = lights[idx].dir.intensity;"
+        "l.L = lights_dir[idx].dir.xyz;"
+        "l.i = lights_dir[idx].intensity;"
         "return l;"
     "}";
 
@@ -46,10 +52,10 @@ namespace zap { namespace renderer {
     const char* const light_point_fnc =
         "light_sample compute_point_light(vec3 P, int idx) {"
             "light_sample l;"
-            "vec3 D =  lights[idx].position.xyz - P;"
+            "vec3 D =  lights_point[idx].position.xyz - P;"
             "float d = length(D);"
             "l.L = D/d;"
-            "l.i = lights[idx].intensity/dot(vec3(1., d, d*d), lights[idx].attenuation.xyz);"
+            "l.i = lights_point[idx].intensity/dot(vec3(1., d, d*d), lights_point[idx].attenuation.xyz);"
             "return l;"
         "}";
 
@@ -64,7 +70,7 @@ namespace zap { namespace renderer {
     >;
 
     const char* const light_spot_def =
-        "layout(std140) struct spot_light {"
+        "struct spot_light {"
             "vec4 position;"
             "vec4 dir;"
             "vec4 attentuation;"
@@ -77,12 +83,12 @@ namespace zap { namespace renderer {
     const char* const light_spot_fnc =
         "light_sample compute_spot_light(vec3 P, int idx) {"
             "light_sample l;"
-            "vec3 D = lights[idx].position.xyz - P;"
+            "vec3 D = lights_spot[idx].position.xyz - P;"
             "float d = length(D);"
             "l.L = D/d;"
-            "float ct = dot(-l.L, lights[idx].dir.xyz);"
-            "l.i = ct > lights[idx].cos_angle"
-                "? lights[idx].intensity * pow(ct, lights[idx].exponent)/dot(lights[idx].attentuation.xyz, vec3(1., d, d*d))"
+            "float ct = dot(-l.L, lights_spot[idx].dir.xyz);"
+            "l.i = ct > lights_spot[idx].cos_angle"
+                "? lights_spot[idx].intensity * pow(ct, lights_spot[idx].exponent)/dot(lights_spot[idx].attentuation.xyz, vec3(1., d, d*d))"
                 ": 0.;"
             "return l;"
         "}";

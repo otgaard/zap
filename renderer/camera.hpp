@@ -13,8 +13,8 @@ namespace zap { namespace renderer {
             core::cam_projection<maths::mat4f>,
             core::cam_proj_view<maths::mat4f>,
             core::viewport<maths::vec4i>,
-            core::eye_position<maths::vec4f>,
-            core::eye_dir<maths::vec4f>
+            core::view_position<maths::vec4f>,
+            core::view_dir<maths::vec4f>
     >;
 
     using camera_ubuffer = engine::uniform_buffer<camera_block>;

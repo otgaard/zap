@@ -52,8 +52,8 @@ void camera::update_view() {
     block_.cam_proj_view = block_.cam_projection * block_.cam_world_to_view;
     if(cam_state_.is_set(camera_state::CS_PRE_VIEW))  block_.cam_proj_view = block_.cam_proj_view * pre_view_;
     if(cam_state_.is_set(camera_state::CS_POST_VIEW)) block_.cam_proj_view = post_view_ * block_.cam_proj_view;
-    block_.eye_position = vec4f{world_pos(), 1.f};
-    block_.eye_dir = vec4f{-dir(), 0.f};
+    block_.view_position = vec4f{world_pos(), 1.f};
+    block_.view_dir = vec4f{-dir(), 0.f};
     cam_state_.set(camera_state::CS_DIRTY);
 }
 
@@ -142,7 +142,7 @@ const std::string camera::uniform_block_def(const char* const term) {
             "mat4 projection;" + term +
             "mat4 proj_view;" + term +
             "ivec4 viewport;" + term +
-            "vec4 eye_position;" + term +
-            "vec4 eye_dir;" + term +
+            "vec4 view_position;" + term +
+            "vec4 view_dir;" + term +
         "};" + term;
 }

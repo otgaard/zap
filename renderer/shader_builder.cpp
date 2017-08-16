@@ -3,4 +3,4 @@
 
 using namespace zap::renderer;
 
-const char* shader_builder::term = "";
+std::string shader_builder::term = "";

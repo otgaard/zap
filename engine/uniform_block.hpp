@@ -39,8 +39,8 @@ enum class ublock_attribute : size_t {
     UA_CAM_RIGHT,
     UA_CAM_UP,
     UA_CAM_DIR,
-    UA_EYE_POSITION,
-    UA_EYE_DIR,
+    UA_VIEW_POSITION,
+    UA_VIEW_DIR,
     UA_CAM_WORLD_TO_VIEW,
     UA_CAM_VIEW_TO_WORLD,
     UA_CAM_PROJECTION,
@@ -90,8 +90,8 @@ namespace core {
     MAKE_PODFIELD(cam_right, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_RIGHT)
     MAKE_PODFIELD(cam_up, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_UP)
     MAKE_PODFIELD(cam_dir, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_DIR)
-    MAKE_PODFIELD(eye_position, engine::ublock_attribute, engine::ublock_attribute::UA_EYE_POSITION)
-    MAKE_PODFIELD(eye_dir, engine::ublock_attribute, engine::ublock_attribute::UA_EYE_DIR)
+    MAKE_PODFIELD(view_position, engine::ublock_attribute, engine::ublock_attribute::UA_VIEW_POSITION)
+    MAKE_PODFIELD(view_dir, engine::ublock_attribute, engine::ublock_attribute::UA_VIEW_DIR)
     MAKE_PODFIELD(cam_world_to_view, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_WORLD_TO_VIEW)
     MAKE_PODFIELD(cam_view_to_world, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_VIEW_TO_WORLD)
     MAKE_PODFIELD(cam_projection, engine::ublock_attribute, engine::ublock_attribute::UA_CAM_PROJECTION)
