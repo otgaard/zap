@@ -18,6 +18,7 @@
 #include <generators/generator.hpp>
 #include <generators/geometry/geometry3.hpp>
 #include <renderer/light.hpp>
+#include <renderer/shader_builder.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -66,8 +67,9 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    // Setup the shared context (reuse same one until Context supports instances)
-    context_ = std::unique_ptr<render_context>(new render_context{basic_vshdr, basic_fshdr});
+    builder_task<> task;
+    task.method = builder_task<>::lighting_method::LM_GOURAUD;
+    context_ = shader_builder::build_basic_lights(task);
 
     // Create some textures
     render_task req{256, 128, render_task::basis_function::USER_FUNCTION};

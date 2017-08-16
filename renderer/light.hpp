@@ -105,8 +105,13 @@ namespace zap { namespace renderer {
         core::light_count<int>
     >;
 
-
-
+    template <size_t D, size_t P, size_t S>
+    using lights_block = engine::uniform_block<
+        core::lights_dir<std::array<light_dir_basic, D>>,
+        core::lights_point<std::array<light_point_basic, P>>,
+        core::lights_spot<std::array<light_spot_basic, S>>,
+        core::light_count<maths::vec4i>
+    >;
 }}
 
 #endif //ZAP_LIGHT_HPP

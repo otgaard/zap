@@ -115,8 +115,8 @@ namespace zap { namespace renderer {
 
         bool pick_ray(int x, int y, vec3f& origin, vec3f& dir) const;
 
-        const camera_block& get_ublock(bool clear=true) const { if(clear) clear_dirty(); return block_; }
-        const std::string get_ublock_def() const;
+        const camera_block& get_uniform_block(bool clear=true) const { if(clear) clear_dirty(); return block_; }
+        static const std::string uniform_block_def(const char* const term="");
 
     protected:
         enum frustum_plane {

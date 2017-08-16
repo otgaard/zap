@@ -134,15 +134,15 @@ bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
     return true;
 }
 
-const std::string camera::get_ublock_def() const {
+const std::string camera::uniform_block_def(const char* const term) {
     return
-        "layout (std140) uniform camera {"
-            "mat4 world_to_view;"
-            "mat4 view_to_world;"
-            "mat4 projection;"
-            "mat4 proj_view;"
-            "vec4 viewport;"
-            "vec3 eye_position;"
-            "vec3 eye_dir;"
-        "};";
+        std::string("layout (std140) uniform camera {") + term +
+            "mat4 world_to_view;" + term +
+            "mat4 view_to_world;" + term +
+            "mat4 projection;" + term +
+            "mat4 proj_view;" + term +
+            "ivec4 viewport;" + term +
+            "vec4 eye_position;" + term +
+            "vec4 eye_dir;" + term +
+        "};" + term;
 }

@@ -69,6 +69,7 @@ enum class ublock_attribute : size_t {
     UA_MATERIAL_AMBIENT,        // Ambient material factor
     UA_MATERIAL_DIFFUSE,        // Diffuse material factor
     UA_MATERIAL_SPECULAR,       // Specular material factor
+    UA_MATERIAL_EXPONENT,       // Specular exponent (or gloss/shininess)
     UA_PROJECTOR,
     UA_SCALE_BIAS,
     UA_MODEL_MATRIX,            // Transforms will bind here
@@ -119,6 +120,7 @@ namespace core {
     MAKE_PODFIELD(material_ambient, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_AMBIENT)
     MAKE_PODFIELD(material_diffuse, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_DIFFUSE)
     MAKE_PODFIELD(material_specular, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_SPECULAR)
+    MAKE_PODFIELD(material_exponent, engine::ublock_attribute, engine::ublock_attribute::UA_MATERIAL_EXPONENT)
     MAKE_PODFIELD(projector, engine::ublock_attribute, engine::ublock_attribute::UA_PROJECTOR)
     MAKE_PODFIELD(scale_bias, engine::ublock_attribute, engine::ublock_attribute::UA_SCALE_BIAS)
     MAKE_PODFIELD(model_matrix, engine::ublock_attribute, engine::ublock_attribute::UA_MODEL_MATRIX)
