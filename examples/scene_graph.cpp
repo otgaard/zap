@@ -202,10 +202,10 @@ void scene_graph_test::on_resize(int width, int height) {
 
     lights_block_.bind();
     if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
-        lights_block_.get()->lights_dir[0].light_dir.set(0.f, 1.f, 0.f, 0.f);
-        lights_block_.get()->lights_dir[0].light_colour.set(1.f, 1.f, 1.f, 1.f);
-        lights_block_.get()->lights_dir[0].light_ADS.set(.3f, .5f, .5f, 1.f);
-        lights_block_.get()->lights_dir[0].light_intensity = 1.f;
+        lights_block_->lights_dir[0].light_dir.set(0.f, 1.f, 0.f, 0.f);
+        lights_block_->lights_dir[0].light_colour.set(1.f, 1.f, 1.f, 1.f);
+        lights_block_->lights_dir[0].light_ADS.set(.3f, .5f, .5f, 1.f);
+        lights_block_->lights_dir[0].light_intensity = 1.f;
 
         // Distribute the point lights around the scene
         const float angle = TWO_PI<float>/10;
@@ -214,52 +214,52 @@ void scene_graph_test::on_resize(int width, int height) {
             float theta = angle * i;
             float x = 15.f*cosf(theta), z = 15.f*sinf(theta);
             vec3f vP = cam_.world_to_view() * vec3f{x, 3.f, z};
-            lights_block_.get()->lights_point[i].light_position.set(vP, 1.f);
-            lights_block_.get()->lights_point[i].light_attenuation.set(.4f, 0.f, 0.f, 0.f);
-            lights_block_.get()->lights_point[i].light_colour.set(lerp(i/10.f, colA, colB), 0.f);
-            lights_block_.get()->lights_point[i].light_ADS.set(1.f, 1.f, 1.f, 1.f);
-            lights_block_.get()->lights_point[i].light_intensity = .5f;
+            lights_block_->lights_point[i].light_position.set(vP, 1.f);
+            lights_block_->lights_point[i].light_attenuation.set(.4f, 0.f, 0.f, 0.f);
+            lights_block_->lights_point[i].light_colour.set(lerp(i/10.f, colA, colB), 0.f);
+            lights_block_->lights_point[i].light_ADS.set(1.f, 1.f, 1.f, 1.f);
+            lights_block_->lights_point[i].light_intensity = .5f;
         }
 
         vec3f lP = vec3f{-5.f, 10.f, 10.f};
         vec3f vP = cam_.world_to_view() * lP;
         vec3f d = cam_.world_to_view() * -normalise(lP);
-        lights_block_.get()->lights_spot[0].light_position.set(vP.x, vP.y, vP.z, 0.f);
-        lights_block_.get()->lights_spot[0].light_dir.set(d.x, d.y, d.z, 0.f);
-        lights_block_.get()->lights_spot[0].light_attenuation.set(.5f, .0f, 0.f, 0.f);
-        lights_block_.get()->lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
-        lights_block_.get()->lights_spot[0].light_ADS.set(.1f, .5f, .9f, 0.f);
-        lights_block_.get()->lights_spot[0].light_cos_angle = .5f;
-        lights_block_.get()->lights_spot[0].light_exponent = .5f;
-        lights_block_.get()->lights_spot[0].light_intensity = 1.f;
+        lights_block_->lights_spot[0].light_position.set(vP.x, vP.y, vP.z, 0.f);
+        lights_block_->lights_spot[0].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_->lights_spot[0].light_attenuation.set(.5f, .0f, 0.f, 0.f);
+        lights_block_->lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
+        lights_block_->lights_spot[0].light_ADS.set(.1f, .5f, .9f, 0.f);
+        lights_block_->lights_spot[0].light_cos_angle = .5f;
+        lights_block_->lights_spot[0].light_exponent = .5f;
+        lights_block_->lights_spot[0].light_intensity = 1.f;
 
         lP = vec3f{0.f, 10.f, 10.f};
         vP = cam_.world_to_view() * lP;
         d = cam_.world_to_view() * -normalise(lP);
-        lights_block_.get()->lights_spot[1].light_position.set(vP.x, vP.y, vP.z, 0.f);
-        lights_block_.get()->lights_spot[1].light_dir.set(d.x, d.y, d.z, 0.f);
-        lights_block_.get()->lights_spot[1].light_attenuation.set(.5f, .0f, 0.f, 0.f);
-        lights_block_.get()->lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
-        lights_block_.get()->lights_spot[1].light_ADS.set(.1f, .5f, .9f, 0.f);
-        lights_block_.get()->lights_spot[1].light_cos_angle = .5f;
-        lights_block_.get()->lights_spot[1].light_exponent = .5f;
-        lights_block_.get()->lights_spot[1].light_intensity = 1.f;
+        lights_block_->lights_spot[1].light_position.set(vP.x, vP.y, vP.z, 0.f);
+        lights_block_->lights_spot[1].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_->lights_spot[1].light_attenuation.set(.5f, .0f, 0.f, 0.f);
+        lights_block_->lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
+        lights_block_->lights_spot[1].light_ADS.set(.1f, .5f, .9f, 0.f);
+        lights_block_->lights_spot[1].light_cos_angle = .5f;
+        lights_block_->lights_spot[1].light_exponent = .5f;
+        lights_block_->lights_spot[1].light_intensity = 1.f;
 
         lP = vec3f{+5.f, 10.f, 10.f};
         vP = cam_.world_to_view() * lP;
         d = cam_.world_to_view() * -normalise(lP);      // [0,0,0] - lP
-        lights_block_.get()->lights_spot[2].light_position.set(vP.x, vP.y, vP.z, 0.f);
-        lights_block_.get()->lights_spot[2].light_dir.set(d.x, d.y, d.z, 0.f);
-        lights_block_.get()->lights_spot[2].light_attenuation.set(.5f, .0f, 0.f, 0.f);
-        lights_block_.get()->lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
-        lights_block_.get()->lights_spot[2].light_ADS.set(.1f, .5f, .9f, 0.f);
-        lights_block_.get()->lights_spot[2].light_cos_angle = .5f;
-        lights_block_.get()->lights_spot[2].light_exponent = .5f;
-        lights_block_.get()->lights_spot[2].light_intensity = 1.f;
+        lights_block_->lights_spot[2].light_position.set(vP.x, vP.y, vP.z, 0.f);
+        lights_block_->lights_spot[2].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_->lights_spot[2].light_attenuation.set(.5f, .0f, 0.f, 0.f);
+        lights_block_->lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
+        lights_block_->lights_spot[2].light_ADS.set(.1f, .5f, .9f, 0.f);
+        lights_block_->lights_spot[2].light_cos_angle = .5f;
+        lights_block_->lights_spot[2].light_exponent = .5f;
+        lights_block_->lights_spot[2].light_intensity = 1.f;
 
-        lights_block_.get()->light_count.x = 1;
-        lights_block_.get()->light_count.y = 10;
-        lights_block_.get()->light_count.z = 3;
+        lights_block_->light_count.x = 1;
+        lights_block_->light_count.y = 10;
+        lights_block_->light_count.z = 3;
         lights_block_.unmap();
     }
     lights_block_.release();
@@ -282,15 +282,15 @@ void scene_graph_test::update(double t, float dt) {
         if(counter == 10) counter = 0;
         lights_block_.bind();
         if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
-            if(counter & 0x01) lights_block_.get()->lights_spot[0].light_intensity = .75f;
-            else lights_block_.get()->lights_spot[0].light_intensity = 0.f;
-            if(counter & 0x02) lights_block_.get()->lights_spot[1].light_intensity = .75f;
-            else lights_block_.get()->lights_spot[1].light_intensity = 0.f;
-            if(counter & 0x04) lights_block_.get()->lights_spot[2].light_intensity = .75f;
-            else lights_block_.get()->lights_spot[2].light_intensity = 0.f;
+            if(counter & 0x01) lights_block_->lights_spot[0].light_intensity = .75f;
+            else lights_block_->lights_spot[0].light_intensity = 0.f;
+            if(counter & 0x02) lights_block_->lights_spot[1].light_intensity = .75f;
+            else lights_block_->lights_spot[1].light_intensity = 0.f;
+            if(counter & 0x04) lights_block_->lights_spot[2].light_intensity = .75f;
+            else lights_block_->lights_spot[2].light_intensity = 0.f;
 
             for(int i = 0; i != 10; ++i) {
-                lights_block_.get()->lights_point[i].light_intensity = i == counter ? 1.f : 0.f;
+                lights_block_->lights_point[i].light_intensity = i == counter ? 1.f : 0.f;
             }
 
             lights_block_.unmap();
