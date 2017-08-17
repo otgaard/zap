@@ -56,7 +56,7 @@ protected:
     std::vector<texture> textures_;
     std::vector<sampler> samplers_;
     uniform_buffer<camera_block> camera_block_;
-    uniform_buffer<material_block> material_block_;
+    material_block material_;
     uniform_buffer<builder_task<>::lights_block_t> lights_block_;
 };
 
@@ -139,18 +139,17 @@ bool scene_graph_test::initialise() {
     lights_block_.release();
     context_->add_uniform_buffer("lights", &lights_block_);
 
-    material_block mat;
-    mat.material_emissive.set(0.f, 0.f, 0.f, 0.f);
-    mat.material_ambient.set(0.1f, 0.f, 0.f, 0.f);
-    mat.material_diffuse.set(.4f, .4f, .4f, 1.f);
-    mat.material_specular.set(.7f, .7f, .7f, 0.f);
-    mat.material_exponent = 50.f;
+    material_.material_emissive.set(0.f, 0.f, 0.f, 0.f);
+    material_.material_ambient.set(0.1f, 0.f, 0.f, 0.f);
+    material_.material_diffuse.set(.4f, .4f, .4f, 1.f);
+    material_.material_specular.set(.7f, .7f, .7f, 0.f);
+    material_.material_exponent = 50.f;
 
-    material_block_.allocate();
-    material_block_.bind();
-    material_block_.initialise(mat);
-    material_block_.release();
-    context_->add_uniform_buffer("material", &material_block_);
+    context_->set_parameter("mat.material_emissive", material_.material_emissive);
+    context_->set_parameter("mat.material_ambient", material_.material_ambient);
+    context_->set_parameter("mat.material_diffuse", material_.material_diffuse);
+    context_->set_parameter("mat.material_specular", material_.material_specular);
+    context_->set_parameter("mat.material_exponent", material_.material_exponent);
 
     camera_block_.allocate();
     camera_block_.bind();
@@ -201,7 +200,7 @@ void scene_graph_test::on_resize(int width, int height) {
     camera_block_.release();
 
     lights_block_.bind();
-    if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
+    if(lights_block_.map(buffer_access::BA_WRITE_ONLY) != nullptr) {
         lights_block_->lights_dir[0].light_dir.set(0.f, 1.f, 0.f, 0.f);
         lights_block_->lights_dir[0].light_colour.set(1.f, 1.f, 1.f, 1.f);
         lights_block_->lights_dir[0].light_ADS.set(.3f, .5f, .5f, 1.f);
@@ -230,7 +229,7 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
         lights_block_->lights_spot[0].light_ADS.set(.1f, .5f, .9f, 0.f);
         lights_block_->lights_spot[0].light_cos_angle = .5f;
-        lights_block_->lights_spot[0].light_exponent = .5f;
+        lights_block_->lights_spot[0].light_exponent = .8f;
         lights_block_->lights_spot[0].light_intensity = 1.f;
 
         lP = vec3f{0.f, 10.f, 10.f};
@@ -242,7 +241,7 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
         lights_block_->lights_spot[1].light_ADS.set(.1f, .5f, .9f, 0.f);
         lights_block_->lights_spot[1].light_cos_angle = .5f;
-        lights_block_->lights_spot[1].light_exponent = .5f;
+        lights_block_->lights_spot[1].light_exponent = .8f;
         lights_block_->lights_spot[1].light_intensity = 1.f;
 
         lP = vec3f{+5.f, 10.f, 10.f};
@@ -254,12 +253,12 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
         lights_block_->lights_spot[2].light_ADS.set(.1f, .5f, .9f, 0.f);
         lights_block_->lights_spot[2].light_cos_angle = .5f;
-        lights_block_->lights_spot[2].light_exponent = .5f;
+        lights_block_->lights_spot[2].light_exponent = .8f;
         lights_block_->lights_spot[2].light_intensity = 1.f;
 
-        lights_block_->light_count.x = 1;
-        lights_block_->light_count.y = 10;
-        lights_block_->light_count.z = 3;
+        lights_block_->light_count[0] = 1;
+        lights_block_->light_count[1] = 10;
+        lights_block_->light_count[2] = 3;
         lights_block_.unmap();
     }
     lights_block_.release();
@@ -277,20 +276,21 @@ void scene_graph_test::update(double t, float dt) {
     static float timer = 0.f;
     static int counter = 0;
     timer += dt;
-    if((counter != 7 && timer > 3.f) || (counter == 7 && timer > 6.f)) {
+    if((counter != 10 && timer > 3.f) || (counter == 10 && timer > 6.f)) {
         counter++;
-        if(counter == 10) counter = 0;
+        if(counter == 11) counter = 0;
         lights_block_.bind();
         if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
-            if(counter & 0x01) lights_block_->lights_spot[0].light_intensity = .75f;
+            if(counter & 0x01) lights_block_->lights_spot[0].light_intensity = .33f;
             else lights_block_->lights_spot[0].light_intensity = 0.f;
-            if(counter & 0x02) lights_block_->lights_spot[1].light_intensity = .75f;
+            if(counter & 0x02) lights_block_->lights_spot[1].light_intensity = .33f;
             else lights_block_->lights_spot[1].light_intensity = 0.f;
-            if(counter & 0x04) lights_block_->lights_spot[2].light_intensity = .75f;
+            if(counter & 0x04) lights_block_->lights_spot[2].light_intensity = .33f;
             else lights_block_->lights_spot[2].light_intensity = 0.f;
 
             for(int i = 0; i != 10; ++i) {
-                lights_block_->lights_point[i].light_intensity = i == counter ? 1.f : 0.f;
+                if(counter == 10) lights_block_->lights_point[i].light_intensity = .2f;
+                else lights_block_->lights_point[i].light_intensity = i == counter ? .4f : 0.f;
             }
 
             lights_block_.unmap();

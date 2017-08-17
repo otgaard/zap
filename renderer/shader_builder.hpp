@@ -141,36 +141,36 @@ protected:
         std::string block;
         block += "vec3 N = normal_matrix * normal;" + term;
         block += "vec3 P = (mv_matrix * vec4(position, 1.)).xyz;" + term;
-        block += "vec3 accum = material_emissive.rgb;" + term;
+        block += "vec3 accum = mat.material_emissive.rgb;" + term;
 
         if(D > 0) {
             block += "for(int i = 0; i != light_count.x; ++i) {" + term;
             block += "light_sample sample = compute_dir_light(i);" + term;
-            block += "accum += lights_dir[i].colour.rgb * lights_dir[i].ADS.x * compute_Ma(sample, material_ambient.rgb)" + term;
-            block += "       + lights_dir[i].colour.rgb * lights_dir[i].ADS.y * compute_Md(sample, N, material_diffuse.rgb)" + term;
-            block += "       + lights_dir[i].colour.rgb * lights_dir[i].ADS.z * compute_Ms(sample, N, P, material_specular.rgb);" + term;
+            block += "accum += compute_Ma(sample, lights_dir[i].colour.rgb * lights_dir[i].ADS.x)" + term;
+            block += "       + compute_Md(sample, N, lights_dir[i].colour.rgb * lights_dir[i].ADS.y)" + term;
+            block += "       + compute_Ms(sample, N, P, lights_dir[i].colour.rgb * lights_dir[i].ADS.z);" + term;
             block += "}" + term;
         }
 
         if(P > 0) {
             block += "for(int i = 0; i != light_count.y; ++i) {" + term;
             block += "light_sample sample = compute_point_light(P, i);" + term;
-            block += "accum += lights_point[i].colour.rgb * lights_point[i].ADS.x * compute_Ma(sample, material_ambient.rgb)" + term;
-            block += "       + lights_point[i].colour.rgb * lights_point[i].ADS.y * compute_Md(sample, N, material_diffuse.rgb)" + term;
-            block += "       + lights_point[i].colour.rgb * lights_point[i].ADS.z * compute_Ms(sample, N, P, material_specular.rgb);" + term;
+            block += "accum += compute_Ma(sample, lights_point[i].colour.rgb * lights_point[i].ADS.x)" + term;
+            block += "       + compute_Md(sample, N, lights_point[i].colour.rgb * lights_point[i].ADS.y)" + term;
+            block += "       + compute_Ms(sample, N, P, lights_point[i].colour.rgb * lights_point[i].ADS.z);" + term;
             block += "}" + term;
         }
 
         if(S > 0) {
             block += "for(int i = 0; i != light_count.z; ++i) {" + term;
             block += "light_sample sample = compute_spot_light(P, i);" + term;
-            block += "accum += lights_spot[i].colour.rgb * lights_spot[i].ADS.x * compute_Ma(sample, material_ambient.rgb)" + term;
-            block += "       + lights_spot[i].colour.rgb * lights_spot[i].ADS.y * compute_Md(sample, N, material_diffuse.rgb)" + term;
-            block += "       + lights_spot[i].colour.rgb * lights_spot[i].ADS.z * compute_Ms(sample, N, P, material_specular.rgb);" + term;
+            block += "accum += compute_Ma(sample, lights_spot[i].colour.rgb * lights_spot[i].ADS.x)" + term;
+            block += "       + compute_Md(sample, N, lights_spot[i].colour.rgb * lights_spot[i].ADS.y)" + term;
+            block += "       + compute_Ms(sample, N, P, lights_spot[i].colour.rgb * lights_spot[i].ADS.z);" + term;
             block += "}" + term;
         }
 
-        block += "colour = vec4(accum, material_diffuse.a);" + term;
+        block += "colour = vec4(accum, mat.material_diffuse.a);" + term;
         return block;
     }
 
