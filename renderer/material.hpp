@@ -41,7 +41,7 @@ namespace zap { namespace renderer {
 
     const char* const Ms_component_fnc =
         "vec3 compute_Ms(light_sample sample, vec3 N, vec3 P, vec3 Ls) {"
-            "vec3 V = -normalize(P);"
+            "vec3 V = normalize(-P);"
             "vec3 H = normalize(V + sample.L);"
             "return sample.i * Ls * mat.material_specular.rgb"
                 "* pow(max(dot(N, H), 0.), mat.material_exponent)"
