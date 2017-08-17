@@ -214,7 +214,7 @@ void scene_graph_test::on_resize(int width, int height) {
             float x = 15.f*cosf(theta), z = 15.f*sinf(theta);
             vec3f vP = cam_.world_to_view() * vec3f{x, 3.f, z};
             lights_block_->lights_point[i].light_position.set(vP, 1.f);
-            lights_block_->lights_point[i].light_attenuation.set(.4f, 0.f, 0.f, 0.f);
+            lights_block_->lights_point[i].light_attenuation.set(.4f, 0.05f, 0.f, 0.f);
             lights_block_->lights_point[i].light_colour.set(lerp(i/10.f, colA, colB), 0.f);
             lights_block_->lights_point[i].light_ADS.set(1.f, 1.f, 1.f, 1.f);
             lights_block_->lights_point[i].light_intensity = .5f;
@@ -308,7 +308,7 @@ void scene_graph_test::draw() {
         auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
         context_->set_parameter("mv_matrix", MV);
         context_->set_parameter("normal_matrix", MV.inverse().transpose().rotation());
-        //context_->set_texture_unit("diffuse_tex", i == 0 ? 3 : (i-1)%3);
+        context_->set_texture_unit("diffuse_map", i == 0 ? 3 : (i-1)%3);
         visuals_[i].draw(rndr_);
     }
     gl_error_check();

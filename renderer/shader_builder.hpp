@@ -53,6 +53,11 @@ struct builder_task {
                bump_map != texture_type::TT_NONE;
     }
 
+    bool has_diffuse_map() const { return diffuse_map != texture_type::TT_NONE; }
+    bool has_gloss_map() const { return gloss_map != texture_type::TT_NONE; }
+    bool has_glow_map() const { return glow_map != texture_type::TT_NONE; }
+    bool has_bump_map() const { return bump_map != texture_type::TT_NONE; }
+
     bool use_camera_block = true;       // Default to using the camera uniform block
 };
 
@@ -62,6 +67,8 @@ const std::string GLSL_CLOSE_MAIN = "}";
 
 class shader_builder {
 public:
+    using texture_type = engine::texture_type;
+
     // Builds a basic light + material shader
     template <size_t D, size_t P, size_t S>
     static std::unique_ptr<render_context> build_basic_lights(const builder_task<D, P, S>& req) {
@@ -223,20 +230,52 @@ protected:
         return block;
     }
 
+    // TODO: Need type for sampler
+    static std::string sampler_type(texture_type type) {
+        switch(type) {
+            case texture_type::TT_TEX1D: return "sampler1D";
+            case texture_type::TT_TEX2D: return "sampler2D";
+            case texture_type::TT_TEX3D: return "sampler3D";
+            case texture_type::TT_CUBE_MAP: return "samplerCube";
+            default: assert(false && "Unsupported texture type");
+        }
+        return "";
+    }
+
+    template <size_t D, size_t P, size_t S>
+    static std::string build_diffuse_texturing(const builder_task<D, P, S>& req) {
+
+    }
+
     template <size_t D, size_t P, size_t S>
     static std::string build_fragment_shader(const builder_task<D, P, S>& req) {
         std::string block = GLSL_HEADER;
         if(req.is_gouraud()) {
             block += "in vec4 colour;" + term;
+            if(req.has_textures()) {
+                block += "in vec2 tex2;" + term;
+            }
         } else if(req.is_phong()) {
             block += build_camera_block(req);
         } else {
             assert(!req.is_brdf() && "Not yet supported");
         }
 
+        if(req.has_textures()) {
+            if(req.has_diffuse_map())  block += "uniform " + sampler_type(req.diffuse_map) + " diffuse_map;" + term;
+            if(req.has_gloss_map()) block += "uniform " + sampler_type(req.gloss_map) + " gloss_map;" + term;
+            if(req.has_glow_map())  block += "uniform " + sampler_type(req.glow_map) + " glow_map;" + term;
+            if(req.has_bump_map())  block += "uniform " + sampler_type(req.bump_map) + " bump_map;" + term;
+        }
+
         block += "out vec4 frag_colour;" + term;
         block += GLSL_OPEN_MAIN + term;
-        block += "frag_colour = colour;" + term;
+
+        if(req.is_gouraud()) {
+            if(!req.has_textures()) block += "frag_colour = colour;" + term;
+            else if(req.has_diffuse_map()) block += "frag_colour = texture(diffuse_map, tex2) * colour;" + term;
+        }
+
         block += GLSL_CLOSE_MAIN + term;
 
         return block;
