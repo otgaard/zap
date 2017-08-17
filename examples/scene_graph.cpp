@@ -69,7 +69,7 @@ bool scene_graph_test::initialise() {
     }
 
     builder_task<> task;
-    task.method = builder_task<>::lighting_method::LM_PHONG;
+    task.method = builder_task<>::lighting_method::LM_FLAT;
     context_ = shader_builder::build_basic_lights(task);
 
     // Create some textures
@@ -192,7 +192,7 @@ bool scene_graph_test::initialise() {
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{0.f, 20.f, 30.f});
+    cam_.world_pos(vec3f{0.f, 2.f, 10.f});
     cam_.look_at(vec3f{0.f, 0.f, -10.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     camera_block_.bind();
@@ -204,7 +204,7 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_dir[0].light_dir.set(0.f, 1.f, 0.f, 0.f);
         lights_block_->lights_dir[0].light_colour.set(1.f, 1.f, 1.f, 1.f);
         lights_block_->lights_dir[0].light_ADS.set(.3f, .5f, .5f, 1.f);
-        lights_block_->lights_dir[0].light_intensity = 0.f;
+        lights_block_->lights_dir[0].light_intensity = .4f;
 
         // Distribute the point lights around the scene
         const float angle = TWO_PI<float>/10;
@@ -268,36 +268,44 @@ void scene_graph_test::on_resize(int width, int height) {
 
 void scene_graph_test::update(double t, float dt) {
     static float inc = 0.f;
-    auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2);
+    auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float> / 2);
     for(int i = 1; i != 7; ++i) visuals_[i].rotate(rot);
     inc += dt;
 
     // Cycle through the lights
     static float timer = 0.f;
+    static float timer2 = 0.f;
     static int counter = 0;
+    static int counter2 = 0;
     timer += dt;
-    if((counter != 10 && timer > 3.f) || (counter == 10 && timer > 6.f)) {
-        counter++;
-        if(counter == 11) counter = 0;
-        lights_block_.bind();
-        if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
+    timer2 += dt;
+    lights_block_.bind();
+    if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
+        if((counter != 8 && timer > 5.f) || (counter == 8 && timer > 10.f)) {
+            counter++;
+            if(counter == 8) counter = 0;
             if(counter & 0x01) lights_block_->lights_spot[0].light_intensity = 1.f;
             else lights_block_->lights_spot[0].light_intensity = 0.f;
             if(counter & 0x02) lights_block_->lights_spot[1].light_intensity = 1.f;
             else lights_block_->lights_spot[1].light_intensity = 0.f;
             if(counter & 0x04) lights_block_->lights_spot[2].light_intensity = 1.f;
             else lights_block_->lights_spot[2].light_intensity = 0.f;
-
-            for(int i = 0; i != 10; ++i) {
-                if(counter == 10) lights_block_->lights_point[i].light_intensity = .3f;
-                else lights_block_->lights_point[i].light_intensity = i == counter ? .5f : 0.f;
-            }
-
-            lights_block_.unmap();
+            timer = 0.f;
         }
-        lights_block_.release();
-        timer = 0.f;
+
+        if(timer2 > 1.f) {
+            counter2++;
+            for(int i = 0; i != 10; ++i) {
+                if(counter2 == 10) lights_block_->lights_point[i].light_intensity = .3f;
+                else lights_block_->lights_point[i].light_intensity = i == counter2 ? .5f : 0.f;
+            }
+            if(counter2 == 10) counter2 = 0;
+            timer2 = 0.f;
+        }
+
+        lights_block_.unmap();
     }
+    lights_block_.release();
 
     gl_error_check();
 }

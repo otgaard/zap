@@ -29,12 +29,14 @@ struct builder_task {
     using lights_block_t = lights_block<MaxDirLights, MaxPointLights, MaxSpotLights>;
 
     enum class lighting_method {
+        LM_FLAT,        // Gouraud + flat output
         LM_GOURAUD,
         LM_PHONG,
         LM_BRDF
     } method = lighting_method::LM_PHONG;
 
-    bool is_gouraud() const { return method == lighting_method::LM_GOURAUD; }
+    bool is_flat() const { return method == lighting_method::LM_FLAT; }
+    bool is_gouraud() const { return method == lighting_method::LM_GOURAUD || method == lighting_method::LM_FLAT; }
     bool is_phong() const { return method == lighting_method::LM_PHONG; }
     bool is_brdf() const { return method == lighting_method::LM_BRDF; }
 
@@ -226,7 +228,8 @@ protected:
         if(req.is_gouraud()) {
             block += build_light_block(req);
             block += build_material_block(req);
-            block += "out vec4 colour;" + term;
+            if(req.is_flat()) block += "flat out vec4 colour;" + term;
+            else              block += "out vec4 colour;" + term;
         } else if(req.is_phong()) {
             block += build_lighting_output(req);
         }
@@ -282,7 +285,8 @@ protected:
             block += "in vec2 tex2;" + term;
         }
         if(req.is_gouraud()) {
-            block += "in vec4 colour;" + term;
+            if(req.is_flat()) block += "flat in vec4 colour;" + term;
+            else              block += "in vec4 colour;" + term;
         } else if(req.is_phong()) {
             block += build_camera_block(req);
             block += build_lighting_input(req);
