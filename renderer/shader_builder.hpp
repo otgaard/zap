@@ -144,10 +144,42 @@ protected:
     }
 
     template <size_t D, size_t P, size_t S>
+    static std::string build_material_block(const builder_task<D, P, S>& req) {
+        std::string block;
+        block += material_def + term;
+        block += Me_component_fnc + term;
+        block += Ma_component_fnc + term;
+        block += Md_component_fnc + term;
+        block += Ms_component_fnc + term;
+        return block;
+    };
+
+    template <size_t D, size_t P, size_t S>
+    static std::string build_lighting_output(const builder_task<D, P, S>& req) {
+        std::string block;
+        block += "out vec3 P;" + term;
+        block += "out vec3 nor;" + term;
+        return block;
+    }
+
+    template <size_t D, size_t P, size_t S>
+    static std::string build_lighting_vshdr(const builder_task<D, P, S>& req) {
+        std::string block;
+        block += "P = (mv_matrix * vec4(position, 1.)).xyz;" + term;
+        block += "nor = normal_matrix * normal;" + term;
+        return block;
+    }
+
+    template <size_t D, size_t P, size_t S>
     static std::string build_light_computation(const builder_task<D, P, S>& req) {
         std::string block;
-        block += "vec3 N = normal_matrix * normal;" + term;
-        block += "vec3 P = (mv_matrix * vec4(position, 1.)).xyz;" + term;
+        if(req.is_gouraud()) {
+            block += "vec3 P = (mv_matrix * vec4(position, 1.)).xyz;" + term;
+            block += "vec3 N = normal_matrix * normal;" + term;
+        } else if(req.is_phong()) {
+            block += "vec3 N = normalize(nor);" + term;
+            block += "vec4 colour;" + term;
+        }
         block += "vec3 accum = mat.material_emissive.rgb;" + term;
 
         if(D > 0) {
@@ -193,17 +225,10 @@ protected:
 
         if(req.is_gouraud()) {
             block += build_light_block(req);
-
-            block += material_def + term;
-            block += Me_component_fnc + term;
-            block += Ma_component_fnc + term;
-            block += Md_component_fnc + term;
-            block += Ms_component_fnc + term;
-
+            block += build_material_block(req);
             block += "out vec4 colour;" + term;
         } else if(req.is_phong()) {
-            block += "out vec4 pos;" + term;
-            block += "out vec3 nor;" + term;
+            block += build_lighting_output(req);
         }
 
         if(req.has_textures()) {
@@ -214,7 +239,7 @@ protected:
         if(req.is_gouraud()) {
             block += build_light_computation(req);
         } else if(req.is_phong()) {
-
+            block += build_lighting_vshdr(req);
         } else {
             assert(!req.is_brdf() && "Not yet supported");
         }
@@ -243,20 +268,24 @@ protected:
     }
 
     template <size_t D, size_t P, size_t S>
-    static std::string build_diffuse_texturing(const builder_task<D, P, S>& req) {
-
+    static std::string build_lighting_input(const builder_task<D, P, S>& req) {
+        std::string block;
+        block += "in vec3 P;" + term;
+        block += "in vec3 nor;" + term;
+        return block;
     }
 
     template <size_t D, size_t P, size_t S>
     static std::string build_fragment_shader(const builder_task<D, P, S>& req) {
         std::string block = GLSL_HEADER;
+        if(req.has_textures()) {
+            block += "in vec2 tex2;" + term;
+        }
         if(req.is_gouraud()) {
             block += "in vec4 colour;" + term;
-            if(req.has_textures()) {
-                block += "in vec2 tex2;" + term;
-            }
         } else if(req.is_phong()) {
             block += build_camera_block(req);
+            block += build_lighting_input(req);
         } else {
             assert(!req.is_brdf() && "Not yet supported");
         }
@@ -268,13 +297,18 @@ protected:
             if(req.has_bump_map())  block += "uniform " + sampler_type(req.bump_map) + " bump_map;" + term;
         }
 
+        if(req.is_phong()) {
+            block += build_light_block(req);
+            block += build_material_block(req);
+        }
+
         block += "out vec4 frag_colour;" + term;
         block += GLSL_OPEN_MAIN + term;
 
-        if(req.is_gouraud()) {
-            if(!req.has_textures()) block += "frag_colour = colour;" + term;
-            else if(req.has_diffuse_map()) block += "frag_colour = texture(diffuse_map, tex2) * colour;" + term;
-        }
+        if(req.is_phong()) block += build_light_computation(req);
+
+        if(!req.has_textures()) block += "frag_colour = colour;" + term;
+        else if(req.has_diffuse_map()) block += "frag_colour = texture(diffuse_map, tex2) * colour;" + term;
 
         block += GLSL_CLOSE_MAIN + term;
 

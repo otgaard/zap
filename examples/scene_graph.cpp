@@ -69,7 +69,7 @@ bool scene_graph_test::initialise() {
     }
 
     builder_task<> task;
-    task.method = builder_task<>::lighting_method::LM_GOURAUD;
+    task.method = builder_task<>::lighting_method::LM_PHONG;
     context_ = shader_builder::build_basic_lights(task);
 
     // Create some textures
@@ -192,7 +192,7 @@ bool scene_graph_test::initialise() {
 
 void scene_graph_test::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.world_pos(vec3f{0.f, 2.f, 10.f});
+    cam_.world_pos(vec3f{0.f, 2.f, 20.f});
     cam_.look_at(vec3f{0.f, 0.f, -100.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     camera_block_.bind();
@@ -213,8 +213,9 @@ void scene_graph_test::on_resize(int width, int height) {
             float theta = angle * i;
             float x = 15.f*cosf(theta), z = 15.f*sinf(theta);
             vec3f vP = cam_.world_to_view() * vec3f{x, 3.f, z};
+            LOG(vP);
             lights_block_->lights_point[i].light_position.set(vP, 1.f);
-            lights_block_->lights_point[i].light_attenuation.set(.4f, 0.05f, 0.f, 0.f);
+            lights_block_->lights_point[i].light_attenuation.set(.4f, 0.1f, 0.f, 0.f);
             lights_block_->lights_point[i].light_colour.set(lerp(i/10.f, colA, colB), 0.f);
             lights_block_->lights_point[i].light_ADS.set(1.f, 1.f, 1.f, 1.f);
             lights_block_->lights_point[i].light_intensity = .5f;
@@ -228,7 +229,7 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_spot[0].light_attenuation.set(.5f, .0f, 0.f, 0.f);
         lights_block_->lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
         lights_block_->lights_spot[0].light_ADS.set(.1f, .5f, .9f, 0.f);
-        lights_block_->lights_spot[0].light_cos_angle = .5f;
+        lights_block_->lights_spot[0].light_cos_angle = .9f;
         lights_block_->lights_spot[0].light_exponent = .8f;
         lights_block_->lights_spot[0].light_intensity = 1.f;
 
@@ -240,7 +241,7 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_spot[1].light_attenuation.set(.5f, .0f, 0.f, 0.f);
         lights_block_->lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
         lights_block_->lights_spot[1].light_ADS.set(.1f, .5f, .9f, 0.f);
-        lights_block_->lights_spot[1].light_cos_angle = .5f;
+        lights_block_->lights_spot[1].light_cos_angle = .9f;
         lights_block_->lights_spot[1].light_exponent = .8f;
         lights_block_->lights_spot[1].light_intensity = 1.f;
 
@@ -252,7 +253,7 @@ void scene_graph_test::on_resize(int width, int height) {
         lights_block_->lights_spot[2].light_attenuation.set(.5f, .0f, 0.f, 0.f);
         lights_block_->lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
         lights_block_->lights_spot[2].light_ADS.set(.1f, .5f, .9f, 0.f);
-        lights_block_->lights_spot[2].light_cos_angle = .5f;
+        lights_block_->lights_spot[2].light_cos_angle = .9f;
         lights_block_->lights_spot[2].light_exponent = .8f;
         lights_block_->lights_spot[2].light_intensity = 1.f;
 
