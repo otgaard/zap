@@ -76,8 +76,8 @@ public:
         vertex_shdr = build_vertex_shader(req);
         fragment_shdr = build_fragment_shader(req);
 
-        LOG(LOG_YELLOW, vertex_shdr);
-        LOG(LOG_CYAN, fragment_shdr);
+        LOG(LOG_YELLOW, term, vertex_shdr);
+        LOG(LOG_CYAN, term, fragment_shdr);
 
         auto rndr_context = std::make_unique<render_context>(vertex_shdr, fragment_shdr);
         if(!rndr_context->initialise()) {
@@ -97,10 +97,23 @@ protected:
         return block;
     }
 
+    // Default to p3n3t2 for now
+    template <size_t D, size_t P, size_t S>
+    static std::string build_vertex_input(const builder_task<D, P, S>& req) {
+        std::string block;
+        block += "in vec3 position;" + term;
+        block += "in vec3 normal;" + term;
+        block += "in vec2 texcoord1;" + term;
+        return block;
+    }
+
     template <size_t D, size_t P, size_t S>
     static std::string build_transform_block(const builder_task<D, P, S>& req) {
         std::string block;
-
+        block += "uniform mat4 model_matrix;" + term;
+        block += "uniform mat4 mv_matrix;" + term;
+        block += "uniform mat4 mvp_matrix;" + term;
+        block += "uniform mat3 normal_matrix;" + term;
         return block;
     }
 
@@ -112,10 +125,10 @@ protected:
         block += light_point_def + term;
         block += light_spot_def + term;
         block += "layout(std140) uniform lights {" + term;
-        block += "dir_light lights_dir[" + std::to_string(D) + "];" + term;
-        block += "point_light lights_point[" + std::to_string(P) + "];" + term;
-        block += "spot_light lights_spot[" + std::to_string(S) + "];" + term;
-        block += "ivec4 light_count;" + term;
+        block +=    "dir_light lights_dir[" + std::to_string(D) + "];" + term;
+        block +=    "point_light lights_point[" + std::to_string(P) + "];" + term;
+        block +=    "spot_light lights_spot[" + std::to_string(S) + "];" + term;
+        block +=    "ivec4 light_count;" + term;
         block += "};" + term;
         block += light_dir_fnc + term;
         block += light_point_fnc + term;
@@ -123,25 +136,87 @@ protected:
         return block;
     }
 
+    template <size_t D, size_t P, size_t S>
+    static std::string build_light_computation(const builder_task<D, P, S>& req) {
+        std::string block;
+        block += "vec3 N = normal_matrix * normal;" + term;
+        block += "vec3 P = (mv_matrix * vec4(position, 1.)).xyz;" + term;
+        block += "vec3 accum = material_emissive.rgb;" + term;
+
+        if(D > 0) {
+            block += "for(int i = 0; i != light_count.x; ++i) {" + term;
+            block += "light_sample sample = compute_dir_light(i);" + term;
+            block += "accum += lights_dir[i].colour.rgb * lights_dir[i].ADS.x * compute_Ma(sample, material_ambient.rgb)" + term;
+            block += "       + lights_dir[i].colour.rgb * lights_dir[i].ADS.y * compute_Md(sample, N, material_diffuse.rgb)" + term;
+            block += "       + lights_dir[i].colour.rgb * lights_dir[i].ADS.z * compute_Ms(sample, N, P, material_specular.rgb);" + term;
+            block += "}" + term;
+        }
+
+        if(P > 0) {
+            block += "for(int i = 0; i != light_count.y; ++i) {" + term;
+            block += "light_sample sample = compute_point_light(P, i);" + term;
+            block += "accum += lights_point[i].colour.rgb * lights_point[i].ADS.x * compute_Ma(sample, material_ambient.rgb)" + term;
+            block += "       + lights_point[i].colour.rgb * lights_point[i].ADS.y * compute_Md(sample, N, material_diffuse.rgb)" + term;
+            block += "       + lights_point[i].colour.rgb * lights_point[i].ADS.z * compute_Ms(sample, N, P, material_specular.rgb);" + term;
+            block += "}" + term;
+        }
+
+        if(S > 0) {
+            block += "for(int i = 0; i != light_count.z; ++i) {" + term;
+            block += "light_sample sample = compute_spot_light(P, i);" + term;
+            block += "accum += lights_spot[i].colour.rgb * lights_spot[i].ADS.x * compute_Ma(sample, material_ambient.rgb)" + term;
+            block += "       + lights_spot[i].colour.rgb * lights_spot[i].ADS.y * compute_Md(sample, N, material_diffuse.rgb)" + term;
+            block += "       + lights_spot[i].colour.rgb * lights_spot[i].ADS.z * compute_Ms(sample, N, P, material_specular.rgb);" + term;
+            block += "}" + term;
+        }
+
+        block += "colour = vec4(accum, material_diffuse.a);" + term;
+        return block;
+    }
 
     template <size_t D, size_t P, size_t S>
     static std::string build_vertex_shader(const builder_task<D, P, S>& req) {
         std::string block = GLSL_HEADER;
+
+        block += build_vertex_input(req);
+
         if(req.is_gouraud() || req.is_phong()) block += build_camera_block(req);
+
+        block += build_transform_block(req);
 
         if(req.is_gouraud()) {
             block += build_light_block(req);
 
+            block += material_def + term;
+            block += Me_component_fnc + term;
+            block += Ma_component_fnc + term;
+            block += Md_component_fnc + term;
+            block += Ms_component_fnc + term;
+
             block += "out vec4 colour;" + term;
+        } else if(req.is_phong()) {
+            block += "out vec4 pos;" + term;
+            block += "out vec3 nor;" + term;
         }
 
         if(req.has_textures()) {
             block += "out vec2 tex2;" + term;       // for 2D textures
-            block += "out vec3 tex3;" + term;       // for 3D & Cube maps
         }
 
         block += GLSL_OPEN_MAIN + term;
+        if(req.is_gouraud()) {
+            block += build_light_computation(req);
+        } else if(req.is_phong()) {
 
+        } else {
+            assert(!req.is_brdf() && "Not yet supported");
+        }
+
+        if(req.has_textures()) {
+            block += "tex2 = texcoord1;" + term;
+        }
+
+        block += "gl_Position = mvp_matrix * vec4(position, 1.);";
 
         block += GLSL_CLOSE_MAIN + term;
 
@@ -151,11 +226,17 @@ protected:
     template <size_t D, size_t P, size_t S>
     static std::string build_fragment_shader(const builder_task<D, P, S>& req) {
         std::string block = GLSL_HEADER;
-        if(req.is_phong()) block += build_camera_block(req);
+        if(req.is_gouraud()) {
+            block += "in vec4 colour;" + term;
+        } else if(req.is_phong()) {
+            block += build_camera_block(req);
+        } else {
+            assert(!req.is_brdf() && "Not yet supported");
+        }
 
         block += "out vec4 frag_colour;" + term;
         block += GLSL_OPEN_MAIN + term;
-        block += "frag_colour = vec4(1., 1., 1., 1.);" + term;
+        block += "frag_colour = colour;" + term;
         block += GLSL_CLOSE_MAIN + term;
 
         return block;
@@ -168,8 +249,6 @@ protected:
         else assert(req.use_camera_block && "Not implemented yet");
         return block;
     }
-
-
 };
 
 }}

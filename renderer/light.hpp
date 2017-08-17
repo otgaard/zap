@@ -9,6 +9,7 @@ namespace zap { namespace renderer {
     using light_dir_basic = engine::uniform_block<
         core::light_dir<maths::vec4f>,
         core::light_colour<maths::vec4f>,
+        core::light_ADS<maths::vec4f>,
         core::light_intensity<float>
     >;
 
@@ -23,6 +24,7 @@ namespace zap { namespace renderer {
         "struct dir_light {"
            "vec4 dir;"
            "vec4 colour;"
+           "vec4 ADS;"
            "float intensity;"
         "};";
 
@@ -38,6 +40,7 @@ namespace zap { namespace renderer {
         core::light_position<maths::vec4f>,
         core::light_attenuation<maths::vec4f>,
         core::light_colour<maths::vec4f>,
+        core::light_ADS<maths::vec4f>,
         core::light_intensity<float>
     >;
 
@@ -46,6 +49,7 @@ namespace zap { namespace renderer {
             "vec4 position;"
             "vec4 attenuation;"
             "vec4 colour;"
+            "vec4 ADS;"
             "float intensity;"
         "};";
 
@@ -64,6 +68,7 @@ namespace zap { namespace renderer {
         core::light_dir<maths::vec4f>,
         core::light_attenuation<maths::vec4f>,
         core::light_colour<maths::vec4f>,
+        core::light_ADS<maths::vec4f>,
         core::light_cos_angle<float>,
         core::light_exponent<float>,
         core::light_intensity<float>
@@ -75,6 +80,7 @@ namespace zap { namespace renderer {
             "vec4 dir;"
             "vec4 attentuation;"
             "vec4 colour;"
+            "vec4 ADS;"
             "float cos_angle;"
             "float exponent;"
             "float intensity;"

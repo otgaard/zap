@@ -44,6 +44,7 @@ namespace zap { namespace maths {
         inline T& operator[](size_t idx) { checkidx(idx,size()); return arr[idx]; }
         inline const T& operator[](size_t idx) const { checkidx(idx,size()); return arr[idx]; }
 
+        void set(const vec3<T>& v, T nw) { x = v.x; y = v.y; z = v.z; w = nw; }
         void set(T nx, T ny, T nz, T nw) { x = nx; y = ny; z = nz; w = nw; }
 
         constexpr vec4<T> operator-() const { return vec4<T>(-x, -y, -z, -w); }

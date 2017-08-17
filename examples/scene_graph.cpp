@@ -55,8 +55,9 @@ protected:
     std::unique_ptr<render_context> context_;
     std::vector<texture> textures_;
     std::vector<sampler> samplers_;
-    lights_spot<10> the_lights_;
-    uniform_buffer<lights_spot<10>> lights_;
+    uniform_buffer<camera_block> camera_block_;
+    uniform_buffer<material_block> material_block_;
+    uniform_buffer<builder_task<>::lights_block_t> lights_block_;
 };
 
 bool scene_graph_test::initialise() {
@@ -132,14 +133,30 @@ bool scene_graph_test::initialise() {
         return false;
     }
 
-    LOG("SIZEOF: the_lights:", sizeof(the_lights_));
-    LOG("Testing:", zap::core::pod_query<0, light_spot_basic::pod_t>::type::name);
+    lights_block_.allocate();
+    lights_block_.bind();
+    lights_block_.initialise();
+    lights_block_.release();
+    context_->add_uniform_buffer("lights", &lights_block_);
 
-    lights_.allocate();
-    lights_.bind();
-    lights_.initialise(the_lights_);
-    lights_.release();
-    context_->add_uniform_buffer("the_lights", &lights_);
+    material_block mat;
+    mat.material_emissive.set(0.f, 0.f, 0.f, 0.f);
+    mat.material_ambient.set(0.1f, 0.f, 0.f, 0.f);
+    mat.material_diffuse.set(.4f, .4f, .4f, 1.f);
+    mat.material_specular.set(.7f, .7f, .7f, 0.f);
+    mat.material_exponent = 50.f;
+
+    material_block_.allocate();
+    material_block_.bind();
+    material_block_.initialise(mat);
+    material_block_.release();
+    context_->add_uniform_buffer("material", &material_block_);
+
+    camera_block_.allocate();
+    camera_block_.bind();
+    camera_block_.initialise(cam_.get_uniform_block(false));
+    camera_block_.release();
+    context_->add_uniform_buffer("camera", &camera_block_);
 
     auto quad_mesh = p3n3t2_geo3_tf::make_mesh(p3n3t2_geo3_tf::make_quad(200.f, 200.f));
     visual_t quad{quad_mesh.get(), context_.get()};
@@ -148,26 +165,26 @@ bool scene_graph_test::initialise() {
     quad.rotate(make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f));
     visuals_.push_back(quad);
 
-    auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere<float,uint32_t>(30, 60, 1.f, false));
+    auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere<float,uint32_t>(30, 60, .5f, false));
     visual_t sphere{sphere_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(sphere_mesh));
 
-    sphere.translate(vec3f{-7.f, 4.f, -14.f});
+    sphere.translate(vec3f{-3.f, 2.5f, 0.f});
     visuals_.push_back(sphere);
-    sphere.translate(vec3f{+0.f, 4.f, -14.f});
+    sphere.translate(vec3f{+0.f, 2.5f, 0.f});
     visuals_.push_back(sphere);
-    sphere.translate(vec3f{+7.f, 4.f, -14.f});
+    sphere.translate(vec3f{+3.f, 2.5f, 0.f});
     visuals_.push_back(sphere);
 
     auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 1.f, .5f, false));
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(cylinder_mesh));
 
-    cylinder.translate(vec3f{-3.f, 1.f, -2.f});
+    cylinder.translate(vec3f{-3.f, 1.f, 0.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+0.f, 1.f, -2.f});
+    cylinder.translate(vec3f{+0.f, 1.f, 0.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+3.f, 1.f, -2.f});
+    cylinder.translate(vec3f{+3.f, 1.f, 0.f});
     visuals_.push_back(cylinder);
 
     gl_error_check();
@@ -179,45 +196,73 @@ void scene_graph_test::on_resize(int width, int height) {
     cam_.world_pos(vec3f{0.f, 2.f, 10.f});
     cam_.look_at(vec3f{0.f, 0.f, -100.f});
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
+    camera_block_.bind();
+    camera_block_.initialise(cam_.get_uniform_block());
+    camera_block_.release();
 
-    vec3f lP = vec3f{-10.f, 10.f, 10.f};
-    vec3f vP = cam_.world_to_view() * lP;
-    vec3f d = cam_.world_to_view() * -normalise(lP);
-    the_lights_.lights_spot[0].light_position.set(vP.x, vP.y, vP.z, 0.f);
-    the_lights_.lights_spot[0].light_dir.set(d.x, d.y, d.z, 0.f);
-    the_lights_.lights_spot[0].light_attenuation.set(1.f, .0f, 0.f, 0.f);
-    the_lights_.lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
-    the_lights_.lights_spot[0].light_cos_angle = .90f;
-    the_lights_.lights_spot[0].light_exponent = .5f;
-    the_lights_.lights_spot[0].light_intensity = .33f;
+    lights_block_.bind();
+    if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
+        lights_block_.get()->lights_dir[0].light_dir.set(0.f, 1.f, 0.f, 0.f);
+        lights_block_.get()->lights_dir[0].light_colour.set(1.f, 1.f, 1.f, 1.f);
+        lights_block_.get()->lights_dir[0].light_ADS.set(.3f, .5f, .5f, 1.f);
+        lights_block_.get()->lights_dir[0].light_intensity = 1.f;
 
-    lP = vec3f{0.f, 10.f, 10.f};
-    vP = cam_.world_to_view() * lP;
-    d = cam_.world_to_view() * -normalise(lP);
-    the_lights_.lights_spot[1].light_position.set(vP.x, vP.y, vP.z, 0.f);
-    the_lights_.lights_spot[1].light_dir.set(d.x, d.y, d.z, 0.f);
-    the_lights_.lights_spot[1].light_attenuation.set(1.f, .0f, 0.f, 0.f);
-    the_lights_.lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
-    the_lights_.lights_spot[1].light_cos_angle = .5f;
-    the_lights_.lights_spot[1].light_exponent = .5f;
-    the_lights_.lights_spot[1].light_intensity = .33f;
+        // Distribute the point lights around the scene
+        const float angle = TWO_PI<float>/10;
+        const auto colA = vec3f{1.f, 0.f, 0.f}, colB = vec3f{1.f, 1.f, 0.f};
+        for(int i = 0; i != 10; ++i) {
+            float theta = angle * i;
+            float x = 15.f*cosf(theta), z = 15.f*sinf(theta);
+            vec3f vP = cam_.world_to_view() * vec3f{x, 3.f, z};
+            lights_block_.get()->lights_point[i].light_position.set(vP, 1.f);
+            lights_block_.get()->lights_point[i].light_attenuation.set(.4f, 0.f, 0.f, 0.f);
+            lights_block_.get()->lights_point[i].light_colour.set(lerp(i/10.f, colA, colB), 0.f);
+            lights_block_.get()->lights_point[i].light_ADS.set(1.f, 1.f, 1.f, 1.f);
+            lights_block_.get()->lights_point[i].light_intensity = .5f;
+        }
 
-    lP = vec3f{+10.f, 10.f, 10.f};
-    vP = cam_.world_to_view() * lP;
-    d = cam_.world_to_view() * -normalise(lP);      // [0,0,0] - lP
-    the_lights_.lights_spot[2].light_position.set(vP.x, vP.y, vP.z, 0.f);
-    the_lights_.lights_spot[2].light_dir.set(d.x, d.y, d.z, 0.f);
-    the_lights_.lights_spot[2].light_attenuation.set(1.f, .0f, 0.f, 0.f);
-    the_lights_.lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
-    the_lights_.lights_spot[2].light_cos_angle = .90f;
-    the_lights_.lights_spot[2].light_exponent = .5f;
-    the_lights_.lights_spot[2].light_intensity = .33f;
+        vec3f lP = vec3f{-5.f, 10.f, 10.f};
+        vec3f vP = cam_.world_to_view() * lP;
+        vec3f d = cam_.world_to_view() * -normalise(lP);
+        lights_block_.get()->lights_spot[0].light_position.set(vP.x, vP.y, vP.z, 0.f);
+        lights_block_.get()->lights_spot[0].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_.get()->lights_spot[0].light_attenuation.set(.5f, .0f, 0.f, 0.f);
+        lights_block_.get()->lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
+        lights_block_.get()->lights_spot[0].light_ADS.set(.1f, .5f, .9f, 0.f);
+        lights_block_.get()->lights_spot[0].light_cos_angle = .5f;
+        lights_block_.get()->lights_spot[0].light_exponent = .5f;
+        lights_block_.get()->lights_spot[0].light_intensity = 1.f;
 
-    the_lights_.light_count = 3;
+        lP = vec3f{0.f, 10.f, 10.f};
+        vP = cam_.world_to_view() * lP;
+        d = cam_.world_to_view() * -normalise(lP);
+        lights_block_.get()->lights_spot[1].light_position.set(vP.x, vP.y, vP.z, 0.f);
+        lights_block_.get()->lights_spot[1].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_.get()->lights_spot[1].light_attenuation.set(.5f, .0f, 0.f, 0.f);
+        lights_block_.get()->lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
+        lights_block_.get()->lights_spot[1].light_ADS.set(.1f, .5f, .9f, 0.f);
+        lights_block_.get()->lights_spot[1].light_cos_angle = .5f;
+        lights_block_.get()->lights_spot[1].light_exponent = .5f;
+        lights_block_.get()->lights_spot[1].light_intensity = 1.f;
 
-    lights_.bind();
-    lights_.initialise(the_lights_);
-    lights_.release();
+        lP = vec3f{+5.f, 10.f, 10.f};
+        vP = cam_.world_to_view() * lP;
+        d = cam_.world_to_view() * -normalise(lP);      // [0,0,0] - lP
+        lights_block_.get()->lights_spot[2].light_position.set(vP.x, vP.y, vP.z, 0.f);
+        lights_block_.get()->lights_spot[2].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_.get()->lights_spot[2].light_attenuation.set(.5f, .0f, 0.f, 0.f);
+        lights_block_.get()->lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
+        lights_block_.get()->lights_spot[2].light_ADS.set(.1f, .5f, .9f, 0.f);
+        lights_block_.get()->lights_spot[2].light_cos_angle = .5f;
+        lights_block_.get()->lights_spot[2].light_exponent = .5f;
+        lights_block_.get()->lights_spot[2].light_intensity = 1.f;
+
+        lights_block_.get()->light_count.x = 1;
+        lights_block_.get()->light_count.y = 10;
+        lights_block_.get()->light_count.z = 3;
+        lights_block_.unmap();
+    }
+    lights_block_.release();
 
     gl_error_check();
 }
@@ -234,18 +279,23 @@ void scene_graph_test::update(double t, float dt) {
     timer += dt;
     if((counter != 7 && timer > 3.f) || (counter == 7 && timer > 6.f)) {
         counter++;
-        if(counter == 8) counter = 1;
-        if(counter & 0x01) the_lights_.lights_spot[0].light_intensity = .75f;
-        else               the_lights_.lights_spot[0].light_intensity = 0.f;
-        if(counter & 0x02) the_lights_.lights_spot[1].light_intensity = .75f;
-        else               the_lights_.lights_spot[1].light_intensity = 0.f;
-        if(counter & 0x04) the_lights_.lights_spot[2].light_intensity = .75f;
-        else               the_lights_.lights_spot[2].light_intensity = 0.f;
+        if(counter == 10) counter = 0;
+        lights_block_.bind();
+        if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
+            if(counter & 0x01) lights_block_.get()->lights_spot[0].light_intensity = .75f;
+            else lights_block_.get()->lights_spot[0].light_intensity = 0.f;
+            if(counter & 0x02) lights_block_.get()->lights_spot[1].light_intensity = .75f;
+            else lights_block_.get()->lights_spot[1].light_intensity = 0.f;
+            if(counter & 0x04) lights_block_.get()->lights_spot[2].light_intensity = .75f;
+            else lights_block_.get()->lights_spot[2].light_intensity = 0.f;
 
-        lights_.bind();
-        lights_.initialise(the_lights_);
-        lights_.release();
+            for(int i = 0; i != 10; ++i) {
+                lights_block_.get()->lights_point[i].light_intensity = i == counter ? 1.f : 0.f;
+            }
 
+            lights_block_.unmap();
+        }
+        lights_block_.release();
         timer = 0.f;
     }
 
@@ -254,11 +304,11 @@ void scene_graph_test::update(double t, float dt) {
 
 void scene_graph_test::draw() {
     for(int i = 0; i != 7; ++i) {
-        context_->set_parameter("PVM", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
+        context_->set_parameter("mvp_matrix", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
         auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
         context_->set_parameter("mv_matrix", MV);
         context_->set_parameter("normal_matrix", MV.inverse().transpose().rotation());
-        context_->set_texture_unit("diffuse_tex", i == 0 ? 3 : (i-1)%3);
+        //context_->set_texture_unit("diffuse_tex", i == 0 ? 3 : (i-1)%3);
         visuals_[i].draw(rndr_);
     }
     gl_error_check();
