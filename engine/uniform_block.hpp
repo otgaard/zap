@@ -18,11 +18,7 @@ namespace zap { namespace engine {
 #endif
 
 template <typename... Args>
-#if defined(_WIN32)
-ALIGN struct uniform_block : core::pod<Args...> {
-#else
 struct ALIGN uniform_block : core::pod<Args...> {
-#endif
     using pod_t = core::pod<Args...>;
     constexpr static size_t size = sizeof...(Args);
     constexpr static size_t bytesize() { return sizeof(uniform_block); }

@@ -130,7 +130,7 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         renderer/renderer_fwd.hpp
         engine/sampler.hpp
         tools/threadpool.hpp
-        renderer/render_context.hpp tools/string.hpp)
+        renderer/render_context.hpp tools/string.hpp renderer/render_args.hpp)
 
 set(ZAP_ENGINE_FILES
         engine/shader.cpp

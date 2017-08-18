@@ -251,7 +251,7 @@ protected:
             block += "tex2 = texcoord1;" + term;
         }
 
-        block += "gl_Position = mvp_matrix * vec4(position, 1.);";
+        block += "gl_Position = mvp_matrix * vec4(position, 1.);" + term;
 
         block += GLSL_CLOSE_MAIN + term;
 

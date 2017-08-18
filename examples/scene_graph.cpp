@@ -63,13 +63,13 @@ protected:
 bool scene_graph_test::initialise() {
     clear(0.f, 0.f, 0.f, 0.f);
 
-    if(!gen_.initialise()) {
+    if(!gen_.initialise() || !rndr_.initialise()) {
         LOG_ERR("Failed to initialise generator or renderer");
         return false;
     }
 
     builder_task<> task;
-    task.method = builder_task<>::lighting_method::LM_FLAT;
+    task.method = builder_task<>::lighting_method::LM_PHONG;
     context_ = shader_builder::build_basic_lights(task);
 
     // Create some textures
@@ -112,6 +112,7 @@ bool scene_graph_test::initialise() {
     samplers_.emplace_back();
     samplers_[0].allocate();
     samplers_[0].initialise();
+    samplers_[0].set_anisotropy(16.f);
     samplers_[0].set_mag_filter(tex_filter::TF_LINEAR);
     samplers_[0].set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
 
@@ -179,12 +180,20 @@ bool scene_graph_test::initialise() {
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(cylinder_mesh));
 
-    cylinder.translate(vec3f{-3.f, 1.f, 0.f});
+    cylinder.translate(vec3f{-3.f, .5f, 0.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+0.f, 1.f, 0.f});
+    cylinder.translate(vec3f{+0.f, .5f, 0.f});
     visuals_.push_back(cylinder);
-    cylinder.translate(vec3f{+3.f, 1.f, 0.f});
+    cylinder.translate(vec3f{+3.f, .5f, 0.f});
     visuals_.push_back(cylinder);
+
+    auto box_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_cube(vec3f{.5f, .5f, .5f}));
+    visual_t box{box_mesh.get(), context_.get()};
+    box.translate(vec3f{-1.f, .25f, 1.f});
+    visuals_.push_back(box);
+    box.translate(vec3f{+1.f, .25f, 1.f});
+    visuals_.push_back(box);
+    meshes_.emplace_back(std::move(box_mesh));
 
     gl_error_check();
     return true;
@@ -223,8 +232,8 @@ void scene_graph_test::on_resize(int width, int height) {
         vec3f lP = vec3f{-5.f, 10.f, 10.f};
         vec3f vP = cam_.world_to_view().transform(lP);
         vec3f d = cam_.world_to_view() * -normalise(lP);
-        lights_block_->lights_spot[0].light_position.set(vP.x, vP.y, vP.z, 0.f);
-        lights_block_->lights_spot[0].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_->lights_spot[0].light_position.set(vP, 1.f);
+        lights_block_->lights_spot[0].light_dir.set(d, 0.f);
         lights_block_->lights_spot[0].light_attenuation.set(.5f, .0f, 0.f, 0.f);
         lights_block_->lights_spot[0].light_colour.set(1.f, 0.f, 0.f, 1.f);
         lights_block_->lights_spot[0].light_ADS.set(.1f, .5f, .9f, 0.f);
@@ -235,8 +244,8 @@ void scene_graph_test::on_resize(int width, int height) {
         lP = vec3f{0.f, 10.f, 10.f};
         vP = cam_.world_to_view().transform(lP);
         d = cam_.world_to_view() * -normalise(lP);
-        lights_block_->lights_spot[1].light_position.set(vP.x, vP.y, vP.z, 0.f);
-        lights_block_->lights_spot[1].light_dir.set(d.x, d.y, d.z, 0.f);
+        lights_block_->lights_spot[1].light_position.set(vP, 1.f);
+        lights_block_->lights_spot[1].light_dir.set(d, 0.f);
         lights_block_->lights_spot[1].light_attenuation.set(.5f, .0f, 0.f, 0.f);
         lights_block_->lights_spot[1].light_colour.set(0.f, 1.f, 0.f, 1.f);
         lights_block_->lights_spot[1].light_ADS.set(.1f, .5f, .9f, 0.f);
@@ -246,9 +255,9 @@ void scene_graph_test::on_resize(int width, int height) {
 
         lP = vec3f{+5.f, 10.f, 10.f};
         vP = cam_.world_to_view().transform(lP);
-        d = cam_.world_to_view() * -normalise(lP );      // [0,0,0] - lP
-        lights_block_->lights_spot[2].light_position.set(vP.x, vP.y, vP.z, 0.f);
-        lights_block_->lights_spot[2].light_dir.set(d.x, d.y, d.z, 0.f);
+        d = cam_.world_to_view() * -normalise(lP);      // [0,0,0] - lP
+        lights_block_->lights_spot[2].light_position.set(vP, 1.f);
+        lights_block_->lights_spot[2].light_dir.set(d, 0.f);
         lights_block_->lights_spot[2].light_attenuation.set(.5f, .0f, 0.f, 0.f);
         lights_block_->lights_spot[2].light_colour.set(0.f, 0.f, 1.f, 1.f);
         lights_block_->lights_spot[2].light_ADS.set(.1f, .5f, .9f, 0.f);
@@ -269,7 +278,7 @@ void scene_graph_test::on_resize(int width, int height) {
 void scene_graph_test::update(double t, float dt) {
     static float inc = 0.f;
     auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float> / 2);
-    for(int i = 1; i != 7; ++i) visuals_[i].rotate(rot);
+    for(int i = 1; i != visuals_.size(); ++i) visuals_[i].rotate(rot);
     inc += dt;
 
     // Cycle through the lights
@@ -311,7 +320,7 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
-    for(int i = 0; i != 7; ++i) {
+    for(int i = 0; i != visuals_.size(); ++i) {
         context_->set_parameter("mvp_matrix", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
         auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
         context_->set_parameter("mv_matrix", MV);
@@ -319,6 +328,7 @@ void scene_graph_test::draw() {
         context_->set_texture_unit("diffuse_map", i == 0 ? 3 : (i-1)%3);
         visuals_[i].draw(rndr_);
     }
+
     gl_error_check();
 }
 

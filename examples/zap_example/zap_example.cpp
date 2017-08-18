@@ -43,7 +43,7 @@ public:
     void on_mousewheel(double xinc, double yinc) final;
 
 protected:
-    void make_isosphere(int subdivision_levels);
+    void make_icosphere(int subdivision_levels);
     void make_textured_sphere();
 
     bool initialise_buffers();
@@ -146,7 +146,7 @@ bool zap_example::initialise_buffers() {
     }
 
     ico_mesh_.set_stream(&ico_vb_); ico_mesh_.set_index(&ico_ib_);
-    make_isosphere(3);
+    make_icosphere(3);
 
     if(!tex_vb_.allocate() || !tex_ib_.allocate() || !tex_mesh_.allocate()) {
         LOG_ERR("Could not allocate textured mesh resources");
@@ -234,10 +234,10 @@ int main(int argc, char* argv[]) {
     return app.run();
 }
 
-void zap_example::make_isosphere(int subdivision_levels) {
+void zap_example::make_icosphere(int subdivision_levels) {
     std::vector<ico_vertex_t> vbuf;
     std::vector<unsigned short> ibuf;
-    std::tie(vbuf, ibuf) = geometry3<ico_vertex_t, primitive_type::PT_TRIANGLES>::make_isosphere(subdivision_levels);
+    std::tie(vbuf, ibuf) = geometry3<ico_vertex_t, primitive_type::PT_TRIANGLES>::make_icosphere(subdivision_levels);
     ico_mesh_.bind();
     ico_vb_.bind();
     ico_vb_.initialise(vbuf);
