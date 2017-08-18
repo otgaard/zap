@@ -41,6 +41,7 @@
 namespace zap { namespace renderer {
 
 class renderer;
+class render_args;
 
 using program_ptr = std::unique_ptr<engine::program>;
 using texture_ptr = std::unique_ptr<engine::texture>;
@@ -98,6 +99,24 @@ public:
         auto it = std::find_if(parameters_.begin(), parameters_.end(), [&name](const auto& parm) { return parm.name == name; });
         if(it != parameters_.end()) return int32_t(it - parameters_.begin());
         else                        return -1;
+    }
+
+    parameter get_parameter(int idx) const {
+        assert(0 <= idx && idx < parameters_.size() && "Invalid parameter index specified");
+        return idx != -1 ? parameters_[idx] : parameter{-1};
+    }
+
+    parameter get_parameter(const std::string& name) const {
+        return get_parameter(get_index(name));
+    }
+
+    int get_offset(int idx) const {
+        assert(0 <= idx && idx < parameters_.size() && "Invalid parameter index specified");
+        return idx != -1 ? offsets_[idx] : -1;
+    }
+
+    int get_offset(const std::string& name) const {
+        return get_offset(get_index(name));
     }
 
     bool has_parameter(const std::string& name) const { return get_index(name) != -1; }
@@ -210,6 +229,7 @@ public:
         owns_program_ = true;
     }
     program* get_program() const { return program_; }
+    const std::vector<char>& get_uniforms() const { return uniforms_; }
 
     void set_state(const render_state* rndr_state) { rndr_state_ = rndr_state; }
     const render_state* get_state() const { return rndr_state_; }
