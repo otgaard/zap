@@ -47,6 +47,8 @@ namespace zap { namespace renderer {
         render_args& operator=(const render_args& rhs) {
             if(this != &rhs) {
                 context_ = rhs.context_;
+                buf_size_ = rhs.buf_size_;
+                arguments_ = std::move(rhs.arguments_);
                 arg_buffer_ = rhs.arg_buffer_;
             }
             return *this;
@@ -55,34 +57,18 @@ namespace zap { namespace renderer {
         render_args& operator=(render_args&& rhs) noexcept {
             if(this != &rhs) {
                 context_ = rhs.context_;
+                buf_size_ = rhs.buf_size_;
+                arguments_ = std::move(rhs.arguments_);
                 arg_buffer_ = std::move(rhs.arg_buffer_);
             }
             return *this;
         }
 
-        template <typename T>
-        void set_parameter(int idx, const T& value) {
-            int arg_idx = find_argument(idx);
-            if(arg_idx == -1) {
-                auto parm = context_->get_parameter(idx);
-                assert(parm.bytesize() == sizeof(T) && "Mismatched parameters");
-                if(parm.bytesize() != sizeof(T)) return;
+        // These functions address the arg_index
+        int arg_count() const { return arguments_.size(); }
+        const argument& get_arg(int arg_idx) const { return arguments_[arg_idx]; }
+        const char* get_arg_value(int arg_idx) const { return &arg_buffer_[arguments_[arg_idx].offset]; }
 
-                arg_idx = arguments_.size();
-                arguments_.emplace_back(argument::arg_type::AT_CONSTANT, idx, buf_size_);
-                buf_size_ += parm.bytesize();
-                arg_buffer_.resize(buf_size_);
-            }
-            memcpy(arg_buffer_.begin()+arguments_[arg_idx].offset, value, sizeof(T));
-        }
-
-        template <typename T>
-        void set_parameter(const std::string& name, const T& value) {
-            auto idx = context_->get_index(name);
-            set_parameter(idx, value);
-        }
-
-    private:
         int find_argument(int parm_idx) const {
             auto it = std::find_if(arguments_.begin(), arguments_.end(), [&parm_idx](const auto& arg) {
                 return parm_idx == arg.idx;
@@ -94,6 +80,68 @@ namespace zap { namespace renderer {
             return find_argument(parm_idx) != -1;
         }
 
+        void set_argument(int arg_idx, argument::update_fnc&& fnc) {
+            assert(arg_idx < arguments_.size() && "Invalid index to set_argument");
+            auto arg = arguments_[arg_idx];
+            auto parm = context_->get_parameter(arg.idx);
+            if(parm.location == -1) return;
+            arg.fnc = std::move(fnc);
+            fnc(arg_buffer_.data()+arguments_[arg_idx].offset);
+        }
+
+        template <typename T>
+        void set_argument(int arg_idx, const T& value) {
+            assert(arg_idx < arguments_.size() && "Invalid index to set_argument");
+            auto arg = arguments_[arg_idx];
+            auto parm = context_->get_parameter(arg.idx);
+            if(parm.location == -1 || parm.bytesize() != sizeof(value)) return;
+            memcpy(arg_buffer_.data()+arguments_[arg_idx].offset, value, sizeof(T));
+        }
+
+        // NOTE: The IDX below is the parameter index of the context, not the arg_index
+        template <typename T>
+        bool add_parameter(int idx, const T& value) {
+            int arg_idx = find_argument(idx);
+            if(arg_idx == -1) {
+                auto parm = context_->get_parameter(idx);
+                assert(parm.bytesize() == sizeof(T) && "Mismatched parameters");
+                if(parm.location == -1 || parm.bytesize() != sizeof(T)) return false;
+
+                arg_idx = arguments_.size();
+                arguments_.emplace_back(argument::arg_type::AT_CONSTANT, idx, buf_size_);
+                buf_size_ += parm.bytesize();
+                arg_buffer_.resize(buf_size_);
+            }
+            memcpy(arg_buffer_.data()+arguments_[arg_idx].offset, value, sizeof(T));
+            return true;
+        }
+
+        bool add_parameter(int idx, argument::update_fnc&& fnc) {
+            int arg_idx = find_argument(idx);
+            if(arg_idx == -1) {
+                auto parm = context_->get_parameter(idx);
+                if(parm.location == -1) return false;
+                arg_idx = arguments_.size();
+                arguments_.emplace_back(argument::arg_type::AT_FUNCTION, idx, buf_size_, std::move(fnc));
+                buf_size_ += parm.bytesize();
+                arg_buffer_.resize(buf_size_);
+            }
+            arguments_[arg_idx].fnc(arg_buffer_.data()+arguments_[arg_idx].offset);
+            return true;
+        }
+
+        template <typename T>
+        bool add_parameter(const std::string& name, const T& value) {
+            auto idx = context_->get_index(name);
+            return add_parameter(idx, value);
+        }
+
+        bool add_parameter(const std::string& name, argument::update_fnc&& fnc) {
+            auto idx = context_->get_index(name);
+            return add_parameter(idx, std::move(fnc));
+        }
+
+    private:
         render_context* context_ = nullptr;
         int buf_size_ = 0;
         std::vector<argument> arguments_ = {};  // The overridden arguments

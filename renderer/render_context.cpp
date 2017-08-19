@@ -4,6 +4,7 @@
 
 #include "render_context.hpp"
 #include "engine/gl_api.hpp"
+#include "render_args.hpp"
 #include "tools/log.hpp"
 #include "renderer.hpp"
 
@@ -75,4 +76,8 @@ void render_context::release(zap::renderer::renderer& rndr) const {
 
     program_->release();
     is_bound_ = false;
+}
+
+void render_context::bind_arguments(const render_args& args) const {
+
 }
