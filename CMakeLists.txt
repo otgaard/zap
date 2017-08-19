@@ -130,7 +130,11 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         renderer/renderer_fwd.hpp
         engine/sampler.hpp
         tools/threadpool.hpp
-        renderer/render_context.hpp tools/string.hpp renderer/render_args.hpp)
+        renderer/render_context.hpp
+        tools/string.hpp
+        renderer/render_args.hpp
+        engine/state_stack.hpp
+        renderer/shader_builder.hpp)
 
 set(ZAP_ENGINE_FILES
         engine/shader.cpp
@@ -155,7 +159,7 @@ set(ZAP_ENGINE_FILES
         engine/sampler.cpp
         renderer/render_context.cpp
         engine/state_stack.cpp
-        engine/state_stack.hpp renderer/shader_builder.cpp renderer/shader_builder.hpp)
+        renderer/shader_builder.cpp)
 
 set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/quad.hpp
@@ -357,6 +361,9 @@ target_link_libraries(noises zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS}
 
 add_executable(scene_graph examples/scene_graph.cpp)
 target_link_libraries(scene_graph zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
+
+add_executable(template examples/template.cpp)
+target_link_libraries(template zapGraphics zapEngine zapMaths zapHost ${GLFW_LIBS} ${LOADER_LIBS})
 
 if(APPLE)
     add_executable(procgen1 ${PROCGEN1_FILES})

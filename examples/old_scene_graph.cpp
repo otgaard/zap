@@ -440,7 +440,11 @@ void scene_graph_test::draw_scene() {
     fbuffer2_.bind();
 
     skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
-    skybox_.draw(rndr_);
+    skybox_.get_context()->bind();
+    skybox_mesh_.bind();
+    skybox_mesh_.draw();
+    skybox_mesh_.release();
+    skybox_.get_context()->release();
 
     mesh1_.bind();
     context_.bind();

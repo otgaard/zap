@@ -8,9 +8,9 @@
 #include <host/GLFW/application.hpp>
 #include <graphics2/quad.hpp>
 
-class scene_graph_app : public application {
+class template_app : public application {
 public:
-    scene_graph_app() : application{"scene_graph", 1024, 768, false} { }
+    template_app() : application{"template_app", 1024, 768, false} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -23,7 +23,7 @@ private:
     zap::graphics::quad quad_;
 };
 
-bool scene_graph_app::initialise() {
+bool template_app::initialise() {
     if(!quad_.initialise()) {
         LOG_ERR("Failed to initialise quad.");
         return false;
@@ -32,21 +32,21 @@ bool scene_graph_app::initialise() {
     return true;
 }
 
-void scene_graph_app::update(double t, float dt) {
+void template_app::update(double t, float dt) {
 }
 
-void scene_graph_app::draw() {
+void template_app::draw() {
     quad_.draw();
 }
 
-void scene_graph_app::shutdown() {
+void template_app::shutdown() {
 }
 
-void scene_graph_app::on_resize(int width, int height) {
+void template_app::on_resize(int width, int height) {
     quad_.resize(width, height);
 }
 
 int main(int argc, char* argv[]) {
-    scene_graph_app app{};
+    template_app app{};
     return app.run();
 }

@@ -40,6 +40,7 @@ namespace zap { namespace renderer {
 
     class render_args {
     public:
+        render_args() = default;
         explicit render_args(render_context* context) : context_(context) { }
         render_args(const render_args& rhs) : context_(rhs.context_), arg_buffer_(rhs.arg_buffer_) { }
         render_args(render_args&& rhs) noexcept : context_(rhs.context_), arg_buffer_(std::move(rhs.arg_buffer_)) { }

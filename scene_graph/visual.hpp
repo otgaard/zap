@@ -7,7 +7,7 @@
 
 #include "spatial.hpp"
 #include <engine/mesh.hpp>
-#include <renderer/render_context.hpp>
+#include <renderer/render_args.hpp>
 
 namespace zap { namespace scene_graph {
     template<typename SpatialT>
@@ -15,18 +15,20 @@ namespace zap { namespace scene_graph {
     public:
         using spatial_t = SpatialT;
         using mesh_base = zap::engine::mesh_base;
+        using render_args = zap::renderer::render_args;
         using render_context = zap::renderer::render_context;
 
         visual() = default;
-        visual(mesh_base* mesh, render_context* context) : mesh_{mesh}, context_(context) { }
-        visual(const visual& rhs) : spatial_t(rhs), mesh_(rhs.mesh_), context_(rhs.context_) { }
-        visual(visual&& rhs) noexcept : spatial_t(rhs), mesh_(rhs.mesh_), context_(rhs.context_) { }
+        visual(mesh_base* mesh, render_context* context) : mesh_{mesh}, context_{context}, args_{context} { }
+        visual(const visual& rhs) : spatial_t(rhs), mesh_{rhs.mesh_}, context_{rhs.context_}, args_{rhs.context_} { }
+        visual(visual&& rhs) noexcept : spatial_t(rhs), mesh_{rhs.mesh_}, context_{rhs.context_}, args_{rhs.context_} { }
 
         visual& operator=(const visual& rhs) {
             if(this != &rhs) {
                 spatial_t::operator=(rhs);
                 mesh_ = rhs.mesh_;
                 context_ = rhs.context_;
+                args_ = rhs.args_;
             }
             return *this;
         }
@@ -36,6 +38,7 @@ namespace zap { namespace scene_graph {
                 spatial_t::operator=(std::move(rhs));
                 mesh_ = rhs.mesh_;
                 context_ = rhs.context_;
+                args_ = std::move(rhs.args_);
             }
             return *this;
         }
@@ -62,7 +65,7 @@ namespace zap { namespace scene_graph {
     protected:
         mesh_base* mesh_ = nullptr;
         render_context* context_ = nullptr;
-        render_args args_;
+        render_args args_ = {};
     };
 }}
 
