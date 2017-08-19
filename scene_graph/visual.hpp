@@ -62,6 +62,7 @@ namespace zap { namespace scene_graph {
     protected:
         mesh_base* mesh_ = nullptr;
         render_context* context_ = nullptr;
+        render_args args_;
     };
 }}
 

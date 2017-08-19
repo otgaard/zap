@@ -389,7 +389,7 @@ void scene_graph_test::draw_scene() {
     fbuffer1_.bind();
     clear(0.f, 0.f, 0.f, 0.f);
     mesh1_.bind();
-    context_.bind(rndr_);
+    context_.bind();
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -410,7 +410,7 @@ void scene_graph_test::draw_scene() {
     mesh1_.draw();
 
     fbuffer1_.release();
-    context_.release(rndr_);
+    context_.release();
     mesh1_.release();
 
     // Horizontal Pass
@@ -443,7 +443,7 @@ void scene_graph_test::draw_scene() {
     skybox_.draw(rndr_);
 
     mesh1_.bind();
-    context_.bind(rndr_);
+    context_.bind();
 
     // Low frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -463,7 +463,7 @@ void scene_graph_test::draw_scene() {
     context_.set_parameter("colour[0]", blue_colour_table);
     mesh1_.draw();
 
-    context_.release(rndr_);
+    context_.release();
     mesh1_.release();
 
     fbuffer2_.release();
