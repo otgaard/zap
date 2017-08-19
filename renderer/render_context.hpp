@@ -234,9 +234,9 @@ public:
     void set_state(const render_state* rndr_state) { rndr_state_ = rndr_state; }
     const render_state* get_state() const { return rndr_state_; }
 
-    void bind(renderer& rndr) const;
-    void bind_arguments(const render_args& args) const;
-    void release(renderer& rndr) const;
+    void bind() const;
+    void bind(const render_args& args) const;
+    void release() const;
 
 protected:
 

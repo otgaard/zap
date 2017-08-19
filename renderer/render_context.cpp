@@ -12,7 +12,7 @@ using namespace zap;
 using namespace zap::engine;
 using namespace zap::renderer;
 
-void render_context::bind(zap::renderer::renderer& rndr) const {
+void render_context::bind() const {
     program_->bind();
     is_bound_ = true;
     if(!textures_.empty()) {
@@ -50,13 +50,9 @@ void render_context::bind(zap::renderer::renderer& rndr) const {
         }
         dirty_ = false;
     }
-
-    if(rndr_state_) rndr.push_state(rndr_state_);
 }
 
-void render_context::release(zap::renderer::renderer& rndr) const {
-    if(rndr_state_) rndr.pop_state();
-
+void render_context::release() const {
     if(!textures_.empty()) {
         if(samplers_.empty()) {
             for(size_t i = 0; i != textures_.size(); ++i) {
@@ -78,6 +74,21 @@ void render_context::release(zap::renderer::renderer& rndr) const {
     is_bound_ = false;
 }
 
-void render_context::bind_arguments(const render_args& args) const {
+void render_context::bind(const render_args& args) const {
+    assert(args.get_context() == this && "Mismatched render_args to render_context!");
+    if(args.get_context() != this) {
+        LOG_ERR("Mismatched render_args to render_context");
+        return;
+    }
 
+    bind();
+
+    // For now, no optimisation, just overwrite the bound parameters
+    for(int idx = 0; idx != args.arg_count(); ++idx) {
+        auto& arg = args.get_arg(idx);
+        auto& parm = parameters_[arg.idx];
+        program_->bind_uniform(parm.location, parm.type, parm.count, args.get_arg_value(idx));
+        dirty_flags_[arg.idx] = true;
+        dirty_ = true;
+    }
 }

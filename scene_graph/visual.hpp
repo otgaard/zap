@@ -49,6 +49,7 @@ namespace zap { namespace scene_graph {
         const mesh_base* get_mesh() const { return mesh_; }
         const render_context* get_context() const { return context_; }
 
+        /*
         // TODO: Temporary, move to renderer
         void draw(zap::renderer::renderer& rndr) const {
             if(!mesh_ || !context_) return;
@@ -56,6 +57,7 @@ namespace zap { namespace scene_graph {
             mesh_->draw();
             mesh_->release(); context_->release(rndr);
         }
+        */
 
     protected:
         mesh_base* mesh_ = nullptr;

@@ -16,6 +16,7 @@
  * 4) All non-default state is restored after drawing (optional).
  */
 
+#include <cstring>
 #include <functional>
 #include <renderer/render_context.hpp>
 
@@ -63,6 +64,8 @@ namespace zap { namespace renderer {
             }
             return *this;
         }
+
+        const render_context* get_context() const { return context_; }
 
         // These functions address the arg_index
         int arg_count() const { return arguments_.size(); }
@@ -112,7 +115,7 @@ namespace zap { namespace renderer {
                 buf_size_ += parm.bytesize();
                 arg_buffer_.resize(buf_size_);
             }
-            memcpy(arg_buffer_.data()+arguments_[arg_idx].offset, value, sizeof(T));
+            memcpy(arg_buffer_.data()+arguments_[arg_idx].offset, reinterpret_cast<const char*>(&value), sizeof(T));
             return true;
         }
 

@@ -25,6 +25,7 @@ bool state_stack::initialise() {
 }
 
 void zap::engine::state_stack::push_state(const render_state* state) {
+    assert(state != nullptr && "Cannot push a null state!");
     if(state != peek()) {
         if(state->get_blend_state() != nullptr) push_state(state->get_blend_state());
         if(state->get_depth_state() != nullptr) push_state(state->get_depth_state());

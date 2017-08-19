@@ -5,6 +5,7 @@
 #ifndef ZAP_SPATIAL_HPP
 #define ZAP_SPATIAL_HPP
 
+#include <tools/log.hpp>
 #include <core/enumfield.hpp>
 #include <maths/transform.hpp>
 #include <scene_graph/bound.hpp>

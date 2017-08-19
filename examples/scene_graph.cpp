@@ -19,6 +19,7 @@
 #include <generators/geometry/geometry3.hpp>
 #include <renderer/light.hpp>
 #include <renderer/shader_builder.hpp>
+#include <renderer/render_args.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -58,6 +59,7 @@ protected:
     uniform_buffer<camera_block> camera_block_;
     material_block material_;
     uniform_buffer<builder_task<>::lights_block_t> lights_block_;
+    std::vector<render_args> args_; // One "pack" per visual
 };
 
 bool scene_graph_test::initialise() {
@@ -165,16 +167,21 @@ bool scene_graph_test::initialise() {
     quad.rotate(make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f));
     visuals_.push_back(quad);
 
+    args_.emplace_back(context_.get());
+
     auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere<float,uint32_t>(30, 60, .5f, false));
     visual_t sphere{sphere_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(sphere_mesh));
 
     sphere.translate(vec3f{-3.f, 2.5f, 0.f});
     visuals_.push_back(sphere);
+    args_.emplace_back(context_.get());
     sphere.translate(vec3f{+0.f, 2.5f, 0.f});
     visuals_.push_back(sphere);
+    args_.emplace_back(context_.get());
     sphere.translate(vec3f{+3.f, 2.5f, 0.f});
     visuals_.push_back(sphere);
+    args_.emplace_back(context_.get());
 
     auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 1.f, .5f, false));
     visual_t cylinder{cylinder_mesh.get(), context_.get()};
@@ -182,18 +189,25 @@ bool scene_graph_test::initialise() {
 
     cylinder.translate(vec3f{-3.f, .5f, 0.f});
     visuals_.push_back(cylinder);
+    args_.emplace_back(context_.get());
     cylinder.translate(vec3f{+0.f, .5f, 0.f});
     visuals_.push_back(cylinder);
+    args_.emplace_back(context_.get());
     cylinder.translate(vec3f{+3.f, .5f, 0.f});
     visuals_.push_back(cylinder);
+    args_.emplace_back(context_.get());
 
     auto box_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_cube(vec3f{.5f, .5f, .5f}));
     visual_t box{box_mesh.get(), context_.get()};
     box.translate(vec3f{-1.f, .25f, 1.f});
     visuals_.push_back(box);
+    args_.emplace_back(context_.get());
     box.translate(vec3f{+1.f, .25f, 1.f});
     visuals_.push_back(box);
+    args_.emplace_back(context_.get());
     meshes_.emplace_back(std::move(box_mesh));
+
+    assert(args_.size() == visuals_.size());
 
     gl_error_check();
     return true;
@@ -321,12 +335,12 @@ void scene_graph_test::update(double t, float dt) {
 
 void scene_graph_test::draw() {
     for(int i = 0; i != visuals_.size(); ++i) {
-        context_->set_parameter("mvp_matrix", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
         auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
-        context_->set_parameter("mv_matrix", MV);
-        context_->set_parameter("normal_matrix", MV.inverse().transpose().rotation());
-        context_->set_texture_unit("diffuse_map", i == 0 ? 3 : (i-1)%3);
-        visuals_[i].draw(rndr_);
+        args_[i].add_parameter("mvp_matrix", cam_.projection() * MV);
+        args_[i].add_parameter("mv_matrix", MV);
+        args_[i].add_parameter("normal_matrix", MV.inverse().transpose().rotation());
+        args_[i].add_parameter("diffuse_map", i == 0 ? 3 : (i-1)%3);
+        rndr_.draw(visuals_[i], context_.get(), args_[i]);
     }
 
     gl_error_check();
