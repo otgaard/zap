@@ -41,9 +41,16 @@ namespace zap { namespace renderer {
         const render_context* curr_context() const { return curr_context_; }
         void release_curr_context() {
             if(curr_context_ != nullptr) {
-                if(curr_context_->get_state()) pop_state();
+                if(curr_context_->get_state() != nullptr) pop_state();
                 curr_context_->release();
                 curr_context_ = nullptr;
+            }
+        }
+        const mesh_base* curr_mesh() const { return curr_mesh_; }
+        void release_curr_mesh() {
+            if(curr_mesh_ != nullptr) {
+                curr_mesh_->release();
+                curr_mesh_ = nullptr;
             }
         }
 
@@ -51,6 +58,7 @@ namespace zap { namespace renderer {
         bool initialised_ = false;
         int screen_width_ = 0, screen_height_ = 0;
         const render_context* curr_context_ = nullptr;
+        const mesh_base* curr_mesh_ = nullptr;
         state_stack state_stack_;
     };
 }}

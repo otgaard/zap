@@ -60,12 +60,20 @@ private:
     std::vector<render_args> arguments_;
     node_t graph_;
 
+    using controller_fnc = std::function<void(float)>;
+    std::vector<controller_fnc> controllers_;
+
     camera cam_;
 };
 
 bool scene_graph_app::initialise() {
-
     visuals_.reserve(MAX_OBJECTS);
+    arguments_.reserve(MAX_OBJECTS);
+
+    if(!rndr_.initialise()) {
+        LOG_ERR("Renderer failed to initialise");
+        return false;
+    }
 
     shdr_settings task;
     task.method = shdr_settings::lighting_method::LM_NONE;      // Flat colour only
@@ -74,10 +82,29 @@ bool scene_graph_app::initialise() {
     auto flat_context = shader_builder::build_basic_lights(task);
 
     auto sphere_ptr = p3n3t2_tri_geo3::make_mesh(p3n3t2_tri_geo3::make_UVsphere(30, 60, .5f, false));
-    visuals_.emplace_back(sphere_ptr.get(), flat_context.get());
 
+    visuals_.emplace_back(sphere_ptr.get(), flat_context.get());
     arguments_.emplace_back(flat_context.get());
-    arguments_.back().add_parameter("colour", vec4f{1.f, 0.f, 0.f, 1.f});
+    arguments_.back().add_parameter("colour", vec4f{.6f, 0.6f, 1.f, 1.f});
+
+    visuals_.emplace_back(sphere_ptr.get(), flat_context.get());
+    visuals_.back().translate(vec3f{1.f, 0.f, 0.f});
+    visuals_.back().uniform_scale(.2f);
+    arguments_.emplace_back(flat_context.get());
+    arguments_.back().add_parameter("colour", vec4f{1.f, 1.f, 0.f, 1.f});
+
+    // Add a controller
+    controllers_.emplace_back([this](float dt) {
+        static float rotation = 0.f;
+        auto& v = visuals_[1];
+        auto& a = arguments_[1];
+
+        rotation = wrap(rotation+dt, -TWO_PI<float>, TWO_PI<float>);
+        float parm = (rotation + TWO_PI<float>)/(2.f*TWO_PI<float>);
+
+        v.translate(make_rotation(vec3f{0.f, 1.f, 0.f}, rotation) * vec3f{1.f, 0.f, 0.f});
+        a.add_parameter("colour", lerp(parm, vec4f{1.f, 0.f, 0.f, 1.f}, vec4f{1.f, 1.f, 0.f, 1.f}));
+    });
 
     // Store created contexts
     contexts_.emplace_back(std::move(flat_context));
@@ -90,6 +117,13 @@ bool scene_graph_app::initialise() {
 }
 
 void scene_graph_app::update(double t, float dt) {
+    for(auto& controller : controllers_) controller(dt);
+
+    for(int i = 0; i != visuals_.size(); ++i) {
+        if(visuals_[i].is_dirty()) {
+            arguments_[i].add_parameter("mvp_matrix", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
+        }
+    }
 }
 
 void scene_graph_app::draw() {
@@ -106,7 +140,9 @@ void scene_graph_app::on_resize(int width, int height) {
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_.world_pos(0.f, 0.f, 10.f);
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
-    arguments_[0].add_parameter("mvp_matrix", cam_.proj_view() * visuals_[0].world_transform().gl_matrix());
+    for(int i = 0; i != visuals_.size(); ++i) {
+        arguments_[i].add_parameter("mvp_matrix", cam_.proj_view() * visuals_[i].world_transform().gl_matrix());
+    }
 }
 
 int main(int argc, char* argv[]) {

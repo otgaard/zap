@@ -64,6 +64,8 @@ namespace zap { namespace scene_graph {
 
         virtual void update(double t, float dt) { }
 
+        bool is_dirty() const { return cache_state_.is_set(spatial_state::SS_TRANS_INVALID); }
+
     protected:
         friend class node<spatial, spatial*>;
         friend class node<spatial, std::unique_ptr<spatial>>;

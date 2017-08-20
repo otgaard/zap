@@ -18,10 +18,15 @@ void renderer::draw(const zap::engine::mesh_base* mesh_ptr, const zap::renderer:
         curr_context_ = context_ptr;
         curr_context_->bind(args);
         if(curr_context_->get_state() != nullptr) push_state(curr_context_->get_state());
-    } else
+    } else {
         curr_context_->bind(args);
+    }
 
-    mesh_ptr->bind();
+    if(curr_mesh_ != mesh_ptr) {
+        if(curr_mesh_ != nullptr) curr_mesh_->release();
+        curr_mesh_ = mesh_ptr;
+        curr_mesh_->bind();
+    }
+
     mesh_ptr->draw();
-    mesh_ptr->release();
 }
