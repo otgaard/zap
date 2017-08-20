@@ -87,12 +87,12 @@ namespace zap { namespace scene_graph {
         if(SpatialT::cache_state_.is_set(spatial_state::SS_TRANS_INVALID)) {
             update_transform();
 
-            for(auto spatial : children_) {
+            for(auto& spatial : children_) {
                 spatial->invalidate_transform();
                 spatial->update(t, dt);
             }
         } else {
-            for(auto spatial : children_) {
+            for(auto& spatial : children_) {
                 spatial->update(t, dt);
             }
         }
@@ -115,14 +115,14 @@ namespace zap { namespace scene_graph {
         }
         SpatialT::cache_state_.clear(spatial_state::SS_TRANS_INVALID);
         SpatialT::cache_state_.set(spatial_state::SS_BOUND_INVALID);
-        for(auto spatial : children_) spatial->invalidate_transform();
+        for(auto& spatial : children_) spatial->invalidate_transform();
     }
 
     template <typename SpatialT, typename PtrT>
     void node<SpatialT, PtrT>::update_bound() const {
         if(SpatialT::cache_state_.is_set(spatial_state::SS_BOUND_INVALID)) {
             bool found_first = false;
-            for(auto spatial : children_) {
+            for(auto& spatial : children_) {
                 if(found_first) SpatialT::world_bound_.combine(spatial->world_bound());
                 else {
                     found_first = true;
@@ -137,7 +137,7 @@ namespace zap { namespace scene_graph {
     template <typename SpatialT, typename PtrT>
     void node<SpatialT, PtrT>::invalidate_transform() const {
         SpatialT::invalidate_transform();
-        for(auto spatial : children_) spatial->invalidate_transform();
+        for(auto& spatial : children_) spatial->invalidate_transform();
     }
 }}
 

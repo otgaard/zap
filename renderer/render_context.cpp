@@ -13,6 +13,8 @@ using namespace zap::engine;
 using namespace zap::renderer;
 
 void render_context::bind() const {
+    if(is_bound()) return;
+
     program_->bind();
     is_bound_ = true;
     if(!textures_.empty()) {

@@ -28,6 +28,9 @@ struct sphere {
     type r;
 };
 
+using spheref = sphere<float>;
+using sphered = sphere<double>;
+
 template <typename T>
 int intersection(const sphere<T>& S, const ray<typename sphere<T>::vector>& R, T t[2], const T& epsilon=std::numeric_limits<T>::epsilon()) {
     using vector = typename sphere<T>::vector;

@@ -30,12 +30,12 @@ namespace zap { namespace scene_graph {
         bound& operator=(const bound& rhs) = default;
 
         bound& transform(const transform_t& T) { return *this; }
-        const bound transform(const transform_t& T) const;
-        bound& transform(const affine_t& A);
-        const bound transform(const affine_t& A) const;
+        const bound transform(const transform_t& T) const { return *this; }
+        bound& transform(const affine_t& A) { return *this; }
+        const bound transform(const affine_t& A) const { return *this; }
 
-        template <typename BufferT> bool compute_bound(const BufferT& buffer);
-        bool combine(const bound& rhs);
+        template <typename BufferT> bool compute_bound(const BufferT& buffer) { return false; }
+        bool combine(const bound& rhs) { return false; }
 
         bool intersection(const vec_t& P) const;
         bool intersection(const bound& B) const;

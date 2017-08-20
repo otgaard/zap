@@ -11,6 +11,7 @@
 namespace zap { namespace renderer {
     class renderer {
     public:
+        using mesh_base = engine::mesh_base;
         using state_stack = engine::state_stack;
         using render_state = engine::render_state;
 
@@ -19,23 +20,37 @@ namespace zap { namespace renderer {
 
         bool initialise();
 
+        void resize(int width, int height) { screen_width_ = width; screen_height_ = height; }
+
+        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, const render_args& args);
+
         template <typename SpatialT>
         void draw(const scene_graph::visual<SpatialT>& v, const render_context* context_ptr, const render_args& args) {
-            context_ptr->bind(args);
-            if(context_ptr->get_state() != nullptr) push_state(context_ptr->get_state());
-            v.get_mesh()->bind();
-            v.get_mesh()->draw();
-            v.get_mesh()->release();
-            if(context_ptr->get_state() != nullptr) pop_state();
-            context_ptr->release();
+            draw(v.get_mesh(), context_ptr, args);
+        }
+
+        template <typename SpatialT>
+        void draw(const scene_graph::visual<SpatialT>& v, const render_args& args) {
+            draw(v.get_mesh(), args.get_context(), args);
         }
 
         void push_state(const render_state* rndr_state) { state_stack_.push_state(rndr_state); }
         const render_state* curr_state() const { return state_stack_.peek(); }
         void pop_state() { state_stack_.pop(); }
 
-    protected:
+        const render_context* curr_context() const { return curr_context_; }
+        void release_curr_context() {
+            if(curr_context_ != nullptr) {
+                if(curr_context_->get_state()) pop_state();
+                curr_context_->release();
+                curr_context_ = nullptr;
+            }
+        }
+
+    private:
         bool initialised_ = false;
+        int screen_width_ = 0, screen_height_ = 0;
+        const render_context* curr_context_ = nullptr;
         state_stack state_stack_;
     };
 }}

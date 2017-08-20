@@ -65,7 +65,9 @@ namespace zap { namespace scene_graph {
         virtual void update(double t, float dt) { }
 
     protected:
-        friend class node<spatial>;
+        friend class node<spatial, spatial*>;
+        friend class node<spatial, std::unique_ptr<spatial>>;
+        friend class node<spatial, std::shared_ptr<spatial>>;       // Not sure how to resolve this...
 
         spatial() = default;
         void set_parent(spatial* parent) { parent_ = parent; }

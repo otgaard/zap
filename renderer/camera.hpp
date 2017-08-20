@@ -53,6 +53,7 @@ namespace zap { namespace renderer {
         void up(const vec3f& u) { block_.cam_view_to_world.column(1,u); update_view(); }
         void dir(const vec3f& d) { block_.cam_view_to_world.column(2,d); update_view(); }
         void world_pos(const vec3f& P) { block_.cam_view_to_world.column(3,P); update_view(); }
+        void world_pos(float x, float y, float z) { block_.cam_view_to_world.column(3,vec3f{x, y, z}); update_view(); }
 
         bool is_dirty() const { return cam_state_.is_set(camera_state::CS_DIRTY); }
         void clear_dirty() const { cam_state_.clear(camera_state::CS_DIRTY); }

@@ -29,12 +29,14 @@ struct builder_task {
     using lights_block_t = lights_block<MaxDirLights, MaxPointLights, MaxSpotLights>;
 
     enum class lighting_method {
+        LM_NONE,        // Diffuse colour + texture only
         LM_FLAT,        // Gouraud + flat output
         LM_GOURAUD,
         LM_PHONG,
         LM_BRDF
     } method = lighting_method::LM_PHONG;
 
+    bool is_nolight() const { return method == lighting_method::LM_NONE; }
     bool is_flat() const { return method == lighting_method::LM_FLAT; }
     bool is_gouraud() const { return method == lighting_method::LM_GOURAUD || method == lighting_method::LM_FLAT; }
     bool is_phong() const { return method == lighting_method::LM_PHONG; }
@@ -111,7 +113,7 @@ protected:
     static std::string build_vertex_input(const builder_task<D, P, S>& req) {
         std::string block;
         block += "in vec3 position;" + term;
-        block += "in vec3 normal;" + term;
+        if(!req.is_nolight()) block += "in vec3 normal;" + term;
         block += "in vec2 texcoord1;" + term;
         return block;
     }
@@ -122,7 +124,7 @@ protected:
         block += "uniform mat4 model_matrix;" + term;
         block += "uniform mat4 mv_matrix;" + term;
         block += "uniform mat4 mvp_matrix;" + term;
-        block += "uniform mat3 normal_matrix;" + term;
+        if(!req.is_nolight()) block += "uniform mat3 normal_matrix;" + term;
         return block;
     }
 
@@ -299,6 +301,10 @@ protected:
             if(req.has_gloss_map()) block += "uniform " + sampler_type(req.gloss_map) + " gloss_map;" + term;
             if(req.has_glow_map())  block += "uniform " + sampler_type(req.glow_map) + " glow_map;" + term;
             if(req.has_bump_map())  block += "uniform " + sampler_type(req.bump_map) + " bump_map;" + term;
+        }
+
+        if(req.is_nolight()) {
+            block += "uniform vec4 colour;" + term;
         }
 
         if(req.is_phong()) {
