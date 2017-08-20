@@ -113,7 +113,7 @@ protected:
     static std::string build_vertex_input(const builder_task<D, P, S>& req) {
         std::string block;
         block += "in vec3 position;" + term;
-        if(!req.is_nolight()) block += "in vec3 normal;" + term;
+        block += "in vec3 normal;" + term;
         block += "in vec2 texcoord1;" + term;
         return block;
     }
@@ -238,6 +238,7 @@ protected:
 
         if(req.has_textures()) {
             block += "out vec2 tex2;" + term;       // for 2D textures
+            if(req.diffuse_map == texture_type::TT_CUBE_MAP) block += "out vec3 tex3;" + term;
         }
 
         block += GLSL_OPEN_MAIN + term;
@@ -251,6 +252,7 @@ protected:
 
         if(req.has_textures()) {
             block += "tex2 = texcoord1;" + term;
+            if(req.diffuse_map == texture_type::TT_CUBE_MAP) block += "tex3 = normal;" + term;
         }
 
         block += "gl_Position = mvp_matrix * vec4(position, 1.);" + term;
@@ -285,6 +287,7 @@ protected:
         std::string block = GLSL_HEADER;
         if(req.has_textures()) {
             block += "in vec2 tex2;" + term;
+            if(req.diffuse_map == texture_type::TT_CUBE_MAP) block += "in vec3 tex3;" + term;
         }
         if(req.is_gouraud()) {
             if(req.is_flat()) block += "flat in vec4 colour;" + term;
@@ -318,10 +321,12 @@ protected:
         if(req.is_phong()) block += build_light_computation(req);
 
         if(!req.has_textures()) block += "frag_colour = colour;" + term;
-        else if(req.has_diffuse_map()) block += "frag_colour = texture(diffuse_map, tex2) * colour;" + term;
+        else if(req.has_diffuse_map()) {
+            if (req.diffuse_map == texture_type::TT_TEX2D) block += "frag_colour = texture(diffuse_map, tex2) * colour;" + term;
+            else if (req.diffuse_map == texture_type::TT_CUBE_MAP) block += "frag_colour = texture(diffuse_map, tex3) * colour;" + term;
+        }
 
         block += GLSL_CLOSE_MAIN + term;
-
         return block;
     }
 

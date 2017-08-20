@@ -57,9 +57,7 @@ void render_context::bind() const {
 void render_context::release() const {
     if(!textures_.empty()) {
         if(samplers_.empty()) {
-            for(size_t i = 0; i != textures_.size(); ++i) {
-                textures_[i]->release();
-            }
+            for(size_t i = 0; i != textures_.size(); ++i) textures_[i]->release();
         } else {
             for(size_t i = 0; i != textures_.size(); ++i) {
                 samplers_[i]->release(i);

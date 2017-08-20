@@ -42,7 +42,7 @@ using shdr_settings = builder_task<1, 10, 2>;
 
 class scene_graph_app : public application {
 public:
-    scene_graph_app() : application{"scene_graph", 1920, 1080, false} { }
+    scene_graph_app() : application{"scene_graph", 1280, 800, false} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -62,25 +62,58 @@ private:
 
     using controller_fnc = std::function<void(float)>;
     std::vector<controller_fnc> controllers_;
-
+    std::vector<texture> textures_;
     camera cam_;
 };
 
 bool scene_graph_app::initialise() {
     visuals_.reserve(MAX_OBJECTS);
     arguments_.reserve(MAX_OBJECTS);
+    contexts_.reserve(10);
 
     if(!rndr_.initialise()) {
         LOG_ERR("Renderer failed to initialise");
         return false;
     }
 
+    if(!gen_.initialise()) {
+        LOG_ERR("Generator failed to initialise");
+        return false;
+    }
+
+    render_task req{512, 512, render_task::basis_function::USER_FUNCTION};
+    req.project = render_task::projection::CUBE_MAP;
+    req.scale.set(50.f, 1.f);
+    auto skybox_tex = gen_.render_cubemap(req, [](float x, float y, float z, generator& gen) {
+        int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+        float value = clamp(.707f + .5f*gen.pnoise(x - ix, y - iy, z - iz, ix, iy, iz));
+        vec3b colour = lerp(value, vec3b(0, 200, 0), vec3b(40, 40, 40));
+        return rgb888_t{colour};
+    });
+
+    textures_.emplace_back(std::move(skybox_tex));
+
     shdr_settings task;
+    task.method = shdr_settings::lighting_method::LM_NONE;
+    task.diffuse_map = texture_type::TT_CUBE_MAP;
+    auto cubemap_context = shader_builder::build_basic_lights(task);
+    auto skybox_ptr = p3n3t2_tri_geo3::make_mesh(p3n3t2_tri_geo3::make_skybox(vec3f{1.f, 1.f, 1.f}));
+    cubemap_context->add_texture(&textures_[0]);
+    cubemap_context->set_texture_unit("diffuse_map", 0);
+    visuals_.emplace_back(skybox_ptr.get(), cubemap_context.get());
+    visuals_.back().uniform_scale(50.f);
+    arguments_.emplace_back(cubemap_context.get());
+    arguments_.back().add_parameter("colour", vec4f{1.f, 1.f, 1.f, 1.f});
+    arguments_.back().add_parameter("diffuse_map", 0);
+
+    contexts_.emplace_back(std::move(cubemap_context));
+    meshes_.emplace_back(std::move(skybox_ptr));
+
     task.method = shdr_settings::lighting_method::LM_NONE;      // Flat colour only
     task.diffuse_map = shdr_settings::texture_type::TT_NONE;
 
+    // Build some planets
     auto flat_context = shader_builder::build_basic_lights(task);
-
     auto sphere_ptr = p3n3t2_tri_geo3::make_mesh(p3n3t2_tri_geo3::make_UVsphere(30, 60, .5f, false));
 
     visuals_.emplace_back(sphere_ptr.get(), flat_context.get());
@@ -96,8 +129,18 @@ bool scene_graph_app::initialise() {
     // Add a controller
     controllers_.emplace_back([this](float dt) {
         static float rotation = 0.f;
-        auto& v = visuals_[1];
-        auto& a = arguments_[1];
+        auto& v = visuals_[0];
+        auto& a = arguments_[0];
+
+        rotation = wrap(rotation+.1f*dt, -TWO_PI<float>, TWO_PI<float>);
+        float parm = (rotation + TWO_PI<float>)/(2.f*TWO_PI<float>);
+        v.rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, rotation));
+    });
+
+    controllers_.emplace_back([this](float dt) {
+        static float rotation = 0.f;
+        auto& v = visuals_[2];
+        auto& a = arguments_[2];
 
         rotation = wrap(rotation+dt, -TWO_PI<float>, TWO_PI<float>);
         float parm = (rotation + TWO_PI<float>)/(2.f*TWO_PI<float>);
@@ -137,7 +180,7 @@ void scene_graph_app::shutdown() {
 
 void scene_graph_app::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.frustum(45.f, width/float(height), .5f, 100.f);
+    cam_.frustum(45.f, width/float(height), .5f, 200.f);
     cam_.world_pos(0.f, 0.f, 10.f);
     cam_.look_at(vec3f{0.f, 0.f, 0.f});
     for(int i = 0; i != visuals_.size(); ++i) {

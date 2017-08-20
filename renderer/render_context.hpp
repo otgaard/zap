@@ -87,7 +87,6 @@ public:
         for(size_t i = 0; i != parameters_.size(); ++i) {
             offsets_[i] = int(total);
             total += parameters_[i].count * parameters_[i].bytesize();
-
         }
         uniforms_.resize(total);
         dirty_flags_.resize(parameters_.size(), true);
