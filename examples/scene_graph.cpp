@@ -130,10 +130,10 @@ bool scene_graph_app::initialise() {
     controllers_.emplace_back([this](float dt) {
         static float rotation = 0.f;
         auto& v = visuals_[0];
-        auto& a = arguments_[0];
+        //auto& a = arguments_[0];
 
         rotation = wrap(rotation+.1f*dt, -TWO_PI<float>, TWO_PI<float>);
-        float parm = (rotation + TWO_PI<float>)/(2.f*TWO_PI<float>);
+        //float parm = (rotation + TWO_PI<float>)/(2.f*TWO_PI<float>);
         v.rotate(make_rotation(vec3f{0.f, 1.f, 0.f}, rotation));
     });
 

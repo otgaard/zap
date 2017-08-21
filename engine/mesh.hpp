@@ -243,6 +243,34 @@ public:
 };
 
 template <typename VertexT, primitive_type Primitive>
+std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mesh(size_t vertex_count) {
+#if defined(__APPLE__) || defined(_WIN32)
+    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>();
+#else
+    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>{});
+#endif
+    auto* vbuf_ptr = new vertex_buffer<VertexT>{};
+
+    if(m->allocate() && vbuf_ptr->allocate()) {
+        m->bind(); vbuf_ptr->bind();
+        if(vbuf_ptr->initialise(vertex_count)) {
+            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+            m->release();
+            gl_error_check();
+            return m;
+        } else {
+            LOG_ERR("Failed to initialise vertex_buffer");
+        }
+    } else {
+        LOG_ERR("Failed to allocate mesh resources");
+    }
+
+    delete vbuf_ptr;
+    m.release();
+    return m;
+}
+
+template <typename VertexT, primitive_type Primitive>
 std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mesh(const std::vector<VertexT>& buffer) {
 #if defined(__APPLE__) || defined(_WIN32)
     auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>();
