@@ -22,6 +22,7 @@ namespace zap { namespace renderer {
 
         void resize(int width, int height) { screen_width_ = width; screen_height_ = height; }
 
+        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr);
         void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, const render_args& args);
 
         template <typename SpatialT>

@@ -261,6 +261,7 @@ public:
 
     void bind() const;
     void bind(const render_args& args) const;
+    void rebind() const;
     void release() const;
 
 protected:

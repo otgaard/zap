@@ -92,3 +92,18 @@ void render_context::bind(const render_args& args) const {
         dirty_ = true;
     }
 }
+
+void render_context::rebind() const {
+    if(!is_bound()) return;
+
+    if(dirty_) {
+        for(size_t i = 0; i != parameters_.size(); ++i) {
+            if(dirty_flags_[i]) {
+                program_->bind_uniform(parameters_[i].location, parameters_[i].type, parameters_[i].count, &uniforms_[offsets_[i]]);
+                if(gl_error_check()) LOG_ERR("Error binding parameter:", parameters_[i].name, gl::gl_typename(parameters_[i].type), parameters_[i].count);
+                dirty_flags_[i] = false;
+            }
+        }
+        dirty_ = false;
+    }
+}
