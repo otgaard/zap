@@ -63,13 +63,39 @@ public:
     render_context(const std::string& vshdr, const std::string& fshdr) : program_{new program{vshdr, fshdr}}, owns_program_(true) { }
     render_context(program* prog, texture* tex) : program_{prog}, textures_{tex} { }
     render_context(const render_context&) = delete; // for now
-    render_context(render_context&&) = delete;
+    render_context(render_context&& rhs) noexcept : program_(rhs.program_), rndr_state_(rhs.rndr_state_),
+        parameters_(std::move(rhs.parameters_)), blocks_(std::move(rhs.blocks_)), textures_(std::move(rhs.textures_)),
+        samplers_(std::move(rhs.samplers_)), ubname_(std::move(rhs.ubname_)), ubuffers_(std::move(rhs.ubuffers_)),
+        offsets_(std::move(rhs.offsets_)), uniforms_(std::move(rhs.uniforms_)), dirty_flags_(std::move(rhs.dirty_flags_)),
+        dirty_(rhs.dirty_), is_bound_(rhs.is_bound_), owns_program_(rhs.owns_program_) {
+        rhs.owns_program_ = false;
+    }
+
     ~render_context() {
         if(owns_program_) delete program_;
     }
 
     render_context& operator=(const render_context&) = delete;
-    render_context& operator=(render_context&&) = delete;
+    render_context& operator=(render_context&& rhs) noexcept {
+        if(this != &rhs) {
+            program_ = rhs.program_;
+            rndr_state_ = rhs.rndr_state_;
+            parameters_ = std::move(rhs.parameters_);
+            blocks_ = std::move(rhs.blocks_);
+            textures_ = std::move(rhs.textures_);
+            samplers_ = std::move(rhs.samplers_);
+            ubname_ = std::move(rhs.ubname_);
+            ubuffers_ = std::move(rhs.ubuffers_);
+            offsets_ = std::move(rhs.offsets_);
+            uniforms_ = std::move(rhs.uniforms_);
+            dirty_flags_ = std::move(rhs.dirty_flags_);
+            dirty_ = rhs.dirty_;
+            is_bound_ = rhs.is_bound_;
+            owns_program_ = rhs.owns_program_;
+            rhs.owns_program_ = false;
+        }
+        return *this;
+    }
 
     bool is_bound() const { return is_bound_; }
 
