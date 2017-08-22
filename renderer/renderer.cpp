@@ -38,7 +38,7 @@ void renderer::draw(const renderer::mesh_base* mesh_ptr, const render_context* c
             curr_context_->release();
         }
         curr_context_ = context_ptr;
-        curr_context_->rebind();
+        curr_context_->bind();
         if(curr_context_->get_state() != nullptr) push_state(curr_context_->get_state());
     } else {
         curr_context_->rebind();

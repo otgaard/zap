@@ -52,9 +52,11 @@ public:
     void bind() const;
     void release() const;
 
-    void draw_arrays_impl(primitive_type type, size_t first, size_t count) const ;
-    void draw_elements_impl(primitive_type type, data_type index_type, size_t first, size_t count) const;
-    void draw_elements_inst_impl(primitive_type type, data_type index_type, size_t first, size_t count, size_t instances) const;
+    void set_attrib_divisor(uint32_t va_idx, uint32_t divisor);
+    void draw_arrays_impl(primitive_type type, uint32_t first, uint32_t count) const;
+    void draw_arrays_inst_impl(primitive_type type, uint32_t first, uint32_t count, uint32_t instances) const;
+    void draw_elements_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count) const;
+    void draw_elements_inst_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count, uint32_t instances) const;
 
     void draw() const {
         is_indexed() ? draw_elements_impl(prim_type_, idx_type_, 0, index_count_) : draw_arrays_impl(prim_type_, 0, vertex_count_);

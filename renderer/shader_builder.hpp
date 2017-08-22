@@ -121,10 +121,12 @@ protected:
     template <size_t D, size_t P, size_t S>
     static std::string build_transform_block(const builder_task<D, P, S>& req) {
         std::string block;
-        block += "uniform mat4 model_matrix;" + term;
-        block += "uniform mat4 mv_matrix;" + term;
+        if(!req.is_nolight()) {
+            block += "uniform mat4 model_matrix;" + term;
+            block += "uniform mat4 mv_matrix;" + term;
+            block += "uniform mat3 normal_matrix;" + term;
+        }
         block += "uniform mat4 mvp_matrix;" + term;
-        if(!req.is_nolight()) block += "uniform mat3 normal_matrix;" + term;
         return block;
     }
 

@@ -134,7 +134,7 @@ set(ZAP_ENGINE_PUBLIC_HEADERS
         tools/string.hpp
         renderer/render_args.hpp
         engine/state_stack.hpp
-        renderer/shader_builder.hpp)
+        renderer/shader_builder.hpp generators/geometry/geometry_traits.hpp)
 
 set(ZAP_ENGINE_FILES
         engine/shader.cpp

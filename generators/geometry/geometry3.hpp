@@ -6,34 +6,10 @@
 #define ZAP_GEOMETRY3_HPP
 
 #include <map>
-#include <vector>
-#include <maths/vec2.hpp>
-#include <maths/vec3.hpp>
-#include <engine/engine.hpp>
 #include <graphics3/g3_types.hpp>
+#include <generators/geometry/geometry_traits.hpp>
 
 namespace zap { namespace generators {
-    using zap::engine::primitive_type;
-
-    template <typename VertexT, primitive_type Primitive>
-    struct geometry_traits {
-        template <typename T> using vec2 = zap::maths::vec2<T>;
-        template <typename T> using vec3 = zap::maths::vec3<T>;
-        using vec2f = zap::maths::vec2f;
-        using vec3f = zap::maths::vec3f;
-
-        constexpr static primitive_type primitive = Primitive;
-
-        template <typename IndexT>
-        static auto make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& m) {
-            return engine::make_mesh<VertexT, Primitive, IndexT>(m);
-        }
-
-        static auto make_mesh(const std::vector<VertexT>& m) {
-            return engine::make_mesh<VertexT, Primitive>(m);
-        }
-    };
-
     template <typename VertexT, primitive_type Primitive> struct geometry3;
 
     template <typename VertexT>

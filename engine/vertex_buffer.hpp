@@ -92,6 +92,14 @@ public:
         return *(reinterpret_cast<vertex_t*>(mapped_ptr_) + idx);
     }
 
+    const vertex_t& at(size_t idx) const {
+        return operator[](idx);
+    }
+
+    vertex_t& at(size_t idx) {
+        return operator[](idx);
+    }
+
     iterator begin() {
         assert(is_mapped() && "Vertex Buffer must be mapped!");
         return iterator(reinterpret_cast<vertex_t*>(mapped_ptr_));
