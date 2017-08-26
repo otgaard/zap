@@ -16,7 +16,7 @@ namespace zap { namespace maths {
         constexpr static size_t size() { return 2; }
         constexpr static size_t bytesize() { return sizeof(vec2<T>); }
 
-        vec2() { }
+        vec2() = default;
         constexpr explicit vec2(T init) : x(init), y(init) { }
         constexpr explicit vec2(const T* ptr) : x(ptr[0]), y(ptr[1]) { }
         constexpr vec2(T x, T y) : x(x), y(y) { }

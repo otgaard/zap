@@ -16,6 +16,15 @@ const int RND_MASK = 255;
 
 const simd::veci RND_MASK_V = simd::load(0xFF);
 
+const maths::vec4i simplex[] = {
+        {0,1,2,3},{0,1,3,2},{0,0,0,0},{0,2,3,1},{0,0,0,0},{0,0,0,0},{0,0,0,0},{1,2,3,0},{0,2,1,3},{0,0,0,0},
+        {0,3,1,2},{0,3,2,1},{0,0,0,0},{0,0,0,0},{0,0,0,0},{1,3,2,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},
+        {0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{1,2,0,3},{0,0,0,0},{1,3,0,2},{0,0,0,0},{0,0,0,0},{0,0,0,0},
+        {2,3,0,1},{2,3,1,0},{1,0,2,3},{1,0,3,2},{0,0,0,0},{0,0,0,0},{0,0,0,0},{2,0,3,1},{0,0,0,0},{2,1,3,0},
+        {0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{2,0,1,3},{0,0,0,0},
+        {0,0,0,0},{0,0,0,0},{3,0,1,2},{3,0,2,1},{0,0,0,0},{3,1,2,0},{2,1,0,3},{0,0,0,0},{0,0,0,0},{0,0,0,0},
+        {3,1,0,2},{0,0,0,0},{3,2,0,1},{3,2,1,0}};
+
 const char* const value_noise_fshdr = GLSL(
         const int MASK = 0xFF;
         uniform vec4 dims;        // [width, height, inv_w, inv_h]
@@ -102,6 +111,35 @@ struct generator::state_t {
     float grad1(int x, int y, int z, int w) const { return grad1_table[perm(x,y,z,w)]; }
     vec2f grad2(int x, int y) const { return grad2_table[perm(x,y)]; }
     vec3f grad3(int x, int y, int z) const { return grad3_table[perm(x,y,z)]; }
+
+    float grad(int hash, float x) {
+        int h = hash & 15;
+        float grad = 1.0f + (h & 7);   // Gradient value 1.0, 2.0, ..., 8.0
+        if (h&8) grad = -grad;         // Set a random sign for the gradient
+        return grad * x;               // Multiply the gradient with the distance
+    }
+
+    float grad(int hash, float x, float y) {
+        int h = hash & 7;       // Convert low 3 bits of hash code
+        float u = h<4 ? x : y;  // into 8 simple gradient directions,
+        float v = h<4 ? y : x;  // and compute the dot product with (x,y).
+        return ((h&1)? -u : u) + ((h&2)? -2.0f*v : 2.0f*v);
+    }
+
+    float grad(int hash, float x, float y , float z) {
+        int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
+        float u = h<8 ? x : y; // gradient directions, and compute dot product.
+        float v = h<4 ? y : h==12||h==14 ? x : z; // Fix repeats at h = 12 to 15
+        return ((h&1)? -u : u) + ((h&2)? -v : v);
+    }
+
+    float grad(int hash, float x, float y, float z, float t) {
+        int h = hash & 31;      // Convert low 5 bits of hash code into 32 simple
+        float u = h<24 ? x : y; // gradient directions, and compute dot product.
+        float v = h<16 ? y : z;
+        float w = h<8 ? z : t;
+        return ((h&1)? -u : u) + ((h&2)? -v : v) + ((h&4)? -w : w);
+    }
 };
 
 generator::generator() : state_(new state_t()), s(*state_.get()) {
@@ -497,6 +535,96 @@ float generator::pnoise(float dx, float dy, float dz, int x, int y, int z) const
 
     d = lerp(sy, a, b);
     return lerp(sz, c, d);
+}
+
+// Adapted from "Simplex noise demystified (Stefan Gustavson)"
+float generator::snoise(float x, float y, float z, float w) const {
+    constexpr float F4 = .309016994f; // sqrtf(5.f) - 1.f)/4.f
+    constexpr float G4 = .138196601f; // (5.f - sqrtf(5.f))/20.f
+
+    float n0, n1, n2, n3, n4;
+
+    float scale = (x + y + z + w) * F4;
+    float xs = x + scale, ys = y + scale, zs = z + scale, ws = w + scale;
+    int i = maths::floor(xs), j = maths::floor(ys), k = maths::floor(zs), l = maths::floor(ws);
+
+    float t = (i + j + k + l) * G4;
+    float X0 = i - t, Y0 = j - t, Z0 = k - t, W0 = l - t;
+
+    float x0 = x - X0, y0 = y - Y0, z0 = z - Z0, w0 = w - W0;
+
+    int c1 = (x0 > y0) ? 32 : 0;
+    int c2 = (x0 > z0) ? 16 : 0;
+    int c3 = (y0 > z0) ? 8 : 0;
+    int c4 = (x0 > w0) ? 4 : 0;
+    int c5 = (y0 > w0) ? 2 : 0;
+    int c6 = (z0 > w0) ? 1 : 0;
+    int c = c1 + c2 + c3 + c4 + c5 + c6;
+
+    int i1, j1, k1, l1;
+    int i2, j2, k2, l2;
+    int i3, j3, k3, l3;
+
+    i1 = simplex[c][0]>=3 ? 1 : 0;
+    j1 = simplex[c][1]>=3 ? 1 : 0;
+    k1 = simplex[c][2]>=3 ? 1 : 0;
+    l1 = simplex[c][3]>=3 ? 1 : 0;
+
+    i2 = simplex[c][0]>=2 ? 1 : 0;
+    j2 = simplex[c][1]>=2 ? 1 : 0;
+    k2 = simplex[c][2]>=2 ? 1 : 0;
+    l2 = simplex[c][3]>=2 ? 1 : 0;
+
+    i3 = simplex[c][0]>=1 ? 1 : 0;
+    j3 = simplex[c][1]>=1 ? 1 : 0;
+    k3 = simplex[c][2]>=1 ? 1 : 0;
+    l3 = simplex[c][3]>=1 ? 1 : 0;
+
+    const vec4f F = { G4, 2.f*G4, 3.f*G4, 4.f*G4 };
+
+    float x1 = x0 - i1 + F[0],   y1 = y0 - j1 + F[0],   z1 = z0 - k1 + F[0],   w1 = w0 - l1 + F[0];
+    float x2 = x0 - i2 + F[1],   y2 = y0 - j2 + F[1],   z2 = z0 - k2 + F[1],   w2 = w0 - l2 + F[1];
+    float x3 = x0 - i3 + F[2],   y3 = y0 - j3 + F[2],   z3 = z0 - k3 + F[2],   w3 = w0 - l3 + F[2];
+    float x4 = x0 - 1.0f + F[3], y4 = y0 - 1.0f + F[3], z4 = z0 - 1.0f + F[3], w4 = w0 - 1.0f + F[3];
+
+    int ii = i & RND_MASK, jj = j & RND_MASK, kk = k & RND_MASK, ll = l & RND_MASK;
+
+    float t0 = .6f - x0*x0 - y0*y0 - z0*z0 - w0*w0;
+    if(t0 < 0.0f) n0 = 0.0f;
+    else {
+        t0 *= t0;
+        n0 = t0 * t0 * s.grad(s.perm(ii+s.perm(jj+s.perm(kk+s.perm(ll)))), x0, y0, z0, w0);
+    }
+
+    float t1 = .6f - x1*x1 - y1*y1 - z1*z1 - w1*w1;
+    if(t1 < 0.0f) n1 = 0.0f;
+    else {
+        t1 *= t1;
+        n1 = t1 * t1 * s.grad(s.perm(ii+i1+s.perm(jj+j1+s.perm(kk+k1+s.perm(ll+l1)))), x1, y1, z1, w1);
+    }
+
+    float t2 = .6f - x2*x2 - y2*y2 - z2*z2 - w2*w2;
+    if(t2 < 0.0f) n2 = 0.0f;
+    else {
+        t2 *= t2;
+        n2 = t2 * t2 * s.grad(s.perm(ii+i2+s.perm(jj+j2+s.perm(kk+k2+s.perm(ll+l2)))), x2, y2, z2, w2);
+    }
+
+    float t3 = .6f - x3*x3 - y3*y3 - z3*z3 - w3*w3;
+    if(t3 < 0.0f) n3 = 0.0f;
+    else {
+        t3 *= t3;
+        n3 = t3 * t3 * s.grad(s.perm(ii+i3+s.perm(jj+j3+s.perm(kk+k3+s.perm(ll+l3)))), x3, y3, z3, w3);
+    }
+
+    float t4 = .6f - x4*x4 - y4*y4 - z4*z4 - w4*w4;
+    if(t4 < 0.0f) n4 = 0.0f;
+    else {
+        t4 *= t4;
+        n4 = t4 * t4 * s.grad(s.perm(ii+1+s.perm(jj+1+s.perm(kk+1+s.perm(ll+1)))), x4, y4, z4, w4);
+    }
+
+    return 27.0f * (n0 + n1 + n2 + n3 + n4);
 }
 
 const texture* generator::prn_table() const {

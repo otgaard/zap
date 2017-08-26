@@ -78,6 +78,10 @@ public:
     template <typename PixelT> using pixmap = engine::pixmap<PixelT>;
     template <typename PixelT> using pixmap_future = std::future<pixmap<PixelT>>;
 
+    using vec2f = maths::vec2f;
+    using vec3f = maths::vec3f;
+    using vec4f = maths::vec4f;
+
     enum class gen_method {
         CPU,
         SIMD,
@@ -123,13 +127,45 @@ public:
     pixmap<float> render_gpu(const render_task& req);
 
     float vnoise(float dx, int x) const;
+    float vnoise(float x) const {
+        const int ix = maths::floor(x);
+        return vnoise(x - ix, ix);
+    }
     float vnoise(float dx, float dy, int x, int y) const;
+    float vnoise(float x, float y) const {
+        const int ix = maths::floor(x), iy = maths::floor(y);
+        return vnoise(x - ix, y - iy, ix, iy);
+    }
+    float vnoise(const vec2f& v) const { return vnoise(v.x, v.y); }
     float vnoise(float dx, float dy, float dz, int x, int y, int z) const;
-    float pnoise(float dx, int x) const;
-    float pnoise(float dx, float dy, int x, int y) const;
-    float pnoise(float dx, float dy, float dz, int x, int y, int z) const;
+    float vnoise(float x, float y, float z) const {
+        int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+        return vnoise(x - ix, y - iy, z - iz, ix, iy, iz);
+    }
+    float vnoise(const vec3f& v) const { return vnoise(v.x, v.y, v.z); }
 
-    inline float easing_curve(float value) const { return value * value * (3.f - 2.f * value); }
+    float pnoise(float dx, int x) const;
+    float pnoise(float x) const {
+        int ix = maths::floor(x);
+        return pnoise(x - ix, ix);
+    }
+    float pnoise(float dx, float dy, int x, int y) const;
+    float pnoise(float x, float y) const {
+        int ix = maths::floor(x), iy = maths::floor(y);
+        return pnoise(x - ix, y - iy, ix, iy);
+    }
+    float pnoise(const vec2f& v) const { return pnoise(v.x, v.y); }
+    float pnoise(float dx, float dy, float dz, int x, int y, int z) const;
+    float pnoise(float x, float y, float z) const {
+        int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+        return pnoise(x - ix, y - iy, z - iz, ix, iy, iz);
+    }
+    float pnoise(const vec3f& v) const { return pnoise(v.x, v.y, v.z); }
+    float snoise(float x, float y, float z, float w) const;
+    float snoise(const vec4f& v) const { return snoise(v.x, v.y, v.z, v.w); }
+
+    inline float easing_curve(float v) const { return v * v * (3.f - 2.f * v); }
+    inline float easing_curve2(float v) const { return v * v * v * (10.f + v * (6.f * v - 15.f)); }
 
 private:
     threadpool* pool_ptr_ = nullptr;

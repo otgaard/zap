@@ -76,7 +76,8 @@ namespace zap { namespace engine {
             assert(idx < shaders_.size() && ZERR_IDX_OUT_OF_RANGE);
             return shaders_[idx];
         }
-        bool link(bool clear=true);
+        // clear - clear the strings & delete the shader objects.  bind-generic = bind the loc0 - loc15 vertex attributes
+        bool link(bool clear=true, bool bind_generic=false);
 
         void bind_uniform(int location, parameter_type type, int count, const char* data);
         template <typename T> void bind_uniform(int location, const T& type);

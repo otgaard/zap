@@ -28,7 +28,7 @@ void program::release() const {
     gl::glUseProgram(0);
 }
 
-bool program::link(bool clear) {
+bool program::link(bool clear, bool bind_generic) {
     using namespace gl;
 
     id_ = glCreateProgram();
@@ -44,7 +44,8 @@ bool program::link(bool clear) {
     }
 
     for(size_t i = 0; i != size_t(attribute_type::AT_SIZE); ++i) {
-        glBindAttribLocation(id_, i, attribute_name[i]);
+        if(bind_generic) glBindAttribLocation(id_, i, generic_attribute_name[i]);       // loc0, loc1, etc
+        else             glBindAttribLocation(id_, i, attribute_name[i]);               // position, normal, etc
     }
 
     glLinkProgram(id_);

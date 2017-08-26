@@ -73,6 +73,9 @@ public:
     bool copy(const std::vector<vertex_t>& data, size_t offset, size_t vertex_count) {
         return buffer::copy(buf_type, offset, vertex_t::bytesize()*data.size(), reinterpret_cast<const char*>(data.data()));
     }
+    bool copy(const char* data, size_t offset, size_t count) {
+        return buffer::copy(buf_type, offset, count, data);
+    }
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
     char* map(buffer_access access, size_t offset, size_t length) {
@@ -143,11 +146,11 @@ bool vertex_buffer<VTX_T>::configure_attributes() {
         LOG("Vertex Attribute Binding", vertex_t::types::data[i], vertex_t::counts::data[i], vertex_t::datatypes::data[i],
             vertex_t::offsets::data[i], vertex_t::is_int::data[i]);
         if(vertex_t::is_int::data[i])
-            gl::vertex_attrib_iptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
+            gl::vertex_attrib_iptr(vertex_t::types::data[i], vertex_t::counts::data[i],
                                    (data_type)vertex_t::datatypes::data[i], vertex_t::bytesize(),
                                    (void*)vertex_t::offsets::data[i]);
         else
-            gl::vertex_attrib_ptr(maths::log2_pow2(vertex_t::types::data[i]), vertex_t::counts::data[i],
+            gl::vertex_attrib_ptr(vertex_t::types::data[i], vertex_t::counts::data[i],
                                   (data_type)vertex_t::datatypes::data[i], false, vertex_t::bytesize(),
                                   (void*)vertex_t::offsets::data[i]);
     }

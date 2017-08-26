@@ -67,7 +67,7 @@ namespace zap { namespace generators {
 
             int iCorner, iVertex, iVertexTest, iEdge, iTriangle, iFlagIndex, iEdgeFlags;
             float fOffset;
-            vec3f sColor;
+            //vec3f sColor;
             float afCubeValue[8];
             vec3f asEdgeVertex[12];
             vec3f asEdgeNorm[12];
@@ -136,7 +136,7 @@ namespace zap { namespace generators {
             float fOffset, fInvOffset = 0.0;
             vec3f asEdgeVertex[6];
             vec3f asEdgeNorm[6];
-            vec3f sColor;
+            //vec3f sColor;
 
             //Find which vertices are inside of the surface and which are outside
             for(iVertex = 0; iVertex < 4; iVertex++) {

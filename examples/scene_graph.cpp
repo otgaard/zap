@@ -83,13 +83,19 @@ bool scene_graph_app::initialise() {
 
     render_task req{512, 512, render_task::basis_function::USER_FUNCTION};
     req.project = render_task::projection::CUBE_MAP;
-    req.scale.set(50.f, 1.f);
-    auto skybox_tex = gen_.render_cubemap(req, [](float x, float y, float z, generator& gen) {
-        int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
-        float value = clamp(.707f + .5f*gen.pnoise(x - ix, y - iy, z - iz, ix, iy, iz));
+    req.scale.set(10.f, 1.f);
+    float min = std::numeric_limits<float>::max(), max = -min;
+    auto skybox_tex = gen_.render_cubemap(req, [&max, &min](float x, float y, float z, generator& gen) {
+        //int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
+        float value = .5f + .5f*gen.snoise(x, y, z, 1.f);
+        if(value < min) min = value;
+        if(value > max) max = value;
+
         vec3b colour = lerp(value, vec3b(0, 200, 0), vec3b(40, 40, 40));
         return rgb888_t{colour};
     });
+
+    LOG(LOG_RED, "Min:", min, "Max:", max);
 
     textures_.emplace_back(std::move(skybox_tex));
 

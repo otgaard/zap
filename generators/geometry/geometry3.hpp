@@ -55,23 +55,28 @@ namespace zap { namespace generators {
 
         // Bottom
         vertices[0].position.set(-hdims.x, -hdims.y, -hdims.z);
-        vertices[0].set(normal, normalise(vertices[0].position));
         vertices[1].position.set(-hdims.x, -hdims.y, +hdims.z);
-        vertices[1].set(normal, normalise(vertices[1].position));
         vertices[2].position.set(+hdims.x, -hdims.y, +hdims.z);
-        vertices[2].set(normal, normalise(vertices[2].position));
         vertices[3].position.set(+hdims.x, -hdims.y, -hdims.z);
-        vertices[3].set(normal, normalise(vertices[3].position));
+        if(normal != INVALID_IDX) {
+            vertices[0].set(normal, normalise(vertices[0].position));
+            vertices[1].set(normal, normalise(vertices[1].position));
+            vertices[2].set(normal, normalise(vertices[2].position));
+            vertices[3].set(normal, normalise(vertices[3].position));
+        }
 
         // Top
         vertices[4].position.set(-hdims.x, +hdims.y, -hdims.z);
-        vertices[4].set(normal, normalise(vertices[4].position));
         vertices[5].position.set(-hdims.x, +hdims.y, +hdims.z);
-        vertices[5].set(normal, normalise(vertices[5].position));
         vertices[6].position.set(+hdims.x, +hdims.y, +hdims.z);
-        vertices[6].set(normal, normalise(vertices[6].position));
         vertices[7].position.set(+hdims.x, +hdims.y, -hdims.z);
-        vertices[7].set(normal, normalise(vertices[7].position));
+
+        if(normal != INVALID_IDX) {
+            vertices[4].set(normal, normalise(vertices[4].position));
+            vertices[5].set(normal, normalise(vertices[5].position));
+            vertices[6].set(normal, normalise(vertices[6].position));
+            vertices[7].set(normal, normalise(vertices[7].position));
+        }
 
         // X+ X- Y+ Y- Z+ Z-
         index.emplace_back(3); index.emplace_back(2); index.emplace_back(6);        // +X

@@ -27,6 +27,23 @@ namespace zap {
         MAKE_PODFIELD(blendweight, engine::attribute_type, engine::attribute_type::AT_BLENDWEIGHT);
         MAKE_PODFIELD(fogcoord, engine::attribute_type, engine::attribute_type::AT_FOGCOORD);
         MAKE_PODFIELD(pointsize, engine::attribute_type, engine::attribute_type::AT_POINTSIZE);
+
+        MAKE_PODFIELD(loc0, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_0);
+        MAKE_PODFIELD(loc1, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_1);
+        MAKE_PODFIELD(loc2, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_2);
+        MAKE_PODFIELD(loc3, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_3);
+        MAKE_PODFIELD(loc4, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_4);
+        MAKE_PODFIELD(loc5, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_5);
+        MAKE_PODFIELD(loc6, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_6);
+        MAKE_PODFIELD(loc7, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_7);
+        MAKE_PODFIELD(loc8, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_8);
+        MAKE_PODFIELD(loc9, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_9);
+        MAKE_PODFIELD(loc10, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_10);
+        MAKE_PODFIELD(loc11, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_11);
+        MAKE_PODFIELD(loc12, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_12);
+        MAKE_PODFIELD(loc13, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_13);
+        MAKE_PODFIELD(loc14, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_14);
+        MAKE_PODFIELD(loc15, engine::generic_attribute_type, engine::generic_attribute_type::AT_LOCATION_15);
     }
 }
 

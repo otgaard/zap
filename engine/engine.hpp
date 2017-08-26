@@ -143,24 +143,25 @@ namespace zap { namespace engine {
 			default: return 0;
         }
     }
+
     enum class attribute_type : size_t {
-        AT_POSITION = 1 << 0,
-        AT_NORMAL = 1 << 1,
-        AT_TANGENT = 1 << 2,
-        AT_BITANGENT = 1 << 3,
-        AT_TEXCOORD1 = 1 << 4,
-        AT_TEXCOORD2 = 1 << 5,
-        AT_TEXCOORD3 = 1 << 6,
-        AT_TEXCOORD4 = 1 << 7,
-        AT_TEXCOORD5 = 1 << 8,
-        AT_TEXCOORD6 = 1 << 9,
-        AT_COLOUR1 = 1 << 10,
-        AT_COLOUR2 = 1 << 11,
-        AT_BLENDINDEX = 1 << 12,
-        AT_BLENDWEIGHT = 1 << 13,
-        AT_FOGCOORD = 1 << 14,
-        AT_POINTSIZE = 1 << 15,
-        AT_SIZE = zap::maths::log2_pow2(1 << 16)
+        AT_POSITION,
+        AT_NORMAL,
+        AT_TANGENT,
+        AT_BITANGENT,
+        AT_TEXCOORD1,
+        AT_TEXCOORD2,
+        AT_TEXCOORD3,
+        AT_TEXCOORD4,
+        AT_TEXCOORD5,
+        AT_TEXCOORD6,
+        AT_COLOUR1,
+        AT_COLOUR2,
+        AT_BLENDINDEX,
+        AT_BLENDWEIGHT,
+        AT_FOGCOORD,
+        AT_POINTSIZE,
+        AT_SIZE
     };
 
     constexpr static const char* const attribute_name[size_t(attribute_type::AT_SIZE)] = {
@@ -180,6 +181,45 @@ namespace zap { namespace engine {
         "blendweight",
         "fogcoord",
         "pointsize"
+    };
+
+    enum class generic_attribute_type : size_t {
+        AT_LOCATION_0,
+        AT_LOCATION_1,
+        AT_LOCATION_2,
+        AT_LOCATION_3,
+        AT_LOCATION_4,
+        AT_LOCATION_5,
+        AT_LOCATION_6,
+        AT_LOCATION_7,
+        AT_LOCATION_8,
+        AT_LOCATION_9,
+        AT_LOCATION_10,
+        AT_LOCATION_11,
+        AT_LOCATION_12,
+        AT_LOCATION_13,
+        AT_LOCATION_14,
+        AT_LOCATION_15,
+        AT_SIZE
+    };
+
+    constexpr static const char* const generic_attribute_name[size_t(attribute_type::AT_SIZE)] = {
+        "loc0",
+        "loc1",
+        "loc2",
+        "loc3",
+        "loc4",
+        "loc5",
+        "loc6",
+        "loc7",
+        "loc8",
+        "loc9",
+        "loc10",
+        "loc11",
+        "loc12",
+        "loc13",
+        "loc14",
+        "loc15"
     };
 
     enum class primitive_type : std::uint8_t {
