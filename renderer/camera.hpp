@@ -119,6 +119,8 @@ namespace zap { namespace renderer {
         const camera_block& get_uniform_block(bool clear=true) const { if(clear) clear_dirty(); return block_; }
         static const std::string uniform_block_def(const char* const term="");
 
+        size_t sequence_id() const { return seq_id_; }
+
     protected:
         enum frustum_plane {
             FP_DMIN = 0,
@@ -138,6 +140,7 @@ namespace zap { namespace renderer {
         mat4f post_view_;
         frustum_t frustum_;
         mutable core::enumfield<int, camera_state> cam_state_;
+        size_t seq_id_ = 0; // Updated per view_update
     };
 }}
 

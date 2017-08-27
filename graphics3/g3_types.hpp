@@ -70,6 +70,7 @@ using mesh_p3n3tn3t2_ts_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type
 using mesh_p3_ps1_trii_t = mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
 using mesh_p3_n3ps1_trii_t = mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
 
+using mesh_particles_p4_c4_pnt_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t>, primitive_type::PT_POINTS>;
 // Particle types (in separate vertex_buffers to make updating easier with vbuf_t2_t instanced)
 using mesh_particles_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
 using mesh_particles_col_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;

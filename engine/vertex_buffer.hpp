@@ -131,7 +131,6 @@ public:
     size_t vertex_count() const { return vertex_count_; }
     size_t capacity() const { return size() / vertex_t::bytesize(); }
 
-protected:
     bool configure_attributes();
 
 private:

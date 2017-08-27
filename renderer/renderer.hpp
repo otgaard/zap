@@ -23,6 +23,9 @@ namespace zap { namespace renderer {
         void resize(int width, int height) { screen_width_ = width; screen_height_ = height; }
 
         void draw(const mesh_base* mesh_ptr, const render_context* context_ptr);
+        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count);
+        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances);
+        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances, uint32_t offset);
         void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, const render_args& args);
 
         template <typename SpatialT>
@@ -56,6 +59,8 @@ namespace zap { namespace renderer {
         }
 
     private:
+        void transition(const mesh_base* mesh_ptr, const render_context* context_ptr, const render_args* args_ptr=nullptr);
+
         bool initialised_ = false;
         int screen_width_ = 0, screen_height_ = 0;
         const render_context* curr_context_ = nullptr;
