@@ -1,6 +1,7 @@
 GL_ARB_gpu_shader_int64
 http://www.opengl.org/registry/specs/ARB/gpu_shader_int64.txt
 GL_ARB_gpu_shader_int64
+
 	GL_INT64_ARB 0x140E
 	GL_UNSIGNED_INT64_ARB 0x140F
 	GL_INT64_VEC2_ARB 0x8FE9

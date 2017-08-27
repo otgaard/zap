@@ -2,6 +2,109 @@
 
 <hr align="center">
 <ul class="none">
+<li><b>2.1.0</b> [07-31-17]
+<ul>
+<li> Enhancements:
+<ul>
+<li> OpenGL 4.6 support added
+<li> Improved Mac OSX build support
+<li> Improved cmake build support
+</ul>
+</ul>
+
+<ul>
+<li> Bug fixes:
+<ul>
+<li> Resovled crash when glXGetCurrentDisplay() is NULL
+<li> CMake: only install PDB files with MSVC
+<li> wglGetProcAddress crash with NOGDI defined 
+<li> Mac: using -Os rather than -O2
+</ul>
+</ul>
+
+<ul>
+<li> New extensions:
+<ul>
+<li> GL_AMD_gpu_shader_half_float
+<li> GL_AMD_shader_ballot
+<li> GL_ARB_gl_spirv
+<li> GL_EGL_KHR_context_flush_control
+<li> GL_INTEL_conservative_rasterization
+<li> GL_MESA_shader_integer_functions
+<li> GL_NVX_blend_equation_advanced_multi_draw_buffers
+<li> GL_NV_gpu_multicast
+<li> EGL_ARM_implicit_external_sync
+<li> EGL_EXT_gl_colorspace_bt2020_linear
+<li> EGL_EXT_gl_colorspace_bt2020_pq
+<li> EGL_EXT_gl_colorspace_scrgb_linear
+<li> EGL_EXT_image_dma_buf_import_modifiers
+<li> EGL_EXT_pixel_format_float
+<li> EGL_EXT_surface_SMPTE2086_metadata
+<li> EGL_KHR_context_flush_control
+<li> EGL_KHR_no_config_context
+<li> EGL_KHR_stream_attrib
+<li> EGL_MESA_platform_surfaceless
+<li> EGL_NV_stream_cross_display
+<li> EGL_NV_stream_cross_object
+<li> EGL_NV_stream_cross_partition
+<li> EGL_NV_stream_cross_process
+<li> EGL_NV_stream_cross_system
+<li> EGL_NV_stream_fifo_next
+<li> EGL_NV_stream_fifo_synchronous
+<li> EGL_NV_stream_frame_limits
+<li> EGL_NV_stream_remote
+<li> EGL_NV_stream_reset
+<li> EGL_NV_stream_socket
+<li> EGL_NV_stream_socket_inet
+<li> EGL_NV_stream_socket_unix
+<li> WGL_EXT_colorspace
+</ul>
+</ul>
+
+</ul>
+
+<hr align="center">
+<ul class="none">
+<li><b>2.0.0</b> [07-24-16]
+<ul>
+<li> Enhancements:
+<ul>
+<li> Forward context support added
+<li> OSMesa support added
+<li> EGL support added
+<li> MX support discontinued
+<li> Improved cmake build support
+</ul>
+</ul>
+<ul>
+<li> New extensions:
+<ul>
+<li> GL_AMD_shader_explicit_vertex_parameter
+<li> GL_ARB_gl_spirv
+<li> GL_EGL_NV_robustness_video_memory_purge
+<li> GL_EXT_window_rectangles
+<li> GL_INTEL_conservative_rasterization
+<li> GL_KHR_texture_compression_astc_sliced_3d
+<li> GL_MESA_shader_integer_functions
+<li> GL_NVX_blend_equation_advanced_multi_draw_buffers
+<li> GL_NVX_linked_gpu_multicast
+<li> GL_NV_clip_space_w_scaling
+<li> GL_NV_command_list
+<li> GL_NV_conservative_raster_pre_snap_triangles
+<li> GL_NV_draw_vulkan_image
+<li> GL_NV_gpu_multicast
+<li> GL_NV_robustness_video_memory_purge
+<li> GL_NV_shader_atomic_float64
+<li> GL_NV_stereo_view_rendering
+<li> GL_NV_viewport_swizzle
+<li> GLX_EXT_libglvnd
+<li> GLX_NV_robustness_video_memory_purge
+</ul>
+</ul>
+</ul>
+
+<hr align="center">
+<ul class="none">
 <li><b>1.13.0</b> [08-10-15]
 <ul>
 <li> Enhancements:
@@ -9,6 +112,8 @@
 <li> glxewInit, wglewInit
 <li> glewinfo adds support for -version, -profile core|compatibility and -flag debug|forward parameters
 <li> Improved cmake build support
+</ul>
+</ul>
 <ul>
 <li> New extensions:
 <ul>

@@ -18,11 +18,13 @@ set -e
     mv tmp $1/GL_NV_texture_compression_vtc
 
 # remove duplicates from GL_ARB_vertex_program and GL_ARB_fragment_program
-    grep -v -F -f $1/GL_ARB_vertex_program $1/GL_ARB_fragment_program > tmp
+    tail -n +5 $1/GL_ARB_vertex_program > patterns
+    grep -v -F -f patterns $1/GL_ARB_fragment_program > tmp
     mv tmp $1/GL_ARB_fragment_program
 
 # remove duplicates from GLX_EXT_visual_rating and GLX_EXT_visual_info
-    grep -v -F -f $1/GLX_EXT_visual_info $1/GLX_EXT_visual_rating > tmp
+    tail -n +5 $1/GLX_EXT_visual_info > patterns
+    grep -v -F -f patterns $1/GLX_EXT_visual_rating > tmp
     mv tmp $1/GLX_EXT_visual_rating
 
 # GL_EXT_draw_buffers2 and GL_EXT_transform_feedback both define glGetBooleanIndexedvEXT but with different parameter names
@@ -58,7 +60,8 @@ EOT
 EOT
 
 # remove duplicates from GL_NV_present_video and GLX_NV_present_video
-    grep -v -F -f $1/GLX_NV_present_video $1/GL_NV_present_video > tmp
+    tail -n +5 $1/GLX_NV_present_video > patterns
+    grep -v -F -f patterns $1/GL_NV_present_video > tmp
     mv tmp $1/GL_NV_present_video
 
 # fix WGL_NV_present_video
@@ -180,20 +183,23 @@ EOT
 
 # remove triplicates in GL_ARB_shader_objects, GL_ARB_fragment_shader, 
 # and GL_ARB_vertex_shader
-    grep -v -F -f $1/GL_ARB_shader_objects $1/GL_ARB_fragment_shader > tmp
+    tail -n +5 $1/GL_ARB_shader_objects > patterns
+    grep -v -F -f patterns $1/GL_ARB_fragment_shader > tmp
     mv tmp $1/GL_ARB_fragment_shader
-    grep -v -F -f $1/GL_ARB_shader_objects $1/GL_ARB_vertex_shader > tmp
+    grep -v -F -f patterns $1/GL_ARB_vertex_shader > tmp
     mv tmp $1/GL_ARB_vertex_shader
 
 # remove duplicates in GL_ARB_vertex_program and GL_ARB_vertex_shader
-    grep -v -F -f $1/GL_ARB_vertex_program $1/GL_ARB_vertex_shader > tmp
+    tail -n +5 $1/GL_ARB_vertex_program > patterns
+    grep -v -F -f patterns $1/GL_ARB_vertex_shader > tmp
     mv tmp $1/GL_ARB_vertex_shader
 
 # remove triplicates in GL_ARB_fragment_program, GL_ARB_fragment_shader,
 # and GL_ARB_vertex_shader
-    grep -v -F -f $1/GL_ARB_fragment_program $1/GL_ARB_fragment_shader > tmp
+    tail -n +5 $1/GL_ARB_fragment_program > patterns
+    grep -v -F -f patterns $1/GL_ARB_fragment_shader > tmp
     mv tmp $1/GL_ARB_fragment_shader
-    grep -v -F -f $1/GL_ARB_fragment_program $1/GL_ARB_vertex_shader > tmp
+    grep -v -F -f patterns $1/GL_ARB_vertex_shader > tmp
     mv tmp $1/GL_ARB_vertex_shader
 
 # remove duplicates in GL_EXT_direct_state_access
@@ -246,7 +252,7 @@ EOT
 EOT
 
 # Filter out GL_NV_gpu_program_fp64 enums and functions
-    head -n3 $1/GL_NV_gpu_program_fp64 > tmp
+    head -n4 $1/GL_NV_gpu_program_fp64 > tmp
     mv tmp $1/GL_NV_gpu_program_fp64
 
 # Filter glGetUniformui64vNV from GL_NV_shader_buffer_load
@@ -258,7 +264,7 @@ EOT
     mv tmp $1/GLX_ARB_create_context
 
 # Filter only profile related enumerations for GLX_ARB_create_context_profile
-    head -n3 $1/GLX_ARB_create_context_profile > tmp
+    head -n4 $1/GLX_ARB_create_context_profile > tmp
     grep "_PROFILE_" $1/GLX_ARB_create_context_profile >> tmp
     mv tmp $1/GLX_ARB_create_context_profile
 
@@ -267,7 +273,7 @@ EOT
     mv tmp $1/WGL_ARB_create_context
 
 # Filter only profile related enumerations for WGL_ARB_create_context_profile
-    head -n3 $1/WGL_ARB_create_context_profile > tmp
+    head -n4 $1/WGL_ARB_create_context_profile > tmp
     grep "_PROFILE_" $1/WGL_ARB_create_context_profile >> tmp
     mv tmp $1/WGL_ARB_create_context_profile
 
@@ -471,11 +477,11 @@ EOT
     for i in $1/GL_ANGLE_*; do perl -e 's#http://www.opengl.org/registry/specs/ANGLE/.*#https://code.google.com/p/angleproject/source/browse/\#git%2Fextensions#g' -pi $i; done
 
 # Filter out GL_NV_blend_equation_advanced_coherent enums and functions
-    head -n3 $1/GL_NV_blend_equation_advanced_coherent > tmp
+    head -n4 $1/GL_NV_blend_equation_advanced_coherent > tmp
     mv tmp $1/GL_NV_blend_equation_advanced_coherent
 
 # Filter out GL_AMD_gpu_shader_int64 enums and functions
-    head -n3 $1/GL_AMD_gpu_shader_int64 > tmp
+    head -n4 $1/GL_AMD_gpu_shader_int64 > tmp
     mv tmp $1/GL_AMD_gpu_shader_int64
 
 # Filter out GL_NO_ERROR enum from GL_KHR_robustness
@@ -490,9 +496,13 @@ EOT
     grep -v 'glBlendBarrierKHR' $1/GL_KHR_blend_equation_advanced_coherent > tmp
     mv tmp $1/GL_KHR_blend_equation_advanced_coherent
 
-# Filter out GL_NONE enum from GL_KHR_robustness
+# Filter out GL_NONE enum from GL_KHR_context_flush_control
     grep -v 'GL_NONE' $1/GL_KHR_context_flush_control > tmp
     mv tmp $1/GL_KHR_context_flush_control
+
+# Filter out GL_NONE enum from GL_EGL_KHR_context_flush_control
+    grep -v 'GL_NONE' $1/GL_EGL_KHR_context_flush_control > tmp
+    mv tmp $1/GL_EGL_KHR_context_flush_control
 
 # Filter out CoverageModulation from NV_framebuffer_mixed_samples
 # Superset of EXT_raster_multisample
@@ -506,5 +516,55 @@ EOT
     grep -v "RasterSamplesEXT" $1/GL_NV_framebuffer_mixed_samples > tmp
     mv tmp $1/GL_NV_framebuffer_mixed_samples
 
+# Filter out glNamedBufferStorageEXT from GL_ARB_buffer_storage
+
+    grep -v "glNamedBufferStorageEXT" $1/GL_ARB_buffer_storage > tmp
+    mv tmp $1/GL_ARB_buffer_storage
+
+# Filter out glFramebufferTextureEXT from GL_EXT_geometry_point_size
+# and GL_EXT_geometry_shader
+
+    grep -v "glFramebufferTextureEXT" $1/GL_EXT_geometry_point_size > tmp
+    mv tmp $1/GL_EXT_geometry_point_size
+
+    grep -v "glFramebufferTextureEXT" $1/GL_EXT_geometry_shader > tmp
+    mv tmp $1/GL_EXT_geometry_shader
+
+# Filter out glBindFragDataLocationEXT from GL_EXT_blend_func_extended
+
+    grep -v "glBindFragDataLocationEXT" $1/GL_EXT_blend_func_extended > tmp
+    mv tmp $1/GL_EXT_blend_func_extended
+
+# Filter out glDrawArraysInstancedEXT and glDrawElementsInstancedEXT from GL_EXT_blend_func_extended
+
+    grep -v "glDrawArraysInstancedEXT" $1/GL_EXT_instanced_arrays > tmp
+    mv tmp $1/GL_EXT_instanced_arrays
+
+    grep -v "glDrawElementsInstancedEXT" $1/GL_EXT_instanced_arrays > tmp
+    mv tmp $1/GL_EXT_instanced_arrays
+
+# Filter out glRenderbufferStorageMultisampleEXT from GL_EXT_multisampled_render_to_texture
+
+    grep -v "glRenderbufferStorageMultisampleEXT" $1/GL_EXT_multisampled_render_to_texture > tmp
+    mv tmp $1/GL_EXT_multisampled_render_to_texture
+
+# Filter out glTexturePageCommitmentEXT from GL_ARB_sparse_texture
+
+    grep -v "glTexturePageCommitmentEXT" $1/GL_ARB_sparse_texture > tmp
+    mv tmp $1/GL_ARB_sparse_texture
+
+# Filter out TextureStorage* from GL_ARB_texture_storage
+
+    grep -v "TextureStorage" $1/GL_ARB_texture_storage > tmp
+    mv tmp $1/GL_ARB_texture_storage
+
+
+# Append GLVULKANPROCNV to GL_NV_draw_vulkan_image
+# Probably ought to be explicitly mentioned in the spec language
+
+    cat >> $1/GL_NV_draw_vulkan_image <<EOT
+    typedef void (APIENTRY *GLVULKANPROCNV)(void)
+EOT
+
 # clean up
-    rm -f $1/*.bak
+    rm -f patterns $1/*.bak
