@@ -103,7 +103,8 @@ static zap::tools::logger default_log(&std::cout);
 #define LOG_WARN default_log.print<zap::tools::log_level::LL_WARNING>
 #else //!LOGGING_ENABLED
 #define LOG(...)
-#define LOG_ERR(...)
+//#define LOG_ERR(...)
+#define LOG_ERR default_log.print<zap::tools::log_level::LL_ERROR>
 #define LOG_WARN(...)
 #endif //!LOGGING_ENABLED
 

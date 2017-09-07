@@ -41,7 +41,7 @@ public:
     // Framebuffer must be bound for read/write operations to succeed
     // Note: viewport = [x, y, width, height]
     template <typename PixelT>
-    bool read_attachment(pixel_buffer<PixelT>& pbuf, const vec4i& viewport, size_t idx) {
+    bool read_attachment(pixel_buffer<PixelT>& pbuf, const vec4i& viewport, size_t idx) const {
         checkidx(idx, target_count_ + depthstencil_);
 
         // Check type is compatible
@@ -53,6 +53,14 @@ public:
         pbuf.bind(pbuf.read_type);
         auto err = read_attachment(viewport, idx);
         pbuf.release(pbuf.read_type);
+        return err;
+    }
+
+    bool read_attachment(buffer& buf, const vec4i& viewport, size_t idx) const {
+        checkidx(idx, target_count_ + depthstencil_);
+        buf.bind(buffer_type::BT_PIXEL_PACK);
+        auto err = read_attachment(viewport, idx);
+        buf.release(buffer_type::BT_PIXEL_PACK);
         return err;
     }
 
@@ -84,7 +92,7 @@ public:
 
 protected:
     // viewport = [x, y, width, height]
-    bool read_attachment(const vec4i& viewport, size_t idx);
+    bool read_attachment(const vec4i& viewport, size_t idx) const;
 
     resource_t framebuffer_ = INVALID_IDX;
     size_t target_count_ = 0;

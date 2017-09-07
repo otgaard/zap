@@ -76,7 +76,7 @@ bool framebuffer::initialise() {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         } else {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         }
 
@@ -132,7 +132,7 @@ bool framebuffer::initialise() {
     return !gl_error_check();
 }
 
-bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) {
+bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) const {
     if(viewport[2] > (int)width() || viewport[3] > (int)height()) {
         LOG_ERR("Invalid viewport specified for framebuffer attachment copy");
         return false;

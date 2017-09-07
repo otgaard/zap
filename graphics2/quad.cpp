@@ -94,37 +94,6 @@ bool quad::initialise(shader* frag_shdr) {
     return true;
 }
 
-/*
-void quad::set_program(program* prog) {
-    override_ = prog;
-}
-
-
-bool quad::set_frag_shader(shader* shdr) {
-    if(!shdr || shdr->type() != shader_type::ST_FRAGMENT) {
-        LOG_ERR("Expected fragment shader");
-        return false;
-    }
-
-    program prog{};
-    prog.add_shader(new shader(shader_type::ST_VERTEX, quadvshdr_source));
-    prog.add_shader(shdr);
-    if(!prog.link()) {
-        LOG_ERR("An error occurred during linkage of the quad shader");
-        return false;
-    }
-
-    auto proj = make_ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
-    auto cam = make_frame(vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, 1.f});
-    auto pvm = proj*cam;
-
-    prog.bind();
-    prog.bind_uniform("pvm", pvm);
-    prog.release();
-    program_ = std::move(prog);
-    return true;
-}
-*/
 void quad::resize(int w, int h) {
     screen_.set(w, h);
 }
@@ -136,12 +105,10 @@ void quad::draw() {
     if(screen_.is_zero()) return;
 
     program_.bind();
-    gl_error_check();
     if(frag_shdr_ == nullptr && !tex_override_) texture_.bind(0);
     else if(tex_override_) tex_override_->bind(0);
 
     mesh_.bind();
-    gl_error_check();
     gl::glGetIntegerv(GL_VIEWPORT, curr_viewport_);
     gl::glViewport(0, 0, screen_.x, screen_.y);
     gl_error_check();
@@ -149,11 +116,11 @@ void quad::draw() {
     gl_error_check();
     gl::glViewport(curr_viewport_[0], curr_viewport_[1], curr_viewport_[2], curr_viewport_[3]);
     mesh_.release();
-    gl_error_check();
 
     if(frag_shdr_ == nullptr && !tex_override_) texture_.release();
     else if(tex_override_) tex_override_->release();
     program_.release();
+    gl_error_check();
 }
 
 bool quad::initialise(const std::string& frag_shdr_src) {

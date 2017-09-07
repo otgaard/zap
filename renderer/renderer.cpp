@@ -1,6 +1,7 @@
 /* Created by Darren Otgaar on 2016/08/14. http://www.github.com/otgaard/zap */
 #include "renderer.hpp"
 
+using namespace zap::engine;
 using namespace zap::renderer;
 
 bool renderer::initialise() {
@@ -28,6 +29,8 @@ void renderer::transition(const renderer::mesh_base* mesh_ptr, const render_cont
         curr_mesh_ = mesh_ptr;
         curr_mesh_->bind();
     }
+
+    gl_error_check();
 }
 
 

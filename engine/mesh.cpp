@@ -50,12 +50,16 @@ void mesh_base::set_attrib_divisor(uint32_t va_idx, uint32_t divisor) {
 
 void mesh_base::draw_arrays_inst_baseinst_impl(primitive_type type, uint32_t first, uint32_t count, uint32_t instances,
                                                uint32_t offset) const {
+    assert(false && "This function is not supported in OpenGL 3.3 Core");
+    return;
     glDrawArraysInstancedBaseInstance(gl_type(type), first, count, instances, offset);
 }
 
 void
 mesh_base::draw_elements_inst_baseinst_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count,
                                             uint32_t instances, uint32_t offset) const {
+    assert(false && "This function is not supported in OpenGL 3.3 Core");
+    return;
     glDrawElementsInstancedBaseInstance(gl_type(type), first, gl_type(index_type),
                                         reinterpret_cast<void*>(first*dt_bytesize(index_type)), instances, offset);
 }
