@@ -11,11 +11,10 @@ using namespace zap::graphics;
 const char* const quadvshdr_source = GLSL(
     in vec2 position;
     in vec2 texcoord1;
-    uniform mat4 pvm;
     out vec2 tex;
     void main() {
         tex = texcoord1;
-        gl_Position = pvm * vec4(position, 0, 1);
+        gl_Position = vec4(position, 0, 1);
     }
 );
 
@@ -65,6 +64,8 @@ bool quad::initialise(shader* frag_shdr) {
     vbuf_.initialise(4, vertices);
     mesh_.release();
 
+    gl_error_check();
+
     frag_shdr_ = frag_shdr;
     program_.add_shader(new shader(shader_type::ST_VERTEX, quadvshdr_source));
     program_.add_shader(frag_shdr_ ? frag_shdr_ : new shader(shader_type::ST_FRAGMENT, quadfshdr_source));
@@ -73,12 +74,7 @@ bool quad::initialise(shader* frag_shdr) {
         return false;
     }
 
-    auto proj = make_ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
-    auto cam = make_frame(vec3f(0,0,-1), vec3f(0,1,0), vec3f(0,0,1));
-    auto pvm = proj * cam;
-
     program_.bind();
-    program_.bind_uniform("pvm", pvm);
 
     if(!frag_shdr) {
         program_.bind_texture_unit(program_.uniform_location("diffuse"), 0);

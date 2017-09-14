@@ -41,6 +41,14 @@ namespace zap { namespace engine {
         void bind(buffer_type type=write_type) const { buffer::bind(type); }
         void release(buffer_type type=write_type) const { buffer::release(type); }
 
+        bool initialise(size_t width, size_t height, buffer_type type, const pixel_t* data=nullptr) {
+            if(buffer::initialise(type, usage_, width*height*pixel_t::bytesize, reinterpret_cast<const char*>(data))) {
+                pixel_count_ = width*height; width_ = width; height_ = height; depth_ = 1;
+                return true;
+            }
+            return false;
+        }
+
         bool initialise(size_t width, size_t height, const pixel_t* data=nullptr) {
             if(buffer::initialise(write_type, usage_, width*height*pixel_t::bytesize, reinterpret_cast<const char*>(data))) {
                 pixel_count_ = width*height; width_ = width; height_ = height; depth_ = 1;

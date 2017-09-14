@@ -33,7 +33,6 @@ void renderer::transition(const renderer::mesh_base* mesh_ptr, const render_cont
     gl_error_check();
 }
 
-
 void renderer::draw(const zap::engine::mesh_base* mesh_ptr, const zap::renderer::render_context* context_ptr,
                               const zap::renderer::render_args& args) {
     transition(mesh_ptr, context_ptr, &args);

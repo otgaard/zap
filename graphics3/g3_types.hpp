@@ -75,6 +75,7 @@ using mesh_particles_col_pnt_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t>, primi
 using mesh_particles_col_data_pnt_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps4_t>, primitive_type::PT_POINTS>;
 // Particle types (in separate vertex_buffers to make updating easier with vbuf_t2_t instanced)
 using mesh_particles_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
+using mesh_particles_ts_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
 using mesh_particles_col_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
 using mesh_particles_col_age_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps1_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
 using mesh_particles_col_data_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
