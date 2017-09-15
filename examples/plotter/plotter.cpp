@@ -95,7 +95,7 @@ bool plotter::initialise() {
 
 void plotter::on_resize(int width, int height) {
     cam_.viewport(0, 0, width, height);
-    cam_.frustum(0, width, 0, height, 0, 1);
+    cam_.frustum(0, float(width), 0, float(height), 0, 1);
     float scale = std::max(width/2.f, height/2.f);
     plot_.world_transform.uniform_scale(scale);
     plot_.world_transform.translate(vec2f(width/2.f - scale/2, height/2.f - scale/2));

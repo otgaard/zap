@@ -300,7 +300,7 @@ namespace zap { namespace generators {
             std::vector<uint16_t> new_ibuf;
             new_ibuf.reserve(ibuf.size()*4*3);
 
-            for(size_t idx = 0, iend = ibuf.size()/3; idx != iend; ++idx) {
+            for(int idx = 0, iend = int(ibuf.size())/3; idx != iend; ++idx) {
                 int offset = 3*idx, oA = ibuf[offset], oB = ibuf[offset+1], oC = ibuf[offset+2];
                 int nA = get_centre(oA,oB), nB = get_centre(oB,oC), nC = get_centre(oC,oA);
                 new_ibuf.push_back(oA); new_ibuf.push_back(nA), new_ibuf.push_back(nC);

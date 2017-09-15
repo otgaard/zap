@@ -76,7 +76,7 @@ bool particle_engine::setup_buffers() {
     initial_position.reserve(s.dim*s.dim);
     rand_lcg rand;
 
-    for(int i = 0, end = s.dim*s.dim; i != end; ++i) {
+    for(int i = 0, end = int(s.dim*s.dim); i != end; ++i) {
         auto P = vec3f(rand.random_s(), rand.random_s(), rand.random_s());
         while(P.length_sqr() > 1.) P.set(rand.random_s(), rand.random_s(), rand.random_s());
 
@@ -127,17 +127,17 @@ bool particle_engine::setup_buffers() {
     s.particle_vbuf.initialise(s.particle_count);
     s.particle_mesh.release();
 
-    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {
+    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, int32_t(s.dim), int32_t(s.dim)), 0)) {
         LOG_ERR("Error during initialisation of particle system from pixel buffer");
         return false;
     }
 
-    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 1)) {
+    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, int32_t(s.dim), int32_t(s.dim)), 1)) {
         LOG_ERR("Error during initialisation of particle system from pixel buffer");
         return false;
     }
 
-    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 2)) {
+    if(!s.buffers[0].write_attachment(s.copy_buffer, vec4i(0, 0, int32_t(s.dim), int32_t(s.dim)), 2)) {
         LOG_ERR("Error during initialisation of particle system from pixel buffer");
         return false;
     }
@@ -216,7 +216,7 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.buffers[1].release();
 
         s.buffers[0].bind();
-        if(!s.buffers[0].read_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {    // Read from 0
+        if(!s.buffers[0].read_attachment(s.copy_buffer, vec4i(0, 0, int32_t(s.dim), int32_t(s.dim)), 0)) {    // Read from 0
             LOG("Error reading framebuffer (0, 0)");
             return;
         }
@@ -251,7 +251,7 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.buffers[0].release();
 
         s.buffers[1].bind();
-        if(!s.buffers[1].read_attachment(s.copy_buffer, vec4i(0, 0, s.dim, s.dim), 0)) {    // Read from 1
+        if(!s.buffers[1].read_attachment(s.copy_buffer, vec4i(0, 0, int32_t(s.dim), int32_t(s.dim)), 0)) {    // Read from 1
             LOG("Error reading framebuffer (1, 0)");
             return;
         }

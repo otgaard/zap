@@ -69,12 +69,12 @@ std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
 
     transform3f transform;
     transform.rotate(make_rotation(angle));
-    transform.translate(vec2f(sw/2, sh/2));
+    transform.translate(vec2f(sw/2.f, sh/2.f));
 
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(nP.x, nP.y));
+        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
     });
 
     return polygon;
@@ -85,12 +85,12 @@ std::vector<vec2i> draw_shape(int sw, int sh, float angle) {
 
     transform3f transform;
     transform.rotate(make_rotation(angle));
-    transform.translate(vec2f(sw/2, sh/2));
+    transform.translate(vec2f(sw/2.f, sh/2.f));
 
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(nP.x, nP.y));
+        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
     });
 
     return polygon;
@@ -101,12 +101,12 @@ std::vector<vec2i> draw_diamond(int sw, int sh, float angle) {
 
     transform3f transform;
     transform.rotate(make_rotation(angle));
-    transform.translate(vec2f(sw/2, sh/2));
+    transform.translate(vec2f(sw/2.f, sh/2.f));
 
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(nP.x, nP.y));
+        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
     });
 
     return polygon;
@@ -117,12 +117,12 @@ std::vector<vec2i> draw_tri(int sw, int sh, float angle) {
 
     transform3f transform;
     transform.rotate(make_rotation(angle));
-    transform.translate(vec2f(sw/2, sh/2));
+    transform.translate(vec2f(sw/2.f, sh/2.f));
 
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(nP.x, nP.y));
+        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
     });
 
     return polygon;

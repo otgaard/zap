@@ -69,7 +69,7 @@ namespace zap { namespace renderer {
         const render_context* get_context() const { return context_; }
 
         // These functions address the arg_index
-        int arg_count() const { return arguments_.size(); }
+        int arg_count() const { return int32_t(arguments_.size()); }
         const argument& get_arg(int arg_idx) const { return arguments_[arg_idx]; }
         const char* get_arg_value(int arg_idx) const { return &arg_buffer_[arguments_[arg_idx].offset]; }
 
@@ -111,9 +111,9 @@ namespace zap { namespace renderer {
                 assert(parm.bytesize() == sizeof(T) && "Mismatched parameters");
                 if(parm.location == -1 || parm.bytesize() != sizeof(T)) return false;
 
-                arg_idx = arguments_.size();
+                arg_idx = int32_t(arguments_.size());
                 arguments_.emplace_back(argument::arg_type::AT_CONSTANT, idx, buf_size_);
-                buf_size_ += parm.bytesize();
+                buf_size_ += int32_t(parm.bytesize());
                 arg_buffer_.resize(buf_size_);
             }
             memcpy(arg_buffer_.data()+arguments_[arg_idx].offset, reinterpret_cast<const char*>(&value), sizeof(T));
@@ -125,9 +125,9 @@ namespace zap { namespace renderer {
             if(arg_idx == -1) {
                 auto parm = context_->get_parameter(idx);
                 if(parm.location == -1) return false;
-                arg_idx = arguments_.size();
+                arg_idx = int32_t(arguments_.size());
                 arguments_.emplace_back(argument::arg_type::AT_FUNCTION, idx, buf_size_, std::move(fnc));
-                buf_size_ += parm.bytesize();
+                buf_size_ += uint32_t(parm.bytesize());
                 arg_buffer_.resize(buf_size_);
             }
             arguments_[arg_idx].fnc(arg_buffer_.data()+arguments_[arg_idx].offset);

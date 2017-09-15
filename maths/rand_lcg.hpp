@@ -32,7 +32,7 @@ namespace zap { namespace maths {
 
         template<class RndIterator>
         void shuffle(RndIterator begin, RndIterator end) {
-            for(int n = end - begin, i = n - 1; i > 0; --i) {
+            for(size_t n = end - begin, i = n - 1; i > 0; --i) {
                 std::swap(begin[i], begin[rand()%(i+1)]);
             }
         }

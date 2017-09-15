@@ -229,7 +229,7 @@ size_t texture::query_max_units() {
 }
 
 void texture::bind(size_t unit) const {
-    glActiveTexture(GL_TEXTURE0 + unit);
+    glActiveTexture(GL_TEXTURE0 + uint32_t(unit));
     gl_error_check();
     glBindTexture(gl_type(type_), id_);
     gl_error_check();
@@ -307,7 +307,7 @@ bool texture::copy(size_t col, size_t row, size_t width, size_t height, int leve
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
     if(type_ == texture_type::TT_TEX2D) {
-        glTexSubImage2D(gltype, level, col, row, width, height, gl_type(format), gl_type(datatype), data);
+        glTexSubImage2D(gltype, level, uint32_t(col), uint32_t(row), uint32_t(width), uint32_t(height), gl_type(format), gl_type(datatype), data);
     } else {
         LOG_ERR("This function is incomplete and the texture you've just initialised isn't gonna work.");
     }

@@ -61,7 +61,7 @@ public:
     void draw_elements_inst_baseinst_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count, uint32_t instances, uint32_t offset) const;
 
     void draw() const {
-        is_indexed() ? draw_elements_impl(prim_type_, idx_type_, 0, index_count_) : draw_arrays_impl(prim_type_, 0, vertex_count_);
+        is_indexed() ? draw_elements_impl(prim_type_, idx_type_, 0, uint32_t(index_count_)) : draw_arrays_impl(prim_type_, 0, uint32_t(vertex_count_));
     }
 
 private:
@@ -182,8 +182,8 @@ public:
 
         mesh_base::draw_elements_impl(primitive,
                                       (data_type)dt_descriptor<typename index_buffer_t::type>::value,
-                                      start,
-                                      count == 0 ? idx_buffer_ptr->index_count() : count);
+                                      uint32_t(start),
+                                      uint32_t(count == 0 ? idx_buffer_ptr->index_count() : count));
     }
 
     void draw_inst(size_t instances, size_t start=0, size_t count=0) {
@@ -191,9 +191,9 @@ public:
 
         mesh_base::draw_elements_inst_impl(primitive,
                                            (data_type)dt_descriptor<typename index_buffer_t::type>::value,
-                                           start,
-                                           count == 0 ? idx_buffer_ptr->index_count() : count,
-                                           instances);
+                                           uint32_t(start),
+                                           uint32_t(count == 0 ? idx_buffer_ptr->index_count() : count),
+                                           uint32_t(instances));
     }
 
     vertex_stream_t vstream;
@@ -239,7 +239,7 @@ public:
 
     void draw(primitive_type prim=primitive, size_t start=0, size_t count=0, bool no_null_stream=true) {
         if(no_null_stream && !vstream.ptr) { LOG("No vertex stream specified"); return; }
-        mesh_base::draw_arrays_impl(prim, start, count == 0 ? vstream.ptr->vertex_count() : count);
+        mesh_base::draw_arrays_impl(prim, uint32_t(start), uint32_t(count == 0 ?vstream.ptr->vertex_count() : count));
     }
 
     vertex_stream_t vstream;

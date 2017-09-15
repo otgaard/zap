@@ -19,10 +19,10 @@ void render_context::bind() const {
     is_bound_ = true;
     if(!textures_.empty()) {
         if(samplers_.empty()) {
-            for(size_t i = 0; i != textures_.size(); ++i) textures_[i]->bind(i);
+            for(uint32_t i = 0; i != textures_.size(); ++i) textures_[i]->bind(i);
         } else {
             // TODO: Bind only the required textures
-            for(size_t i = 0; i != textures_.size(); ++i) {
+            for(uint32_t i = 0; i != uint32_t(textures_.size()); ++i) {
                 textures_[i]->bind(i);
                 samplers_[i]->bind(i);
             }
@@ -30,7 +30,7 @@ void render_context::bind() const {
     }
 
     if(!ubuffers_.empty()) {
-        for(size_t i = 0; i != ubuffers_.size(); ++i) {
+        for(uint32_t i = 0; i != ubuffers_.size(); ++i) {
             // TODO: Try to avoid these two steps per frame by reusing same location across shader programs
             const auto& name = ubname_[i];
             auto it = std::find_if(blocks_.begin(), blocks_.end(), [&name](const auto& b) { return name == b.name; });
@@ -43,7 +43,7 @@ void render_context::bind() const {
     }
 
     if(dirty_) {
-        for(size_t i = 0; i != parameters_.size(); ++i) {
+        for(uint32_t i = 0; i != parameters_.size(); ++i) {
             if(dirty_flags_[i]) {
                 program_->bind_uniform(parameters_[i].location, parameters_[i].type, parameters_[i].count, &uniforms_[offsets_[i]]);
                 if(gl_error_check()) LOG_ERR("Error binding parameter:", parameters_[i].name, gl::gl_typename(parameters_[i].type), parameters_[i].count);
@@ -57,9 +57,9 @@ void render_context::bind() const {
 void render_context::release() const {
     if(!textures_.empty()) {
         if(samplers_.empty()) {
-            for(size_t i = 0; i != textures_.size(); ++i) textures_[i]->release();
+            for(uint32_t i = 0; i != textures_.size(); ++i) textures_[i]->release();
         } else {
-            for(size_t i = 0; i != textures_.size(); ++i) {
+            for(uint32_t i = 0; i != textures_.size(); ++i) {
                 samplers_[i]->release(i);
                 textures_[i]->release();
             }
@@ -67,7 +67,7 @@ void render_context::release() const {
     }
 
     if(!ubuffers_.empty()) {
-        for(size_t i = 0; i != ubuffers_.size(); ++i) ubuffers_[i]->release();
+        for(uint32_t i = 0; i != ubuffers_.size(); ++i) ubuffers_[i]->release();
     }
 
     program_->release();
@@ -97,7 +97,7 @@ void render_context::rebind() const {
     if(!is_bound()) return;
 
     if(dirty_) {
-        for(size_t i = 0; i != parameters_.size(); ++i) {
+        for(uint32_t i = 0; i != parameters_.size(); ++i) {
             if(dirty_flags_[i]) {
                 program_->bind_uniform(parameters_[i].location, parameters_[i].type, parameters_[i].count, &uniforms_[offsets_[i]]);
                 if(gl_error_check()) LOG_ERR("Error binding parameter:", parameters_[i].name, gl::gl_typename(parameters_[i].type), parameters_[i].count);

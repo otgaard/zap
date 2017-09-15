@@ -99,9 +99,9 @@ namespace zap { namespace engine {
         void set3(const T& a, const T& b, const T& c) { set(0, a); set(1, b), set(2, c); }
         void set4(const T& a, const T& b, const T& c, const T& d) { set(0, a), set(1, b), set(2, c), set(3, d); }
 
-        template <typename S> void set2(const maths::vec2<S>& v) { set2(v[0], v[1]); }
-        template <typename S> void set3(const maths::vec3<S>& v) { set3(v[0], v[1], v[2]); }
-        template <typename S> void set4(const maths::vec4<S>& v) { set4(v[0], v[1], v[2], v[3]); }
+        template <typename S> void set2(const maths::vec2<S>& v) { set2(T(v[0]), T(v[1])); }
+        template <typename S> void set3(const maths::vec3<S>& v) { set3(T(v[0]), T(v[1]), T(v[2])); }
+        template <typename S> void set4(const maths::vec4<S>& v) { set4(T(v[0]), T(v[1]), T(v[2]), T(v[3])); }
 
         T get1() const { return get(0); }
         std::tuple<T, T> get2() const { return std::make_tuple(get(0), get(1)); }

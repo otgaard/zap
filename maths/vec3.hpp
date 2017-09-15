@@ -157,7 +157,7 @@ namespace zap { namespace maths {
 
     template <typename T, typename S>
     constexpr vec3<T> operator*(S scalar, const vec3<T>& rhs) {
-        return vec3<T>(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z);
+        return vec3<T>(T(scalar * rhs.x), T(scalar * rhs.y), T(scalar * rhs.z));
     }
 
     template <typename T, typename S>

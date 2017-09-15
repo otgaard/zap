@@ -21,10 +21,10 @@ void framebuffer::deallocate() {
 
 void framebuffer::bind() const {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    glDrawBuffers(target_count_, draw_buffers_.data());
+    glDrawBuffers(uint32_t(target_count_), draw_buffers_.data());
     glGetIntegerv(GL_VIEWPORT, curr_viewport_);
     glGetDoublev(GL_DEPTH_RANGE, curr_depthrange_);
-    glViewport(0, 0, width_, height_);
+    glViewport(0, 0, uint32_t(width_), uint32_t(height_));
     glDepthRange(0., 1.);
 }
 
@@ -66,11 +66,12 @@ bool framebuffer::initialise() {
     attachments_.clear();
     attachments_.reserve(target_count_ + depthstencil_);
     draw_buffers_.reserve(target_count_);
-    for(size_t i = 0; i != target_count_; ++i) {
+    for(uint32_t i = 0; i != target_count_; ++i) {
         attachments_.emplace_back(texture());
         draw_buffers_.push_back(GL_COLOR_ATTACHMENT0 + i);
         attachments_[i].allocate();
-        attachments_[i].initialise(texture_type::TT_TEX2D, width_, height_, 1, pix_format_, pix_dtype_, false);
+        attachments_[i].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1, pix_format_,
+                                   pix_dtype_, false);
         attachments_[i].bind();
         if(mipmaps_) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -87,8 +88,9 @@ bool framebuffer::initialise() {
     if(depthstencil_) {
         attachments_.emplace_back(texture());
         attachments_[target_count_].allocate();
-        attachments_[target_count_].initialise(texture_type::TT_TEX2D, width_, height_, 1, pixel_format::PF_DEPTH_STENCIL,
-                                               pixel_datatype::PD_UNSIGNED_INT_24_8, false);
+        attachments_[target_count_].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1,
+                                               pixel_format::PF_DEPTH_STENCIL, pixel_datatype::PD_UNSIGNED_INT_24_8,
+                                               false);
         attachments_[target_count_].bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -139,7 +141,7 @@ bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) const {
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    glReadBuffer(GL_COLOR_ATTACHMENT0 + idx);
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + uint32_t(idx));
     glReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], gl_type(pix_format_), gl_type(pix_dtype_), 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return !gl_error_check();

@@ -145,12 +145,12 @@ bool vertex_buffer<VTX_T>::configure_attributes() {
         LOG("Vertex Attribute Binding", vertex_t::types::data[i], vertex_t::counts::data[i], vertex_t::datatypes::data[i],
             vertex_t::offsets::data[i], vertex_t::is_int::data[i]);
         if(vertex_t::is_int::data[i])
-            gl::vertex_attrib_iptr(vertex_t::types::data[i], vertex_t::counts::data[i],
-                                   (data_type)vertex_t::datatypes::data[i], vertex_t::bytesize(),
+            gl::vertex_attrib_iptr(uint32_t(vertex_t::types::data[i]), int32_t(vertex_t::counts::data[i]),
+                                   (data_type)vertex_t::datatypes::data[i], uint32_t(vertex_t::bytesize()),
                                    (void*)vertex_t::offsets::data[i]);
         else
-            gl::vertex_attrib_ptr(vertex_t::types::data[i], vertex_t::counts::data[i],
-                                  (data_type)vertex_t::datatypes::data[i], false, vertex_t::bytesize(),
+            gl::vertex_attrib_ptr(uint32_t(vertex_t::types::data[i]), int32_t(vertex_t::counts::data[i]),
+                                  (data_type)vertex_t::datatypes::data[i], false, uint32_t(vertex_t::bytesize()),
                                   (void*)vertex_t::offsets::data[i]);
     }
     if(gl_error_check()) return false;

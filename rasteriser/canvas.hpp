@@ -27,9 +27,9 @@ namespace zap { namespace rasteriser {
         bool map();
         void unmap();
 
-        inline int width() const { return raster_.width(); }
-        inline int height() const { return raster_.height(); }
-        inline vec2i centre() const { return vec2i(raster_.width()/2, raster_.height()/2); }
+        inline int width() const { return int32_t(raster_.width()); }
+        inline int height() const { return int32_t(raster_.height()); }
+        inline vec2i centre() const { return vec2i{int32_t(raster_.width()/2), int32_t(raster_.height()/2)}; }
 
         void resize(int width, int height);
 
