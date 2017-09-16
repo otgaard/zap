@@ -41,6 +41,8 @@ namespace zap { namespace renderer {
         void push_state(const render_state* rndr_state) { state_stack_.push_state(rndr_state); }
         const render_state* curr_state() const { return state_stack_.peek(); }
         void pop_state() { state_stack_.pop(); }
+        // TODO: Remove this interface
+        state_stack* get_state_stack() { return &state_stack_; }
 
         const render_context* curr_context() const { return curr_context_; }
         void release_curr_context() {

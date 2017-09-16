@@ -11,7 +11,7 @@ struct GLFWwindow;
 class application {
 public:
     application(const std::string& name, int width, int height, bool fullscreen, bool resizable=true);
-    virtual ~application() { }
+    virtual ~application() = default;
 
     virtual bool initialise() { return true; }
     virtual void update(double t, float dt) { }
@@ -33,15 +33,6 @@ public:
     int width() const { return sc_width_; }
     int height() const { return sc_height_; }
     void resize(int width, int height);
-
-    // TODO: Remove and replace with render_state.
-    void depth_test(bool on);
-    void bf_culling(bool on);
-    void alpha_blending(bool on);
-    void line_width(float w);
-    void wire_frame(bool on);
-
-    void clear(float r=.15f, float g=.15f, float b=.15f, float a=1.f);
 
 protected:
     int sc_width_;

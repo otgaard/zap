@@ -63,12 +63,12 @@ protected:
 };
 
 bool scene_graph_test::initialise() {
-    clear(0.f, 0.f, 0.f, 0.f);
-
     if(!gen_.initialise() || !rndr_.initialise()) {
         LOG_ERR("Failed to initialise generator or renderer");
         return false;
     }
+
+    rndr_.get_state_stack()->clear_colour(0.f, 0.f, 0.f, 0.f);
 
     builder_task<> task;
     task.method = builder_task<>::lighting_method::LM_PHONG;

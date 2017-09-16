@@ -10,7 +10,7 @@ extern const GLenum gl_src_blend_mode[(int)render_state::blend_state::src_blend_
 extern const GLenum gl_dst_blend_mode[(int)render_state::blend_state::dst_blend_mode::DBM_SIZE];
 extern const GLenum gl_compare_mode[(int)render_state::compare_mode::CM_SIZE];
 
-state_stack::state_stack() : base_state_(true, true) {
+state_stack::state_stack() : base_state_(true, true), clear_colour_{0.f, 0.f, 0.f, 0.f} {
 }
 
 bool state_stack::initialise() {
@@ -21,7 +21,34 @@ bool state_stack::initialise() {
     depth_stack_.push(base_state_.get_depth_state());
 
     stack_.push(&base_state_);
+
+    // This is the global state (will be moved to own config over time)
+    glPointSize(1.f);
+    glLineWidth(1.f);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(std::numeric_limits<uint16_t>::max());
+
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+
+    clear_colour(clear_colour_);
+
     return true;
+}
+
+void zap::engine::state_stack::clear_colour(float r, float g, float b, float a) {
+    clear_colour_.set(r, g, b, a);
+    glClearColor(r, g, b, a);
+}
+
+void zap::engine::state_stack::clear() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 void zap::engine::state_stack::push_state(const render_state* state) {

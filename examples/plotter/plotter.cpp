@@ -34,11 +34,7 @@ bool plotter::initialise() {
     cam_.viewport(0, 0, 1280, 768);
     cam_.frustum(0, 1280, 0, 768, 0, 1);
     cam_.frame(vec3f(0, 1, 0), vec3f(0, 0, -1), vec3f(0, 0, 0));
-
-    application::clear(0.15f, 0.15f, 0.15f, 1.f);
-
-    line_width(.5f);
-
+    
     plot_.set_grid(graphics::plotter::grid(vec2f(0,1.f), vec2f(.1f, .05f), vec2f(0,1.f), vec2f(.1f, .05f)));
 
     if(!plot_.initialise()) {

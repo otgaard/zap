@@ -14,6 +14,7 @@ namespace zap { namespace engine {
 class state_stack {
 public:
     constexpr static size_t max_depth = 16;
+    using vec4f = maths::vec4f;
     using stack_t = std::stack<const render_state*>;
     using blend_state = render_state::blend_state;
     using depth_state = render_state::depth_state;
@@ -33,6 +34,11 @@ public:
     const depth_state* peek_depth_state() const { return peek()->get_depth_state(); }
     const depth_state* curr_depth_state() const { return depth_stack_.top(); }
 
+    void clear_colour(float r, float g, float b, float a);
+    void clear_colour(const vec4f& v) { clear_colour(v.x, v.y, v.z, v.w); }
+    vec4f clear_colour() const { return clear_colour_; }
+    void clear();
+
 protected:
     // Blending state
     void push_state(const blend_state* state);
@@ -50,6 +56,7 @@ protected:
     render_state base_state_;
     std::stack<const blend_state*> blend_stack_;
     std::stack<const depth_state*> depth_stack_;
+    vec4f clear_colour_;
 };
 
 }}

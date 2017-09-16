@@ -8,6 +8,7 @@
 #include <loader/loader.hpp>
 #include <engine/program.hpp>
 #include <maths/transform.hpp>
+#include <engine/state_stack.hpp>
 #include "host/GLFW/application.hpp"
 
 using namespace zap;
@@ -56,12 +57,20 @@ protected:
     loader loader_;
     std::vector<loader::mesh_p3n3t2_trii_t> meshes_;
     program prog_;
+    state_stack rndr_state_;
 };
 
 bool models::initialise() {
     cam_.viewport(0, 0, 1280, 768);
     cam_.frustum(45.f, 1280.f/768.f, .5f, 1000.f);
     cam_.orthogonolise(vec3f(0,0,-1));
+
+    if(!rndr_state_.initialise()) {
+        LOG_ERR("Failed to initialise render state");
+        return false;
+    }
+
+    rndr_state_.clear_colour(.15f, .15f, .15f, 1.f);
 
     LOG(LOG_BLUE, "Loading Meshes...");
 #ifdef __APPLE__
@@ -83,7 +92,7 @@ bool models::initialise() {
     }
 
     prog_.bind();
-    depth_test(true);
+
 
     return true;
 }

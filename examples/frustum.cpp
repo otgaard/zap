@@ -15,6 +15,7 @@
 #include <engine/sampler.hpp>
 #include <maths/geometry/sphere.hpp>
 #include <maths/geometry/ray.hpp>
+#include <engine/state_stack.hpp>
 #include "host/GLFW/application.hpp"
 #include "graphics3/g3_types.hpp"
 #include "generators/geometry/geometry3.hpp"
@@ -66,6 +67,8 @@ protected:
     std::vector<int> selected_;
 
     sampler sampler_;
+
+    state_stack rndr_state_;
 };
 
 const char* const tex_vtx_shdr = GLSL(
@@ -136,6 +139,13 @@ bool frustum::initialise() {
     front_cam_.frustum(45.f, 1280.f/768.f, .5f, 100.f);
     front_cam_.world_pos(vec3f(0,0,5));
     front_cam_.orthogonolise(vec3f(0,0,-1));
+
+    if(!rndr_state_.initialise()) {
+        LOG_ERR("Failed to initialise render state");
+        return false;
+    }
+
+    rndr_state_.clear_colour(.15f, .15f, .15f, .15f);
 
     if(!initialise_programs()) {
         LOG_ERR("Failed to initialise program resources for example");
@@ -213,8 +223,6 @@ void frustum::update(double t, float dt) {
 }
 
 void frustum::draw() {
-    depth_test(true);
-
     prog_tex_.bind();
     check_tex_.bind(0);
     sampler_.bind(0);
@@ -224,8 +232,6 @@ void frustum::draw() {
     sampler_.release(0);
     check_tex_.release();
     prog_tex_.release();
-
-    depth_test(false);
 }
 
 void frustum::shutdown() {

@@ -21,7 +21,7 @@ void framebuffer::deallocate() {
 
 void framebuffer::bind() const {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    glDrawBuffers(uint32_t(target_count_), draw_buffers_.data());
+    target_count_ == 0 ? glDrawBuffer(GL_NONE) : glDrawBuffers(uint32_t(target_count_), draw_buffers_.data());
     glGetIntegerv(GL_VIEWPORT, curr_viewport_);
     glGetDoublev(GL_DEPTH_RANGE, curr_depthrange_);
     glViewport(0, 0, uint32_t(width_), uint32_t(height_));
