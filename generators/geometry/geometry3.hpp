@@ -518,6 +518,10 @@ namespace zap { namespace generators {
 
         static std::vector<VertexT>
         make_quad(float width, float height);
+
+        template <typename T>
+        static std::vector<VertexT>
+        make_disc(int slices, T radius=1.f, const vec2<T>& C=vec2f{0.f, 0.f});
     };
 
     template <typename VertexT>
@@ -545,6 +549,37 @@ namespace zap { namespace generators {
         if(texcoord_idx != INVALID_IDX) quad[3].set(texcoord_idx, vec2f{0.f, 1.f});
 
         return quad;
+    }
+
+    template <typename VertexT>
+    template <typename T>
+    std::vector<VertexT> geometry3<VertexT, primitive_type::PT_TRIANGLE_FAN>::make_disc(int slices, T radius, const maths::vec2<T>& C) {
+        auto vertex_count = slices+2;
+        std::vector<VertexT> vertices(vertex_count);
+        const auto normal = vec3<T>{T(0.), T(0.), T(1.)};
+        const auto dt = maths::TWO_PI<T>/slices;
+        const auto end = slices+1;
+        const auto texcoord_idx = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
+        const auto normal_idx = VertexT::find(engine::attribute_type::AT_NORMAL);
+        const auto centre = vec3<T>{C.x, C.y, 0.f};
+
+        size_t idx = 0;
+        vertices[idx].position = centre;
+        if(texcoord_idx != INVALID_IDX) vertices[idx].set(texcoord_idx, vec2<T>{T(.5), T(.5)});
+        if(normal_idx != INVALID_IDX) vertices[idx].set(normal_idx, normal);
+        idx++;
+
+        T theta = 0;
+        for(size_t i = 0; i != end; ++i) {
+            theta = (i % slices) * dt;
+            T stheta = std::sin(theta), ctheta = std::cos(theta);
+            vertices[idx].position = centre + vec3<T>{radius * ctheta, radius * stheta, T(0.)};
+            if(texcoord_idx != INVALID_IDX) vertices[idx].set(texcoord_idx, vec2<T>{T(.5) + T(.5)*ctheta, T(.5) + T(.5)*stheta});
+            if(normal_idx != INVALID_IDX) vertices[idx].set(normal_idx, normal);
+            idx++;
+        }
+
+        return vertices;
     }
 }}
 

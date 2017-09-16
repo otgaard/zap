@@ -197,6 +197,21 @@ bool scene_graph_test::initialise() {
     visuals_.push_back(cylinder);
     args_.emplace_back(context_.get());
 
+    // Cylinder caps
+    auto disc_mesh = p3n3t2_geo3_tf::make_mesh(p3n3t2_geo3_tf::make_disc<float>(30, .5f));
+    visual_t disc{disc_mesh.get(), context_.get()};
+    meshes_.emplace_back(std::move(disc_mesh));
+
+    disc.translate(vec3f{-3.f, 1.f, 0.f});
+    visuals_.push_back(disc);
+    args_.emplace_back(context_.get());
+    disc.translate(vec3f{+0.f, 1.f, 0.f});
+    visuals_.push_back(disc);
+    args_.emplace_back(context_.get());
+    disc.translate(vec3f{+3.f, 1.f, 0.f});
+    visuals_.push_back(disc);
+    args_.emplace_back(context_.get());
+
     auto box_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_cube(vec3f{.5f, .5f, .5f}));
     visual_t box{box_mesh.get(), context_.get()};
     box.translate(vec3f{-1.f, .25f, 1.f});
@@ -304,7 +319,7 @@ void scene_graph_test::update(double t, float dt) {
     timer2 += dt;
     lights_block_.bind();
     if(lights_block_.map(buffer_access::BA_WRITE_ONLY)) {
-        if((counter != 8 && timer > 5.f) || (counter == 8 && timer > 10.f)) {
+        if((counter != 8 && timer > 10.f) || (counter == 8 && timer > 20.f)) {
             counter++;
             if(counter == 8) counter = 0;
             if(counter & 0x01) lights_block_->lights_spot[0].light_intensity = 1.f;
@@ -316,7 +331,7 @@ void scene_graph_test::update(double t, float dt) {
             timer = 0.f;
         }
 
-        if(timer2 > 1.f) {
+        if(timer2 > .5f) {
             counter2++;
             for(int i = 0; i != 10; ++i) {
                 if(counter2 == 10) lights_block_->lights_point[i].light_intensity = .3f;

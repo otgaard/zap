@@ -20,7 +20,7 @@ namespace zap { namespace generators {
         static std::vector<VertexT> make_quad(const vec2<T>& dims=vec2f{1.f, 1.f});
 
         template <typename T>
-        static std::vector<VertexT> make_disc(const vec2<T>& C, T radius, size_t slices);
+        static std::vector<VertexT> make_disc(size_t slices, T radius=1.f, const vec2<T>& C=vec2f{0.f, 0.f});
     };
 
     template <typename VertexT>
@@ -53,7 +53,7 @@ namespace zap { namespace generators {
     template <typename VertexT>
     template <typename T>
     std::vector<VertexT>
-    geometry2<VertexT, primitive_type::PT_TRIANGLE_FAN>::make_disc(const vec2<T>& C, T radius, size_t slices) {
+    geometry2<VertexT, primitive_type::PT_TRIANGLE_FAN>::make_disc(size_t slices, T radius, const vec2<T>& C) {
         // Assume either LINE_LOOP or TRI_FAN (intended to be specialised if generic cost is too great)
         auto vertex_count = slices+2;
         std::vector<VertexT> vertices(vertex_count);
@@ -70,7 +70,7 @@ namespace zap { namespace generators {
         for(size_t i = 0; i != end; ++i) {
             theta = (i % slices) * dt;
             T stheta = std::sin(theta), ctheta = std::cos(theta);
-            vertices[idx].position = vec2<T>(radius * ctheta, radius * stheta);
+            vertices[idx].position = C + vec2<T>(radius * ctheta, radius * stheta);
             if(texcoord != INVALID_IDX) vertices[idx].set(texcoord, vec2<T>(T(.5) + T(.5)*ctheta, T(.5) + T(.5)*stheta));
             idx++;
         }
