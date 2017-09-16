@@ -59,14 +59,14 @@ int application::run() {
 
     glfwWindowHint(GLFW_RESIZABLE, resizeable_);
 
-    auto window = glfwCreateWindow(sc_width_, sc_height_, app_name_.c_str(),
-                                   fullscreen_ ? glfwGetPrimaryMonitor() : nullptr, nullptr);
-    if(!window) {
+    window_ = glfwCreateWindow(sc_width_, sc_height_, app_name_.c_str(),
+                               fullscreen_ ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    if(!window_) {
         LOG_ERR("Error creating window - terminating");
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window_);
 
     glewExperimental = GL_TRUE;
     GLenum err = glewInit();
@@ -82,12 +82,12 @@ int application::run() {
 #endif
 
     // Set the userdata pointer & callbacks
-    glfwSetWindowUserPointer(window, this);
-    glfwSetWindowSizeCallback(window, ::on_resize_handler);
-    glfwSetKeyCallback(window, ::on_keypress_handler);
-    glfwSetCursorPosCallback(window, ::on_mousemove_handler);
-    glfwSetMouseButtonCallback(window, ::on_mousebutton_handler);
-    glfwSetScrollCallback(window, ::on_scroll_handler);
+    glfwSetWindowUserPointer(window_, this);
+    glfwSetWindowSizeCallback(window_, ::on_resize_handler);
+    glfwSetKeyCallback(window_, ::on_keypress_handler);
+    glfwSetCursorPosCallback(window_, ::on_mousemove_handler);
+    glfwSetMouseButtonCallback(window_, ::on_mousebutton_handler);
+    glfwSetScrollCallback(window_, ::on_scroll_handler);
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glfwSwapInterval(1);
@@ -113,7 +113,7 @@ int application::run() {
     double curr_time = timer_.getd();
     double prev_time;
 
-    while(!glfwWindowShouldClose(window)) {
+    while(!glfwWindowShouldClose(window_)) {
         prev_time = curr_time;
         curr_time = timer_.getd();
         float dt = float(curr_time - prev_time);
@@ -122,13 +122,13 @@ int application::run() {
 
         draw();
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window_);
         glfwPollEvents();
     }
 
     shutdown();
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(window_);
     glfwTerminate();
     return 0;
 }
@@ -196,3 +196,6 @@ void application::clear(float r, float g, float b, float a) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
+void application::resize(int width, int height) {
+    glfwSetWindowSize(window_, width, height);
+}

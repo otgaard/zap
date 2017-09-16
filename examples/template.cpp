@@ -32,10 +32,11 @@ bool template_app::initialise() {
         return false;
     }
 
-    auto tex = zap::loader::load_texture2D(TEXTURE_PATH, true, true);
+    auto tex = zap::loader::load_texture2D<zap::engine::rgba8888_t>(TEXTURE_PATH, false, true);
     if(tex.is_allocated()) quad_.set_texture(std::move(tex));
 
     LOG("Loaded:", TEXTURE_PATH, tex.width(), tex.height());
+    resize(tex.width(), tex.height());
 
     return true;
 }

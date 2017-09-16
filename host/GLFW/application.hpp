@@ -6,6 +6,8 @@
 #include <maths/functions.hpp>
 #include <maths/vec2.hpp>
 
+struct GLFWwindow;
+
 class application {
 public:
     application(const std::string& name, int width, int height, bool fullscreen, bool resizable=true);
@@ -30,6 +32,7 @@ public:
     void set_dims(int width, int height) { sc_width_ = width; sc_height_ = height; }
     int width() const { return sc_width_; }
     int height() const { return sc_height_; }
+    void resize(int width, int height);
 
     // TODO: Remove and replace with render_state.
     void depth_test(bool on);
@@ -50,6 +53,7 @@ protected:
 private:
     std::string app_name_;
     zap::maths::timer timer_;
+    GLFWwindow* window_ = nullptr;
 };
 
 #endif //ZAP_APPLICATION_HPP
