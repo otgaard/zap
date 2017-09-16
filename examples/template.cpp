@@ -7,6 +7,9 @@
 #include <maths/io.hpp>
 #include <host/GLFW/application.hpp>
 #include <graphics2/quad.hpp>
+#include <loader/image_loader.hpp>
+
+const char* const TEXTURE_PATH = "/Users/otgaard/Development/zap/assets/raxip.jpg";
 
 class template_app : public application {
 public:
@@ -28,6 +31,11 @@ bool template_app::initialise() {
         LOG_ERR("Failed to initialise quad.");
         return false;
     }
+
+    auto tex = zap::loader::load_texture2D(TEXTURE_PATH, true, true);
+    if(tex.is_allocated()) quad_.set_texture(std::move(tex));
+
+    LOG("Loaded:", TEXTURE_PATH, tex.width(), tex.height());
 
     return true;
 }

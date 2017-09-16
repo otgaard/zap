@@ -49,11 +49,11 @@ namespace zap { namespace engine {
 
         int offset(int c, int r) const { return width_*r + c; }
         int offset(int c, int r, int d) const { return width_*(d*height_ + r) + c; }
-        vec2i coord2(int idx) const { return vec2i(idx / width_, idx % width_); };
+        vec2i coord2(int idx) const { return vec2i(idx / width_, idx % width_); }
 
         template <typename Fnc>
         void blend(int origin_x, int origin_y, const pixmap& src, Fnc&& fnc) {
-            assert(src.is_2D() && is_2D() && "pixmap::copy designed for 2D only");
+            assert(src.is_2D() && is_2D() && "pixmap::blend 2D only");
             origin_x = std::max(origin_x, 0); origin_y = std::max(origin_y, 0);
             auto end_x = std::min(origin_x+src.width(), width()), end_y = std::min(origin_y+src.height(), height());
 
@@ -67,7 +67,7 @@ namespace zap { namespace engine {
 
         template <typename Fnc>
         void transform(int origin_x, int origin_y, int w, int h, Fnc&& fnc) {
-            assert(is_2D() && "pixmap::transform designed for 2D only");
+            assert(is_2D() && "pixmap::transform 2D only");
             origin_x = std::max(origin_x, 0); origin_y = std::max(origin_y, 0);
             auto end_x = std::min(origin_x+w, width()), end_y = std::min(origin_y+h, height());
             auto& ref = *this;
@@ -78,8 +78,28 @@ namespace zap { namespace engine {
             }
         }
 
+        void flip_y() {
+            assert(is_2D() && "pixmap::flip_y 2D only");
+            if(!is_2D()) return;
+
+            auto& ref = *this;
+            auto hm1 = height_ - 1;
+            for(int r = 0, r_end = height_/2; r != r_end; ++r) {
+                for(int c = 0; c != width_; ++c) {
+                    std::swap(ref(c, hm1 - r), ref(c, r));
+                }
+            }
+        }
+
         const PixelT* begin() const { return buffer_.data(); }
         const PixelT* end() const { return buffer_.data()+(width_*height_*depth_); }
+
+        bool copy(const byte* data, size_t len) {
+            assert(size()*sizeof(PixelT) >= len && "pixmap::copy out-of-bounds");
+            if(size()*sizeof(PixelT) < len) return false;
+            std::copy(data, data+len, reinterpret_cast<byte*>(buffer_.data()));
+            return true;
+        }
 
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         PixelT* data(size_t offset=0) { return buffer_.data()+offset; }

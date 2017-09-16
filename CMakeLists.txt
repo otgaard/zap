@@ -383,7 +383,7 @@ add_executable(scene_graph examples/scene_graph2.cpp)
 target_link_libraries(scene_graph zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(template examples/template.cpp)
-target_link_libraries(template zapGraphics zapEngine zapMaths zapHost ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(template zapGraphics zapEngine zapMaths zapHost stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 if(APPLE)
     add_executable(procgen1 ${PROCGEN1_FILES})
