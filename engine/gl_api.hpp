@@ -49,12 +49,28 @@ namespace zap { namespace engine { namespace gl {
     constexpr GLbitfield gl_buffer_access[(int)buffer_access::BA_SIZE] = {
             GL_READ_ONLY,
             GL_WRITE_ONLY,
-            GL_READ_WRITE
+            GL_READ_WRITE,
+            GL_MAP_READ_BIT,
+            GL_MAP_WRITE_BIT,
+            GL_MAP_PERSISTENT_BIT,
+            GL_MAP_COHERENT_BIT,
+            GL_MAP_INVALIDATE_RANGE_BIT,
+            GL_MAP_INVALIDATE_BUFFER_BIT,
+            GL_MAP_FLUSH_EXPLICIT_BIT,
+            GL_MAP_UNSYNCHRONIZED_BIT
     };
     constexpr const char* gl_buffer_access_names[(int)buffer_access::BA_SIZE] = {
             "GL_READ_ONLY",
             "GL_WRITE_ONLY",
-            "GL_READ_WRITE"
+            "GL_READ_WRITE",
+            "GL_MAP_READ_BIT",
+            "GL_MAP_WRITE_BIT",
+            "GL_MAP_PERSISTENT_BIT",
+            "GL_MAP_COHERENT_BIT",
+            "GL_MAP_INVALIDATE_RANGE_BIT",
+            "GL_MAP_INVALIDATE_BUFFER_BIT",
+            "GL_MAP_FLUSH_EXPLICIT_BIT",
+            "GL_MAP_UNSYNCHRONIZED_BIT"
     };
 
     constexpr GLenum gl_data_type[(int)data_type::DT_SIZE] = {

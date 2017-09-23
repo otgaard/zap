@@ -55,6 +55,14 @@ namespace zap { namespace engine {
         BA_READ_ONLY,
         BA_WRITE_ONLY,
         BA_READ_WRITE,
+        BA_MAP_READ,
+        BA_MAP_WRITE,
+        BA_MAP_PERSISTENT,
+        BA_MAP_COHERENT,
+        BA_MAP_INVALIDATE_RANGE,
+        BA_MAP_INVALIDATE_BUFFER,
+        BA_MAP_FLUSH_EXPLICIT,
+        BA_MAP_UNSYNCHRONISED,
         BA_SIZE
     };
 

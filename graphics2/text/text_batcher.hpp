@@ -7,11 +7,17 @@
 
 #include <array>
 #include <string>
+#include <vector>
 #include <maths/geometry/rect.hpp>
 
-namespace zap { namespace engine {
-    class texture;
-}}
+namespace zap {
+    namespace engine {
+        class texture;
+    }
+    namespace renderer {
+        class camera;
+    }
+}
 
 namespace zap { namespace graphics {
     using recti = zap::maths::geometry::recti;
@@ -23,15 +29,19 @@ namespace zap { namespace graphics {
         rectf texcoord;
     };
 
+    using glyph_set = std::array<glyph, 0xFF>;
+
     class text_batcher;
 
     struct font {
         uint32_t font_id;
         std::string name;
-        int pixel_height;
+        int px_height = 0;
         text_batcher* parent;
 
-        font(int font_id=-1, text_batcher* parent=nullptr) : font_id(font_id), parent(parent) { }
+        explicit font(uint32_t font_id=INVALID_IDX, text_batcher* parent=nullptr) : font_id(font_id), parent(parent) { }
+        font(const font&) = default;
+        font& operator=(const font&) = default;
     };
 
     class text;
@@ -47,14 +57,16 @@ namespace zap { namespace graphics {
 
         bool initialise();
 
+        void draw(const renderer::camera& cam);
+
         uint32_t font_count();
         font* add_font(const std::string& path, int px_height);
         font* get_font(uint32_t font_id);
         font* find_font(const std::string& name);
         texture* get_texture(uint32_t font_id);
 
-        text create_text(uint32_t font_id, const std::string& str, size_t max_len=0);
-        bool change_text(uint32_t text_id, const std::string& str, size_t max_len=0);
+        text create_text(uint32_t font_id, const std::string& str, uint32_t max_len=0);
+        bool change_text(uint32_t text_id, const std::string& str, uint32_t max_len=0);
         void destroy_text(uint32_t text_id);
         void destroy_text(const text& txt);
 
@@ -63,6 +75,8 @@ namespace zap { namespace graphics {
         size_t get_text_size(uint32_t text_id);
 
     private:
+        glyph get_glyph(uint32_t font_id, char ch);
+
         struct state_t;
         std::unique_ptr<state_t> state_;
         state_t& s;

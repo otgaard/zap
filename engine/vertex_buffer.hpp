@@ -79,8 +79,10 @@ public:
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
     char* map(buffer_access access, size_t offset, size_t length) {
-        return buffer::map(buf_type, access, offset, length);
+        assert(offset < vertex_count_ && offset+length <= vertex_count_ && ZERR_IDX_OUT_OF_RANGE);
+        return buffer::map(buf_type, access, offset*vertex_t::bytesize(), length*vertex_t::bytesize());
     }
+
     bool unmap() { return buffer::unmap(buf_type); }
 
     const vertex_t& operator[](size_t idx) const {

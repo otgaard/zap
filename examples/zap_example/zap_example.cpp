@@ -12,6 +12,7 @@
 #include <engine/state_stack.hpp>
 #include <graphics2/text/text_batcher.hpp>
 #include <graphics2/quad.hpp>
+#include <graphics2/text/text.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -48,6 +49,8 @@ protected:
 
     text_batcher batcher;
     quad test_quad;
+
+    camera cam_;
 };
 
 bool zap_example::initialise() {
@@ -58,7 +61,7 @@ bool zap_example::initialise() {
 
     auto arial = batcher.add_font(arial_font, 20);
     if(arial) {
-        LOG(arial->name, arial->pixel_height, arial->font_id);
+        LOG(arial->name, arial->px_height, arial->font_id);
     }
 
     if(!test_quad.initialise()) {
@@ -69,6 +72,10 @@ bool zap_example::initialise() {
     auto tex = batcher.get_texture(arial->font_id);
     LOG(arial->name, tex->is_allocated(), tex->width(), tex->height());
     test_quad.set_override(tex);
+
+    // Test building a text object
+    auto text_proxy = batcher.create_text(arial->font_id, "Hello, World!");
+    LOG("Proxy:", text_proxy.get_font()->name, text_proxy.get_text(), text_proxy.get_id());
 
     sphere_ = p3n3t2_gen::make_mesh(p3n3t2_gen::make_UVsphere(10, 30, 1.f, false));
     if(!sphere_->is_allocated()) {
@@ -96,6 +103,10 @@ void zap_example::on_resize(int width, int height) {
     context_->set_parameter("colour", vec4f{1.f, 1.f, 0.f, 1.f});
 
     test_quad.resize(width, height);
+
+    cam_.set_perspective(false);
+    cam_.frustum(0, width, height, 0, 0, 1000);
+    cam_.orthogonolise(vec3f{0.f, 0.f, -1.f});
 }
 
 void zap_example::on_mousemove(double x, double y) {
@@ -105,17 +116,18 @@ void zap_example::on_mousewheel(double xinc, double yinc) {
 }
 
 void zap_example::update(double t, float dt) {
-
 }
 
 void zap_example::draw() {
-    test_quad.draw();
+    //test_quad.draw();
 
     context_->bind();
     sphere_->bind();
     sphere_->draw();
     sphere_->release();
     context_->release();
+
+    batcher.draw(cam_);
 }
 
 void zap_example::shutdown() {

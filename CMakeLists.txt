@@ -215,7 +215,8 @@ set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics3/g3_types.hpp
         generators/generator.hpp
         generators/pixel_conversion.hpp
-        graphics2/text/text_batcher.hpp)
+        graphics2/text/text_batcher.hpp
+        graphics2/text/text.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp
@@ -227,8 +228,7 @@ set(ZAP_GRAPHICS_FILES
         generators/generator.cpp
         generators/pixel_conversion.cpp
         graphics2/text/text_batcher.cpp
-        graphics2/text/text.cpp
-        graphics2/text/text.hpp)
+        graphics2/text/text.cpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)

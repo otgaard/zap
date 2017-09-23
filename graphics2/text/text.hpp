@@ -5,6 +5,7 @@
 #if defined(FOUND_FREETYPE)
 
 #include <string>
+#include <core/core.hpp>
 
 namespace zap { namespace graphics {
 
@@ -25,10 +26,14 @@ namespace zap { namespace graphics {
 
     private:
         friend class text_batcher;
+
+        void set_fields(uint32_t id, text_batcher* parent) { id_ = id; parent_ = parent; }
+
+        text() = default;
         text(uint32_t id, text_batcher* parent);
 
-        uint32_t id_;
-        text_batcher* parent_;
+        uint32_t id_ = INVALID_IDX;
+        text_batcher* parent_ = nullptr;
     };
 
 }}
