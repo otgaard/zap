@@ -31,6 +31,22 @@ if(APPLE)
     set(CMAKE_CXX_STANDARD 14)
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
     add_definitions(-Wall -Werror -Wno-unused-local-typedef -DGLEW_STATIC -DASIO_STANDALONE)
+
+    # Could not get FreeType2 to import from third_party via FREETYPE_DIR or PATHS using find_package
+    if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/lib/libfreetype.a")
+        add_definitions(-DFOUND_FREETYPE)
+        set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/include/freetype2)
+        set(FREETYPE_LIBRARIES ${CMAKE_SOURCE_DIR}/third_party/lib/libfreetype.dylib)
+        message(${FREETYPE_INCLUDE_DIRS})
+        message(${FREETYPE_LIBRARIES})
+        message("Freetype Exists!")
+    else()
+        find_package(Freetype)
+    endif()
+
+    if(${FOUND_FREETYPE})
+        message("Freetype successfully configured")
+    endif()
 elseif(UNIX)
     set(CMAKE_CXX_STANDARD 14)
     add_definitions(-Wall -Werror -Wno-unused-variable -DGLEW_STATIC -DASIO_STANDALONE)
@@ -190,7 +206,8 @@ set(ZAP_GRAPHICS_PUBLIC_HEADERS
         graphics2/plotter/plot_sampler.hpp
         graphics3/g3_types.hpp
         generators/generator.hpp
-        generators/pixel_conversion.hpp)
+        generators/pixel_conversion.hpp
+        graphics2/text/text_batcher.hpp)
 
 set(ZAP_GRAPHICS_FILES
         graphics2/curve_input.cpp
@@ -200,7 +217,10 @@ set(ZAP_GRAPHICS_FILES
         graphics3/g3_types.cpp
         graphics2/g2_types.cpp
         generators/generator.cpp
-        generators/pixel_conversion.cpp)
+        generators/pixel_conversion.cpp
+        graphics2/text/text_batcher.cpp
+        graphics2/text/text.cpp
+        graphics2/text/text.hpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)
@@ -297,11 +317,12 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 if(CMAKE_STATIC_BUILD)
     add_library(zapMaths STATIC ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
     add_library(zapEngine STATIC ${ZAP_ENGINE_FILES} ${ZAP_ENGINE_PUBLIC_HEADERS})
-    add_library(zapGraphics STATIC ${ZAP_GRAPHICS_FILES} ${ZAP_GRAPHICS_PUBLIC_HEADERS})
+    add_library(zapGraphics STATIC ${ZAP_GRAPHICS_FILES} ${ZAP_GRAPHICS_PUBLIC_HEADERS} ${FREETYPE_INCLUDE_DIRS})
     add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
     #add_library(zapLoader STATIC ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
+    target_include_directories(zapGraphics PRIVATE ${FREETYPE_INCLUDE_DIRS})
 else(CMAKE_STATIC_BUILD)
 if(APPLE OR UNIX)
     add_library(zapMaths SHARED ${ZAP_MATHS_FILES} ${ZAP_MATHS_PUBLIC_HEADERS})
@@ -311,9 +332,10 @@ if(APPLE OR UNIX)
     add_library(zapRaytracer SHARED ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser SHARED ${ZAP_RASTERISER_FILES})
     add_library(zapLoader SHARED ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
+    target_include_directories(zapGraphics PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_link_libraries(zapEngine zapMaths ${LOADER_LIBS})
     target_link_libraries(zapHost ${LOADER_LIBS} ${GLFW_LIBS})
-    target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS})
+    target_link_libraries(zapGraphics zapEngine zapMaths ${LOADER_LIBS} ${FREETYPE_LIBRARIES})
     target_link_libraries(zapRasteriser zapEngine zapMaths ${LOADER_LIBS})
     target_link_libraries(zapLoader zapEngine zapMaths ${LOADER_LIBS} assimp)
 else(WIN32)
@@ -359,7 +381,7 @@ endif(CMAKE_STATIC_BUILD)
 add_library(stb STATIC ${STB_ARCHIVE})
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
-target_link_libraries(zap_example zapHost zapEngine zapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
+target_link_libraries(zap_example ${FREETYPE_LIBRARIES} zapGraphics zapHost zapEngine zapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 add_executable(tracer ${TRACER_FILES})
 target_link_libraries(tracer zapRaytracer zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})

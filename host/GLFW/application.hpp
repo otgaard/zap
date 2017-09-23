@@ -8,9 +8,20 @@
 
 struct GLFWwindow;
 
+struct app_config {
+    int multisamples = 1;
+    int depth_bits = 24;
+    int gl_major_version = 3;
+    int gl_minor_version = 3;
+    bool gl_forward_compatibility = true;
+    bool gl_core_profile = true;
+    bool resizeable_window = false;
+    bool fullscreen = false;
+};
+
 class application {
 public:
-    application(const std::string& name, int width, int height, bool fullscreen, bool resizable=true);
+    application(const std::string& name, int width, int height);
     virtual ~application() = default;
 
     virtual bool initialise() { return true; }
@@ -26,7 +37,7 @@ public:
     virtual void on_mousemove(double x, double y);
     virtual void on_mousewheel(double xoffset, double yoffset);
 
-    int run();
+    int run(const app_config& config=app_config{});
 
     zap::maths::vec2i mouse_pos() const { return mouse_; }
     void set_dims(int width, int height) { sc_width_ = width; sc_height_ = height; }
@@ -37,8 +48,6 @@ public:
 protected:
     int sc_width_;
     int sc_height_;
-    bool fullscreen_;
-    bool resizeable_;
     zap::maths::vec2i mouse_;
 
 private:

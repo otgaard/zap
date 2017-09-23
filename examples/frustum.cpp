@@ -31,7 +31,7 @@ using namespace zap::maths::geometry;
 
 class frustum : public application {
 public:
-    frustum() : application("frustum", 1280, 768, false) { }
+    frustum() : application{"frustum", 1280, 768} { }
 
     bool initialise() override final;
     void update(double t, float dt) override final;

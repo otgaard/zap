@@ -15,7 +15,7 @@ using namespace zap::renderer;
 
 class part_engine : public application {
 public:
-    part_engine() : application("particle_engine", 1280, 768, false) { }
+    part_engine() : application{"particle_engine", 1280, 768} { }
 
     bool initialise() override final;
     void update(double t, float dt) override final;

@@ -31,7 +31,7 @@ using namespace zap::renderer;
 
 class noises : public application {
 public:
-    noises() : application("noises", 1024, 1024, false) { }
+    noises() : application{"noises", 1024, 1024} { }
 
     bool initialise() final;
     void update(double t, float dt) final;

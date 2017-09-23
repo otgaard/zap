@@ -19,7 +19,7 @@ using namespace zap::rasteriser;
 
 class raster : public application {
 public:
-    raster() : application("raster", 600, 1024, false) { }
+    raster() : application{"raster", 600, 1024} { }
     virtual ~raster() { }
 
     bool initialise() override final;

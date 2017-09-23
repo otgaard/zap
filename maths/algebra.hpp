@@ -17,4 +17,8 @@
 #include "vector.hpp"
 #include "matrix.hpp"
 
+#if defined(LOGGING_ENABLED)
+#include "io.hpp"
+#endif
+
 #endif //ZAP_ALGEBRA_HPP

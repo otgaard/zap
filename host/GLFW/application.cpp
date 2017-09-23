@@ -42,25 +42,24 @@ static void on_scroll_handler(GLFWwindow* window_ptr, double xinc, double yinc) 
     }
 }
 
-application::application(const std::string& name, int width, int height, bool fullscreen, bool resizeable) : sc_width_(width),
-    sc_height_(height), fullscreen_(fullscreen), resizeable_(resizeable), app_name_(name) {
+application::application(const std::string& name, int width, int height) : sc_width_(width), sc_height_(height),
+        app_name_(name) {
 }
 
-int application::run() {
+int application::run(const app_config& config) {
     glfwSetErrorCallback(::on_error_handler);
     if(!glfwInit()) return -1;
 
-    glfwWindowHint(GLFW_SAMPLES, 8);
-    glfwWindowHint(GLFW_DEPTH_BITS, 24);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    glfwWindowHint(GLFW_RESIZABLE, resizeable_);
+    glfwWindowHint(GLFW_SAMPLES, config.multisamples);
+    glfwWindowHint(GLFW_DEPTH_BITS, config.depth_bits);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.gl_major_version);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.gl_minor_version);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, config.gl_forward_compatibility ? GL_TRUE : GL_FALSE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, config.gl_core_profile ? GLFW_OPENGL_CORE_PROFILE : GLFW_OPENGL_ANY_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, config.resizeable_window);
 
     window_ = glfwCreateWindow(sc_width_, sc_height_, app_name_.c_str(),
-                               fullscreen_ ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+                               config.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if(!window_) {
         LOG_ERR("Error creating window - terminating");
         glfwTerminate();

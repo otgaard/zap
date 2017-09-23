@@ -44,7 +44,13 @@ bool state_stack::initialise() {
 
 void zap::engine::state_stack::clear_colour(float r, float g, float b, float a) {
     clear_colour_.set(r, g, b, a);
+    glClearColor(clear_colour_.x, clear_colour_.y, clear_colour_.z, clear_colour_.w);
+}
+
+void state_stack::clear(float r, float g, float b, float a) {
     glClearColor(r, g, b, a);
+    clear();
+    glClearColor(clear_colour_.x, clear_colour_.y, clear_colour_.z, clear_colour_.w);
 }
 
 void zap::engine::state_stack::clear() {

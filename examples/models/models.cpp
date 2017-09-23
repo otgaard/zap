@@ -41,7 +41,7 @@ const char* const frg_shdr = GLSL(
 
 class models : public application {
 public:
-    models() : application("models", 1280, 768, false) { }
+    models() : application{"models", 1280, 768} { }
 
     bool initialise() override final;
     void update(double t, float dt) override final;

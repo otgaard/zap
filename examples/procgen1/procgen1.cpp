@@ -18,7 +18,7 @@ using namespace zap::generators;
 
 class procgen1 : public application {
 public:
-    procgen1() : application("procgen1", 1024, 768, false) { }
+    procgen1() : application{"procgen1", 1024, 768} { }
     virtual ~procgen1() { }
 
     bool initialise() override;

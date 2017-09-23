@@ -37,6 +37,8 @@ public:
     void clear_colour(float r, float g, float b, float a);
     void clear_colour(const vec4f& v) { clear_colour(v.x, v.y, v.z, v.w); }
     vec4f clear_colour() const { return clear_colour_; }
+    void clear(float r, float g, float b, float a);
+    void clear(const vec4f& v) { clear(v.x, v.y, v.z, v.w); }
     void clear();
 
 protected:

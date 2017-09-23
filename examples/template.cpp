@@ -4,7 +4,6 @@
 
 #include <tools/log.hpp>
 #include <maths/algebra.hpp>
-#include <maths/io.hpp>
 #include <host/GLFW/application.hpp>
 #include <graphics2/quad.hpp>
 #include <loader/image_loader.hpp>
@@ -13,7 +12,7 @@ const char* const TEXTURE_PATH = "/Users/otgaard/Development/zap/assets/raxip.jp
 
 class template_app : public application {
 public:
-    template_app() : application{"template_app", 1024, 768, false} { }
+    template_app() : application{"template_app", 1024, 768} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -33,10 +32,11 @@ bool template_app::initialise() {
     }
 
     auto tex = zap::loader::load_texture2D<zap::engine::rgb888_t>(TEXTURE_PATH, false, true);
-    if(tex.is_allocated()) quad_.set_texture(std::move(tex));
-
-    LOG("Loaded:", TEXTURE_PATH, tex.width(), tex.height());
-    resize(tex.width(), tex.height());
+    if(tex.is_allocated()) {
+        LOG("Loaded:", TEXTURE_PATH, tex.width(), tex.height());
+        resize(tex.width(), tex.height());
+        quad_.set_texture(std::move(tex));
+    }
 
     return true;
 }

@@ -38,7 +38,7 @@ using p3n3t2_geo3_tf = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TR
 
 class scene_graph_test : public application {
 public:
-    scene_graph_test() : application{"scene_graph_test", 1280, 900, false}, cam_{true} { }
+    scene_graph_test() : application{"scene_graph_test", 1280, 900}, cam_{true} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -367,5 +367,7 @@ void scene_graph_test::shutdown() {
 
 int main(int argc, char* argv[]) {
     scene_graph_test app;
-    return app.run();
+    app_config config;
+    config.multisamples = 8;
+    return app.run(config);
 }

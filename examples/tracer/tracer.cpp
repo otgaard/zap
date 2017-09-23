@@ -14,7 +14,7 @@ using namespace zap::graphics;
 
 class tracer : public application {
 public:
-    tracer() : application("tracer", 1280, 768, false) { }
+    tracer() : application{"tracer", 1280, 768} { }
     virtual ~tracer() { }
 
     bool initialise() override final;
