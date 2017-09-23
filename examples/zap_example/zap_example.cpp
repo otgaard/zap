@@ -24,7 +24,7 @@ using p3n3t2_gen = generators::geometry3<graphics::vtx_p3n3t2_t, primitive_type:
 #if defined(_WIN32)
 const char* const arial_font = "C:\\Windows\\Fonts\\arial.ttf";
 #elif defined(__APPLE__)
-const char* const arial_font = "/Library/Fonts/Arial.ttf"
+const char* const arial_font = "/Library/Fonts/Arial.ttf";
 #endif
 
 class zap_example : public application {

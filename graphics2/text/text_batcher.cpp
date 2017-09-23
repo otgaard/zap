@@ -6,12 +6,14 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
+#include "text.hpp"
 #include <tools/log.hpp>
 #include <array>
 #include <vector>
 #include <engine/pixel_format.hpp>
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
+#include <graphics2/g2_types.hpp>
 
 using namespace zap;
 using namespace zap::engine;
@@ -20,8 +22,11 @@ using namespace zap::graphics;
 const int MAX_FONTS = 32;           // Reserved Total number of supported fonts
 const int CHARSET_SIZE = 0xFF;      // Number of Characters in charset (use ASCII codes for now)
 const int CHARSET_DIM = 16;         // Store 16 characters per dimension (16 x 16 = 256)
+const int CHAR_RESERVE = 1024 * 10; // 10k text space to start
 
 using glyph_set = std::array<glyph, CHARSET_SIZE>;
+
+using vstream = vertex_stream<vbuf_p2t2_t>;
 
 struct zap::graphics::text_batcher::state_t {
     bool initialised = false;
@@ -29,6 +34,10 @@ struct zap::graphics::text_batcher::state_t {
     std::vector<font> fonts;
     std::vector<glyph_set> glyph_sets;
     std::vector<texture> textures;
+
+    vbuf_p2t2_t vbuffer{};
+    ibuf_tri4_t ibuffer{};
+    mesh_p2t2_tri4_t batch{vstream{&vbuffer}, &ibuffer};
 };
 
 zap::graphics::text_batcher::text_batcher() : state_(new state_t{}), s(*state_) {
@@ -48,6 +57,8 @@ bool zap::graphics::text_batcher::initialise() {
         return false;
     }
 
+    LOG("Allocating buffers", CHAR_RESERVE);
+
     // Reserve space in the vectors
     s.fonts.reserve(MAX_FONTS);
     s.textures.resize(MAX_FONTS);
@@ -56,8 +67,8 @@ bool zap::graphics::text_batcher::initialise() {
     return true;
 }
 
-int zap::graphics::text_batcher::font_count() {
-    return (int)s.fonts.size();
+uint32_t zap::graphics::text_batcher::font_count() {
+    return s.fonts.size();
 }
 
 zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& path, int px_height) {
@@ -191,7 +202,7 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
     return font_ptr;
 }
 
-font* zap::graphics::text_batcher::get_font(int font_id) {
+font* zap::graphics::text_batcher::get_font(uint32_t font_id) {
     return font_id < s.fonts.size() ? &s.fonts[font_id] : nullptr;
 }
 
@@ -200,8 +211,9 @@ font* zap::graphics::text_batcher::find_font(const std::string& name) {
     return it != s.fonts.end() ? &(*it) : nullptr;
 }
 
-texture* text_batcher::get_texture(int font_id) {
+texture* text_batcher::get_texture(uint32_t font_id) {
     return font_id < s.fonts.size() ? &s.textures[font_id] : nullptr;
 }
+
 
 #endif //defined(FOUND_FREETYPE)

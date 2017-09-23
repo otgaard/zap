@@ -26,7 +26,7 @@ namespace zap { namespace graphics {
     class text_batcher;
 
     struct font {
-        int font_id;
+        uint32_t font_id;
         std::string name;
         int pixel_height;
         text_batcher* parent;
@@ -47,11 +47,20 @@ namespace zap { namespace graphics {
 
         bool initialise();
 
-        int font_count();
+        uint32_t font_count();
         font* add_font(const std::string& path, int px_height);
-        font* get_font(int font_id);
+        font* get_font(uint32_t font_id);
         font* find_font(const std::string& name);
-        texture* get_texture(int font_id);
+        texture* get_texture(uint32_t font_id);
+
+        text create_text(uint32_t font_id, const std::string& str, size_t max_len=0);
+        bool change_text(uint32_t text_id, const std::string& str, size_t max_len=0);
+        void destroy_text(uint32_t text_id);
+        void destroy_text(const text& txt);
+
+        font* get_text_font(uint32_t text_id);
+        const std::string& get_text_string(uint32_t text_id);
+        size_t get_text_size(uint32_t text_id);
 
     private:
         struct state_t;

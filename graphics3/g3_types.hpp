@@ -51,9 +51,6 @@ using vbuf_n3ps1_t = vertex_buffer<vtx_n3ps1_t>;
 using vbuf_p3n3t2_t = vertex_buffer<vtx_p3n3t2_t>;
 using vbuf_p3n3tn3t2_t = vertex_buffer<vtx_p3n3tn3t2_t>;
 
-using ibuf_tri2_t = index_buffer<uint16_t, primitive_type::PT_TRIANGLES>;
-using ibuf_tri4_t = index_buffer<uint32_t, primitive_type::PT_TRIANGLES>;
-
 using mesh_p3_pnt_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_POINTS>;
 using mesh_p3_tri_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES>;
 using mesh_p3_tri2_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES, ibuf_tri2_t>;
