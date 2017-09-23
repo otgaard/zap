@@ -56,6 +56,14 @@ elseif(WIN32)
     add_definitions(-DGLEW_STATIC -DASIO_STANDALONE -D_CRT_SECURE_NO_WARNINGS)
     set(CMAKE_CXX_STANDARD 14)
 
+    if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/x64/freetype28MT.lib")
+        add_definitions(-DFOUND_FREETYPE)
+        set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/freetype/include) # freetype2 doesn't support "installing" on windows
+        set(FREETYPE_LIBRARIES ${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/x64/freetype28MT.lib)
+    else()
+        find_package(Freetype)
+    endif()
+
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
 

@@ -21,6 +21,12 @@ using namespace zap::graphics;
 
 using p3n3t2_gen = generators::geometry3<graphics::vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>;
 
+#if defined(_WIN32)
+const char* const arial_font = "C:\\Windows\\Fonts\\arial.ttf";
+#elif defined(__APPLE__)
+const char* const arial_font = "/Library/Fonts/Arial.ttf"
+#endif
+
 class zap_example : public application {
 public:
     zap_example() : application("zap_example", 1280, 768) { }
@@ -50,7 +56,7 @@ bool zap_example::initialise() {
         return false;
     }
 
-    auto arial = batcher.add_font("/Library/Fonts/Arial.ttf", 20);
+    auto arial = batcher.add_font(arial_font, 20);
     if(arial) {
         LOG(arial->name, arial->pixel_height, arial->font_id);
     }
