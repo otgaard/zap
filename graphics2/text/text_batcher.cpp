@@ -84,7 +84,7 @@ const char* const text_fshdr = GLSL(
     out vec4 frag_colour;
 
     void main() {
-        frag_colour = texture(text_atlas, tex);
+        frag_colour = texture(text_atlas, tex).rrrr;
     }
 );
 
@@ -236,7 +236,7 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
         curr.bound.bottom = bm.rows - g->top;
         curr.advance = g->root.advance.x >> 16;
 
-        coords[idx] = recti(curr_col+1, curr_row+1, curr_col+bm.width, curr_row+bm.rows+1);
+        coords[idx] = recti(curr_col+1, curr_col+bm.width+1, curr_row+bm.rows+1, curr_row+1);
 
         const byte* px = bm.buffer;
         for(int r = 0; r != bm.rows; ++r) {
@@ -262,7 +262,7 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
         idx++;
     }
 
-    uint32_t font_id = s.fonts.size();
+    uint32_t font_id = uint32_t(s.fonts.size());
     s.fonts.emplace_back(font{font_id, this});
     auto font_ptr = &s.fonts[font_id];
     font_ptr->px_height = px_height;
@@ -280,12 +280,14 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
         return nullptr;
     }
 
+    float inv_width = 1.f/tex_width, inv_height = 1.f/tex_height;
+
     for(int i = 0; i != CHARSET_SIZE; ++i) {
         glyph_set[i].texcoord = rectf{
-                float(coords[i].left) / tex_width,
-                float(coords[i].top) / tex_height,
-                float(coords[i].right+1) / tex_width,
-                float(coords[i].bottom) / tex_height
+                coords[i].left * inv_width,
+                coords[i].right * inv_width,
+                coords[i].bottom * inv_height,
+                coords[i].top * inv_height
         };
     }
 
@@ -333,7 +335,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
         LOG("Successfully mapped buffers");
 
         uint32_t quad = 0;
-        for(auto c = str.begin(); c != str.end(); ++c, ++quad) {
+        for(auto c = str.begin(); c != str.end(); ++c) {
             auto ch = *c;
             const auto& curr_glyph = get_glyph(font_id, ch);
 
@@ -361,7 +363,9 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
             uint32_t iidx = 6 * quad; idx = 4 * quad;
             s.ibuffer[iidx++] = idx;   s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+3;
             s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+2; s.ibuffer[iidx]   = idx+3;
+
             x += curr_glyph.advance;
+            ++quad;
         }
 
         s.vbuffer.unmap();
@@ -379,7 +383,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
     auto& text_obj = s.batch_index[text_id];
     text_obj.font_id = font_id;
     text_obj.start_idx = 0;
-    text_obj.last_idx = 6 * uint32_t(char_count);
+    text_obj.last_idx = 6 * uint32_t(char_len);
     text_obj.end_idx = uint32_t(idx_count);
     text_obj.size = uint32_t(char_len);
     text_obj.reserved = char_count;
