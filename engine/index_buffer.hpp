@@ -54,10 +54,11 @@ public:
     }
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
-    char* map(buffer_access access, size_t offset, size_t length) {
+    char* map(uint32_t access, size_t offset, size_t length) {
         assert(offset < index_count_ && offset+length <= index_count_ && ZERR_IDX_OUT_OF_RANGE);
         return buffer::map(buf_type, access, offset*sizeof(T), length*sizeof(T));
     }
+    void flush(size_t offset, size_t length) { return buffer::flush(buf_type, offset*sizeof(T), length*sizeof(T)); }
     bool unmap() { return buffer::unmap(buf_type); }
 
     const T& operator[](size_t idx) const {

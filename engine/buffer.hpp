@@ -54,7 +54,8 @@ namespace zap { namespace engine {
 
         const char* map(buffer_type type) const;    // GL_READ_ONLY
         char* map(buffer_type type, buffer_access access); // glMapBuffer
-        char* map(buffer_type type, buffer_access access, size_t offset, size_t length); // glMapBufferRange
+        char* map(buffer_type type, uint32_t access, size_t offset, size_t length); // glMapBufferRange
+        void flush(buffer_type type, size_t offset, size_t length); // glFlushMappedBufferRange
         bool unmap(buffer_type type) const; // glUnmapBuffer
 
         bool copy_buffer(buffer_type src_type, buffer_type trg_type, size_t src_offset, size_t trg_offset, size_t length);

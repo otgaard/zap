@@ -14,6 +14,10 @@ zap::graphics::text::~text() {
     parent_->destroy_text(id_);
 }
 
+void zap::graphics::text::translate(int x, int y) {
+    parent_->translate_text(id_, x, y);
+}
+
 void zap::graphics::text::set_text(const std::string& str, size_t max_len) {
     parent_->change_text(id_, str);
 }

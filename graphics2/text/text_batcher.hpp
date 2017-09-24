@@ -69,6 +69,7 @@ namespace zap { namespace graphics {
         bool change_text(uint32_t text_id, const std::string& str, uint32_t max_len=0);
         void destroy_text(uint32_t text_id);
         void destroy_text(const text& txt);
+        void translate_text(uint32_t text_id, int x, int y);
 
         font* get_text_font(uint32_t text_id);
         const std::string& get_text_string(uint32_t text_id);

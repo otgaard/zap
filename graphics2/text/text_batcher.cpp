@@ -37,6 +37,7 @@ struct text_string {
     uint32_t end_idx;           // zero-indexed index_buffer end (total space)
     uint32_t size;              // total chars used in text
     uint32_t reserved;          // total chars available
+    vec2i translation;          // the string translation in orthographic space for now
     std::string text;
 };
 
@@ -60,6 +61,10 @@ struct text_batcher::state_t {
     std::vector<texture> textures;
     std::vector<font> fonts;
     std::vector<glyph_set> glyph_sets;
+
+    uint32_t quad_ptr = 0;      // Stores the end of the allocated strings in quads (will be replaced by a list of free blocks)
+    uint32_t vertex_ptr = 0;    // Last vertex index
+    uint32_t index_ptr = 0;     // Last index ptr
 };
 
 const char* const text_vshdr = GLSL(
@@ -107,6 +112,9 @@ bool zap::graphics::text_batcher::initialise() {
 
     LOG("Allocating buffers", CHAR_RESERVE);
 
+    s.vbuffer.usage(buffer_usage::BU_STREAM_DRAW);
+    s.ibuffer.usage(buffer_usage::BU_STREAM_DRAW);
+
     if(!s.batch.allocate() || !s.vbuffer.allocate() || !s.ibuffer.allocate()) {
         LOG_ERR("Failed to allocate GPU resources for text_batcher");
         return false;
@@ -144,13 +152,14 @@ bool zap::graphics::text_batcher::initialise() {
 
 void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
     s.shdr_prog.bind();
-    s.shdr_prog.bind_uniform("pvm", cam.proj_view());
     s.shdr_prog.bind_texture_unit("text_atlas", 0);
     s.batch.bind();
     s.textures[0].bind(0);
     for(uint32_t idx = 0; idx != s.batch_index.size(); ++idx) {
         auto& txt = s.batch_index[idx];
-        s.batch.draw(txt.start_idx, txt.last_idx);
+        s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation<float>(txt.translation.x, txt.translation.y, 0.f));
+        LOG(txt.start_idx, txt.last_idx - txt.start_idx);
+        s.batch.draw(txt.start_idx, txt.last_idx - txt.start_idx);
     }
     s.textures[0].release();
     s.batch.release();
@@ -216,7 +225,6 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
 
         if(curr_col + bm.width + 1 >= tex_width) {
             curr_col = 0;
-            curr_row += px_height;
         }
 
         curr_row = row_top[curr_col];
@@ -331,7 +339,8 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
     s.vbuffer.bind();
     s.ibuffer.bind();
 
-    if(s.vbuffer.map(buffer_access::BA_MAP_WRITE, 0, quad_count) && s.ibuffer.map(buffer_access::BA_MAP_WRITE, 0, idx_count)) {
+    if(s.vbuffer.map(buffer_access::BA_WRITE_ONLY)
+       && s.ibuffer.map(buffer_access::BA_WRITE_ONLY)) {
         LOG("Successfully mapped buffers");
 
         uint32_t quad = 0;
@@ -347,7 +356,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
                 default:   break;
             }
 
-            uint32_t idx = 4 * quad;
+            uint32_t idx = s.vertex_ptr + 4 * quad;
             s.vbuffer[idx].position.set(x + curr_glyph.bound.left, y + curr_glyph.bound.top);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.left, curr_glyph.texcoord.top);
             idx++;
@@ -360,13 +369,18 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
             s.vbuffer[idx].position.set(x + curr_glyph.bound.right, y + curr_glyph.bound.top);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.right, curr_glyph.texcoord.top);
 
-            uint32_t iidx = 6 * quad; idx = 4 * quad;
+            uint32_t iidx = s.index_ptr + 6 * quad; idx = s.vertex_ptr + 4 * quad;
             s.ibuffer[iidx++] = idx;   s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+3;
             s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+2; s.ibuffer[iidx]   = idx+3;
 
             x += curr_glyph.advance;
             ++quad;
         }
+
+        gl_error_check();
+
+        //s.vbuffer.flush(s.vertex_ptr, quad_count);
+        //s.ibuffer.flush(s.index_ptr, idx_count);
 
         s.vbuffer.unmap();
         s.ibuffer.unmap();
@@ -382,12 +396,19 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
     s.batch_index.emplace_back();
     auto& text_obj = s.batch_index[text_id];
     text_obj.font_id = font_id;
-    text_obj.start_idx = 0;
-    text_obj.last_idx = 6 * uint32_t(char_len);
-    text_obj.end_idx = uint32_t(idx_count);
-    text_obj.size = uint32_t(char_len);
+    text_obj.start_idx = s.index_ptr;
+    text_obj.last_idx = s.index_ptr + 6 * char_len;
+    text_obj.end_idx = s.index_ptr + idx_count;
+    text_obj.size = char_len;
     text_obj.reserved = char_count;
+    text_obj.translation = vec2i{0, 0};
     txt.set_fields(text_id, this);
+
+    LOG(LOG_GREEN, "ENTRY:", text_obj.start_idx, text_obj.last_idx, text_obj.end_idx, text_obj.size);
+
+    s.quad_ptr += char_count;
+    s.vertex_ptr += quad_count;
+    s.index_ptr += idx_count;
 
     return txt;
 }
@@ -401,6 +422,11 @@ void text_batcher::destroy_text(uint32_t text_id) {
 }
 
 void text_batcher::destroy_text(const text& txt) {
+
+}
+
+void text_batcher::translate_text(uint32_t text_id, int x, int y) {
+    if(text_id < s.batch_index.size()) s.batch_index[text_id].translation.set(x, y);
 
 }
 

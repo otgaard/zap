@@ -66,6 +66,14 @@ namespace zap { namespace engine {
         BA_SIZE
     };
 
+    inline uint32_t operator|(const buffer_access& lhs, const buffer_access& rhs) {
+        return (uint32_t)lhs | (uint32_t)rhs;
+    }
+
+    inline uint32_t operator|(const uint32_t lhs, const buffer_access& rhs) {
+        return lhs | (uint32_t)rhs;
+    }
+
     enum class data_type : std::uint8_t {
         DT_VOID = 0,
         DT_UBYTE = 1,

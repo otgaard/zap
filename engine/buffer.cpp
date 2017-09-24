@@ -82,14 +82,20 @@ char* buffer::map(buffer_type type, buffer_access access) {
     return mapped_ptr_;
 }
 
-char* buffer::map(buffer_type type, buffer_access access, size_t offset, size_t length) {
+char* buffer::map(buffer_type type, uint32_t access, size_t offset, size_t length) {
     assert(is_allocated() && (offset + length) <= size_ && "Buffer unallocated or too small");
-    mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, gl_type(access)));
+    mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, GL_MAP_WRITE_BIT));
     if(gl_error_check() || mapped_ptr_ == nullptr) {
         unmap(type);
         return nullptr;
     }
     return mapped_ptr_;
+}
+
+void buffer::flush(buffer_type type, size_t offset, size_t length) {
+    assert(is_allocated() && (offset + length) <= size_ && "Buffer unallocated or too small");
+    glFlushMappedBufferRange(gl_type(type), offset, length);
+    gl_error_check();
 }
 
 bool buffer::unmap(buffer_type type) const {

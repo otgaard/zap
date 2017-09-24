@@ -6,6 +6,7 @@
 
 #include <string>
 #include <core/core.hpp>
+#include <maths/vec2.hpp>
 
 namespace zap { namespace graphics {
 
@@ -14,10 +15,15 @@ namespace zap { namespace graphics {
 
     class text {
     public:
+        using vec2i = maths::vec2i;
+
         ~text();
 
         bool is_allocated() const { return id_ != -1 && parent_ != nullptr; }
         uint32_t get_id() const { return id_; }
+
+        void translate(int x, int y);
+        void translate(const vec2i& v) { translate(v.x, v.y); }
 
         void set_text(const std::string& str, size_t max_len=0);
         font* get_font() const;
