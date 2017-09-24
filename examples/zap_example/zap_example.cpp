@@ -38,7 +38,7 @@ const char* const quote2 = "    But the Raven, sitting lonely on the placid bust
 #if defined(_WIN32)
 const char* const arial_font = "C:\\Windows\\Fonts\\arial.ttf";
 #elif defined(__APPLE__)
-const char* const arial_font = "/Library/Fonts/Arial.ttf";
+const char* const arial_font = "/Library/Fonts/Arial Bold.ttf";
 #endif
 
 class zap_example : public application {
@@ -59,9 +59,9 @@ protected:
     std::unique_ptr<mesh_base> sphere_;
     std::unique_ptr<render_context> context_;
     state_stack rndr_state_;
-
     text_batcher batcher;
     camera cam_;
+    render_state override_{true, false};
 };
 
 bool zap_example::initialise() {
@@ -70,7 +70,7 @@ bool zap_example::initialise() {
         return false;
     }
 
-    auto arial = batcher.add_font(arial_font, 20);
+    auto arial = batcher.add_font(arial_font, 14);
     if(arial) {
         LOG(arial->name, arial->px_height, arial->font_id);
     }
@@ -92,6 +92,9 @@ bool zap_example::initialise() {
     LOG("Proxy:", quote3_proxy.get_font()->name, quote3_proxy.get_text(), quote3_proxy.get_id());
     quote3_proxy.translate(vec2i{200, 400});
 
+    auto quote4_proxy = batcher.create_text(arial->font_id, quote1);
+    LOG("Proxy:", quote4_proxy.get_font()->name, quote4_proxy.get_text(), quote4_proxy.get_id());
+    quote4_proxy.translate(vec2i{300, 600});
 
     sphere_ = p3n3t2_gen::make_mesh(p3n3t2_gen::make_UVsphere(10, 30, 1.f, false));
     if(!sphere_->is_allocated()) {
@@ -109,6 +112,8 @@ bool zap_example::initialise() {
     task.diffuse_map = builder_task<>::texture_type::TT_NONE;
     context_ = shader_builder::build_basic_lights(task);
 
+    override_.get_blend_state()->enabled = true;
+
     return true;
 }
 
@@ -116,7 +121,7 @@ void zap_example::on_resize(int width, int height) {
     auto proj_matrix = make_perspective(45.f, width/float(height), 1.f, 10.f);
     auto mv_matrix = make_translation(0.f, 0.f, -5.f);
     context_->set_parameter("mvp_matrix", proj_matrix * mv_matrix);
-    context_->set_parameter("colour", vec4f{1.f, 1.f, 0.f, 1.f});
+    context_->set_parameter("colour", vec4f{.2f, .2f, 0.f, 1.f});
 
     cam_.set_perspective(false);
     cam_.frustum(0, width, height, 0, 0, 100);
@@ -140,7 +145,9 @@ void zap_example::draw() {
     sphere_->release();
     context_->release();
 
+    rndr_state_.push_state(&override_);
     batcher.draw(cam_);
+    rndr_state_.pop();
 }
 
 void zap_example::shutdown() {
