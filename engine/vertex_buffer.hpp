@@ -78,7 +78,7 @@ public:
     }
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
-    char* map(uint32_t access, size_t offset, size_t length) {
+    char* map(range_access::code access, size_t offset, size_t length) {
         assert(offset < vertex_count_ && offset+length <= vertex_count_ && ZERR_IDX_OUT_OF_RANGE);
         return buffer::map(buf_type, access, offset*vertex_t::bytesize(), length*vertex_t::bytesize());
     }

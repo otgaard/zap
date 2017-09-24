@@ -82,9 +82,25 @@ char* buffer::map(buffer_type type, buffer_access access) {
     return mapped_ptr_;
 }
 
-char* buffer::map(buffer_type type, uint32_t access, size_t offset, size_t length) {
+GLbitfield gl_access(range_access::code access) {
+    using namespace zap::maths;
+    range_access::code tbl[log2_pow2<uint32_t>(range_access::BA_SIZE)] =
+            {range_access::BA_MAP_READ, range_access::BA_MAP_WRITE, range_access::BA_MAP_PERSISTENT,
+             range_access::BA_MAP_COHERENT, range_access::BA_MAP_INVALIDATE_RANGE, range_access::BA_MAP_INVALIDATE_BUFFER,
+             range_access::BA_MAP_FLUSH_EXPLICIT, range_access::BA_MAP_UNSYNCHRONISED};
+    GLbitfield map[log2_pow2<uint32_t>(range_access::BA_SIZE)] =
+            {GL_MAP_READ_BIT, GL_MAP_WRITE_BIT, GL_MAP_PERSISTENT_BIT, GL_MAP_COHERENT_BIT, GL_MAP_INVALIDATE_RANGE_BIT,
+             GL_MAP_INVALIDATE_BUFFER_BIT, GL_MAP_FLUSH_EXPLICIT_BIT, GL_MAP_UNSYNCHRONIZED_BIT};
+    GLbitfield field = 0;
+    for(int i = 0, end = log2_pow2<uint32_t>(range_access::BA_SIZE); i != end; ++i) {
+        field |= (access & tbl[i] ? map[i] : 0);
+    }
+    return field;
+}
+
+char* buffer::map(buffer_type type, range_access::code access, size_t offset, size_t length) {
     assert(is_allocated() && (offset + length) <= size_ && "Buffer unallocated or too small");
-    mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, GL_MAP_WRITE_BIT));
+    mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, gl_access(access)));
     if(gl_error_check() || mapped_ptr_ == nullptr) {
         unmap(type);
         return nullptr;

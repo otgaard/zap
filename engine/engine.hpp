@@ -55,24 +55,22 @@ namespace zap { namespace engine {
         BA_READ_ONLY,
         BA_WRITE_ONLY,
         BA_READ_WRITE,
-        BA_MAP_READ,
-        BA_MAP_WRITE,
-        BA_MAP_PERSISTENT,
-        BA_MAP_COHERENT,
-        BA_MAP_INVALIDATE_RANGE,
-        BA_MAP_INVALIDATE_BUFFER,
-        BA_MAP_FLUSH_EXPLICIT,
-        BA_MAP_UNSYNCHRONISED,
         BA_SIZE
     };
 
-    inline uint32_t operator|(const buffer_access& lhs, const buffer_access& rhs) {
-        return (uint32_t)lhs | (uint32_t)rhs;
-    }
-
-    inline uint32_t operator|(const uint32_t lhs, const buffer_access& rhs) {
-        return lhs | (uint32_t)rhs;
-    }
+    struct range_access {
+        enum code {
+            BA_MAP_READ = 1 << 0,
+            BA_MAP_WRITE = 1 << 1,
+            BA_MAP_PERSISTENT = 1 << 2,
+            BA_MAP_COHERENT = 1 << 3,
+            BA_MAP_INVALIDATE_RANGE = 1 << 4,
+            BA_MAP_INVALIDATE_BUFFER = 1 << 5,
+            BA_MAP_FLUSH_EXPLICIT = 1 << 6,
+            BA_MAP_UNSYNCHRONISED = 1 << 7,
+            BA_SIZE = 1 << 8
+        };
+    };
 
     enum class data_type : std::uint8_t {
         DT_VOID = 0,

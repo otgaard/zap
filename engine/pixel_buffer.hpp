@@ -66,9 +66,14 @@ namespace zap { namespace engine {
         }
 
         char* map(buffer_access access, bool write) { return buffer::map(write ? write_type : read_type, access); }
-        char* map(buffer_access access, bool write, size_t offset, size_t length) {
-            return buffer::map(write ? write_type : read_type, access, offset, length);
+        char* map(range_access::code access, bool write, size_t offset, size_t length) {
+            return buffer::map(write ? write_type : read_type, access, offset*pixel_t::bytesize, length*pixel_t::bytesize);
         }
+
+        void flush(bool write, size_t offset, size_t length) {
+            return buffer::flush(write ? write_type : read_type, offset*pixel_t::bytesize, length*pixel_t::bytesize);
+        }
+
         bool unmap(bool write) { return buffer::unmap(write ? write_type: read_type); }
 
         size_t copy(const typename pixmap_t::buffer_t& buffer, size_t src_off, size_t trg_off, size_t pixel_count) {

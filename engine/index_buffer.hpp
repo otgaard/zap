@@ -54,7 +54,7 @@ public:
     }
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
-    char* map(uint32_t access, size_t offset, size_t length) {
+    char* map(range_access::code access, size_t offset, size_t length) {
         assert(offset < index_count_ && offset+length <= index_count_ && ZERR_IDX_OUT_OF_RANGE);
         return buffer::map(buf_type, access, offset*sizeof(T), length*sizeof(T));
     }
