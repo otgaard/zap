@@ -19,7 +19,7 @@ namespace zap { namespace graphics {
 
         ~text();
 
-        bool is_allocated() const { return id_ != -1 && parent_ != nullptr; }
+        bool is_allocated() const { return id_ != INVALID_IDX && parent_ != nullptr; }
         uint32_t get_id() const { return id_; }
 
         void translate(int x, int y);

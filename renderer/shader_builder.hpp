@@ -76,8 +76,6 @@ public:
     // Builds a basic light + material shader
     template <size_t D, size_t P, size_t S>
     static std::unique_ptr<render_context> build_basic_lights(const builder_task<D, P, S>& req) {
-        using task_t = builder_task<D, P, S>;
-
         assert(!req.is_brdf() && "BRDF shading not supported yet");
 
         term = "\n";    // Terminal char for formatting

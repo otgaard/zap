@@ -307,7 +307,7 @@ void scene_graph_test::on_resize(int width, int height) {
 void scene_graph_test::update(double t, float dt) {
     static float inc = 0.f;
     auto rot = make_rotation(vec3f{0.f, 1.f, 0.f}, inc) * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float> / 2);
-    for(int i = 1; i != visuals_.size(); ++i) visuals_[i].rotate(rot);
+    for(size_t i = 1; i != visuals_.size(); ++i) visuals_[i].rotate(rot);
     inc += dt;
 
     // Cycle through the lights
@@ -349,12 +349,12 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
-    for(int i = 0; i != visuals_.size(); ++i) {
+    for(size_t i = 0; i != visuals_.size(); ++i) {
         auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
         args_[i].add_parameter("mvp_matrix", cam_.projection() * MV);
         args_[i].add_parameter("mv_matrix", MV);
         args_[i].add_parameter("normal_matrix", MV.inverse().transpose().rotation());
-        args_[i].add_parameter("diffuse_map", i == 0 ? 3 : (i-1)%3);
+        args_[i].add_parameter("diffuse_map", (int)(i == 0 ? 3 : (i-1)%3));
         rndr_.draw(visuals_[i], context_.get(), args_[i]);
     }
 

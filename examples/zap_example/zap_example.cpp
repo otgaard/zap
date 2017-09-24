@@ -39,6 +39,8 @@ const char* const quote2 = "    But the Raven, sitting lonely on the placid bust
 const char* const arial_font = "C:\\Windows\\Fonts\\arial.ttf";
 #elif defined(__APPLE__)
 const char* const arial_font = "/Library/Fonts/Arial Bold.ttf";
+#else
+const char* const arial_font = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf";
 #endif
 
 class zap_example : public application {

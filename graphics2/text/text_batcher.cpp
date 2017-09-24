@@ -7,6 +7,7 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include "text.hpp"
+#include <algorithm>
 #include <tools/log.hpp>
 #include <engine/pixel_format.hpp>
 #include <engine/pixmap.hpp>
@@ -247,8 +248,8 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
         coords[idx] = recti(curr_col+1, curr_col+bm.width+1, curr_row+bm.rows+1, curr_row+1);
 
         const byte* px = bm.buffer;
-        for(int r = 0; r != bm.rows; ++r) {
-            for(int c = 0; c != bm.width; ++c) {
+        for(uint32_t r = 0; r != bm.rows; ++r) {
+            for(uint32_t c = 0; c != bm.width; ++c) {
                 auto i = c + curr_col + 1 + (r + curr_row + 1) * tex_width;
                 atlas_image[i].set(px[c]);
             }

@@ -127,7 +127,7 @@ public:
     }
 
     parameter get_parameter(int idx) const {
-        assert(0 <= idx && idx < parameters_.size() && "Invalid parameter index specified");
+        assert(0 <= idx && idx < (int)parameters_.size() && "Invalid parameter index specified");
         return idx != -1 ? parameters_[idx] : parameter{-1};
     }
 
@@ -136,7 +136,7 @@ public:
     }
 
     int get_offset(int idx) const {
-        assert(0 <= idx && idx < parameters_.size() && "Invalid parameter index specified");
+        assert(0 <= idx && idx < (int)parameters_.size() && "Invalid parameter index specified");
         return idx != -1 ? offsets_[idx] : -1;
     }
 

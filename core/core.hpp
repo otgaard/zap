@@ -11,6 +11,7 @@
 #include <type_traits>
 
 // Some missing defs for GCC
+/*
 #ifdef __GNUG__
 #ifdef __linux__
 namespace std {
@@ -21,7 +22,7 @@ namespace std {
 };
 #endif
 #endif
-
+*/
 constexpr std::uint32_t INVALID_IDX = std::uint32_t(-1);
 using uchar = unsigned char;
 using byte = unsigned char;

@@ -85,7 +85,7 @@ namespace zap { namespace renderer {
         }
 
         void set_argument(int arg_idx, argument::update_fnc&& fnc) {
-            assert(arg_idx < arguments_.size() && "Invalid index to set_argument");
+            assert(arg_idx < (int)arguments_.size() && "Invalid index to set_argument");
             auto arg = arguments_[arg_idx];
             auto parm = context_->get_parameter(arg.idx);
             if(parm.location == -1) return;
@@ -95,7 +95,7 @@ namespace zap { namespace renderer {
 
         template <typename T>
         void set_argument(int arg_idx, const T& value) {
-            assert(arg_idx < arguments_.size() && "Invalid index to set_argument");
+            assert(arg_idx < (int)arguments_.size() && "Invalid index to set_argument");
             auto arg = arguments_[arg_idx];
             auto parm = context_->get_parameter(arg.idx);
             if(parm.location == -1 || parm.bytesize() != sizeof(value)) return;

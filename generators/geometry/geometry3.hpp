@@ -570,7 +570,7 @@ namespace zap { namespace generators {
         idx++;
 
         T theta = 0;
-        for(size_t i = 0; i != end; ++i) {
+        for(size_t i = 0; i != (size_t)end; ++i) {
             theta = (i % slices) * dt;
             T stheta = std::sin(theta), ctheta = std::cos(theta);
             vertices[idx].position = centre + vec3<T>{radius * ctheta, radius * stheta, T(0.)};
