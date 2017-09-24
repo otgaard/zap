@@ -302,7 +302,7 @@ namespace zap { namespace maths {
     // Takes degrees - force of habit
     template <typename T>
     mat4<T> make_perspective(T fov, T ar, T d_min, T d_max) {
-        const T ha_rad_tan = std::tan(deg_to_rad(.5 * fov));
+        const T ha_rad_tan = std::tan(deg_to_rad(T(.5) * fov));
         mat4<T> P(0);
         P(0,0) = T(1) / (ar * ha_rad_tan);
         P(1,1) = T(1) / ha_rad_tan;

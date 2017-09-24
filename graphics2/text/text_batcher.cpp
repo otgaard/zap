@@ -157,7 +157,7 @@ void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
     s.textures[0].bind(0);
     for(uint32_t idx = 0; idx != s.batch_index.size(); ++idx) {
         auto& txt = s.batch_index[idx];
-        s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation<float>(txt.translation.x, txt.translation.y, 0.f));
+        s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation(float(txt.translation.x), float(txt.translation.y), 0.f));
         //LOG("el:", idx, "s:", txt.start_idx, "c:", txt.last_idx - txt.start_idx);
         s.batch.draw(txt.start_idx, txt.last_idx - txt.start_idx);
     }
@@ -167,7 +167,7 @@ void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
 }
 
 uint32_t zap::graphics::text_batcher::font_count() {
-    return s.fonts.size();
+    return uint32_t(s.fonts.size());
 }
 
 zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& path, int px_height) {
@@ -223,7 +223,7 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
         auto& curr = glyph_set[idx];
         auto& bm = g->bitmap;
 
-        if(curr_col + bm.width + 1 >= tex_width) {
+        if(curr_col + (int)bm.width + 1 >= tex_width) {
             curr_col = 0;
         }
 
@@ -233,7 +233,7 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
         }
         curr_row++;
 
-        if(curr_row + bm.rows+1 >= tex_height) {
+        if(curr_row + (int)bm.rows+1 >= tex_height) {
             tex_height *= 2;
             atlas_image.resize(tex_width, tex_height);
         }
@@ -261,7 +261,7 @@ zap::graphics::font* zap::graphics::text_batcher::add_font(const std::string& pa
 
         curr_col += bm.width + 1;
 
-        if(curr_row + bm.rows > max_height) {
+        if(curr_row + (int)bm.rows > max_height) {
             max_height = curr_row + bm.rows;
         }
 
@@ -334,7 +334,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
 
     LOG("Text Inp:", char_count, quad_count, idx_count);
 
-    float x = 0.f, y = px_height;
+    float x = 0.f, y = float(px_height);
 
     s.vbuffer.bind();
     s.ibuffer.bind();

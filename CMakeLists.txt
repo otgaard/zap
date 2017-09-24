@@ -53,7 +53,7 @@ elseif(UNIX)
     add_compile_options(-msse4.1 -ffast-math)
 elseif(WIN32)
     include(GenerateExportHeader)
-    add_definitions(-DGLEW_STATIC -DASIO_STANDALONE -D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-DGLEW_STATIC -DASIO_STANDALONE -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
     set(CMAKE_CXX_STANDARD 14)
 
     if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/x64/freetype28MT.lib")
