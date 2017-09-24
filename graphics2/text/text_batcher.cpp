@@ -158,7 +158,7 @@ void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
     for(uint32_t idx = 0; idx != s.batch_index.size(); ++idx) {
         auto& txt = s.batch_index[idx];
         s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation<float>(txt.translation.x, txt.translation.y, 0.f));
-        LOG(txt.start_idx, txt.last_idx - txt.start_idx);
+        //LOG("el:", idx, "s:", txt.start_idx, "c:", txt.last_idx - txt.start_idx);
         s.batch.draw(txt.start_idx, txt.last_idx - txt.start_idx);
     }
     s.textures[0].release();
@@ -339,10 +339,8 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
     s.vbuffer.bind();
     s.ibuffer.bind();
 
-    if(s.vbuffer.map(buffer_access::BA_WRITE_ONLY)
-       && s.ibuffer.map(buffer_access::BA_WRITE_ONLY)) {
-        LOG("Successfully mapped buffers");
-
+    if(s.vbuffer.map(range_access::BA_MAP_WRITE, s.vertex_ptr, quad_count)
+       && s.ibuffer.map(range_access::BA_MAP_WRITE, s.index_ptr, idx_count)) {
         uint32_t quad = 0;
         for(auto c = str.begin(); c != str.end(); ++c) {
             auto ch = *c;
@@ -356,7 +354,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
                 default:   break;
             }
 
-            uint32_t idx = s.vertex_ptr + 4 * quad;
+            uint32_t idx = 4 * quad;
             s.vbuffer[idx].position.set(x + curr_glyph.bound.left, y + curr_glyph.bound.top);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.left, curr_glyph.texcoord.top);
             idx++;
@@ -369,7 +367,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
             s.vbuffer[idx].position.set(x + curr_glyph.bound.right, y + curr_glyph.bound.top);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.right, curr_glyph.texcoord.top);
 
-            uint32_t iidx = s.index_ptr + 6 * quad; idx = s.vertex_ptr + 4 * quad;
+            uint32_t iidx = 6 * quad; idx = s.vertex_ptr + 4 * quad;
             s.ibuffer[iidx++] = idx;   s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+3;
             s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+2; s.ibuffer[iidx]   = idx+3;
 
@@ -378,9 +376,6 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
         }
 
         gl_error_check();
-
-        //s.vbuffer.flush(s.vertex_ptr, quad_count);
-        //s.ibuffer.flush(s.index_ptr, idx_count);
 
         s.vbuffer.unmap();
         s.ibuffer.unmap();

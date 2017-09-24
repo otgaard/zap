@@ -82,6 +82,7 @@ public:
         assert(offset < vertex_count_ && offset+length <= vertex_count_ && ZERR_IDX_OUT_OF_RANGE);
         return buffer::map(buf_type, access, offset*vertex_t::bytesize(), length*vertex_t::bytesize());
     }
+    char* map(int access, size_t offset, size_t length) { return map((range_access::code)access, offset, length); }
     void flush(size_t offset, size_t length) { return buffer::flush(buf_type, offset*vertex_t::bytesize(), length*vertex_t::bytesize()); }
     bool unmap() { return buffer::unmap(buf_type); }
 
