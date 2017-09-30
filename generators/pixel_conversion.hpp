@@ -5,10 +5,15 @@
 #ifndef ZAP_PIXEL_CONVERSION_HPP
 #define ZAP_PIXEL_CONVERSION_HPP
 
-#include <engine/pixmap.hpp>
 #include <engine/pixel_format.hpp>
 
 namespace zap {
+
+namespace engine {
+    template <typename PixelT> class pixmap;
+}
+
+template <typename PixelA, typename PixelB> PixelB convert(const PixelA& A);
 
 template<typename Input, typename Output>
 bool convert(const engine::pixmap<Input>& input, engine::pixmap<Output>& output);

@@ -35,12 +35,6 @@ struct text_string {
     std::string text;
 };
 
-size_t count_quads(const std::string& str) {
-    return (size_t)std::count_if(str.begin(), str.end(), [](char ch)->bool {
-        return !(ch == ' ' || ch == '\n' || ch == '\t' || ch == '\v');
-    });
-}
-
 struct text_batcher::state_t {
     font_manager* font_mgr_;
 

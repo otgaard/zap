@@ -24,7 +24,7 @@ struct rect {
     }
 
     T width() const { return right - left; }
-    T height() const { return bottom - top; }
+    T height() const { return top - bottom; }
 
     void translate(T x, T y) {
         left += x; right += x;
@@ -45,6 +45,10 @@ struct rect {
             return true;
         }
         return false;
+    }
+
+    bool contains(const rect& rhs) const {
+        return left <= rhs.left && right >= rhs.right && bottom <= rhs.bottom && top >= rhs.top;
     }
 
     vec2<T> centre() const { return vec2<T>((right-left)/2, (top-bottom)/2); }

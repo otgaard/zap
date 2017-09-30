@@ -849,6 +849,11 @@ void canvas<PixelT, pixmap>::filled_rect(int x1, int y1, int x2, int y2) {
 }
 
 template <typename PixelT>
+size_t canvas<PixelT, pixmap>::copy(const canvas<PixelT, pixmap>::pixmap_t& src, int trg_x, int trg_y, const recti& bound) {
+    return raster_.copy(src, trg_x, trg_y, bound);
+}
+
+template <typename PixelT>
 void canvas<PixelT, pixmap>::vertical_line(int x1, int y1, int y2) {
     if(y1 < y2) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;

@@ -31,7 +31,7 @@ struct font_manager::state_t {
     FT_Library library;
     std::vector<font> fonts;
     std::vector<glyph_set> glyph_sets;
-    std::vector<atlas_t> atlases;
+    std::vector<pixmap_t> atlases;
 };
 
 font_manager::font_manager() : state_(new state_t{}), s(*state_) {
@@ -202,13 +202,71 @@ const glyph_set* font_manager::get_glyphs(uint32_t font_id) const {
     return font_id < font_count() ? &s.glyph_sets[font_id] : nullptr;
 }
 
-const font_manager::atlas_t* font_manager::get_atlas(uint32_t font_id) const {
+const font_manager::pixmap_t* font_manager::get_atlas(uint32_t font_id) const {
     return font_id < font_count() ? &s.atlases[font_id] : nullptr;
 }
 
 const glyph& font_manager::get_glyph(uint32_t font_id, byte ch) const  {
     static const glyph dummy{};
     return font_id < font_count() ? s.glyph_sets[font_id][ch] : dummy;
+}
+
+pixmap<rgb888_t> font_manager::rasterise(uint32_t font_id, const std::string& txt) const {
+    auto font_ptr = get_font(font_id);
+    if(!font_ptr || txt.empty()) return pixmap<rgb888_t>{};
+
+    const auto px_height = font_ptr->px_height;
+
+    int x = 0, y = px_height, max_x = 0;
+    uint32_t quad = 0;
+    for(auto c = txt.begin(); c != txt.end(); ++c) {
+        auto ch = *c;
+        const auto& curr_glyph = font_ptr->get_glyph(ch);
+
+        switch(ch) {
+            case ' ':  x += curr_glyph.advance; continue;
+            case '\n': y += px_height; if(x > max_x) max_x = x; x = 0; continue;
+            case '\t': x += 4 * curr_glyph.advance; continue;
+            case '\v': y += 4 * px_height; continue;
+            default:   break;
+        }
+        x += curr_glyph.advance;
+        ++quad;
+    }
+
+    if(x > max_x) max_x = x;
+
+    LOG("PX:", max_x, y);
+    pixmap<rgb888_t> img{400, 200};
+    //for(int i = 0; i != img.size(); ++i) img[i] = rgb888_t{255, 255, 255};
+
+    auto atlas_ptr = font_ptr->get_atlas();
+
+    x = 0, y = px_height;
+    quad = 0;
+    for(auto c = txt.begin(); c != txt.end(); ++c) {
+        auto ch = *c;
+        const auto& curr_glyph = font_ptr->get_glyph(ch);
+
+        switch(ch) {
+            case ' ':  x += curr_glyph.advance; continue;
+            case '\n': y += px_height; x = 0; continue;
+            case '\t': x += 4 * curr_glyph.advance; continue;
+            case '\v': y += 4 * px_height; continue;
+            default:   break;
+        }
+
+        recti bound{curr_glyph.texcoord.left*atlas_ptr->width(),
+                    curr_glyph.texcoord.right*atlas_ptr->width(),
+                    curr_glyph.texcoord.top*atlas_ptr->height(),
+                    curr_glyph.texcoord.bottom*atlas_ptr->height()};
+        img.copy(*atlas_ptr, x, y, bound);
+
+        x += curr_glyph.advance;
+        ++quad;
+    }
+
+    return img;
 }
 
 #endif //defined(FOUND_FREETYPE)

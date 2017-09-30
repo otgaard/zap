@@ -95,6 +95,8 @@ namespace zap { namespace rasteriser {
 template <typename PixelT>
 class canvas<PixelT, engine::pixmap> {
 public:
+    using pixmap_t = engine::pixmap<PixelT>;
+
     canvas();
     canvas(int width, int height);
     ~canvas();
@@ -133,7 +135,7 @@ public:
     void rect(int x1, int y1, int x2, int y2);
     void filled_rect(int x1, int y1, int x2, int y2);
 
-
+    size_t copy(const pixmap_t& src, int trg_x, int trg_y, const recti& bound=recti{0, 0, 0, 0});
 
     void update(zap::engine::texture& tex);
     const engine::pixmap<PixelT>& get_buffer() const { return raster_; }

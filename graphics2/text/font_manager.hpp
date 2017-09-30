@@ -7,6 +7,7 @@
 #if defined(FOUND_FREETYPE)
 
 #include <string>
+#include <algorithm>
 #include <engine/pixmap.hpp>
 #include <maths/geometry/rect.hpp>
 
@@ -27,7 +28,7 @@ namespace zap { namespace graphics {
 
     struct font {
         using atlas_t = engine::pixmap<engine::r8_t>;
-        using rgba8888_t = engine::rgba8888_t;
+        using rgb888_t = engine::rgb888_t;
 
         uint32_t font_id;
         std::string name;
@@ -40,13 +41,18 @@ namespace zap { namespace graphics {
         const glyph_set* get_glyphs() const;
         const atlas_t* get_atlas() const;
         const glyph& get_glyph(byte ch) const;
-
     };
+
+    inline size_t count_quads(const std::string& str) {
+        return (size_t)std::count_if(str.begin(), str.end(), [](char ch)->bool {
+            return !(ch == ' ' || ch == '\n' || ch == '\t' || ch == '\v');
+        });
+    }
 
     class font_manager {
     public:
-        using atlas_t = engine::pixmap<engine::r8_t>;
-        using rgba8888_t = engine::rgba8888_t;
+        using pixmap_t = engine::pixmap<engine::r8_t>;
+        using rgb888_t = engine::rgb888_t;
 
         font_manager();
         ~font_manager();
@@ -58,16 +64,17 @@ namespace zap { namespace graphics {
         const font* get_font(uint32_t font_id) const;
         const font* find_font(const std::string& name) const;
         const glyph_set* get_glyphs(uint32_t font_id) const;
-        const atlas_t* get_atlas(uint32_t font_id) const;
+        const pixmap_t* get_atlas(uint32_t font_id) const;
 
         const glyph& get_glyph(uint32_t font_id, byte ch) const;
+
+        engine::pixmap<engine::rgb888_t> rasterise(uint32_t font_id, const std::string& txt) const;
 
     protected:
         struct state_t;
         std::unique_ptr<state_t> state_;
         state_t& s;
     };
-
 }}
 
 #endif //defined(FOUND_FREETYPE)

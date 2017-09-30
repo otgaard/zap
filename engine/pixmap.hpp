@@ -5,12 +5,14 @@
 #include "pixel_format.hpp"
 #include <maths/geometry/rect.hpp>
 #include <vector>
+#include <generators/pixel_conversion.hpp>
 
 namespace zap { namespace engine {
     template <typename PixelT>
     class pixmap {
     public:
         using vec2i = maths::vec2i;
+        using recti = maths::geometry::recti;
         using buffer_t = std::vector<PixelT>;
         pixmap() : width_(0), height_(0), depth_(0) { }
         pixmap(int width, int height=1, int depth=1) { resize(width, height, depth); }
@@ -27,16 +29,17 @@ namespace zap { namespace engine {
             buffer_.resize(size_t(width*height*depth));
         }
 
-        inline int width() const { return width_; }
-        inline int height() const { return height_; }
-        inline int depth() const { return depth_; }
-        inline int size() const { return int(buffer_.size()); }
-        inline size_t bytesize() const { return buffer_.size()*sizeof(PixelT); }
+        int width() const { return width_; }
+        int height() const { return height_; }
+        int depth() const { return depth_; }
+        int size() const { return int(buffer_.size()); }
+        size_t bytesize() const { return buffer_.size()*sizeof(PixelT); }
+        recti bound() const { return recti{0, width(), 0, height()}; }
 
-        inline bool is_initialised() const { return width_ != 0; }
-        inline bool is_1D() const { return height_ == 1 && depth_ == 1; }
-        inline bool is_2D() const { return height_ > 1 && depth_ == 1; }
-        inline bool is_3D() const { return height_ > 1 && depth_ > 1; }
+        bool is_initialised() const { return width_ != 0; }
+        bool is_1D() const { return height_ == 1 && depth_ == 1; }
+        bool is_2D() const { return height_ > 1 && depth_ == 1; }
+        bool is_3D() const { return height_ > 1 && depth_ > 1; }
 
         PixelT& operator[](int idx) { return buffer_[idx]; }
         const PixelT& operator[](int idx) const { return buffer_[idx]; }
@@ -101,9 +104,47 @@ namespace zap { namespace engine {
             return true;
         }
 
-        size_t copy(const size_t src_off, const size_t trg_off, size_t length) {
+        size_t copy(size_t src_off, size_t trg_off, size_t length) {
             std::copy(data()+src_off, data()+src_off+length, data()+trg_off);
             return length;
+        }
+
+        size_t copy(const pixmap& src, size_t src_off, size_t trg_off, size_t length) {
+            assert(trg_off + length <= size() && "canvas::copy out-of-bounds");
+            std::copy(src.data(src_off), src.data(src_off+length), data()+trg_off);
+            return length;
+        }
+
+        template <typename SrcPixelT>
+        size_t copy(const pixmap<SrcPixelT>& src, size_t src_off, size_t trg_off, size_t length) {
+            assert(trg_off + length <= size() && "canvas::copy out-of-bounds");
+            for(int x = 0; x != length; ++x) {
+                *data(trg_off+x) = convert<SrcPixelT, PixelT>(src[src_off+x]);
+            }
+            return length;
+        }
+
+        size_t copy(const pixmap& src, int trg_x, int trg_y, const recti& bound) {
+            assert(width() - trg_x >= bound.width() && height() - trg_y >= bound.height() && "canvas::copy out-of-bounds");
+
+            recti bnd = bound.width() == 0 && bound.height() == 0 ? src.bound() : bound;
+
+            for(int r = 0; r != bnd.height(); ++r) {
+                copy(src, src.offset(bnd.left, bnd.bottom+r), offset(trg_x, trg_y + r), bnd.width());
+            }
+            return bnd.height() * bnd.width();
+        }
+
+        template <typename SrcPixelT>
+        size_t copy(const pixmap<SrcPixelT>& src, int trg_x, int trg_y, const recti& bound) {
+            assert(width() - trg_x >= bound.width() && height() - trg_y >= bound.height() && "canvas::copy out-of-bounds");
+
+            recti bnd = bound.width() == 0 && bound.height() == 0 ? src.bound() : bound;
+
+            for(int r = 0; r != bnd.height(); ++r) {
+                copy(src, src.offset(bnd.left, bnd.bottom+r), offset(trg_x, trg_y + r), bnd.width());
+            }
+            return bnd.height() * bnd.width();
         }
 
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
