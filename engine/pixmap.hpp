@@ -101,6 +101,11 @@ namespace zap { namespace engine {
             return true;
         }
 
+        size_t copy(const size_t src_off, const size_t trg_off, size_t length) {
+            std::copy(data()+src_off, data()+src_off+length, data()+trg_off);
+            return length;
+        }
+
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         PixelT* data(size_t offset=0) { return buffer_.data()+offset; }
         const PixelT* data(int c, int r) const { return buffer_.data()+offset(c,r); }

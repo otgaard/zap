@@ -31,7 +31,7 @@ namespace zap { namespace graphics {
         void set_colour(const vec4f& c) { return set_colour(c.r, c.g, c.b, c.a); }
 
         void set_text(const std::string& str, size_t max_len=0);
-        font* get_font() const;
+        const font* get_font() const;
         const std::string& get_text() const;
         size_t size() const;
 

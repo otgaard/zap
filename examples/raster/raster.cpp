@@ -36,7 +36,7 @@ public:
 
 protected:
     quad img_;
-    canvas canvas_;
+    canvas<rgb888_t, pixel_buffer> canvas_;
 };
 
 bool raster::initialise() {

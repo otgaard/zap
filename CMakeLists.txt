@@ -233,7 +233,7 @@ set(ZAP_GRAPHICS_FILES
         generators/generator.cpp
         generators/pixel_conversion.cpp
         graphics2/text/text_batcher.cpp
-        graphics2/text/text.cpp)
+        graphics2/text/text.cpp graphics2/text/font_manager.cpp graphics2/text/font_manager.hpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
         host/GLFW/application.hpp)

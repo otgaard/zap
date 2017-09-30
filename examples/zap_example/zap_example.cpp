@@ -13,6 +13,7 @@
 #include <graphics2/text/text_batcher.hpp>
 #include <graphics2/quad.hpp>
 #include <graphics2/text/text.hpp>
+#include <graphics2/text/font_manager.hpp>
 
 using namespace zap;
 using namespace zap::maths;
@@ -64,15 +65,22 @@ protected:
     text_batcher batcher;
     camera cam_;
     render_state override_{true, false, false};
+    font_manager font_mgr_;
+    quad quad_;
 };
 
 bool zap_example::initialise() {
-    if(!batcher.initialise()) {
+    if(!font_mgr_.initialise()) {
+        LOG_ERR("Font manager failed to initialise");
+        return false;
+    }
+
+    if(!batcher.initialise(&font_mgr_)) {
         LOG_ERR("Failed to initialise batcher");
         return false;
     }
 
-    auto arial = batcher.add_font(arial_font, 14);
+    auto arial = font_mgr_.add_font(arial_font, 14);
     if(arial) {
         LOG(arial->name, arial->px_height, arial->font_id);
     }
@@ -143,7 +151,6 @@ void zap_example::update(double t, float dt) {
 }
 
 void zap_example::draw() {
-    rndr_state_.clear();
     context_->bind();
     sphere_->bind();
     sphere_->draw();
@@ -153,6 +160,7 @@ void zap_example::draw() {
     rndr_state_.push_state(&override_);
     batcher.draw(cam_);
     rndr_state_.pop();
+
 }
 
 void zap_example::shutdown() {

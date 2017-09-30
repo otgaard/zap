@@ -26,7 +26,7 @@ void zap::graphics::text::set_text(const std::string& str, size_t max_len) {
     parent_->change_text(id_, str);
 }
 
-zap::graphics::font* zap::graphics::text::get_font() const {
+const zap::graphics::font* zap::graphics::text::get_font() const {
     return parent_->get_text_font(id_);
 }
 

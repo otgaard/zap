@@ -18,29 +18,9 @@ namespace zap {
 }
 
 namespace zap { namespace graphics {
-    using recti = zap::maths::geometry::recti;
-    using rectf = zap::maths::geometry::rectf;
-
-    struct glyph {
-        long advance = 0;
-        recti bound;
-        rectf texcoord;
-    };
-
-    class text_batcher;
-
-    struct font {
-        uint32_t font_id;
-        std::string name;
-        int px_height = 0;
-        text_batcher* parent;
-
-        explicit font(uint32_t font_id=INVALID_IDX, text_batcher* parent=nullptr) : font_id(font_id), parent(parent) { }
-        font(const font&) = default;
-        font& operator=(const font&) = default;
-    };
-
+    struct font;
     class text;
+    class font_manager;
 
     // The text_batcher controls batching and rendering of multiple on-screen text strings with fonts stored as
     // texture atlases with matching texcoord, boundary and advance instructions from Freetype.
@@ -51,15 +31,11 @@ namespace zap { namespace graphics {
         text_batcher();
         ~text_batcher();
 
-        bool initialise();
+        bool initialise(font_manager* font_mgr);
 
         void draw(const renderer::camera& cam);
 
-        uint32_t font_count();
-        font* add_font(const std::string& path, int px_height);
-        font* get_font(uint32_t font_id);
-        font* find_font(const std::string& name);
-        texture* get_texture(uint32_t font_id);
+        const texture* get_texture(uint32_t font_id) const;
 
         text create_text(uint32_t font_id, const std::string& str, uint32_t max_len=0);
         bool change_text(uint32_t text_id, const std::string& str, uint32_t max_len=0);
@@ -67,13 +43,11 @@ namespace zap { namespace graphics {
         void translate_text(uint32_t text_id, int x, int y);
         void set_text_colour(uint32_t text_id, float r, float g, float b, float a);
 
-        font* get_text_font(uint32_t text_id);
+        const font* get_text_font(uint32_t text_id) const;
         const std::string& get_text_string(uint32_t text_id);
         size_t get_text_size(uint32_t text_id);
 
     private:
-        glyph get_glyph(uint32_t font_id, char ch);
-
         struct state_t;
         std::unique_ptr<state_t> state_;
         state_t& s;

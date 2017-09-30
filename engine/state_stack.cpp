@@ -11,7 +11,6 @@ extern const GLenum gl_dst_blend_mode[(int)render_state::blend_state::dst_blend_
 extern const GLenum gl_polygon_mode[(int)render_state::rasterisation_state::polygon_mode::PM_SIZE];
 extern const GLenum gl_compare_mode[(int)render_state::compare_mode::CM_SIZE];
 
-
 state_stack::state_stack() : base_state_(true, true, true), clear_colour_{0.f, 0.f, 0.f, 0.f} {
 }
 
@@ -219,7 +218,6 @@ void state_stack::transition(const rasterisation_state* source, const rasterisat
 
     if(target->poly_mode != source->poly_mode) glPolygonMode(GL_FRONT_AND_BACK, gl_polygon_mode[(int)target->poly_mode]);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OPENGL TABLES

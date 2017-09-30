@@ -45,7 +45,7 @@ public:
     void clear(const vec4f& v) { clear(v.x, v.y, v.z, v.w); }
     void clear();
 
-protected:
+private:
     // Blending state
     void push_state(const blend_state* state);
     void pop_blend_state();
