@@ -88,45 +88,17 @@ namespace zap { namespace maths {
             return y < rhs.y || x < rhs.x;
         }
 
-        /*
-        bool operator<(const vec2<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
-            return true;
-        }
-        */
-
         bool operator<=(const vec2<T>& rhs) const {
             return y <= rhs.y || x <= rhs.x;
         }
-
-        /*
-        bool operator<=(const vec2<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] > rhs.arr[i]) return false;
-            return true;
-        }
-        */
 
         bool operator>(const vec2<T>& rhs) const {
             return y > rhs.y || x > rhs.x;
         }
 
-        /*
-        bool operator>(const vec2<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] <= rhs.arr[i]) return false;
-            return true;
-        }
-        */
-
         bool operator>=(const vec2<T>& rhs) const {
             return y >= rhs.y || x >= rhs.x;
         }
-
-        /*
-        bool operator>=(const vec2<T>& rhs) const {
-            for(size_t i = 0; i != size(); ++i) if(arr[i] < rhs.arr[i]) return false;
-            return true;
-        }
-        */
 
         bool eq(const vec2<T>& rhs) const {
             for(size_t i = 0; i != size(); ++i) if(!eq(arr[i], rhs.arr[i])) return false;
@@ -149,6 +121,9 @@ namespace zap { namespace maths {
         union {
             struct {
                 T x, y;
+            };
+            struct {
+                T r, g;
             };
             T arr[2];
         };

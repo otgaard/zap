@@ -128,7 +128,7 @@ set(ZAP_MATHS_PUBLIC_HEADERS
         maths/geometry/rect.hpp
         maths/geometry/line.hpp
         maths/geometry/segment.hpp
-        maths/geometry/AABB.hpp)
+        maths/geometry/AABB.hpp maths/quaternion.hpp)
 
 set(ZAP_MATHS_FILES
         maths/io.cpp

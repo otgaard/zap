@@ -5,9 +5,7 @@
 // Note:  This class relies on the Freetype2 library
 #if defined(FOUND_FREETYPE)
 
-#include <array>
 #include <string>
-#include <vector>
 #include <maths/geometry/rect.hpp>
 
 namespace zap {
@@ -28,8 +26,6 @@ namespace zap { namespace graphics {
         recti bound;
         rectf texcoord;
     };
-
-    using glyph_set = std::array<glyph, 0xFF>;
 
     class text_batcher;
 
@@ -68,8 +64,8 @@ namespace zap { namespace graphics {
         text create_text(uint32_t font_id, const std::string& str, uint32_t max_len=0);
         bool change_text(uint32_t text_id, const std::string& str, uint32_t max_len=0);
         void destroy_text(uint32_t text_id);
-        void destroy_text(const text& txt);
         void translate_text(uint32_t text_id, int x, int y);
+        void set_text_colour(uint32_t text_id, float r, float g, float b, float a);
 
         font* get_text_font(uint32_t text_id);
         const std::string& get_text_string(uint32_t text_id);

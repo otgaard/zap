@@ -326,6 +326,23 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
+    mat4<T> orthogonolise(const vec3<T>& d, const vec3<T>& world_up=vec3<T>{T(0.), T(1.), T(0.)}) {
+        assert(maths::eq(d.length_sqr(), 1.f, 8*std::numeric_limits<T>::epsilon()) && "Direction vector must be unit length");
+        auto up = normalise(world_up - dot(world_up, d)*d);
+        mat4<T> mat{};
+        mat.row(3, vec4<T>{T(0.), T(0.), T(0.), T(1.)});
+        mat.column(2, d);
+        mat.column(1, up);
+        mat.column(0, maths::cross(d, up));
+        return mat;
+    }
+
+    template <typename T>
+    mat4<T> look_at(const vec3<T>& look, const vec3<T>& position, const vec3<T>& world_up=vec3<T>{T(0.), T(1.), T(0.)}) {
+        return orthogonolise(maths::normalise(look - position), world_up);
+    }
+
+    template <typename T>
     mat4<T> operator+(const mat4<T>& lhs, const mat4<T>& rhs) {
         mat4<T> r;
         for(size_t i = 0; i != mat4<T>::size(); ++i) r[i] = lhs[i] + rhs[i];

@@ -8,10 +8,15 @@
 namespace zap { namespace engine {
     class render_state {
     public:
-        explicit render_state(bool blend, bool depth) {
+        explicit render_state(bool blend, bool depth, bool rasterisation) {
+            initialise(blend, depth, rasterisation);
+        }
+
+        void initialise(bool blend, bool depth, bool rasterisation) {
             size_t alloc = 0;
             if(blend) alloc += sizeof(blend_state);
             if(depth) alloc += sizeof(depth_state);
+            if(rasterisation) alloc += sizeof(rasterisation_state);
 
             storage_.resize(alloc);
 
@@ -27,6 +32,12 @@ namespace zap { namespace engine {
                 depth_state_ = reinterpret_cast<depth_state*>(storage_.data()+offset);
                 depth_state_->init();
                 offset += sizeof(depth_state);
+            }
+
+            if(rasterisation) {
+                rasterisation_state_ = reinterpret_cast<rasterisation_state*>(storage_.data()+offset);
+                rasterisation_state_->init();
+                offset += sizeof(rasterisation_state);
             }
         }
 
@@ -98,14 +109,44 @@ namespace zap { namespace engine {
             }
         };
 
+        struct rasterisation_state {
+            enum class polygon_mode {
+                PM_POINT,
+                PM_LINE,
+                PM_FILL,
+                PM_SIZE
+            };
+
+            float line_width;
+            float point_size;
+            bool enable_program_point_size;
+            bool enable_vertex_point_size;
+            bool enable_point_smooth;
+            bool enable_line_smooth;
+            bool enable_polygon_smooth;
+            polygon_mode poly_mode;
+
+            void init() {
+                line_width = 1.f;
+                point_size = 1.f;
+                enable_program_point_size = true;
+                enable_vertex_point_size = true;
+                enable_point_smooth = false;
+                enable_line_smooth = false;
+                enable_polygon_smooth = false;
+                poly_mode = polygon_mode::PM_FILL;
+            }
+        };
+
+
         struct cull_state { };
         struct scissor_state { };
         struct stencil_state { };
         struct multisample_state { };
-        struct wire_state { };
 
         blend_state* get_blend_state() const { return blend_state_; }
         depth_state* get_depth_state() const { return depth_state_; }
+        rasterisation_state* get_rasterisation_state() const { return rasterisation_state_; }
 
         enum class compare_mode {
             CM_NEVER,
@@ -127,7 +168,7 @@ namespace zap { namespace engine {
         scissor_state* scissor_state_ = nullptr;
         stencil_state* stencil_state_ = nullptr;
         multisample_state* multisample_state_ = nullptr;
-        wire_state* wire_state_ = nullptr;
+        rasterisation_state* rasterisation_state_ = nullptr;
     };
 }}
 

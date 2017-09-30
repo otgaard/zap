@@ -38,7 +38,6 @@ void mesh_base::draw_arrays_inst_impl(primitive_type type, uint32_t first, uint3
 
 void mesh_base::draw_elements_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count) const {
     glDrawElements(gl_type(type), count, gl_type(index_type), reinterpret_cast<void*>(first*dt_bytesize(index_type)));
-    //glDrawElements(gl_type(type), count, gl_type(index_type), (void*)(first * sizeof(uint32_t)));
 }
 
 void mesh_base::draw_elements_inst_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count, uint32_t instances) const {

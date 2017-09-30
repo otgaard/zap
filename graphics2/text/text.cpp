@@ -18,6 +18,10 @@ void zap::graphics::text::translate(int x, int y) {
     parent_->translate_text(id_, x, y);
 }
 
+void zap::graphics::text::set_colour(float r, float g, float b, float a) {
+    parent_->set_text_colour(id_, r, g, b, a);
+};
+
 void zap::graphics::text::set_text(const std::string& str, size_t max_len) {
     parent_->change_text(id_, str);
 }

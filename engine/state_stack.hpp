@@ -18,6 +18,7 @@ public:
     using stack_t = std::stack<const render_state*>;
     using blend_state = render_state::blend_state;
     using depth_state = render_state::depth_state;
+    using rasterisation_state = render_state::rasterisation_state;
 
     state_stack();
 
@@ -33,6 +34,9 @@ public:
 
     const depth_state* peek_depth_state() const { return peek()->get_depth_state(); }
     const depth_state* curr_depth_state() const { return depth_stack_.top(); }
+
+    const rasterisation_state* peek_rasterisation_state() const { return peek()->get_rasterisation_state(); }
+    const rasterisation_state* curr_rasterisation_state() const { return rasterisation_stack_.top(); }
 
     void clear_colour(float r, float g, float b, float a);
     void clear_colour(const vec4f& v) { clear_colour(v.x, v.y, v.z, v.w); }
@@ -54,10 +58,17 @@ protected:
     void initialise(const depth_state* state);
     void transition(const depth_state* source, const depth_state* target);
 
+    // Rasterisation state
+    void push_state(const rasterisation_state* state);
+    void pop_rasterisation_state();
+    void initialise(const rasterisation_state* state);
+    void transition(const rasterisation_state* source, const rasterisation_state* target);
+
     stack_t stack_;
     render_state base_state_;
     std::stack<const blend_state*> blend_stack_;
     std::stack<const depth_state*> depth_stack_;
+    std::stack<const rasterisation_state*> rasterisation_stack_;
     vec4f clear_colour_;
 };
 

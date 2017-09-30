@@ -178,6 +178,8 @@ namespace zap { namespace maths {
             return self;
         }
 
+        T trace() const { return arr[0] + arr[4] + arr[8]; }
+
         union {
             struct {
                 T m00, m10, m20,     // Column 0

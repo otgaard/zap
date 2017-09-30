@@ -128,6 +128,9 @@ namespace zap { namespace maths {
             struct {
                 T x, y, z;
             };
+            struct {
+                T r, g, b;
+            };
             T arr[size()];
 #ifdef ZAP_MATHS_SSE2
             __m128 xmm;

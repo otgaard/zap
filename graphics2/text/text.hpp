@@ -7,6 +7,7 @@
 #include <string>
 #include <core/core.hpp>
 #include <maths/vec2.hpp>
+#include <maths/vec4.hpp>
 
 namespace zap { namespace graphics {
 
@@ -16,6 +17,7 @@ namespace zap { namespace graphics {
     class text {
     public:
         using vec2i = maths::vec2i;
+        using vec4f = maths::vec4f;
 
         ~text();
 
@@ -24,6 +26,9 @@ namespace zap { namespace graphics {
 
         void translate(int x, int y);
         void translate(const vec2i& v) { translate(v.x, v.y); }
+
+        void set_colour(float r, float g, float b, float a);
+        void set_colour(const vec4f& c) { return set_colour(c.r, c.g, c.b, c.a); }
 
         void set_text(const std::string& str, size_t max_len=0);
         font* get_font() const;

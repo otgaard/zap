@@ -8,9 +8,11 @@ using namespace zap::engine::gl;
 
 extern const GLenum gl_src_blend_mode[(int)render_state::blend_state::src_blend_mode::SBM_SIZE];
 extern const GLenum gl_dst_blend_mode[(int)render_state::blend_state::dst_blend_mode::DBM_SIZE];
+extern const GLenum gl_polygon_mode[(int)render_state::rasterisation_state::polygon_mode::PM_SIZE];
 extern const GLenum gl_compare_mode[(int)render_state::compare_mode::CM_SIZE];
 
-state_stack::state_stack() : base_state_(true, true), clear_colour_{0.f, 0.f, 0.f, 0.f} {
+
+state_stack::state_stack() : base_state_(true, true, true), clear_colour_{0.f, 0.f, 0.f, 0.f} {
 }
 
 bool state_stack::initialise() {
@@ -20,22 +22,18 @@ bool state_stack::initialise() {
     initialise(base_state_.get_depth_state());
     depth_stack_.push(base_state_.get_depth_state());
 
+    initialise(base_state_.get_rasterisation_state());
+    rasterisation_stack_.push(base_state_.get_rasterisation_state());
+
     stack_.push(&base_state_);
 
     // This is the global state (will be moved to own config over time)
-    glPointSize(1.f);
-    glLineWidth(1.f);
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-    glEnable(GL_PROGRAM_POINT_SIZE);
 
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(std::numeric_limits<uint16_t>::max());
 
-    //glCullFace(GL_BACK);
-    //glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
 
     clear_colour(clear_colour_);
 
@@ -62,6 +60,7 @@ void zap::engine::state_stack::push_state(const render_state* state) {
     if(state != peek()) {
         if(state->get_blend_state() != nullptr) push_state(state->get_blend_state());
         if(state->get_depth_state() != nullptr) push_state(state->get_depth_state());
+        if(state->get_rasterisation_state() != nullptr) push_state(state->get_rasterisation_state());
 
         stack_.push(state);
     }
@@ -71,6 +70,7 @@ void zap::engine::state_stack::pop() {
     if(stack_.size() > 1) {
         if(peek_blend_state() != nullptr) pop_blend_state();
         if(peek_depth_state() != nullptr) pop_depth_state();
+        if(peek_rasterisation_state() != nullptr) pop_rasterisation_state();
 
         stack_.pop();
     }
@@ -157,6 +157,70 @@ void state_stack::transition(const state_stack::depth_state* source, const state
     gl_error_check();
 }
 
+void state_stack::push_state(const rasterisation_state* state) {
+    if(state == nullptr || state == curr_rasterisation_state()) return;
+    transition(curr_rasterisation_state(), state);
+    rasterisation_stack_.push(state);
+}
+
+void state_stack::pop_rasterisation_state() {
+    if(rasterisation_stack_.size() > 1) {
+        auto curr = curr_rasterisation_state();
+        rasterisation_stack_.pop();
+        auto prev = curr_rasterisation_state();
+        transition(curr, prev);
+    }
+}
+
+void state_stack::initialise(const rasterisation_state* state) {
+    if(state == nullptr) return;
+    glLineWidth(state->line_width);
+    glPointSize(state->point_size);
+    if(state->enable_program_point_size) glEnable(GL_PROGRAM_POINT_SIZE);
+    if(state->enable_vertex_point_size) glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    if(state->enable_point_smooth) glEnable(GL_POINT_SMOOTH);
+    if(state->enable_line_smooth) glEnable(GL_LINE_SMOOTH);
+    if(state->enable_polygon_smooth) glEnable(GL_POLYGON_SMOOTH);
+    glPolygonMode(GL_FRONT_AND_BACK, gl_polygon_mode[(int)state->poly_mode]);
+}
+
+void state_stack::transition(const rasterisation_state* source, const rasterisation_state* target) {
+    if(target->line_width != source->line_width) glLineWidth(target->line_width);
+    if(target->point_size != source->point_size) glPointSize(target->point_size);
+    if(target->enable_program_point_size) {
+        if(!source->enable_program_point_size) glEnable(GL_PROGRAM_POINT_SIZE);
+    } else {
+        if(source->enable_program_point_size) glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+    if(target->enable_vertex_point_size) {
+        if(!source->enable_vertex_point_size) glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    } else {
+        if(source->enable_vertex_point_size) glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    }
+
+    if(target->enable_point_smooth) {
+        if(!source->enable_point_smooth) glEnable(GL_PROGRAM_POINT_SIZE);
+    } else {
+        if(source->enable_point_smooth) glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+    if(target->enable_line_smooth) {
+        if(!source->enable_line_smooth) glEnable(GL_LINE_SMOOTH);
+    } else {
+        if(source->enable_line_smooth) glDisable(GL_LINE_SMOOTH);
+    }
+
+    if(target->enable_polygon_smooth) {
+        if(!source->enable_polygon_smooth) glEnable(GL_POLYGON_SMOOTH);
+    } else {
+        if(source->enable_polygon_smooth) glDisable(GL_POLYGON_SMOOTH);
+    }
+
+    if(target->poly_mode != source->poly_mode) glPolygonMode(GL_FRONT_AND_BACK, gl_polygon_mode[(int)target->poly_mode]);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OPENGL TABLES
 
@@ -201,4 +265,10 @@ const GLenum gl_compare_mode[(int)render_state::compare_mode::CM_SIZE] = {
         GL_NOTEQUAL,
         GL_GEQUAL,
         GL_ALWAYS
+};
+
+const GLenum gl_polygon_mode[(int)render_state::rasterisation_state::polygon_mode::PM_SIZE] = {
+        GL_POINT,
+        GL_LINE,
+        GL_FILL
 };

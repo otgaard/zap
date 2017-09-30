@@ -63,7 +63,7 @@ protected:
     state_stack rndr_state_;
     text_batcher batcher;
     camera cam_;
-    render_state override_{true, false};
+    render_state override_{true, false, false};
 };
 
 bool zap_example::initialise() {
@@ -79,24 +79,27 @@ bool zap_example::initialise() {
 
     auto tex = batcher.get_texture(arial->font_id);
     LOG(arial->name, tex->is_allocated(), tex->width(), tex->height());
-
-    UNUSED(quote1); UNUSED(quote2);
+    UNUSED(tex);
 
     // Test building a text object
     auto quote1_proxy = batcher.create_text(arial->font_id, quote1);
     LOG("Proxy:", quote1_proxy.get_font()->name, quote1_proxy.get_text(), quote1_proxy.get_id());
+    quote1_proxy.set_colour(1.f, 0.f, 0.f, 1.f);
 
     auto quote2_proxy = batcher.create_text(arial->font_id, quote2);
     LOG("Proxy:", quote2_proxy.get_font()->name, quote2_proxy.get_text(), quote2_proxy.get_id());
     quote2_proxy.translate(vec2i{100, 200});
+    quote2_proxy.set_colour(0.f, 1.f, 0.f, 1.f);
 
     auto quote3_proxy = batcher.create_text(arial->font_id, quote2);
     LOG("Proxy:", quote3_proxy.get_font()->name, quote3_proxy.get_text(), quote3_proxy.get_id());
     quote3_proxy.translate(vec2i{200, 400});
+    quote3_proxy.set_colour(0.f, 0.f, 1.f, 1.f);
 
     auto quote4_proxy = batcher.create_text(arial->font_id, quote1);
     LOG("Proxy:", quote4_proxy.get_font()->name, quote4_proxy.get_text(), quote4_proxy.get_id());
     quote4_proxy.translate(vec2i{300, 600});
+    quote4_proxy.set_colour(1.f, 1.f, 0.f, 1.f);
 
     sphere_ = p3n3t2_gen::make_mesh(p3n3t2_gen::make_UVsphere(10, 30, 1.f, false));
     if(!sphere_->is_allocated()) {

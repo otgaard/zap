@@ -7,6 +7,8 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include "text.hpp"
+#include <array>
+#include <vector>
 #include <algorithm>
 #include <tools/log.hpp>
 #include <engine/pixel_format.hpp>
@@ -30,15 +32,17 @@ const int CHAR_VTX_RESERVE = 4 * CHAR_RESERVE;      // 40k vertex space (1 quad 
 const int CHAR_IDX_RESERVE = 6 * CHAR_RESERVE;      // 60k index space (2 * tri per char)
 
 using vstream = vertex_stream<vbuf_p2t2_t>;
+using glyph_set = std::array<glyph, CHARSET_SIZE>;
 
 struct text_string {
     uint32_t font_id;
     uint32_t start_idx;         // zero-indexed index_buffer start
-    uint32_t last_idx;          // zero-indexed index_buffer last_used quad
+    uint32_t idx_count;         // zero-indexed index_buffer [start_idx, start_idx + idx_count]
     uint32_t end_idx;           // zero-indexed index_buffer end (total space)
     uint32_t size;              // total chars used in text
     uint32_t reserved;          // total chars available
     vec2i translation;          // the string translation in orthographic space for now
+    vec4f colour;               // flat colour for string
     std::string text;
 };
 
@@ -86,11 +90,12 @@ const char* const text_fshdr = GLSL(
     in vec2 tex;
 
     uniform sampler2D text_atlas;
+    uniform vec4 colour;
 
     out vec4 frag_colour;
 
     void main() {
-        frag_colour = texture(text_atlas, tex).rrrr;
+        frag_colour = colour * texture(text_atlas, tex).rrrr;
     }
 );
 
@@ -113,8 +118,8 @@ bool zap::graphics::text_batcher::initialise() {
 
     LOG("Allocating buffers", CHAR_RESERVE);
 
-    s.vbuffer.usage(buffer_usage::BU_STREAM_DRAW);
-    s.ibuffer.usage(buffer_usage::BU_STREAM_DRAW);
+    s.vbuffer.usage(buffer_usage::BU_DYNAMIC_DRAW);
+    s.ibuffer.usage(buffer_usage::BU_DYNAMIC_DRAW);
 
     if(!s.batch.allocate() || !s.vbuffer.allocate() || !s.ibuffer.allocate()) {
         LOG_ERR("Failed to allocate GPU resources for text_batcher");
@@ -142,6 +147,10 @@ bool zap::graphics::text_batcher::initialise() {
         return false;
     }
 
+    s.shdr_prog.bind();
+    s.shdr_prog.bind_texture_unit("text_atlas", 0);
+    s.shdr_prog.release();
+
     // Reserve space in the vectors
     s.batch_index.reserve(STRING_RESERVE);
     s.fonts.reserve(MAX_FONTS);
@@ -153,14 +162,13 @@ bool zap::graphics::text_batcher::initialise() {
 
 void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
     s.shdr_prog.bind();
-    s.shdr_prog.bind_texture_unit("text_atlas", 0);
     s.batch.bind();
     s.textures[0].bind(0);
     for(uint32_t idx = 0; idx != s.batch_index.size(); ++idx) {
         auto& txt = s.batch_index[idx];
         s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation(float(txt.translation.x), float(txt.translation.y), 0.f));
-        //LOG("el:", idx, "s:", txt.start_idx, "c:", txt.last_idx - txt.start_idx);
-        s.batch.draw(txt.start_idx, txt.last_idx - txt.start_idx);
+        s.shdr_prog.bind_uniform("colour", txt.colour);
+        s.batch.draw(txt.start_idx, txt.idx_count);
     }
     s.textures[0].release();
     s.batch.release();
@@ -376,8 +384,6 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
             ++quad;
         }
 
-        gl_error_check();
-
         s.vbuffer.unmap();
         s.ibuffer.unmap();
         s.vbuffer.release();
@@ -388,19 +394,20 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
         return txt;
     }
 
+    if(gl_error_check()) return txt;
+
     auto text_id = uint32_t(s.batch_index.size());
     s.batch_index.emplace_back();
     auto& text_obj = s.batch_index[text_id];
     text_obj.font_id = font_id;
     text_obj.start_idx = s.index_ptr;
-    text_obj.last_idx = s.index_ptr + 6 * char_len;
+    text_obj.idx_count = 6 * char_len;
     text_obj.end_idx = s.index_ptr + idx_count;
     text_obj.size = char_len;
     text_obj.reserved = char_count;
     text_obj.translation = vec2i{0, 0};
+    text_obj.text = str;
     txt.set_fields(text_id, this);
-
-    LOG(LOG_GREEN, "ENTRY:", text_obj.start_idx, text_obj.last_idx, text_obj.end_idx, text_obj.size);
 
     s.quad_ptr += char_count;
     s.vertex_ptr += quad_count;
@@ -417,13 +424,12 @@ void text_batcher::destroy_text(uint32_t text_id) {
 
 }
 
-void text_batcher::destroy_text(const text& txt) {
-
-}
-
 void text_batcher::translate_text(uint32_t text_id, int x, int y) {
     if(text_id < s.batch_index.size()) s.batch_index[text_id].translation.set(x, y);
+}
 
+void text_batcher::set_text_colour(uint32_t text_id, float r, float g, float b, float a) {
+    if(text_id < s.batch_index.size()) s.batch_index[text_id].colour.set(r, g, b, a);
 }
 
 font* text_batcher::get_text_font(uint32_t text_id) {
