@@ -259,6 +259,10 @@ set(ZAP_RASTERISER_FILES
 set(STB_ARCHIVE
         third_party/stb/stb.c)
 
+set(SQLITE3_ARCHIVE
+        third_party/sqlite3/sqlite3.c
+        third_party/sqlite3/sqlite3.h)
+
 set(ZAP_EXAMPLE_FILES
         examples/zap_example/zap_example.cpp
         examples/graphic_types.hpp)
@@ -392,6 +396,7 @@ endif(APPLE OR UNIX)
 endif(CMAKE_STATIC_BUILD)
 
 add_library(stb STATIC ${STB_ARCHIVE})
+add_library(sqlite3 STATIC ${SQLITE3_ARCHIVE})
 
 add_executable(zap_example ${ZAP_EXAMPLE_FILES})
 target_link_libraries(zap_example ${FREETYPE_LIBRARIES} zapGraphics zapHost zapEngine zapMaths stb ${GLFW_LIBS} ${LOADER_LIBS})
