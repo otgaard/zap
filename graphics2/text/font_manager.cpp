@@ -178,6 +178,8 @@ const font* font_manager::add_font(const std::string& path, int px_height) {
     float inv_width = 1.f/tex_width, inv_height = 1.f/tex_height;
 
     for(int i = 0; i != CHARSET_SIZE; ++i) {
+        // In inverted bitmap space
+        glyph_set[i].coord = recti{coords[i].left, coords[i].right, coords[i].top, coords[i].bottom};
         glyph_set[i].texcoord = rectf{
                 coords[i].left * inv_width,
                 coords[i].right * inv_width,
@@ -211,13 +213,13 @@ const glyph& font_manager::get_glyph(uint32_t font_id, byte ch) const  {
     return font_id < font_count() ? s.glyph_sets[font_id][ch] : dummy;
 }
 
-pixmap<rgb888_t> font_manager::rasterise(uint32_t font_id, const std::string& txt) const {
+recti font_manager::metrics(uint32_t font_id, const std::string& txt) const {
     auto font_ptr = get_font(font_id);
-    if(!font_ptr || txt.empty()) return pixmap<rgb888_t>{};
+    if(!font_ptr || txt.empty()) recti{0, 0, 0, 0};
 
     const auto px_height = font_ptr->px_height;
 
-    int x = 0, y = px_height, max_x = 0;
+    int x = 0, y = px_height, max_x = 0, max_y = 0;
     uint32_t quad = 0;
     for(auto c = txt.begin(); c != txt.end(); ++c) {
         auto ch = *c;
@@ -230,20 +232,37 @@ pixmap<rgb888_t> font_manager::rasterise(uint32_t font_id, const std::string& tx
             case '\v': y += 4 * px_height; continue;
             default:   break;
         }
+
+        auto curr_y = y + curr_glyph.bound.bottom;
+        if(curr_y > max_y) max_y = curr_y;
+
         x += curr_glyph.advance;
         ++quad;
     }
 
     if(x > max_x) max_x = x;
+    return recti{0, max_x, 0, max_y};
+}
 
-    LOG("PX:", max_x, y);
-    pixmap<rgb888_t> img{400, 200};
-    //for(int i = 0; i != img.size(); ++i) img[i] = rgb888_t{255, 255, 255};
+pixmap<rgb888_t> font_manager::rasterise(uint32_t font_id, const std::string& txt, const vec3b& fore, const vec3b& back) const {
+    auto font_ptr = get_font(font_id);
+    if(!font_ptr || txt.empty()) return pixmap<rgb888_t>{};
+
+    auto txt_bound = metrics(font_id, txt);
 
     auto atlas_ptr = font_ptr->get_atlas();
+    const auto px_height = font_ptr->px_height;
 
-    x = 0, y = px_height;
-    quad = 0;
+    pixmap<rgb888_t> img{txt_bound.width(), txt_bound.height()};
+    img.clear(rgb888_t{back});
+
+    // Conversion Function
+    auto conv_fnc = [&fore, &back](const r8_t& i) -> rgb888_t {
+        return rgb888_t{lerp(i.get1(), back, fore)};
+    };
+
+    int x = 0, y = px_height;
+    uint32_t quad = 0;
     for(auto c = txt.begin(); c != txt.end(); ++c) {
         auto ch = *c;
         const auto& curr_glyph = font_ptr->get_glyph(ch);
@@ -256,16 +275,13 @@ pixmap<rgb888_t> font_manager::rasterise(uint32_t font_id, const std::string& tx
             default:   break;
         }
 
-        recti bound{curr_glyph.texcoord.left*atlas_ptr->width(),
-                    curr_glyph.texcoord.right*atlas_ptr->width(),
-                    curr_glyph.texcoord.top*atlas_ptr->height(),
-                    curr_glyph.texcoord.bottom*atlas_ptr->height()};
-        img.copy(*atlas_ptr, x, y, bound);
+        img.copy(*atlas_ptr, x+curr_glyph.bound.left, y+curr_glyph.bound.top, curr_glyph.coord, conv_fnc);
 
         x += curr_glyph.advance;
         ++quad;
     }
 
+    img.flip_y();
     return img;
 }
 

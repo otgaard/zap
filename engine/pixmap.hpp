@@ -2,15 +2,17 @@
 #ifndef ZAP_PIXMAP_HPP
 #define ZAP_PIXMAP_HPP
 
-#include "pixel_format.hpp"
 #include <maths/geometry/rect.hpp>
 #include <vector>
+#include <algorithm>
+#include "pixel_format.hpp"
 #include <generators/pixel_conversion.hpp>
 
 namespace zap { namespace engine {
     template <typename PixelT>
     class pixmap {
     public:
+        using pixel_t = PixelT;
         using vec2i = maths::vec2i;
         using recti = maths::geometry::recti;
         using buffer_t = std::vector<PixelT>;
@@ -27,6 +29,10 @@ namespace zap { namespace engine {
             if(width < 1 || height < 1 || depth < 1) return;
             width_ = width; height_ = height; depth_ = depth;
             buffer_.resize(size_t(width*height*depth));
+        }
+
+        void clear(const pixel_t& value) {
+            std::fill(buffer_.begin(), buffer_.end(), value);
         }
 
         int width() const { return width_; }
@@ -118,9 +124,14 @@ namespace zap { namespace engine {
         template <typename SrcPixelT>
         size_t copy(const pixmap<SrcPixelT>& src, size_t src_off, size_t trg_off, size_t length) {
             assert(trg_off + length <= size() && "canvas::copy out-of-bounds");
-            for(int x = 0; x != length; ++x) {
-                *data(trg_off+x) = convert<SrcPixelT, PixelT>(src[src_off+x]);
-            }
+            for(int x = 0; x != length; ++x) *data(trg_off+x) = convert<SrcPixelT, PixelT>(src[src_off+x]);
+            return length;
+        }
+
+        template <typename SrcPixelT, typename Fnc>
+        size_t copy(const pixmap<SrcPixelT>& src, size_t src_off, size_t trg_off, size_t length, Fnc&& conv_fnc) {
+            assert(trg_off + length <= size() && "canvas::copy out-of-bounds");
+            for(int x = 0; x != length; ++x) *data(trg_off+x) = conv_fnc(src[src_off+x]);
             return length;
         }
 
@@ -138,7 +149,6 @@ namespace zap { namespace engine {
         template <typename SrcPixelT>
         size_t copy(const pixmap<SrcPixelT>& src, int trg_x, int trg_y, const recti& bound) {
             assert(width() - trg_x >= bound.width() && height() - trg_y >= bound.height() && "canvas::copy out-of-bounds");
-
             recti bnd = bound.width() == 0 && bound.height() == 0 ? src.bound() : bound;
 
             for(int r = 0; r != bnd.height(); ++r) {
@@ -146,6 +156,17 @@ namespace zap { namespace engine {
             }
             return bnd.height() * bnd.width();
         }
+
+        template <typename SrcPixelT, typename Fnc>
+        size_t copy(const pixmap<SrcPixelT>& src, int trg_x, int trg_y, const recti& bound, Fnc&& conv_fnc) {
+            assert(width() - trg_x >= bound.width() && height() - trg_y >= bound.height() && "canvas::copy out-of-bounds");
+            recti bnd = bound.width() == 0 && bound.height() == 0 ? src.bound() : bound;
+
+            for(int r = 0; r != bnd.height(); ++r) {
+                copy(src, src.offset(bnd.left, bnd.bottom+r), offset(trg_x, trg_y + r), bnd.width(), conv_fnc);
+            }
+            return bnd.height() * bnd.width();
+        };
 
         const PixelT* data(size_t offset=0) const { return buffer_.data()+offset; }
         PixelT* data(size_t offset=0) { return buffer_.data()+offset; }

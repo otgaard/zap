@@ -9,6 +9,7 @@
 #include <string>
 #include <algorithm>
 #include <engine/pixmap.hpp>
+#include <maths/vec3.hpp>
 #include <maths/geometry/rect.hpp>
 
 namespace zap { namespace graphics {
@@ -18,6 +19,7 @@ namespace zap { namespace graphics {
     struct glyph {
         long advance = 0;
         recti bound;
+        recti coord;
         rectf texcoord;
     };
 
@@ -53,6 +55,7 @@ namespace zap { namespace graphics {
     public:
         using pixmap_t = engine::pixmap<engine::r8_t>;
         using rgb888_t = engine::rgb888_t;
+        using vec3b = maths::vec3b;
 
         font_manager();
         ~font_manager();
@@ -68,7 +71,10 @@ namespace zap { namespace graphics {
 
         const glyph& get_glyph(uint32_t font_id, byte ch) const;
 
-        engine::pixmap<engine::rgb888_t> rasterise(uint32_t font_id, const std::string& txt) const;
+        recti metrics(uint32_t font_id, const std::string& txt) const;
+        engine::pixmap<engine::rgb888_t> rasterise(uint32_t font_id, const std::string& txt,
+                                                   const vec3b& foreground=vec3b{0, 0, 0},
+                                                   const vec3b& background=vec3b{255,255,255}) const;
 
     protected:
         struct state_t;

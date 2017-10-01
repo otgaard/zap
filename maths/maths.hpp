@@ -85,6 +85,10 @@ namespace zap { namespace maths {
         return (S(1) - u)*P0 + u*P1;
     };
 
+    inline byte lerp(byte u, byte P0, byte P1) {
+        return byte(((P0 * (255U - u)) >> 8) + ((u * P1) >> 8));
+    }
+
     template <typename T, typename S>
     T bilinear(const S& u, const S& v, const T& P00, const T& P01, const T& P10, const T& P11) {
         //const auto omu = S(1) - u; return (S(1)-v)*(P00*omu + P01*u) + v*(P10*omu + P11*u);
