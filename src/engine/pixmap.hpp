@@ -131,7 +131,7 @@ namespace zap { namespace engine {
         template <typename SrcPixelT, typename Fnc>
         size_t copy(const pixmap<SrcPixelT>& src, size_t src_off, size_t trg_off, size_t length, Fnc&& conv_fnc) {
             assert(trg_off + length <= size() && "canvas::copy out-of-bounds");
-            for(int x = 0; x != length; ++x) *data(trg_off+x) = conv_fnc(src[src_off+x]);
+            for(size_t x = 0; x != length; ++x) *data(int(trg_off+x)) = conv_fnc(src[int(src_off+x)]);
             return length;
         }
 

@@ -849,7 +849,7 @@ void canvas<PixelT, pixmap>::filled_rect(int x1, int y1, int x2, int y2) {
 }
 
 template <typename PixelT>
-size_t canvas<PixelT, pixmap>::copy(const canvas<PixelT, pixmap>::pixmap_t& src, int trg_x, int trg_y, const recti& bound) {
+size_t canvas<PixelT, pixmap>::copy(const typename canvas<PixelT, pixmap>::pixmap_t& src, int trg_x, int trg_y, const recti& bound) {
     return raster_.copy(src, trg_x, trg_y, bound);
 }
 
