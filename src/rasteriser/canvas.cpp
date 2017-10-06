@@ -855,7 +855,7 @@ size_t canvas<PixelT, pixmap>::copy(const canvas<PixelT, pixmap>::pixmap_t& src,
 
 template <typename PixelT>
 void canvas<PixelT, pixmap>::vertical_line(int x1, int y1, int y2) {
-    if(y1 < y2) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
+    if(y2 < y1) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
     while(y <= y2) raster_(x1,y++).set3(pen_colour_);
 }

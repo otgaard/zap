@@ -151,43 +151,6 @@ void application::on_mousewheel(double xoffset, double yoffset) {
 
 }
 
-/*
-void application::depth_test(bool on) {
-    on ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
-}
-
-void application::bf_culling(bool on) {
-    glCullFace(GL_BACK);
-    on ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
-}
-
-void application::alpha_blending(bool on) {
-    if(on) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    } else {
-        glDisable(GL_BLEND);
-    }
-}
-
-void application::wire_frame(bool on) {
-    if(on) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-}
-
-void application::line_width(float w) {
-    glLineWidth(w);
-}
-
-void application::clear(float r, float g, float b, float a) {
-    glClearColor(r, g, b, a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-}
-*/
-
 void application::resize(int width, int height) {
     glfwSetWindowSize(window_, width, height);
 }

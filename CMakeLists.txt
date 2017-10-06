@@ -15,7 +15,7 @@ endif(WIN32)
 # Default to third_party lib for dependencies
 
 include_directories(
-	${CMAKE_SOURCE_DIR} 
+	${CMAKE_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/third_party/include
 	${CMAKE_SOURCE_DIR}/third_party/glew/include)
 
@@ -104,157 +104,161 @@ endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 # SOURCE PATHS
 
 set(ZAP_MATHS_PUBLIC_HEADERS
-        maths/vec3.hpp
-        maths/maths.hpp
-        maths/vec2.hpp
-        maths/vec4.hpp
-        maths/mat2.hpp
-        maths/mat3.hpp
-        maths/mat4.hpp
-        maths/functions.hpp
-        maths/geometry/ray.hpp
-        maths/io.hpp
-        maths/geometry/disc.hpp
-        maths/algebra.hpp
-        maths/rand_lcg.hpp
-        maths/curves/curves.hpp
-        maths/transform.hpp
-        maths/curves/hermite.hpp
-        maths/matrix.hpp
-        maths/vector.hpp
-        maths/geometry/plane.hpp
-        maths/geometry/sphere.hpp
-        maths/geometry/hull.hpp
-        maths/geometry/rect.hpp
-        maths/geometry/line.hpp
-        maths/geometry/segment.hpp
-        maths/geometry/AABB.hpp maths/quaternion.hpp)
+        src/maths/vec3.hpp
+        src/maths/maths.hpp
+        src/maths/vec2.hpp
+        src/maths/vec4.hpp
+        src/maths/mat2.hpp
+        src/maths/mat3.hpp
+        src/maths/mat4.hpp
+        src/maths/functions.hpp
+        src/maths/geometry/ray.hpp
+        src/maths/io.hpp
+        src/maths/geometry/disc.hpp
+        src/maths/algebra.hpp
+        src/maths/rand_lcg.hpp
+        src/maths/curves/curves.hpp
+        src/maths/transform.hpp
+        src/maths/curves/hermite.hpp
+        src/maths/matrix.hpp
+        src/maths/vector.hpp
+        src/maths/geometry/plane.hpp
+        src/maths/geometry/sphere.hpp
+        src/maths/geometry/hull.hpp
+        src/maths/geometry/rect.hpp
+        src/maths/geometry/line.hpp
+        src/maths/geometry/segment.hpp
+        src/maths/geometry/AABB.hpp
+        src/maths/quaternion.hpp)
 
 set(ZAP_MATHS_FILES
-        maths/io.cpp
-        maths/transform.cpp maths/simd.hpp)
+        src/maths/io.cpp
+        src/maths/transform.cpp
+        src/maths/simd.hpp)
 
 set(ZAP_ENGINE_PUBLIC_HEADERS
-        tools/log.hpp
-        core/core.hpp
-        engine/shader.hpp
-        engine/engine.hpp
-        engine/program.hpp
-        engine/buffer.hpp
-        engine/vertex_format.hpp
-        engine/vertex_buffer.hpp
-        engine/index_buffer.hpp
-        engine/pixel_buffer.hpp
-        engine/vertex_attribute.hpp
-        engine/mesh.hpp
-        engine/export.hpp
-        engine/pixel_format.hpp
-        core/pod.hpp
-        core/bitfield.hpp
-        core/meta.hpp
-        engine/uniform_buffer.hpp
-        engine/texture.hpp
-        engine/uniform_block.hpp
-        generators/textures/spectral.hpp
-        engine/framebuffer.hpp
-        generators/geometry/surface.hpp
-        generators/geometry/geometry2.hpp
-        generators/textures/planar.hpp
-        generators/geometry/geometry3.hpp
-        renderer/colour.hpp
-        generators/noise/value_noise.hpp
-        generators/textures/convolution.hpp
-        generators/noise/perlin.hpp
-        generators/noise/noise.hpp
-        core/enumfield.hpp
-        renderer/renderer.hpp
-        engine/pixmap.hpp
-        renderer/camera.hpp
-        renderer/material.hpp
-        renderer/light.hpp
-        scene_graph/spatial.hpp
-        scene_graph/node.hpp
-        scene_graph/visual.hpp
-        scene_graph/bound.hpp
-        renderer/style.hpp
-        engine/render_state.hpp
-        tools/os.hpp
-        renderer/renderer_fwd.hpp
-        engine/sampler.hpp
-        tools/threadpool.hpp
-        renderer/render_context.hpp
-        tools/string.hpp
-        renderer/render_args.hpp
-        engine/state_stack.hpp
-        renderer/shader_builder.hpp
-        generators/geometry/geometry_traits.hpp)
+        src/tools/log.hpp
+        src/core/core.hpp
+        src/engine/shader.hpp
+        src/engine/engine.hpp
+        src/engine/program.hpp
+        src/engine/buffer.hpp
+        src/engine/vertex_format.hpp
+        src/engine/vertex_buffer.hpp
+        src/engine/index_buffer.hpp
+        src/engine/pixel_buffer.hpp
+        src/engine/vertex_attribute.hpp
+        src/engine/mesh.hpp
+        src/engine/export.hpp
+        src/engine/pixel_format.hpp
+        src/core/pod.hpp
+        src/core/bitfield.hpp
+        src/core/meta.hpp
+        src/engine/uniform_buffer.hpp
+        src/engine/texture.hpp
+        src/engine/uniform_block.hpp
+        src/generators/textures/spectral.hpp
+        src/engine/framebuffer.hpp
+        src/generators/geometry/surface.hpp
+        src/generators/geometry/geometry2.hpp
+        src/generators/textures/planar.hpp
+        src/generators/geometry/geometry3.hpp
+        src/renderer/colour.hpp
+        src/generators/noise/value_noise.hpp
+        src/generators/textures/convolution.hpp
+        src/generators/noise/perlin.hpp
+        src/generators/noise/noise.hpp
+        src/core/enumfield.hpp
+        src/renderer/renderer.hpp
+        src/engine/pixmap.hpp
+        src/renderer/camera.hpp
+        src/renderer/material.hpp
+        src/renderer/light.hpp
+        src/scene_graph/spatial.hpp
+        src/scene_graph/node.hpp
+        src/scene_graph/visual.hpp
+        src/scene_graph/bound.hpp
+        src/renderer/style.hpp
+        src/engine/render_state.hpp
+        src/tools/os.hpp
+        src/renderer/renderer_fwd.hpp
+        src/engine/sampler.hpp
+        src/tools/threadpool.hpp
+        src/renderer/render_context.hpp
+        src/tools/string.hpp
+        src/renderer/render_args.hpp
+        src/engine/state_stack.hpp
+        src/renderer/shader_builder.hpp
+        src/generators/geometry/geometry_traits.hpp)
 
 set(ZAP_ENGINE_FILES
-        engine/shader.cpp
-        engine/gl_api.cpp
-        engine/gl_api.hpp
-        engine/program.cpp
-        engine/buffer.cpp
-        engine/vertex_buffer.cpp
-        engine/mesh.cpp
-        engine/texture.cpp
-        renderer/camera.cpp
-        engine/framebuffer.cpp
-        generators/geometry/surface.cpp
-        renderer/colour.cpp
-        generators/noise/noise.cpp
-        renderer/renderer.cpp
-        tools/os.cpp
-        engine/sampler.cpp
-        renderer/render_context.cpp
-        engine/state_stack.cpp
-        renderer/shader_builder.cpp)
+        src/engine/shader.cpp
+        src/engine/gl_api.cpp
+        src/engine/gl_api.hpp
+        src/engine/program.cpp
+        src/engine/buffer.cpp
+        src/engine/vertex_buffer.cpp
+        src/engine/mesh.cpp
+        src/engine/texture.cpp
+        src/renderer/camera.cpp
+        src/engine/framebuffer.cpp
+        src/generators/geometry/surface.cpp
+        src/renderer/colour.cpp
+        src/generators/noise/noise.cpp
+        src/renderer/renderer.cpp
+        src/tools/os.cpp
+        src/engine/sampler.cpp
+        src/renderer/render_context.cpp
+        src/engine/state_stack.cpp
+        src/renderer/shader_builder.cpp)
 
 set(ZAP_GRAPHICS_PUBLIC_HEADERS
-        graphics2/quad.hpp
-        graphics2/g2_types.hpp
-        graphics2/plotter/plotter.hpp
-        graphics2/curve_input.hpp
-        effects/particle_engine.hpp
-        graphics2/plotter/plot_sampler.hpp
-        graphics3/g3_types.hpp
-        generators/generator.hpp
-        generators/pixel_conversion.hpp
-        graphics2/text/text_batcher.hpp
-        graphics2/text/text.hpp)
+        src/graphics2/quad.hpp
+        src/graphics2/g2_types.hpp
+        src/graphics2/plotter/plotter.hpp
+        src/graphics2/curve_input.hpp
+        src/effects/particle_engine.hpp
+        src/graphics2/plotter/plot_sampler.hpp
+        src/graphics3/g3_types.hpp
+        src/generators/generator.hpp
+        src/generators/pixel_conversion.hpp
+        src/graphics2/text/text_batcher.hpp
+        src/graphics2/text/text.hpp)
 
 set(ZAP_GRAPHICS_FILES
-        graphics2/curve_input.cpp
-        graphics2/quad.cpp
-        effects/particle_engine.cpp
-        graphics2/plotter/plotter.cpp
-        graphics3/g3_types.cpp
-        graphics2/g2_types.cpp
-        generators/generator.cpp
-        generators/pixel_conversion.cpp
-        graphics2/text/text_batcher.cpp
-        graphics2/text/text.cpp graphics2/text/font_manager.cpp graphics2/text/font_manager.hpp)
+        src/graphics2/curve_input.cpp
+        src/graphics2/quad.cpp
+        src/effects/particle_engine.cpp
+        src/graphics2/plotter/plotter.cpp
+        src/graphics3/g3_types.cpp
+        src/graphics2/g2_types.cpp
+        src/generators/generator.cpp
+        src/generators/pixel_conversion.cpp
+        src/graphics2/text/text_batcher.cpp
+        src/graphics2/text/text.cpp
+        src/graphics2/text/font_manager.cpp
+        src/graphics2/text/font_manager.hpp)
 
 set(ZAP_HOST_PUBLIC_HEADERS
-        host/GLFW/application.hpp)
+        src/host/GLFW/application.hpp)
 
 set(ZAP_HOST_FILES
-        host/GLFW/application.cpp)
+        src/host/GLFW/application.cpp)
 
 set(ZAP_LOADER_PUBLIC_HEADERS
-        loader/loader.hpp)
+        src/loader/loader.hpp)
 
 set(ZAP_LOADER_FILES
-        loader/loader.cpp)
+        src/loader/loader.cpp)
 
 set(ZAP_RAYTRACER_FILES
-        raytracer/raytracer.cpp
-        raytracer/raytracer.hpp
-        raytracer/hit_record.hpp)
+        src/raytracer/raytracer.cpp
+        src/raytracer/raytracer.hpp
+        src/raytracer/hit_record.hpp)
 
 set(ZAP_RASTERISER_FILES
-        rasteriser/canvas.cpp
-        rasteriser/canvas.hpp)
+        src/rasteriser/canvas.cpp
+        src/rasteriser/canvas.hpp)
 
 set(STB_ARCHIVE
         third_party/stb/stb.c)
@@ -264,26 +268,26 @@ set(SQLITE3_ARCHIVE
         third_party/sqlite3/sqlite3.h)
 
 set(ZAP_EXAMPLE_FILES
-        examples/zap_example/zap_example.cpp
-        examples/graphic_types.hpp)
+        src/examples/zap_example/zap_example.cpp
+        src/examples/graphic_types.hpp)
 
 set(TRACER_FILES
-        examples/tracer/tracer.cpp)
+        src/examples/tracer/tracer.cpp)
 
 set(RASTERISER_FILES
-        examples/raster/raster.cpp)
+        src/examples/raster/raster.cpp)
 
 set(PART_ENGINE_FILES
-        examples/particle_engine/particle_engine.cpp)
+        src/examples/particle_engine/particle_engine.cpp)
 
 set(PLOTTER_FILES
-        examples/plotter/plotter.cpp)
+        src/examples/plotter/plotter.cpp)
 
 set(PROCGEN1_FILES
-        examples/procgen1/procgen1.cpp)
+        src/examples/procgen1/procgen1.cpp)
 
 set(MODELS_FILES
-        examples/models/models.cpp)
+        src/examples/models/models.cpp)
 
 #########################################
 # DEPENDENCIES
@@ -338,7 +342,7 @@ if(CMAKE_STATIC_BUILD)
     add_library(zapHost STATIC ${ZAP_HOST_FILES} ${ZAP_HOST_PUBLIC_HEADERS})
     add_library(zapRaytracer STATIC ${ZAP_RAYTRACER_FILES})
     add_library(zapRasteriser STATIC ${ZAP_RASTERISER_FILES})
-    #add_library(zapLoader STATIC ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
+    add_library(zapLoader STATIC ${ZAP_LOADER_FILES} ${ZAP_LOADER_PUBLIC_HEADERS})
     target_include_directories(zapGraphics PRIVATE ${FREETYPE_INCLUDE_DIRS})
 else(CMAKE_STATIC_BUILD)
 if(APPLE OR UNIX)
@@ -413,16 +417,16 @@ target_link_libraries(particle_engine zapGraphics zapHost zapEngine zapMaths ${G
 add_executable(plotter ${PLOTTER_FILES})
 target_link_libraries(plotter zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
-add_executable(frustum examples/frustum.cpp)
+add_executable(frustum src/examples/frustum.cpp)
 target_link_libraries(frustum zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
-add_executable(noises examples/noises.cpp)
+add_executable(noises src/examples/noises.cpp)
 target_link_libraries(noises zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
-add_executable(scene_graph examples/scene_graph2.cpp)
+add_executable(scene_graph src/examples/scene_graph2.cpp)
 target_link_libraries(scene_graph zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS})
 
-add_executable(template examples/template.cpp)
+add_executable(template src/examples/template.cpp)
 target_link_libraries(template zapGraphics zapEngine zapMaths zapHost stb ${GLFW_LIBS} ${LOADER_LIBS})
 
 if(APPLE)
@@ -432,7 +436,7 @@ if(APPLE)
     add_executable(models ${MODELS_FILES})
     target_link_libraries(models zapLoader zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS} assimp)
 
-    add_executable(memory_access_tests tests/simd/memory_access_tests.cpp tests/simd/functions.hpp)
+    add_executable(memory_access_tests src/tests/simd/memory_access_tests.cpp src/tests/simd/functions.hpp)
     target_compile_options(memory_access_tests PUBLIC -O3 -ffast-math -save-temps -mllvm --x86-asm-syntax=intel -fverbose-asm)
 elseif(UNIX)
     add_executable(procgen1 ${PROCGEN1_FILES})
@@ -441,12 +445,12 @@ elseif(UNIX)
     add_executable(models ${MODELS_FILES})
     target_link_libraries(models zapLoader zapGraphics zapHost zapEngine zapMaths ${GLFW_LIBS} ${LOADER_LIBS} assimp)
 
-    add_executable(memory_access_tests tests/simd/memory_access_tests.cpp tests/simd/functions.hpp)
+    add_executable(memory_access_tests src/tests/simd/memory_access_tests.cpp src/tests/simd/functions.hpp)
     #target_compile_options(memory_access_tests PUBLIC -O3 -ffast-math -save-temps -fverbose-asm)
     target_compile_options(memory_access_tests PUBLIC -save-temps)
     #target_compile_options(memory_access_tests PUBLIC -save-temps -mllvm --x86-asm-syntax=intel -fverbose-asm)
 elseif(WIN32)
-    add_executable(memory_access_tests tests/simd/memory_access_tests.cpp tests/simd/functions.hpp)
+    add_executable(memory_access_tests src/tests/simd/memory_access_tests.cpp src/tests/simd/functions.hpp)
     target_compile_options(memory_access_tests PUBLIC /FAs)
 endif(APPLE)
 

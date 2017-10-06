@@ -118,6 +118,10 @@ public:
     void fill_colour(const vec3b& rgb) { fill_colour_ = rgb; }
     const vec3b& fill_colour() const { return fill_colour_; }
 
+    void set_pixel(int x, int y, const vec3b& rgb) {
+        raster_(x,y).set3(rgb);
+    }
+
     void line(int x1, int y1, int x2, int y2);
     void line(const vec2i& A, const vec2i& B) { line(A.x, A.y, B.x, B.y); }
 
