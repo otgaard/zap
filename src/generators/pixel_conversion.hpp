@@ -21,6 +21,11 @@ bool convert(const engine::pixmap<Input>& input, engine::pixmap<Output>& output)
 template<>
 bool convert<float, engine::rgb888_t>(const engine::pixmap<float>& input, engine::pixmap<engine::rgb888_t>& output);
 
+template <>
+inline engine::rgb888_t convert<engine::r8_t, engine::rgb888_t>(const engine::r8_t& A) {
+    return engine::rgb888_t{A.get1(), A.get1(), A.get1()};
+};
+
 }
 
 #endif //ZAP_PIXEL_CONVERSION_HPP

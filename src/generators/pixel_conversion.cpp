@@ -16,8 +16,3 @@ bool zap::convert(const engine::pixmap<float>& input, engine::pixmap<engine::rgb
     for(auto px = 0; px != input.size(); ++px) output[px].set((byte)(scale*input[px] + bias));
     return true;
 }
-
-template <>
-engine::rgb888_t zap::convert<engine::r8_t, engine::rgb888_t>(const engine::r8_t& A) {
-    return engine::rgb888_t{A.get1(), A.get1(), A.get1()};
-};
