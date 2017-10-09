@@ -5,9 +5,9 @@
 #ifndef ZAP_MAT4_HPP
 #define ZAP_MAT4_HPP
 
-#include "maths.hpp"
-#include "vec3.hpp"
-#include "vec4.hpp"
+#include <maths/maths.hpp>
+#include <maths/vec3.hpp>
+#include <maths/vec4.hpp>
 
 /* Note:
  * Matrices are represented in standard mathematical notation:

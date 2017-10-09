@@ -2,15 +2,15 @@
 // Created by Darren Otgaar on 2016/05/26.
 //
 
-#include "io.hpp"
+#include <maths/io.hpp>
 #include <iomanip>
 #include <iostream>
-#include "vec2.hpp"
-#include "vec3.hpp"
-#include "vec4.hpp"
-#include "mat2.hpp"
-#include "mat3.hpp"
-#include "mat4.hpp"
+#include <maths/vec2.hpp>
+#include <maths/vec3.hpp>
+#include <maths/vec4.hpp>
+#include <maths/mat2.hpp>
+#include <maths/mat3.hpp>
+#include <maths/mat4.hpp>
 
 static constexpr size_t default_precision = 6;
 

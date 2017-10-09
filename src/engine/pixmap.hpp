@@ -5,8 +5,8 @@
 #include <maths/geometry/rect.hpp>
 #include <vector>
 #include <algorithm>
-#include "pixel_format.hpp"
-#include <generators/pixel_conversion.hpp>
+#include <engine/pixel_format.hpp>
+#include <engine/pixel_conversion.hpp>
 
 namespace zap { namespace engine {
     template <typename PixelT>
@@ -58,7 +58,7 @@ namespace zap { namespace engine {
 
         int offset(int c, int r) const { return width_*r + c; }
         int offset(int c, int r, int d) const { return width_*(d*height_ + r) + c; }
-        vec2i coord2(int idx) const { return vec2i(idx / width_, idx % width_); }
+        vec2i coord2(int idx) const { return vec2i(idx % width_, idx / width_); }
 
         template <typename Fnc>
         void blend(int origin_x, int origin_y, const pixmap& src, Fnc&& fnc) {

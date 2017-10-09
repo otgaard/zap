@@ -5,8 +5,8 @@
 #ifndef ZAP_PLANE_HPP
 #define ZAP_PLANE_HPP
 
-#include "maths/maths.hpp"
-#include "ray.hpp"
+#include <maths/maths.hpp>
+#include <maths/geometry/ray.hpp>
 
 namespace zap { namespace maths { namespace geometry {
 

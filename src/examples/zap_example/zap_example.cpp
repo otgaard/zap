@@ -5,15 +5,15 @@
 #include <host/GLFW/application.hpp>
 #include <engine/framebuffer.hpp>
 #include <engine/mesh.hpp>
-#include <graphics3/g3_types.hpp>
-#include <generators/geometry/geometry3.hpp>
+#include <graphics/graphics3/g3_types.hpp>
+#include <graphics/generators/geometry/geometry3.hpp>
 #include <renderer/render_context.hpp>
 #include <renderer/shader_builder.hpp>
 #include <engine/state_stack.hpp>
-#include <graphics2/text/text_batcher.hpp>
-#include <graphics2/quad.hpp>
-#include <graphics2/text/text.hpp>
-#include <graphics2/text/font_manager.hpp>
+#include <graphics/graphics2/text/text_batcher.hpp>
+#include <graphics/graphics2/quad.hpp>
+#include <graphics/graphics2/text/text.hpp>
+#include <graphics/graphics2/text/font_manager.hpp>
 
 using namespace zap;
 using namespace zap::maths;

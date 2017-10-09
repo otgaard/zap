@@ -5,7 +5,7 @@
 #ifndef ZAP_VEC4_HPP
 #define ZAP_VEC4_HPP
 
-#include "maths.hpp"
+#include <maths/maths.hpp>
 
 #ifdef ZAP_MATHS_SSE2
 #include <xmmintrin.h>

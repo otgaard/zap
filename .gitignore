@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+build/
+assets/
+cmake-build-debug/
+cmake-build-release/
+

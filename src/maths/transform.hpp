@@ -5,9 +5,9 @@
 #ifndef ZAP_TRANSFORM_HPP
 #define ZAP_TRANSFORM_HPP
 
-#include "mat2.hpp"
-#include "mat3.hpp"
-#include "mat4.hpp"
+#include <maths/mat2.hpp>
+#include <maths/mat3.hpp>
+#include <maths/mat4.hpp>
 #include <core/enumfield.hpp>
 
 namespace zap { namespace maths {

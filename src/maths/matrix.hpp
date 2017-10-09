@@ -5,8 +5,8 @@
 #ifndef ZAP_MATRIX_HPP
 #define ZAP_MATRIX_HPP
 
-#include "maths.hpp"
-#include "vector.hpp"
+#include <maths/maths.hpp>
+#include <maths/vector.hpp>
 
 namespace zap { namespace maths {
     template <typename T, size_t Rows, size_t Cols>

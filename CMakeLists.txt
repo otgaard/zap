@@ -1,19 +1,146 @@
 cmake_minimum_required(VERSION 3.4)
 project(zap)
 
-#########################################
-# PROJECT CONFIG
+include(CMakeUtils.cmake)
 
-# In the process of changing the windows build over to shared.
+set(ZAP_MAJOR_VERSION 0)
+set(ZAP_MINOR_VERSION 0)
+set(ZAP_PATCH_VERSION 0)
+set(ZAP_VERSION ${ZAP_MAJOR_VERSION}.${ZAP_MINOR_VERSION}.${ZAP_PATCH_VERSION})
 
-if(WIN32)
-    set(CMAKE_STATIC_BUILD TRUE)
-else(WIN32)
-    set(CMAKE_STATIC_BUILD FALSE)
-endif(WIN32)
+#[[
+PROJECT CONFIG
+#]]
 
-# Default to third_party lib for dependencies
+option(BUILD_MATHS "Build the Maths library" ON)
+option(BUILD_ENGINE "Build the OpenGL API Engine" ON)
+option(BUILD_GLFW_HOST "Build the GLFW Host library" ON)
+option(BUILD_QT_HOST "Build the Qt Host library" ON)
+option(BUILD_GRAPHICS "Build the Graphics library" ON)
+option(BUILD_RENDERER "Build the Renderering library" ON)
+option(BUILD_RASTERISER "Build the Rasteriser library" ON)
+option(BUILD_RAYTRACER "Build the Raytracer library" OFF)
+option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_TEST "Build tests" OFF)
+option(BUILD_DOCUMENTATION "Build doxygen documentation" OFF)
 
+option(VERBOSE_LOGGING "Verbose logging output" ON)
+
+#[[
+GLOBAL CONFIG
+#]]
+
+set(CMAKE_CXX_STANDARD 14)
+
+#[[
+PLATFORM CONFIG
+#]]
+
+if(APPLE)
+    set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+    add_definitions(-Wall -Werror)
+elseif(WIN32)
+    include(GenerateExportHeader)
+    add_definitions(/W3 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
+    get_windows_version()
+elseif(UNIX AND NOT APPLE)
+    set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+    add_definitions(-Wall -Werror)
+endif()
+
+#[[
+BUILD CONFIG
+#]]
+
+set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
+
+if(WIN32 AND NOT CYGWIN)
+    set(DEF_INSTALL_CMAKE_DIR CMake)
+else()
+    set(DEF_INSTALL_CMAKE_DIR lib/CMake/zap)
+endif()
+
+set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+
+foreach(p LIB BIN INCLUDE CMAKE)
+    set(var INSTALL_${p}_DIR)
+    if(NOT IS_ABSOLUTE "${${var}}")
+        set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+    endif()
+endforeach()
+
+include_directories("${PROJECT_SOURCE_DIR}/src" "${PROJECT_BINARY_DIR}")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/third_party/lib/cmake)
+
+add_subdirectory(src/core)
+
+# Setup dependencies (results in BUILD options set to ON or OFF based on found packages)
+if(BUILD_MATHS)
+    message(STATUS "Configuring zapMaths")
+    add_subdirectory(src/maths)
+endif()
+
+if(BUILD_ENGINE)
+    message(STATUS "Configuring zapEngine")
+    add_subdirectory(src/engine)
+endif()
+
+if(BUILD_GLFW_HOST)
+    message(STATUS "Configuring zapHostGLFW")
+    add_subdirectory(src/host/GLFW)
+endif()
+
+if(BUILD_QT_HOST)
+    message(STATUS "Configuring zapHostQt")
+endif()
+
+if(BUILD_GRAPHICS)
+    message(STATUS "Configuring zapGraphics")
+    add_subdirectory(src/graphics)
+endif()
+
+if(BUILD_RENDERER)
+    message(STATUS "Configuring zapRenderer")
+    add_subdirectory(src/renderer)
+endif()
+
+if(BUILD_EXAMPLES)
+    message(STATUS "Configuring Examples")
+    add_subdirectory(src/examples)
+endif()
+
+if(BUILD_TEST)
+    message(STATUS "Configuring Tests")
+endif()
+
+export(TARGETS core zapMaths-static zapMaths-shared
+        FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+
+export(PACKAGE zap)
+
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(zapConfig.cmake.in "${PROJECT_BINARY_DIR}/zapConfig.cmake" @ONLY)
+set(CONF_INCLUDE_DIRS "\${ZAP_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(zapConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/zapConfig.cmake" @ONLY)
+configure_file(zapConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/zapConfigVersion.cmake" @ONLY)
+
+install(FILES
+        "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/zapConfig.cmake"
+        "${PROJECT_BINARY_DIR}/zapConfigVersion.cmake"
+        DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+install(EXPORT zapTargets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+
+
+
+
+
+
+#[[
 include_directories(
 	${CMAKE_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/third_party/include
@@ -77,24 +204,6 @@ elseif(WIN32)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
 
-    macro(get_WIN32_WINNT version)
-        if (CMAKE_SYSTEM_VERSION)
-            set(ver ${CMAKE_SYSTEM_VERSION})
-            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-            if ("${verMajor}" MATCHES "10")
-                set(verMajor "A")
-                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-            endif ("${verMajor}" MATCHES "10")
-            # Remove all remaining '.' characters.
-            string(REPLACE "." "" ver ${ver})
-            # Prepend each digit with a zero.
-            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-            set(${version} "0x${ver}")
-        endif(CMAKE_SYSTEM_VERSION)
-    endmacro(get_WIN32_WINNT)
-
     get_WIN32_WINNT(ver)
     add_definitions(-D_WIN32_WINNT=${ver})
 endif(APPLE)
@@ -107,39 +216,6 @@ endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
 #########################################
 # SOURCE PATHS
-
-set(ZAP_MATHS_PUBLIC_HEADERS
-        src/maths/vec3.hpp
-        src/maths/maths.hpp
-        src/maths/vec2.hpp
-        src/maths/vec4.hpp
-        src/maths/mat2.hpp
-        src/maths/mat3.hpp
-        src/maths/mat4.hpp
-        src/maths/functions.hpp
-        src/maths/geometry/ray.hpp
-        src/maths/io.hpp
-        src/maths/geometry/disc.hpp
-        src/maths/algebra.hpp
-        src/maths/rand_lcg.hpp
-        src/maths/curves/curves.hpp
-        src/maths/transform.hpp
-        src/maths/curves/hermite.hpp
-        src/maths/matrix.hpp
-        src/maths/vector.hpp
-        src/maths/geometry/plane.hpp
-        src/maths/geometry/sphere.hpp
-        src/maths/geometry/hull.hpp
-        src/maths/geometry/rect.hpp
-        src/maths/geometry/line.hpp
-        src/maths/geometry/segment.hpp
-        src/maths/geometry/AABB.hpp
-        src/maths/quaternion.hpp)
-
-set(ZAP_MATHS_FILES
-        src/maths/io.cpp
-        src/maths/transform.cpp
-        src/maths/simd.hpp)
 
 set(ZAP_ENGINE_PUBLIC_HEADERS
         src/tools/log.hpp
@@ -503,3 +579,4 @@ foreach(file ${ZAP_PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)
     install(FILES ${file} DESTINATION include/zap/${dir})
 endforeach()
+#]]

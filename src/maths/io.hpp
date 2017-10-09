@@ -5,7 +5,7 @@
 #ifndef ZAP_IO_HPP
 #define ZAP_IO_HPP
 
-#include "maths.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace maths {
     template <typename T> ZAPMATHS_EXPORT std::ostream& operator<<(std::ostream& str, const vec2<T>& V);

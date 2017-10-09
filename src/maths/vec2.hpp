@@ -5,7 +5,7 @@
 #ifndef ZAP_VEC2_HPP
 #define ZAP_VEC2_HPP
 
-#include "maths.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace maths {
     template <typename T>

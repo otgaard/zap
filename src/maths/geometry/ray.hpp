@@ -5,7 +5,7 @@
 #ifndef ZAP_RAY_HPP
 #define ZAP_RAY_HPP
 
-#include "maths/algebra.hpp"
+#include <maths/algebra.hpp>
 
 namespace zap { namespace maths { namespace geometry {
 
