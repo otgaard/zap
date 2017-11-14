@@ -25,8 +25,8 @@ option(BUILD_TEST "Build tests" OFF)
 option(BUILD_DOCUMENTATION "Build doxygen documentation" OFF)
 
 option(VERBOSE_LOGGING "Verbose logging output" ON)
-option(STATIC_LINKAGE "Build zap with static linking" ON)
-option(DYNAMIC_LINKAGE "Build zap with dynamic linking" OFF)
+option(STATIC_LINKAGE "Build zap with static linking" OFF)
+option(DYNAMIC_LINKAGE "Build zap with dynamic linking" ON)
 
 #[[
 GLOBAL CONFIG
@@ -41,6 +41,9 @@ PLATFORM CONFIG
 if(APPLE)
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
     add_definitions(-Wall -Werror -Wno-unused-local-typedef -DASIO_STANDALONE)   # unused-local-typedef cause by third_party/asio
+
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 elseif(WIN32)
     include(GenerateExportHeader)
     add_definitions(/W3 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
@@ -57,6 +60,10 @@ BUILD CONFIG
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if(WIN32 AND NOT CYGWIN)
     set(DEF_INSTALL_CMAKE_DIR CMake)
