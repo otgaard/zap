@@ -25,6 +25,8 @@ option(BUILD_TEST "Build tests" OFF)
 option(BUILD_DOCUMENTATION "Build doxygen documentation" OFF)
 
 option(VERBOSE_LOGGING "Verbose logging output" ON)
+option(STATIC_LINKAGE "Build zap with static linking" ON)
+option(DYNAMIC_LINKAGE "Build zap with dynamic linking" OFF)
 
 #[[
 GLOBAL CONFIG
@@ -38,7 +40,7 @@ PLATFORM CONFIG
 
 if(APPLE)
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
-    add_definitions(-Wall -Werror)
+    add_definitions(-Wall -Werror -Wno-unused-local-typedef -DASIO_STANDALONE)   # unused-local-typedef cause by third_party/asio
 elseif(WIN32)
     include(GenerateExportHeader)
     add_definitions(/W3 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
@@ -115,8 +117,15 @@ if(BUILD_TEST)
     message(STATUS "Configuring Tests")
 endif()
 
-export(TARGETS core zapMaths-static zapMaths-shared
-        FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+export(TARGETS core FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+
+if(STATIC_LINKAGE)
+export(TARGETS zapMaths-static FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+endif()
+
+if(DYNAMIC_LINKAGE)
+export(TARGETS zapMaths-shared FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+endif()
 
 export(PACKAGE zap)
 

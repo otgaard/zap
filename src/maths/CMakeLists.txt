@@ -33,31 +33,39 @@ set(SOURCE_FILES
         transform.cpp
         )
 
-add_library(zapMaths-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
-target_include_directories(zapMaths-shared PRIVATE core)
-set_target_properties(zapMaths-shared PROPERTIES OUTPUT_NAME "zapMaths")
+if(DYNAMIC_LINKAGE)
+    add_library(zapMaths-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
+    target_include_directories(zapMaths-shared PRIVATE core)
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+        set_target_properties(zapMaths-shared PROPERTIES OUTPUT_NAME "zapMathsD")
+    else()
+        set_target_properties(zapMaths-shared PROPERTIES OUTPUT_NAME "zapMaths")
+    endif()
 
-add_library(zapMaths-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
-target_include_directories(zapMaths-static PRIVATE core)
-set_target_properties(zapMaths-static PROPERTIES OUTPUT_NAME "zapMaths")
-set_target_properties(zapMaths-static PROPERTIES PREFIX "lib")
-
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-    set_target_properties(zapMaths-shared PROPERTIES OUTPUT_NAME "zapMathsD")
-    set_target_properties(zapMaths-static PROPERTIES OUTPUT_NAME "zapMathsD")
+    install(TARGETS zapMaths-shared
+            EXPORT zapTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+            LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+            COMPONENT dev)
 endif()
 
-install(TARGETS zapMaths-shared
-        EXPORT zapTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-        COMPONENT dev)
+if(STATIC_LINKAGE)
+    add_library(zapMaths-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
+    target_include_directories(zapMaths-static PRIVATE core)
+    set_target_properties(zapMaths-static PROPERTIES PREFIX "lib")
 
-install(TARGETS zapMaths-static
-        EXPORT zapTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-        COMPONENT dev)
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+        set_target_properties(zapMaths-static PROPERTIES OUTPUT_NAME "zapMathsD")
+    else()
+        set_target_properties(zapMaths-static PROPERTIES OUTPUT_NAME "zapMaths")
+    endif()
+
+    install(TARGETS zapMaths-static
+            EXPORT zapTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+            COMPONENT dev)
+endif()
 
 foreach(file ${PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)

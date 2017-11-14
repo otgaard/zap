@@ -54,37 +54,48 @@ elseif(WIN32)
     endif()
 endif()
 
-add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
-target_include_directories(zapEngine-shared
-        PRIVATE core
-        PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
-target_link_libraries(zapEngine-shared zapMaths-shared ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
-set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngine")
+if(DYNAMIC_LINKAGE)
+    add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
+    target_include_directories(zapEngine-shared
+            PRIVATE core
+            PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
-add_library(zapEngine-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
-target_include_directories(zapEngine-static
-        PRIVATE core
-        PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
-target_link_libraries(zapEngine-static zapMaths-static ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
-set_target_properties(zapEngine-static PROPERTIES OUTPUT_NAME "zapEngine")
-set_target_properties(zapEngine-static PROPERTIES PREFIX "lib")
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+        set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngineD")
+    else()
+        set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngine")
+    endif()
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-    set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngineD")
-    set_target_properties(zapEngine-static PROPERTIES OUTPUT_NAME "zapEngineD")
+    target_link_libraries(zapEngine-shared zapMaths-shared ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
+
+    install(TARGETS zapEngine-shared
+            EXPORT zapTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+            LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+            COMPONENT dev)
 endif()
 
-install(TARGETS zapEngine-shared
-        EXPORT zapTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-        COMPONENT dev)
+if(STATIC_LINKAGE)
+    add_library(zapEngine-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
+    target_include_directories(zapEngine-static
+            PRIVATE core
+            PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
-install(TARGETS zapEngine-static
-        EXPORT zapTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-        COMPONENT dev)
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+        set_target_properties(zapEngine-static PROPERTIES OUTPUT_NAME "zapEngineD")
+    else()
+        set_target_properties(zapEngine-static PROPERTIES OUTPUT_NAME "zapEngine")
+    endif()
+
+    set_target_properties(zapEngine-static PROPERTIES PREFIX "lib")
+    target_link_libraries(zapEngine-static zapMaths-static ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
+
+    install(TARGETS zapEngine-static
+            EXPORT zapTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+            COMPONENT dev)
+endif()
 
 foreach(file ${PUBLIC_HEADERS})
     get_filename_component(dir ${file} DIRECTORY)
