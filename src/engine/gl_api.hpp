@@ -13,7 +13,6 @@ namespace zap { namespace engine { namespace gl {
 #include <GL/glew.h>
 #include <GL/gl.h>
 #elif _WIN32
-//#define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/GL.h>
 #endif //__APPLE__

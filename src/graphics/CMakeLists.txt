@@ -41,8 +41,10 @@ set(SOURCE_FILES
         colour.cpp
         )
 
+if(APPLE OR UNIX)
 find_package(PkgConfig)
 pkg_search_module(FREETYPE REQUIRED freetype2)
+endif()
 
 if(FREETYPE_FOUND)
     message("FreeType Found")

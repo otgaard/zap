@@ -25,7 +25,7 @@ option(BUILD_TEST "Build tests" OFF)
 option(BUILD_DOCUMENTATION "Build doxygen documentation" OFF)
 
 option(VERBOSE_LOGGING "Verbose logging output" ON)
-option(STATIC_LINKAGE "Build zap with static linking" OFF)
+option(STATIC_LINKAGE "Build zap with static linking" ON)
 option(DYNAMIC_LINKAGE "Build zap with dynamic linking" ON)
 
 #[[
@@ -33,6 +33,9 @@ GLOBAL CONFIG
 #]]
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+message(${CMAKE_MODULE_PATH})
 
 #[[
 PLATFORM CONFIG
@@ -47,10 +50,22 @@ if(APPLE)
 elseif(WIN32)
     include(GenerateExportHeader)
     add_definitions(/W3 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
-    get_windows_version()
+    get_windows_version(WINVER)
 elseif(UNIX AND NOT APPLE)
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
     add_definitions(-Wall -Werror)
+endif()
+
+# GLEW is not automatically configured so manually load it
+set(GLEW_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/glew/include)
+if(UNIX)
+    set(GLEW_LIBRARY ${CMAKE_SOURCE_DIR}/third_party/lib/libGLEW.a)
+elseif(WIN32)
+    if(CMAKE_CL_64)
+        set(GLEW_LIBRARY ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
+    else()
+        set(GLEW_LIBRARY ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/Win32/glew32s.lib)
+    endif()
 endif()
 
 #[[

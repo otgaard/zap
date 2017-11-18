@@ -39,26 +39,23 @@ set(SOURCE_FILES
         vertex_buffer.cpp
         )
 
-find_library(OPENGL OpenGL REQUIRED)
+find_package(OpenGL REQUIRED)
+#find_package(GLEW REQUIRED PATHS ${CMAKE_SOURCE_DIR}/third_party/glew/include)
 
-# GLEW is not automatically configured so manually load it
-add_definitions(-DGLEW_STATIC)
-
-if(UNIX)
-    set(GLEW_LIBRARY ${CMAKE_SOURCE_DIR}/third_party/lib/libGLEW.a)
-elseif(WIN32)
-    if(CMAKE_CL_64)
-        set(GLEW_LIBRARY ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/x64/glew32s.lib)
-    else()
-        set(GLEW_LIBRARY ${CMAKE_SOURCE_DIR}/third_party/glew/lib/Release/Win32/glew32s.lib)
-    endif()
+if(${OPENGL_FOUND})
+    message("OpenGL was found")
+    message(${OPENGL_gl_LIBRARY})
+else()
+    message("OpenGL was not found")
 endif()
 
 if(DYNAMIC_LINKAGE)
     add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapEngine-shared
             PRIVATE core
+            PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
+    set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
         set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngineD")
@@ -66,20 +63,30 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngine")
     endif()
 
-    target_link_libraries(zapEngine-shared zapMaths-shared ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
+    target_link_libraries(zapEngine-shared zapMaths-shared ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARY})
+    target_compile_definitions(zapEngine-shared PRIVATE -DGLEW_STATIC)
 
     install(TARGETS zapEngine-shared
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+    GENERATE_EXPORT_HEADER(zapEngine-shared
+            BASE_NAME zapEngine
+            EXPORT_MACRO_NAME ZAPENGINE_EXPORT
+            EXPORT_FILE_NAME engine_exports.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
 endif()
 
 if(STATIC_LINKAGE)
     add_library(zapEngine-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapEngine-static
             PRIVATE core
+            PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
+    set_target_properties(zapEngine-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    target_compile_definitions(zapEngine-static PRIVATE -DGLEW_STATIC)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
         set_target_properties(zapEngine-static PROPERTIES OUTPUT_NAME "zapEngineD")
@@ -88,13 +95,19 @@ if(STATIC_LINKAGE)
     endif()
 
     set_target_properties(zapEngine-static PROPERTIES PREFIX "lib")
-    target_link_libraries(zapEngine-static zapMaths-static ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
+    target_link_libraries(zapEngine-static zapMaths-static ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARY})
 
     install(TARGETS zapEngine-static
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+    GENERATE_EXPORT_HEADER(zapEngine-shared
+            BASE_NAME zapEngine
+            EXPORT_MACRO_NAME ZAPENGINE_EXPORT
+            EXPORT_FILE_NAME engine_exports.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
 endif()
 
 foreach(file ${PUBLIC_HEADERS})
