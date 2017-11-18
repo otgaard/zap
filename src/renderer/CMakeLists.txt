@@ -16,8 +16,6 @@ set(SOURCE_FILES
         shader_builder.cpp
         style.cpp)
 
-find_package(OpenGL REQUIRED)
-
 if(DYNAMIC_LINKAGE)
     add_library(zapRenderer-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapRenderer-shared

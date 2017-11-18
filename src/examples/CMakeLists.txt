@@ -7,7 +7,11 @@ target_include_directories(zap_example-shared
         PRIVATE ${CMAKE_BINARY_DIR}/exports)
 target_link_libraries(zap_example-shared zapHostGLFW-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
 set_target_properties(zap_example-shared PROPERTIES OUTPUT_NAME "zap_example")
+
+if(WIN32)
 set_target_properties(zap_example-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+endif()
+
 install(TARGETS zap_example-shared
         EXPORT zapTargets
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
@@ -22,7 +26,11 @@ target_include_directories(zap_example-static
 
 target_link_libraries(zap_example-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static)
 set_target_properties(zap_example-static PROPERTIES OUTPUT_NAME "zap_example_s")
+
+if(WIN32)
 set_target_properties(zap_example-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+endif()
+
 install(TARGETS zap_example-static
         EXPORT zapTargets
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"

@@ -42,9 +42,11 @@ set(SOURCE_FILES
         )
 
 if(APPLE OR UNIX)
-find_package(PkgConfig)
-pkg_search_module(FREETYPE REQUIRED freetype2)
+    find_package(PkgConfig)
+    pkg_search_module(FREETYPE REQUIRED freetype2)
+    set(ASIO_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/include/asio)
 elseif(WIN32)
+    set(ASIO_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/asio/include)
     if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/x64/freetype28MT.lib")
         set(FREETYPE_FOUND TRUE)
         set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/freetype/include) # freetype2 doesn't support "installing" on windows
@@ -62,8 +64,6 @@ if(FREETYPE_FOUND OR ${FREETYPE_FOUND})
     message(STATUS "FreeType Found")
     add_definitions(-DFOUND_FREETYPE)
 endif()
-
-set(ASIO_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/asio/include)
 
 if(DYNAMIC_LINKAGE)
     add_library(zapGraphics-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})

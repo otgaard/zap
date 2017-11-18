@@ -51,11 +51,13 @@ if(DYNAMIC_LINKAGE)
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 
+if(WIN32)
     GENERATE_EXPORT_HEADER(zapMaths-shared
             BASE_NAME zapMaths
             EXPORT_MACRO_NAME ZAPMATHS_EXPORT
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/maths_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+endif()
 
 endif()
 
@@ -78,13 +80,15 @@ if(STATIC_LINKAGE)
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 
+if(WIN32)
     GENERATE_EXPORT_HEADER(zapMaths-static
             BASE_NAME zapMaths
             EXPORT_MACRO_NAME ZAPMATHS_EXPORT
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/maths_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+endif()
 
-    set_target_properties(zapMaths-static PROPERTIES COMPILE_FLAGS -DZAPMATHS_STATIC_DEFINE)
+    set_target_properties(zapMaths-static PROPERTIES COMPILE_FLAGS -DSHARED_EXPORTS_BUILT_AS_STATIC)
 endif()
 
 foreach(file ${PUBLIC_HEADERS})

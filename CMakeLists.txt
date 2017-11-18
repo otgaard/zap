@@ -55,6 +55,15 @@ elseif(UNIX AND NOT APPLE)
     add_definitions(-Wall -Werror)
 endif()
 
+# Find OpenGL
+find_package(OpenGL REQUIRED)
+
+if(${OPENGL_FOUND})
+    message(STATUS "OpenGL was found")
+else()
+    message(STATUS "OpenGL was not found")
+endif()
+
 # GLEW is not automatically configured so manually load it
 set(GLEW_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/glew/include)
 if(UNIX)
@@ -84,6 +93,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+    add_definitions(-DLOGGING_ENABLED)
+endif()
 
 if(WIN32 AND NOT CYGWIN)
     set(DEF_INSTALL_CMAKE_DIR CMake)
@@ -169,12 +182,6 @@ install(FILES
         DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 install(EXPORT zapTargets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
-
-
-
-
-
-
 
 #[[
 include_directories(

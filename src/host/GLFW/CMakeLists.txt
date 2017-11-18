@@ -21,7 +21,7 @@ if(DYNAMIC_LINKAGE)
             PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
-    target_link_libraries(zapHostGLFW-shared glfw3 ${GLEW_LIBRARY} zapEngine-shared zapMaths-shared)
+    target_link_libraries(zapHostGLFW-shared glfw ${GLEW_LIBRARY} zapEngine-shared zapMaths-shared)
     target_compile_definitions(zapHostGLFW-shared PRIVATE -DGLEW_STATIC)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")

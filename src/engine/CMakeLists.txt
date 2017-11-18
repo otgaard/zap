@@ -38,22 +38,12 @@ set(SOURCE_FILES
         vertex_buffer.cpp
         )
 
-find_package(OpenGL REQUIRED)
-#find_package(GLEW REQUIRED PATHS ${CMAKE_SOURCE_DIR}/third_party/glew/include)
-
-if(${OPENGL_FOUND})
-    message(STATUS "OpenGL was found")
-else()
-    message(STATUS "OpenGL was not found")
-endif()
-
 if(DYNAMIC_LINKAGE)
     add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapEngine-shared
             PRIVATE core
             PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
-    set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
         set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngineD")
@@ -69,12 +59,15 @@ if(DYNAMIC_LINKAGE)
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
-
+if(WIN32)
+    set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     GENERATE_EXPORT_HEADER(zapEngine-shared
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT
             EXPORT_FILE_NAME engine_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+endif()
+
 endif()
 
 if(STATIC_LINKAGE)
@@ -83,7 +76,6 @@ if(STATIC_LINKAGE)
             PRIVATE core
             PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
-    set_target_properties(zapEngine-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     target_compile_definitions(zapEngine-static PRIVATE -DGLEW_STATIC)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -101,11 +93,15 @@ if(STATIC_LINKAGE)
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 
+if(WIN32)
+    set_target_properties(zapEngine-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     GENERATE_EXPORT_HEADER(zapEngine-static
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT
             EXPORT_FILE_NAME engine_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+endif()
+
 endif()
 
 foreach(file ${PUBLIC_HEADERS})
