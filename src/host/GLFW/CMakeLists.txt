@@ -9,7 +9,7 @@ set(SOURCE_FILES
 find_package(glfw3 REQUIRED PATHS ${PROJECT_SOURCE_DIR}/third_party NO_DEFAULT_PATH)
 
 if(glfw3_FOUND)
-    message("found")
+    message(STATUS "GLFW3 Found")
 endif()
 
 if(DYNAMIC_LINKAGE)
@@ -21,7 +21,7 @@ if(DYNAMIC_LINKAGE)
             PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
-    target_link_libraries(zapHostGLFW-shared glfw ${GLEW_LIBRARY} zapEngine-shared zapMaths-shared)
+    target_link_libraries(zapHostGLFW-shared glfw3 ${GLEW_LIBRARY} zapEngine-shared zapMaths-shared)
     target_compile_definitions(zapHostGLFW-shared PRIVATE -DGLEW_STATIC)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -47,6 +47,7 @@ if(STATIC_LINKAGE)
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
     target_link_libraries(zapHostGLFW-static glfw ${GLEW_LIBRARY} zapEngine-static zapMaths-static)
+    target_compile_definitions(zapHostGLFW-static PRIVATE -DGLEW_STATIC)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
         set_target_properties(zapHostGLFW-static PROPERTIES OUTPUT_NAME "zapHostGLFWD")

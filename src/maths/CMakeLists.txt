@@ -33,8 +33,6 @@ set(SOURCE_FILES
         transform.cpp
         )
 
-message(${CMAKE_BINARY_DIR})
-
 if(DYNAMIC_LINKAGE)
     add_library(zapMaths-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapMaths-shared
@@ -50,6 +48,7 @@ if(DYNAMIC_LINKAGE)
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 
     GENERATE_EXPORT_HEADER(zapMaths-shared
@@ -64,7 +63,7 @@ if(STATIC_LINKAGE)
     add_library(zapMaths-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapMaths-static
             PRIVATE core
-            PRIVATE ${CMAKE_BINARY_DIR}/src/maths)
+            PRIVATE ${CMAKE_BINARY_DIR}/exports)
     set_target_properties(zapMaths-static PROPERTIES PREFIX "lib")
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")

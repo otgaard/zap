@@ -30,7 +30,6 @@ set(SOURCE_FILES
         gl_api.cpp
         mesh.cpp
         pixel_conversion.cpp
-        pixmap.cpp
         program.cpp
         sampler.cpp
         shader.cpp
@@ -43,10 +42,9 @@ find_package(OpenGL REQUIRED)
 #find_package(GLEW REQUIRED PATHS ${CMAKE_SOURCE_DIR}/third_party/glew/include)
 
 if(${OPENGL_FOUND})
-    message("OpenGL was found")
-    message(${OPENGL_gl_LIBRARY})
+    message(STATUS "OpenGL was found")
 else()
-    message("OpenGL was not found")
+    message(STATUS "OpenGL was not found")
 endif()
 
 if(DYNAMIC_LINKAGE)
@@ -103,7 +101,7 @@ if(STATIC_LINKAGE)
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 
-    GENERATE_EXPORT_HEADER(zapEngine-shared
+    GENERATE_EXPORT_HEADER(zapEngine-static
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT
             EXPORT_FILE_NAME engine_exports.h

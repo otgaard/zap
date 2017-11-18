@@ -11,17 +11,21 @@ set(PUBLIC_HEADERS
 
 set(SOURCE_FILES
         camera.cpp
-        light.cpp
-        material.cpp
         render_context.cpp
         renderer.cpp
         shader_builder.cpp
         style.cpp)
 
+find_package(OpenGL REQUIRED)
+
 if(DYNAMIC_LINKAGE)
     add_library(zapRenderer-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapRenderer-shared
             PRIVATE core
+            PRIVATE zapMaths-shared
+            PRIVATE zapEngine-shared
+            PRIVATE ${GLEW_INCLUDE}
+            PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -30,12 +34,13 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapRenderer-shared PROPERTIES OUTPUT_NAME "zapRenderer")
     endif()
 
-    target_link_libraries(zapRenderer-shared zapEngine-shared zapMaths-shared ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
+    target_link_libraries(zapRenderer-shared zapEngine-shared zapMaths-shared ${OPENGL} ${GLEW_LIBRARY})
 
     install(TARGETS zapRenderer-shared
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 endif()
 
@@ -43,6 +48,10 @@ if(STATIC_LINKAGE)
     add_library(zapRenderer-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapRenderer-static
             PRIVATE core
+            PRIVATE zapMaths-shared
+            PRIVATE zapEngine-shared
+            PRIVATE ${GLEW_INCLUDE}
+            PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -52,7 +61,7 @@ if(STATIC_LINKAGE)
     endif()
 
     set_target_properties(zapRenderer-static PROPERTIES PREFIX "lib")
-    target_link_libraries(zapRenderer-static zapEngine-static zapMaths-static ${GLEW_LIB} ${OPENGL} ${GLEW_LIBRARY})
+    target_link_libraries(zapRenderer-static zapEngine-static zapMaths-static ${OPENGL} ${GLEW_LIBRARY})
 
     install(TARGETS zapRenderer-static
             EXPORT zapTargets
