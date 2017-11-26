@@ -5,7 +5,7 @@
 // The OpenGL renderer
 
 #include <engine/state_stack.hpp>
-#include <scene_graph/visual.hpp>
+#include <renderer/scene_graph/visual.hpp>
 #include <renderer/render_context.hpp>
 
 namespace zap { namespace renderer {

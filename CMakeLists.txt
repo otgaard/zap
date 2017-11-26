@@ -26,7 +26,7 @@ option(BUILD_DOCUMENTATION "Build doxygen documentation" OFF)
 
 option(VERBOSE_LOGGING "Verbose logging output" ON)
 option(STATIC_LINKAGE "Build zap with static linking" ON)
-option(DYNAMIC_LINKAGE "Build zap with dynamic linking" OFF)
+option(DYNAMIC_LINKAGE "Build zap with dynamic linking" ON)
 
 #[[
 GLOBAL CONFIG
@@ -41,7 +41,7 @@ PLATFORM CONFIG
 
 if(APPLE)
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
-    add_definitions(-Wall -Werror -Wno-unused-local-typedef -DASIO_STANDALONE)   # unused-local-typedef cause by third_party/asio
+    add_definitions(-Wall -Werror -Wno-unused-local-typedef -DASIO_STANDALONE)   # unused-local-typedef caused by third_party/asio
 
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -117,6 +117,8 @@ include_directories("${PROJECT_SOURCE_DIR}/src" "${PROJECT_BINARY_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/third_party/lib/cmake)
 
 add_subdirectory(src/core)
+add_subdirectory(src/tools)
+add_subdirectory(third_party)
 
 # Setup dependencies (results in BUILD options set to ON or OFF based on found packages)
 if(BUILD_MATHS)
@@ -169,10 +171,12 @@ endif()
 
 export(PACKAGE zap)
 
+message(${INSTALL_CMAKE_DIR})
+
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+set(CONF_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX})
 configure_file(zapConfig.cmake.in "${PROJECT_BINARY_DIR}/zapConfig.cmake" @ONLY)
-set(CONF_INCLUDE_DIRS "\${ZAP_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+#set(CONF_INCLUDE_DIRS "\${ZAP_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file(zapConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/zapConfig.cmake" @ONLY)
 configure_file(zapConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/zapConfigVersion.cmake" @ONLY)
 

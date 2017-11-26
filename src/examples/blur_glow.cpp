@@ -16,16 +16,16 @@
 #include <engine/sampler.hpp>
 #include <engine/framebuffer.hpp>
 
-#include <scene_graph/spatial.hpp>
-#include <scene_graph/visual.hpp>
-#include <scene_graph/node.hpp>
+#include <renderer/scene_graph/spatial.hpp>
+#include <renderer/scene_graph/visual.hpp>
+#include <renderer/scene_graph/node.hpp>
 
-#include <graphics2/quad.hpp>
-#include <graphics3/g3_types.hpp>
-#include <generators/geometry/geometry3.hpp>
-#include <generators/generator.hpp>
-#include <generators/textures/planar.hpp>
-#include <renderer/colour.hpp>
+#include <graphics/graphics2/quad.hpp>
+#include <graphics/graphics3/g3_types.hpp>
+#include <graphics/generators/geometry/geometry3.hpp>
+#include <graphics/generators/generator.hpp>
+#include <graphics/generators/textures/planar.hpp>
+#include <graphics/colour.hpp>
 #include <engine/state_stack.hpp>
 #include <renderer/renderer.hpp>
 
@@ -141,9 +141,9 @@ using spatial_t = spatial<transform4f, spheref>;
 using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
 
-class scene_graph_test : public application {
+class blur_glow : public application {
 public:
-    scene_graph_test() : application{"scene_graph_test", 1280, 900, false}, cam_{true} { }
+    blur_glow() : application{"blur_glow", 1280, 900}, cam_{true} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -194,8 +194,13 @@ protected:
     zap::renderer::renderer rndr_;
 };
 
-bool scene_graph_test::initialise() {
-    clear(0.f, 0.f, 0.f, 0.f);
+bool blur_glow::initialise() {
+    if(!zap::engine::init()) {
+        LOG_ERR("Failed to initialise the zap engine");
+        return false;
+    }
+
+    rndr_.get_state_stack()->clear_colour(0.f, 0.f, 0.f, 0.f);
 
     rndr_.initialise();
 
@@ -349,7 +354,7 @@ bool scene_graph_test::initialise() {
 
     stack.initialise();
 
-    render_state new_state(true, true);
+    render_state new_state(true, true, true);
     new_state.get_blend_state()->enabled = false;
     new_state.get_blend_state()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_ALPHA;
     new_state.get_blend_state()->dst_mode = render_state::blend_state::dst_blend_mode::DBM_DST_ALPHA;
@@ -361,7 +366,7 @@ bool scene_graph_test::initialise() {
     return true;
 }
 
-void scene_graph_test::on_resize(int width, int height) {
+void blur_glow::on_resize(int width, int height) {
     const int blur_radius = 6;
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_.viewport(0, 0, width, height);
@@ -377,17 +382,17 @@ void scene_graph_test::on_resize(int width, int height) {
     gl_error_check();
 }
 
-void scene_graph_test::update(double t, float dt) {
+void blur_glow::update(double t, float dt) {
     inc += .5f*dt;
     //vec3f dir{cosf(inc + PI/2), 0.f, -sinf(inc + PI/2)};
     //cam_.orthogonolise(normalise(dir));
 }
 
-void scene_graph_test::draw_scene() {
+void blur_glow::draw_scene() {
     const auto red_colour_table = {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}};
     const auto blue_colour_table = {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}};
     fbuffer1_.bind();
-    clear(0.f, 0.f, 0.f, 0.f);
+    rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 0.f);
     mesh1_.bind();
     context_.bind();
 
@@ -415,7 +420,6 @@ void scene_graph_test::draw_scene() {
 
     // Horizontal Pass
     fbuffer2_.bind();
-    //clear(0.f, 0.f, 0.f, 0.f);
     fbuffer1_.get_attachment(0).bind(0);
     samp2_.bind(0);
     quad1_.get_program()->bind();
@@ -427,7 +431,7 @@ void scene_graph_test::draw_scene() {
 
     // Vertical Pass
     fbuffer3_.bind();
-    clear(0.f, 0.f, 0.f, 0.f);
+    rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 0.f);
     fbuffer2_.get_attachment(0).bind(0);
     samp2_.bind(0);
     quad1_.get_program()->bind();
@@ -472,7 +476,6 @@ void scene_graph_test::draw_scene() {
 
     fbuffer2_.release();
 
-    //alpha_blending(true);
     samp2_.bind(0);
 
     fbuffer3_.get_attachment(0).bind(0);
@@ -486,15 +489,15 @@ void scene_graph_test::draw_scene() {
     gl_error_check();
 }
 
-void scene_graph_test::draw() {
+void blur_glow::draw() {
     draw_scene();
 }
 
-void scene_graph_test::shutdown() {
+void blur_glow::shutdown() {
 }
 
 int main(int argc, char* argv[]) {
-    scene_graph_test app;
+    blur_glow app;
     return app.run();
 }
 

@@ -16,6 +16,35 @@ install(TARGETS zap_example-shared
         EXPORT zapTargets
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         COMPONENT bin)
+
+add_executable(blur_glow-shared blur_glow.cpp)
+target_include_directories(blur_glow-shared PRIVATE core PRIVATE ${CMAKE_BINARY_DIR}/exports)
+target_link_libraries(blur_glow-shared zapHostGLFW-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
+set_target_properties(blur_glow-shared PROPERTIES OUTPUT_NAME "blur_glow")
+
+if(WIN32)
+    set_target_properties(blur_glow-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+endif()
+
+install(TARGETS blur_glow-shared
+        EXPORT zapTargets
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+        COMPONENT bin)
+
+add_executable(scene_graph-shared scene_graph.cpp)
+target_include_directories(scene_graph-shared PRIVATE core PRIVATE ${CMAKE_BINARY_DIR}/exports)
+target_link_libraries(scene_graph-shared zapHostGLFW-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
+set_target_properties(scene_graph-shared PROPERTIES OUTPUT_NAME "scene_graph")
+
+if(WIN32)
+    set_target_properties(scene_graph-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+endif()
+
+install(TARGETS scene_graph-shared
+        EXPORT zapTargets
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+        COMPONENT bin)
+
 endif()
 
 if(STATIC_LINKAGE)

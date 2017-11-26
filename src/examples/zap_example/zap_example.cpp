@@ -70,6 +70,10 @@ protected:
 };
 
 bool zap_example::initialise() {
+    if(!zap::engine::init()) {
+        LOG_ERR("Error initialising zap Engine");
+        return false;
+    }
     if(!font_mgr_.initialise()) {
         LOG_ERR("Font manager failed to initialise");
         return false;

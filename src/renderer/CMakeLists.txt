@@ -7,7 +7,11 @@ set(PUBLIC_HEADERS
         renderer.hpp
         renderer_fwd.hpp
         shader_builder.hpp
-        style.hpp)
+        style.hpp
+        scene_graph/bound.hpp
+        scene_graph/node.hpp
+        scene_graph/spatial.hpp
+        scene_graph/visual.hpp)
 
 set(SOURCE_FILES
         camera.cpp

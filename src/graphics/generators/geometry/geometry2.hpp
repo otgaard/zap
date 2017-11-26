@@ -5,8 +5,8 @@
 #ifndef ZAP_GEOMETRY2_HPP
 #define ZAP_GEOMETRY2_HPP
 
-#include <graphics2/g2_types.hpp>
-#include <generators/geometry/geometry_traits.hpp>
+#include <graphics/graphics2/g2_types.hpp>
+#include <graphics/generators/geometry/geometry_traits.hpp>
 
 namespace zap { namespace generators {
     template <typename VertexT, primitive_type Primitive> struct geometry2;

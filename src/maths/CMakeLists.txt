@@ -44,12 +44,13 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapMaths-shared PROPERTIES OUTPUT_NAME "zapMaths")
     endif()
 
+    add_dependencies(zapMaths-shared core)
+
     install(TARGETS zapMaths-shared
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-            COMPONENT dev)
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
 
 if(WIN32)
     GENERATE_EXPORT_HEADER(zapMaths-shared
@@ -74,11 +75,12 @@ if(STATIC_LINKAGE)
         set_target_properties(zapMaths-static PROPERTIES OUTPUT_NAME "zapMaths")
     endif()
 
+    add_dependencies(zapMaths-static core)
+
     install(TARGETS zapMaths-static
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-            COMPONENT dev)
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
 
 if(WIN32)
     GENERATE_EXPORT_HEADER(zapMaths-static
