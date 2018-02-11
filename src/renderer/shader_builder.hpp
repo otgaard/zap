@@ -97,7 +97,7 @@ public:
     }
 
 protected:
-    static std::string term;
+    ZAPRENDERER_EXPORT static std::string term;
 
     template <size_t D, size_t P, size_t S>
     static std::string __build_method__(const builder_task<D, P, S>& req) {

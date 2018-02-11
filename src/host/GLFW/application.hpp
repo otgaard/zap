@@ -2,6 +2,12 @@
 #ifndef ZAP_APPLICATION_HPP
 #define ZAP_APPLICATION_HPP
 
+#if defined(_WIN32)
+#include HOSTGLFW_EXPORT
+#else
+#define ZAPHOSTGLFW_EXPORT
+#endif
+
 #include <string>
 #include <maths/functions.hpp>
 #include <maths/vec2.hpp>
@@ -19,7 +25,7 @@ struct app_config {
     bool fullscreen = false;
 };
 
-class application {
+class ZAPHOSTGLFW_EXPORT application {
 public:
     application(const std::string& name, int width, int height);
     virtual ~application() = default;

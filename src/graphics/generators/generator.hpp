@@ -15,6 +15,7 @@
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
 #include <tools/threadpool.hpp>
+#include <graphics/graphics.hpp>
 #include <engine/pixel_conversion.hpp>
 
 namespace zap {
@@ -72,7 +73,7 @@ struct render_task {
     }
 };
 
-class generator {
+class ZAPGRAPHICS_EXPORT generator {
 public:
     using texture = zap::engine::texture;
     template <typename PixelT> using pixmap = engine::pixmap<PixelT>;

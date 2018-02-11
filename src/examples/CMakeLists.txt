@@ -4,9 +4,15 @@ if(DYNAMIC_LINKAGE)
 add_executable(zap_example-shared zap_example/zap_example.cpp)
 target_include_directories(zap_example-shared
         PRIVATE core
+        PRIVATE zapMaths-shared
+        PRIVATE zapEngine-shared
+        PRIVATE zapRenderer-shared
+        PRIVATE zapHostGLFW-shared
         PRIVATE ${CMAKE_BINARY_DIR}/exports)
 target_link_libraries(zap_example-shared zapHostGLFW-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
 set_target_properties(zap_example-shared PROPERTIES OUTPUT_NAME "zap_example")
+
+add_dependencies(zap_example-shared zapHostGLFW-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared core)
 
 if(WIN32)
 set_target_properties(zap_example-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
@@ -24,6 +30,7 @@ set_target_properties(blur_glow-shared PROPERTIES OUTPUT_NAME "blur_glow")
 
 if(WIN32)
     set_target_properties(blur_glow-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    target_include_directories(blur_glow-shared PRIVATE ${CMAKE_SOURCE_DIR}/third_party/asio/include)
 endif()
 
 install(TARGETS blur_glow-shared
@@ -38,6 +45,7 @@ set_target_properties(scene_graph-shared PROPERTIES OUTPUT_NAME "scene_graph")
 
 if(WIN32)
     set_target_properties(scene_graph-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    target_include_directories(scene_graph-shared PRIVATE ${CMAKE_SOURCE_DIR}/third_party/asio/include)
 endif()
 
 install(TARGETS scene_graph-shared

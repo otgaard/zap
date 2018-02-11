@@ -139,7 +139,7 @@ void zap_example::on_resize(int width, int height) {
     auto mv_matrix = make_translation(0.f, 0.f, -5.f);
     context_->set_parameter("mvp_matrix", proj_matrix * mv_matrix);
     context_->set_parameter("colour", vec4f{.2f, .2f, 0.f, 1.f});
-
+    cam_.viewport(0, 0, width, height);
     cam_.set_perspective(false);
     cam_.frustum(0.f, float(width), float(height), 0.f, 0.f, 100.f);
     cam_.orthogonolise(vec3f{0.f, 0.f, -1.f});

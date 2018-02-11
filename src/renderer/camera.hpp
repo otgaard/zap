@@ -2,6 +2,7 @@
 #ifndef ZAP_CAMERA_HPP
 #define ZAP_CAMERA_HPP
 
+#include <renderer/rndr.hpp>
 #include <maths/algebra.hpp>
 #include <core/enumfield.hpp>
 #include <engine/uniform_buffer.hpp>
@@ -19,7 +20,7 @@ namespace zap { namespace renderer {
 
     using camera_ubuffer = engine::uniform_buffer<camera_block>;
 
-    class camera {
+    class ZAPRENDERER_EXPORT camera {
     protected:
         enum class camera_state {
             CS_IDENTITY = 1 << 0,        // The camera is the identity matrix

@@ -1,7 +1,6 @@
 set(PUBLIC_HEADERS
         buffer.hpp
         engine.hpp
-        export.hpp
         framebuffer.hpp
         index_buffer.hpp
         mesh.hpp
@@ -36,13 +35,14 @@ set(SOURCE_FILES
         state_stack.cpp
         texture.cpp
         vertex_buffer.cpp
-        )
+        uniform_buffer.cpp)
 
 if(DYNAMIC_LINKAGE)
     add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapEngine-shared
             PRIVATE core
             PRIVATE ${GLEW_INCLUDE}
+            PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -50,6 +50,8 @@ if(DYNAMIC_LINKAGE)
     else()
         set_target_properties(zapEngine-shared PROPERTIES OUTPUT_NAME "zapEngine")
     endif()
+
+    add_dependencies(zapEngine-shared zapMaths-shared core)
 
     target_link_libraries(zapEngine-shared zapMaths-shared ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARY})
     target_compile_definitions(zapEngine-shared PRIVATE -DGLEW_STATIC)
@@ -64,8 +66,9 @@ if(WIN32)
     GENERATE_EXPORT_HEADER(zapEngine-shared
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT
-            EXPORT_FILE_NAME engine_exports.h
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/engine_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapEngine-shared PUBLIC -DENGINE_EXPORT="engine_exports.h")
 endif()
 
 endif()
@@ -75,6 +78,7 @@ if(STATIC_LINKAGE)
     target_include_directories(zapEngine-static
             PRIVATE core
             PRIVATE ${GLEW_INCLUDE}
+            PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
     target_compile_definitions(zapEngine-static PRIVATE -DGLEW_STATIC)
 
@@ -83,6 +87,8 @@ if(STATIC_LINKAGE)
     else()
         set_target_properties(zapEngine-static PROPERTIES OUTPUT_NAME "zapEngine")
     endif()
+
+    add_dependencies(zapEngine-static zapMaths-static core)
 
     set_target_properties(zapEngine-static PROPERTIES PREFIX "lib")
     target_link_libraries(zapEngine-static zapMaths-static ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARY})
@@ -98,8 +104,9 @@ if(WIN32)
     GENERATE_EXPORT_HEADER(zapEngine-static
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT
-            EXPORT_FILE_NAME engine_exports.h
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/engine_exports_s.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapEngine-static PUBLIC -DENGINE_EXPORT="engine_exports_s.h")
 endif()
 
 endif()

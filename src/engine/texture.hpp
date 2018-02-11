@@ -9,7 +9,7 @@
 
 namespace zap { namespace engine {
 
-class texture {
+class ZAPENGINE_EXPORT texture {
 public:
     explicit texture(texture_type type=texture_type::TT_TEX2D) : type_(type) { }
     ~texture() { if(is_allocated()) deallocate(); }

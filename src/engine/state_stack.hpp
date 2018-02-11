@@ -11,7 +11,7 @@
 
 namespace zap { namespace engine {
 
-class state_stack {
+class ZAPENGINE_EXPORT state_stack {
 public:
     constexpr static size_t max_depth = 16;
     using vec4f = maths::vec4f;

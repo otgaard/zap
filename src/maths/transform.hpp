@@ -8,6 +8,7 @@
 #include <maths/mat2.hpp>
 #include <maths/mat3.hpp>
 #include <maths/mat4.hpp>
+#include <maths/maths.hpp>
 #include <core/enumfield.hpp>
 
 namespace zap { namespace maths {
@@ -263,6 +264,12 @@ namespace zap { namespace maths {
     typename transform<AFFINE_MAT_T>::vec_t transform<AFFINE_MAT_T>::ptransform(const typename transform<AFFINE_MAT_T>::vec_t& point) const {
         return affine().transform(point);
     }
+
+    template class ZAPMATHS_EXPORT transform<mat3f>;
+    template class ZAPMATHS_EXPORT transform<mat3d>;
+    template class ZAPMATHS_EXPORT transform<mat4f>;
+    template class ZAPMATHS_EXPORT transform<mat4d>;
+
 }}
 
 #endif //ZAP_TRANSFORM_HPP

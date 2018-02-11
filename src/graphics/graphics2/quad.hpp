@@ -2,6 +2,7 @@
 #ifndef ZAP_QUAD_HPP
 #define ZAP_QUAD_HPP
 
+#include <graphics/graphics.hpp>
 #include <graphics/graphics2/g2_types.hpp>
 #include <engine/program.hpp>
 #include <engine/texture.hpp>
@@ -9,7 +10,7 @@
 
 namespace zap { namespace graphics {
 
-class quad {
+class ZAPGRAPHICS_EXPORT quad {
 public:
     quad();
     ~quad();

@@ -6,7 +6,7 @@
 
 namespace zap { namespace engine {
 
-class sampler {
+class ZAPENGINE_EXPORT sampler {
 public:
     sampler() = default;
     sampler(sampler&& rhs) noexcept : id_(rhs.id_) { rhs.id_ = INVALID_RESOURCE; }

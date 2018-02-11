@@ -6,12 +6,13 @@
 #include <memory>
 #include <maths/vec2.hpp>
 #include <maths/mat4.hpp>
+#include <graphics/graphics.hpp>
 
 namespace zap { namespace graphics2 {
     using mat4f = maths::mat4f;
     using vec2f = maths::vec2f;
 
-class plotter2 {
+class ZAPGRAPHICS_EXPORT plotter2 {
 public:
     plotter2();
     ~plotter2();

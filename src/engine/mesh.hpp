@@ -12,7 +12,7 @@
 
 namespace zap { namespace engine {
 
-class mesh_base {
+class ZAPENGINE_EXPORT mesh_base {
 public:
     mesh_base(primitive_type prim_type, size_t vertex_count, data_type idx_type=data_type::DT_VOID, size_t index_count=0)
             : prim_type_(prim_type), idx_type_(idx_type), vertex_count_(vertex_count), index_count_(index_count) {

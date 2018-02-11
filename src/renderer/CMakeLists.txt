@@ -11,7 +11,7 @@ set(PUBLIC_HEADERS
         scene_graph/bound.hpp
         scene_graph/node.hpp
         scene_graph/spatial.hpp
-        scene_graph/visual.hpp)
+        scene_graph/visual.hpp rndr.hpp)
 
 set(SOURCE_FILES
         camera.cpp
@@ -44,14 +44,25 @@ if(DYNAMIC_LINKAGE)
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+if(WIN32)
+    set_target_properties(zapRenderer-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    GENERATE_EXPORT_HEADER(zapRenderer-shared
+            BASE_NAME zapRenderer
+            EXPORT_MACRO_NAME ZAPRENDERER_EXPORT
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/renderer_exports.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapRenderer-shared PUBLIC -DRENDERER_EXPORT="renderer_exports.h")
+endif()
+
 endif()
 
 if(STATIC_LINKAGE)
     add_library(zapRenderer-static STATIC ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapRenderer-static
             PRIVATE core
-            PRIVATE zapMaths-shared
-            PRIVATE zapEngine-shared
+            PRIVATE zapMaths-static
+            PRIVATE zapEngine-static
             PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${CMAKE_BINARY_DIR}/exports
             PRIVATE ${PROJECT_SOURCE_DIR}/third_party/include)
@@ -70,6 +81,17 @@ if(STATIC_LINKAGE)
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+if(WIN32)
+    set_target_properties(zapRenderer-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    GENERATE_EXPORT_HEADER(zapRenderer-static
+            BASE_NAME zapRenderer
+            EXPORT_MACRO_NAME ZAPRENDERER_EXPORT
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/renderer_exports_s.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapRenderer-static PUBLIC -DRENDERER_EXPORT="renderer_exports_s.h")
+endif()
+
 endif()
 
 foreach(file ${PUBLIC_HEADERS})

@@ -6,6 +6,7 @@
 #if defined(FOUND_FREETYPE)
 
 #include <string>
+#include <graphics/graphics.hpp>
 #include <maths/geometry/rect.hpp>
 
 namespace zap {
@@ -24,7 +25,7 @@ namespace zap { namespace graphics {
 
     // The text_batcher controls batching and rendering of multiple on-screen text strings with fonts stored as
     // texture atlases with matching texcoord, boundary and advance instructions from Freetype.
-    class text_batcher {
+    class ZAPGRAPHICS_EXPORT text_batcher {
     public:
         using texture = engine::texture;
 

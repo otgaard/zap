@@ -35,6 +35,16 @@ if(DYNAMIC_LINKAGE)
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+if(WIN32)
+    GENERATE_EXPORT_HEADER(zapHostGLFW-shared
+            BASE_NAME zapHostGLFW
+            EXPORT_MACRO_NAME ZAPHOSTGLFW_EXPORT
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/hostglfw_exports.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapHostGLFW-shared PUBLIC -DHOSTGLFW_EXPORT="hostglfw_exports.h")
+endif()
+
 endif()
 
 if(STATIC_LINKAGE)
@@ -62,6 +72,16 @@ if(STATIC_LINKAGE)
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+if(WIN32)
+    GENERATE_EXPORT_HEADER(zapHostGLFW-static
+            BASE_NAME zapHostGLFW
+            EXPORT_MACRO_NAME ZAPHOSTGLFW_EXPORT
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/hostglfw_exports_s.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapHostGLFW-static PUBLIC -DHOSTGLFW_EXPORT="hostglfw_exports_s.h")
+endif()
+
 endif()
 
 foreach(file ${PUBLIC_HEADERS})

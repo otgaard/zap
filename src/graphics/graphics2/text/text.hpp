@@ -8,13 +8,14 @@
 #include <core/core.hpp>
 #include <maths/vec2.hpp>
 #include <maths/vec4.hpp>
+#include <graphics/graphics.hpp>
 
 namespace zap { namespace graphics {
 
     struct font;
     class text_batcher;
 
-    class text {
+    class ZAPGRAPHICS_EXPORT text {
     public:
         using vec2i = maths::vec2i;
         using vec4f = maths::vec4f;

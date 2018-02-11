@@ -3,6 +3,7 @@
 #define ZAP_PARTICLE_ENGINE_HPP
 
 #include <memory>
+#include <graphics/graphics.hpp>
 #include "renderer/renderer_fwd.hpp"
 
 /*
@@ -11,7 +12,7 @@
 
 namespace zap { namespace effects {
 
-class particle_engine {
+class ZAPGRAPHICS_EXPORT particle_engine {
 public:
     particle_engine();
     ~particle_engine();

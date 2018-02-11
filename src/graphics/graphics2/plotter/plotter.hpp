@@ -5,6 +5,7 @@
 #include <memory>
 #include <maths/algebra.hpp>
 #include <maths/transform.hpp>
+#include <graphics/graphics.hpp>
 #include <renderer/renderer_fwd.hpp>
 #include <graphics/graphics2/plotter/plot_sampler.hpp>
 
@@ -16,7 +17,7 @@ namespace zap { namespace graphics {
     using maths::vec2f;
     using maths::vec3b;
 
-    class plotter {
+    class ZAPGRAPHICS_EXPORT plotter {
     public:
         struct grid {
             vec2f domain;           // [ min : max ]

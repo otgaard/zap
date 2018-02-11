@@ -32,6 +32,7 @@
 #include <memory>
 #include <cstring>
 #include <algorithm>
+#include <renderer/rndr.hpp>
 #include <engine/program.hpp>
 #include <engine/texture.hpp>
 #include <engine/sampler.hpp>
@@ -48,7 +49,7 @@ using texture_ptr = std::unique_ptr<engine::texture>;
 using sampler_ptr = std::unique_ptr<engine::sampler>;
 using render_state_ptr = std::unique_ptr<engine::render_state>;
 
-class render_context {
+class ZAPRENDERER_EXPORT render_context {
 public:
     using parameter = engine::parameter;
     using block = engine::block;

@@ -8,8 +8,9 @@
 
 #include <string>
 #include <algorithm>
-#include <engine/pixmap.hpp>
 #include <maths/vec3.hpp>
+#include <engine/pixmap.hpp>
+#include <graphics/graphics.hpp>
 #include <maths/geometry/rect.hpp>
 
 namespace zap { namespace graphics {
@@ -28,7 +29,7 @@ namespace zap { namespace graphics {
 
     class font_manager;
 
-    struct font {
+    struct ZAPGRAPHICS_EXPORT font {
         using atlas_t = engine::pixmap<engine::r8_t>;
         using rgb888_t = engine::rgb888_t;
 
@@ -51,7 +52,7 @@ namespace zap { namespace graphics {
         });
     }
 
-    class font_manager {
+    class ZAPGRAPHICS_EXPORT font_manager {
     public:
         using pixmap_t = engine::pixmap<engine::r8_t>;
         using rgb888_t = engine::rgb888_t;

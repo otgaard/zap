@@ -9,7 +9,7 @@
 #include "engine.hpp"
 
 namespace zap { namespace engine {
-    class shader {
+    class ZAPENGINE_EXPORT shader {
     public:
         shader();
         shader(shader_type type, const std::string& src);

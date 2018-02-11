@@ -2,11 +2,12 @@
 #ifndef ZAP_RENDER_STATE_HPP
 #define ZAP_RENDER_STATE_HPP
 
+#include "engine.hpp"
 #include <maths/algebra.hpp>
 #include <vector>
 
 namespace zap { namespace engine {
-    class render_state {
+    class ZAPENGINE_EXPORT render_state {
     public:
         explicit render_state(bool blend, bool depth, bool rasterisation) {
             initialise(blend, depth, rasterisation);

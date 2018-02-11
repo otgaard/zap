@@ -20,7 +20,7 @@ set(PUBLIC_HEADERS
         graphics3/g3_types.hpp
         particle_engine/particle_engine.hpp
         colour.hpp
-        )
+        graphics.hpp)
 
 set(SOURCE_FILES
         generators/geometry/surface.cpp
@@ -69,8 +69,9 @@ if(DYNAMIC_LINKAGE)
     add_library(zapGraphics-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
     target_include_directories(zapGraphics-shared
             PRIVATE core
-            PRIVATE zapMaths-static
-            PRIVATE zapEngine-static
+            PRIVATE zapMaths-shared
+            PRIVATE zapEngine-shared
+            PRIVATE zapRenderer-shared
             PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${ASIO_INCLUDE}
             PRIVATE ${FREETYPE_INCLUDE_DIRS}
@@ -82,13 +83,25 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapGraphics-shared PROPERTIES OUTPUT_NAME "zapGraphics")
     endif()
 
-    target_link_libraries(zapGraphics-shared zapHostGLFW-shared zapEngine-shared zapMaths-shared ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
+    add_dependencies(zapGraphics-shared zapRenderer-shared zapEngine-shared zapMaths-shared core)
+    target_link_libraries(zapGraphics-shared zapRenderer-shared zapHostGLFW-shared zapEngine-shared zapMaths-shared ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
+
     target_compile_definitions(zapGraphics-shared PUBLIC -DASIO_STANDALONE)
     install(TARGETS zapGraphics-shared
             EXPORT zapTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+if(WIN32)
+    GENERATE_EXPORT_HEADER(zapGraphics-shared
+            BASE_NAME zapGraphics
+            EXPORT_MACRO_NAME ZAPGRAPHICS_EXPORT
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/graphics_exports.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapGraphics-shared PUBLIC -DGRAPHICS_EXPORT="graphics_exports.h")
+endif()
+
 endif()
 
 if(STATIC_LINKAGE)
@@ -97,6 +110,7 @@ if(STATIC_LINKAGE)
             PRIVATE core
             PRIVATE zapMaths-static
             PRIVATE zapEngine-static
+            PRIVATE zapRenderer-static
             PRIVATE ${GLEW_INCLUDE}
             PRIVATE ${ASIO_INCLUDE}
             PRIVATE ${FREETYPE_INCLUDE_DIRS}
@@ -108,8 +122,10 @@ if(STATIC_LINKAGE)
         set_target_properties(zapGraphics-static PROPERTIES OUTPUT_NAME "zapGraphics")
     endif()
 
+    add_dependencies(zapGraphics-shared zapRenderer-static zapEngine-static zapMaths-static core)
+
     set_target_properties(zapGraphics-static PROPERTIES PREFIX "lib")
-    target_link_libraries(zapGraphics-static zapHostGLFW-static zapEngine-static zapMaths-static ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
+    target_link_libraries(zapGraphics-static zapRenderer-static zapHostGLFW-static zapEngine-static zapMaths-static ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
     target_compile_definitions(zapGraphics-static PUBLIC -DASIO_STANDALONE)
 
     install(TARGETS zapGraphics-static
@@ -117,6 +133,16 @@ if(STATIC_LINKAGE)
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
             ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
+
+if(WIN32)
+    GENERATE_EXPORT_HEADER(zapGraphics-static
+            BASE_NAME zapGraphics
+            EXPORT_MACRO_NAME ZAPGRAPHICS_EXPORT
+            EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/graphics_exports_s.h
+            STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+    target_compile_definitions(zapGraphics-static PUBLIC -DGRAPHICS_EXPORT="graphics_exports_s.h")
+endif()
+
 endif()
 
 foreach(file ${PUBLIC_HEADERS})

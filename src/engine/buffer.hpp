@@ -7,7 +7,7 @@
 #include "engine.hpp"
 
 namespace zap { namespace engine {
-    class buffer {
+    class ZAPENGINE_EXPORT buffer {
     public:
         buffer() = default;
         explicit buffer(buffer_usage usage) : usage_(usage) { }

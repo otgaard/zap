@@ -4,12 +4,13 @@
 
 // The OpenGL renderer
 
+#include <renderer/rndr.hpp>
 #include <engine/state_stack.hpp>
 #include <renderer/scene_graph/visual.hpp>
 #include <renderer/render_context.hpp>
 
 namespace zap { namespace renderer {
-    class renderer {
+    class ZAPRENDERER_EXPORT renderer {
     public:
         using mesh_base = engine::mesh_base;
         using state_stack = engine::state_stack;
