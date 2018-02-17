@@ -215,7 +215,6 @@ bool texture::allocate() {
 }
 
 bool texture::deallocate() {
-    while(gl_error_check()) ;
     glDeleteTextures(1, &id_);
     LOG("Texture Deallocated:", id_);
     gl_error_check();
@@ -271,6 +270,7 @@ bool texture::initialise(texture_type type, int width, int height, int depth, pi
         glTexImage1D(GL_TEXTURE_1D, 0, internal_fmt, width, 0, gl_format, gl_datatype, data);
         if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_1D);
     } else if(type_ == texture_type::TT_TEX2D) {
+        LOG("Creating texture:", GL_TEXTURE_2D);
         glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, width, height, 0, gl_format, gl_datatype, data);
         if(generate_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
     } else if(type_ == texture_type::TT_TEX3D) {
