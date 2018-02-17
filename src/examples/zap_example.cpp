@@ -2,6 +2,7 @@
 #include <map>
 #include <maths/io.hpp>
 #include <tools/log.hpp>
+#include <renderer/camera.hpp>
 #include <host/GLFW/application.hpp>
 #include <engine/framebuffer.hpp>
 #include <engine/mesh.hpp>

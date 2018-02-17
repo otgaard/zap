@@ -43,6 +43,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/hostglfw_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapHostGLFW-shared PUBLIC -DHOSTGLFW_EXPORT="hostglfw_exports.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/hostglfw_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/host/GLFW/${dir})
 endif()
 
 endif()
@@ -80,6 +81,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/hostglfw_exports_s.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapHostGLFW-static PUBLIC -DHOSTGLFW_EXPORT="hostglfw_exports_s.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/hostglfw_exports_s.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/host/GLFW/${dir})
 endif()
 
 endif()

@@ -215,6 +215,7 @@ bool texture::allocate() {
 }
 
 bool texture::deallocate() {
+    while(gl_error_check()) ;
     glDeleteTextures(1, &id_);
     LOG("Texture Deallocated:", id_);
     gl_error_check();

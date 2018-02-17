@@ -59,6 +59,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/maths_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapMaths-shared PUBLIC -DMATHS_EXPORT="maths_exports.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/maths_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/maths/${dir})
 endif()
 
 endif()
@@ -90,6 +91,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/maths_exports_s.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapMaths-static PUBLIC -DMATHS_EXPORT="maths_exports_s.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/maths_exports_s.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/maths/${dir})
 endif()
 
     set_target_properties(zapMaths-static PROPERTIES COMPILE_FLAGS -DSHARED_EXPORTS_BUILT_AS_STATIC)

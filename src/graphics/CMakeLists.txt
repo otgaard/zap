@@ -19,6 +19,8 @@ set(PUBLIC_HEADERS
         graphics2/quad.hpp
         graphics3/g3_types.hpp
         particle_engine/particle_engine.hpp
+        loader/image_loader.hpp
+        #loader/loader.hpp
         colour.hpp
         graphics.hpp)
 
@@ -38,6 +40,7 @@ set(SOURCE_FILES
         graphics2/quad.cpp
         graphics3/g3_types.cpp
         particle_engine/particle_engine.cpp
+        #loader/loader.cpp
         colour.cpp
         )
 
@@ -100,6 +103,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/graphics_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapGraphics-shared PUBLIC -DGRAPHICS_EXPORT="graphics_exports.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/graphics_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/graphics/${dir})
 endif()
 
 endif()
@@ -122,7 +126,7 @@ if(STATIC_LINKAGE)
         set_target_properties(zapGraphics-static PROPERTIES OUTPUT_NAME "zapGraphics")
     endif()
 
-    add_dependencies(zapGraphics-shared zapRenderer-static zapEngine-static zapMaths-static core)
+    add_dependencies(zapGraphics-static zapRenderer-static zapEngine-static zapMaths-static core)
 
     set_target_properties(zapGraphics-static PROPERTIES PREFIX "lib")
     target_link_libraries(zapGraphics-static zapRenderer-static zapHostGLFW-static zapEngine-static zapMaths-static ${GLEW_LIBRARY} ${FREETYPE_LIBRARIES})
@@ -141,6 +145,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/graphics_exports_s.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapGraphics-static PUBLIC -DGRAPHICS_EXPORT="graphics_exports_s.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/graphics_exports_s.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/graphics/${dir})
 endif()
 
 endif()

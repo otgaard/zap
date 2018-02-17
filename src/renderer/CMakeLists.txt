@@ -36,6 +36,8 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapRenderer-shared PROPERTIES OUTPUT_NAME "zapRenderer")
     endif()
 
+    add_dependencies(zapRenderer-shared zapEngine-shared core)
+
     target_link_libraries(zapRenderer-shared zapEngine-shared zapMaths-shared ${OPENGL} ${GLEW_LIBRARY})
 
     install(TARGETS zapRenderer-shared
@@ -53,6 +55,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/renderer_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapRenderer-shared PUBLIC -DRENDERER_EXPORT="renderer_exports.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/renderer_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/renderer/${dir})
 endif()
 
 endif()
@@ -73,6 +76,8 @@ if(STATIC_LINKAGE)
         set_target_properties(zapRenderer-static PROPERTIES OUTPUT_NAME "zapRenderer")
     endif()
 
+    add_dependencies(zapRenderer-static zapEngine-static core)
+
     set_target_properties(zapRenderer-static PROPERTIES PREFIX "lib")
     target_link_libraries(zapRenderer-static zapEngine-static zapMaths-static ${OPENGL} ${GLEW_LIBRARY})
 
@@ -90,6 +95,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/renderer_exports_s.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapRenderer-static PUBLIC -DRENDERER_EXPORT="renderer_exports_s.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/renderer_exports_s.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/renderer/${dir})
 endif()
 
 endif()

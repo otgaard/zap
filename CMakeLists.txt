@@ -18,7 +18,7 @@ option(BUILD_GLFW_HOST "Build the GLFW Host library" ON)
 option(BUILD_QT_HOST "Build the Qt Host library" ON)
 option(BUILD_GRAPHICS "Build the Graphics library" ON)
 option(BUILD_RENDERER "Build the Renderering library" ON)
-option(BUILD_RASTERISER "Build the Rasteriser library" ON)
+option(BUILD_RASTERISER "Build the Rasteriser library" OFF)
 option(BUILD_RAYTRACER "Build the Raytracer library" OFF)
 option(BUILD_EXAMPLES "Build examples" ON)
 option(BUILD_TEST "Build tests" OFF)
@@ -162,11 +162,21 @@ endif()
 export(TARGETS core FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
 
 if(STATIC_LINKAGE)
-export(TARGETS zapMaths-static FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+export(TARGETS zapMaths-static
+        zapEngine-static
+        zapHostGLFW-static
+        zapGraphics-static
+        zapRenderer-static
+        FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
 endif()
 
 if(DYNAMIC_LINKAGE)
-export(TARGETS zapMaths-shared FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+export(TARGETS zapMaths-shared
+        zapEngine-shared
+        zapHostGLFW-shared
+        zapGraphics-shared
+        zapRenderer-shared
+        FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
 endif()
 
 export(PACKAGE zap)

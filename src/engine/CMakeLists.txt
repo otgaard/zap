@@ -69,6 +69,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/engine_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapEngine-shared PUBLIC -DENGINE_EXPORT="engine_exports.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/engine_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/engine/${dir})
 endif()
 
 endif()
@@ -107,6 +108,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/engine_exports_s.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapEngine-static PUBLIC -DENGINE_EXPORT="engine_exports_s.h")
+    install(FILES "${CMAKE_BINARY_DIR}/exports/engine_exports_s.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/engine/${dir})
 endif()
 
 endif()

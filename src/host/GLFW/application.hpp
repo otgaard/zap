@@ -33,7 +33,7 @@ public:
     virtual bool initialise() { return true; }
     virtual void update(double t, float dt) { }
     virtual void draw() { }
-    virtual void shutdown() { }
+    virtual void shutdown() { } // Note:  All OpenGL resources must be freed before this function returns
 
     virtual void on_keypress(char ch);
     virtual void on_keyrelease(char ch);

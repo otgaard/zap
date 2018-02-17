@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "graphics3/g3_types.hpp"
+#include "graphics/graphics3/g3_types.hpp"
 
 class loader {
 public:

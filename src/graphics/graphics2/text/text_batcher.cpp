@@ -83,6 +83,7 @@ zap::graphics::text_batcher::text_batcher() : state_(new state_t{}), s(*state_) 
 }
 
 zap::graphics::text_batcher::~text_batcher() {
+    gl_error_check();
 }
 
 bool zap::graphics::text_batcher::initialise(font_manager* font_mgr) {

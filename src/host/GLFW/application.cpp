@@ -152,5 +152,6 @@ void application::on_mousewheel(double xoffset, double yoffset) {
 }
 
 void application::resize(int width, int height) {
+    sc_width_ = width; sc_height_ = height;
     glfwSetWindowSize(window_, width, height);
 }
