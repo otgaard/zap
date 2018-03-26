@@ -65,7 +65,7 @@ protected:
     state_stack rndr_state_;
     text_batcher batcher;
     camera cam_;
-    render_state override_{true, false, false};
+    render_state override_{true, false, false, false};
     font_manager font_mgr_;
     quad quad_;
 };

@@ -52,6 +52,7 @@ int application::run(const app_config& config) {
 
     glfwWindowHint(GLFW_SAMPLES, config.multisamples);
     glfwWindowHint(GLFW_DEPTH_BITS, config.depth_bits);
+    glfwWindowHint(GLFW_STENCIL_BITS, config.stencil_bits);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.gl_major_version);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.gl_minor_version);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, config.gl_forward_compatibility ? GL_TRUE : GL_FALSE);

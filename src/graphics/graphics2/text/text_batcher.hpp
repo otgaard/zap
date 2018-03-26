@@ -6,8 +6,10 @@
 #if defined(FOUND_FREETYPE)
 
 #include <string>
+#include <maths/vec4.hpp>
 #include <graphics/graphics.hpp>
 #include <maths/geometry/rect.hpp>
+#include <maths/geometry/AABB.hpp>
 
 namespace zap {
     namespace engine {
@@ -44,6 +46,9 @@ namespace zap { namespace graphics {
         void translate_text(uint32_t text_id, int x, int y);
         void set_text_colour(uint32_t text_id, float r, float g, float b, float a);
 
+        maths::vec2i get_text_translation(uint32_t text_id) const;
+        maths::geometry::recti get_AABB(uint32_t text_id) const;
+        maths::vec4f get_text_colour(uint32_t text_id) const;
         const font* get_text_font(uint32_t text_id) const;
         const std::string& get_text_string(uint32_t text_id);
         size_t get_text_size(uint32_t text_id);

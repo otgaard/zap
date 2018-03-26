@@ -20,6 +20,7 @@ set(PUBLIC_HEADERS
         vertex_attribute.hpp
         vertex_buffer.hpp
         vertex_format.hpp
+        ../tools/os.hpp
         )
 
 set(SOURCE_FILES
@@ -35,7 +36,8 @@ set(SOURCE_FILES
         state_stack.cpp
         texture.cpp
         vertex_buffer.cpp
-        uniform_buffer.cpp)
+        uniform_buffer.cpp
+        ../tools/os.cpp)
 
 if(DYNAMIC_LINKAGE)
     add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})
@@ -62,7 +64,7 @@ if(DYNAMIC_LINKAGE)
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 if(WIN32)
-    set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    #set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     GENERATE_EXPORT_HEADER(zapEngine-shared
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT

@@ -19,6 +19,7 @@ public:
     using blend_state = render_state::blend_state;
     using depth_state = render_state::depth_state;
     using rasterisation_state = render_state::rasterisation_state;
+    using stencil_state = render_state::stencil_state;
 
     state_stack();
 
@@ -38,12 +39,15 @@ public:
     const rasterisation_state* peek_rasterisation_state() const { return peek()->get_rasterisation_state(); }
     const rasterisation_state* curr_rasterisation_state() const { return rasterisation_stack_.top(); }
 
+    const stencil_state* peek_stencil_state() const { return peek()->get_stencil_state(); }
+    const stencil_state* curr_stencil_state() const { return stencil_stack_.top(); }
+
     void clear_colour(float r, float g, float b, float a);
     void clear_colour(const vec4f& v) { clear_colour(v.x, v.y, v.z, v.w); }
     vec4f clear_colour() const { return clear_colour_; }
     void clear(float r, float g, float b, float a);
     void clear(const vec4f& v) { clear(v.x, v.y, v.z, v.w); }
-    void clear();
+    void clear(bool colour=true, bool depth=true, bool stencil=true);
 
 private:
     // Blending state
@@ -64,11 +68,18 @@ private:
     void initialise(const rasterisation_state* state);
     void transition(const rasterisation_state* source, const rasterisation_state* target);
 
+    // Stencil state
+    void push_state(const stencil_state* state);
+    void pop_stencil_state();
+    void initialise(const stencil_state* state);
+    void transition(const stencil_state* source, const stencil_state* target);
+
     stack_t stack_;
     render_state base_state_;
     std::stack<const blend_state*> blend_stack_;
     std::stack<const depth_state*> depth_stack_;
     std::stack<const rasterisation_state*> rasterisation_stack_;
+    std::stack<const stencil_state*> stencil_stack_;
     vec4f clear_colour_;
 };
 

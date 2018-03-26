@@ -47,7 +47,9 @@ public:
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
     char* map(buffer_access access, size_t offset, size_t length) {
-        return buffer::map(buf_type, access, offset, length);
+        assert(false && "This code is broken");
+        return nullptr;
+        //return buffer::map(buf_type, access, offset, length);
     }
     bool unmap() { return buffer::unmap(buf_type); }
 

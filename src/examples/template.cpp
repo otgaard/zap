@@ -30,12 +30,14 @@ private:
 };
 
 bool template_app::initialise() {
+    LOG("Here");
     quad_ = std::make_unique<zap::graphics::quad>();
     if(!quad_->initialise()) {
         LOG_ERR("Failed to initialise quad.");
         return false;
     }
 
+    LOG("NOW HERE");
     auto tex = zap::loader::load_texture2D<zap::engine::rgb888_t>(TEXTURE_PATH, false, true);
     if(tex.is_allocated()) {
         LOG("Loaded:", TEXTURE_PATH, tex.width(), tex.height());
@@ -43,6 +45,7 @@ bool template_app::initialise() {
         quad_->set_texture(std::move(tex));
     }
 
+    LOG("RETURNING");
     return true;
 }
 

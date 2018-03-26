@@ -22,7 +22,7 @@ set(PUBLIC_HEADERS
         loader/image_loader.hpp
         #loader/loader.hpp
         colour.hpp
-        graphics.hpp)
+        graphics.hpp loader/obj_loader.hpp loader/obj_loader.cpp shadermap/shadermap.hpp)
 
 set(SOURCE_FILES
         generators/geometry/surface.cpp
@@ -42,7 +42,7 @@ set(SOURCE_FILES
         particle_engine/particle_engine.cpp
         #loader/loader.cpp
         colour.cpp
-        )
+        shadermap/shadermap.cpp)
 
 if(APPLE OR UNIX)
     find_package(PkgConfig)

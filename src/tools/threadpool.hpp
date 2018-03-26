@@ -11,6 +11,7 @@
 #include <future>
 #include <tuple>
 #include <vector>
+#include <functional>
 
 namespace zap {
 

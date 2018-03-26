@@ -18,6 +18,10 @@ namespace zap { namespace maths {
             return uint(curr_ >> 32);
         }
 
+        uint rand(uint mod) const {
+            return rand() % mod;
+        }
+
         float random() const {
             uint flt_i = 0x3f800000 | (rand() >> 9);    // [1 .. 2]
             char* ptr = (char*)&flt_i;

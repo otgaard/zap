@@ -143,7 +143,7 @@ using visual_t = visual<spatial_t>;
 
 class blur_glow : public application {
 public:
-    blur_glow() : application{"blur_glow", 1280, 900}, cam_{true} { }
+    blur_glow() : application{"blur_glow", 2*1280, 2*900}, cam_{true} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -354,7 +354,8 @@ bool blur_glow::initialise() {
 
     stack.initialise();
 
-    render_state new_state(true, true, true);
+    render_state new_state(true, true, true, true);
+    new_state.get_depth_state()->enabled = false;
     new_state.get_blend_state()->enabled = false;
     new_state.get_blend_state()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_ALPHA;
     new_state.get_blend_state()->dst_mode = render_state::blend_state::dst_blend_mode::DBM_DST_ALPHA;

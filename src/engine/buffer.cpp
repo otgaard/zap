@@ -65,7 +65,8 @@ bool buffer::copy(buffer_type type, size_t offset, size_t size, const char* data
 const char* buffer::map(buffer_type type) const {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
     mapped_ptr_ = reinterpret_cast<char*>(glMapBuffer(gl_type(type), gl_type(buffer_access::BA_READ_ONLY)));
-    if(gl_error_check() || mapped_ptr_ == nullptr) {
+    if(!mapped_ptr_) return nullptr;
+    if(gl_error_check()) {
         glUnmapBuffer(gl_type(type));
         return nullptr;
     }
@@ -75,7 +76,8 @@ const char* buffer::map(buffer_type type) const {
 char* buffer::map(buffer_type type, buffer_access access) {
     assert(is_allocated() && ZERR_UNALLOCATED_BUFFER);
     mapped_ptr_ = reinterpret_cast<char*>(glMapBuffer(gl_type(type), gl_type(access)));
-    if(gl_error_check() || mapped_ptr_ == nullptr) {
+    if(!mapped_ptr_) return nullptr;
+    if(gl_error_check()) {
         glUnmapBuffer(gl_type(type));
         return nullptr;
     }
@@ -101,7 +103,8 @@ GLbitfield gl_access(range_access::code access) {
 char* buffer::map(buffer_type type, range_access::code access, size_t offset, size_t length) {
     assert(is_allocated() && (offset + length) <= size_ && "Buffer unallocated or too small");
     mapped_ptr_ = reinterpret_cast<char*>(glMapBufferRange(gl_type(type), offset, length, gl_access(access)));
-    if(gl_error_check() || mapped_ptr_ == nullptr) {
+    if(!mapped_ptr_) return nullptr;
+    if(gl_error_check()) {
         unmap(type);
         return nullptr;
     }

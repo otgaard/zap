@@ -1,6 +1,6 @@
 /* Created by Darren Otgaar on 2016/06/10. http://www.github.com/otgaard/zap */
-#ifndef ZAP_APPLICATION_HPP
-#define ZAP_APPLICATION_HPP
+#ifndef ZAP_GLFW_APPLICATION_HPP
+#define ZAP_GLFW_APPLICATION_HPP
 
 #if defined(_WIN32)
 #include HOSTGLFW_EXPORT
@@ -17,6 +17,7 @@ struct GLFWwindow;
 struct app_config {
     int multisamples = 1;
     int depth_bits = 24;
+    int stencil_bits = 8;
     int gl_major_version = 3;
     int gl_minor_version = 3;
     bool gl_forward_compatibility = true;
@@ -62,4 +63,4 @@ private:
     GLFWwindow* window_ = nullptr;
 };
 
-#endif //ZAP_APPLICATION_HPP
+#endif //ZAP_GLFW_APPLICATION_HPP

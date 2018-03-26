@@ -10,9 +10,11 @@
 #include <engine/program.hpp>
 #include <renderer/camera.hpp>
 #include <graphics/graphics2/text/font_manager.hpp>
+#include <maths/geometry/AABB.hpp>
 
 using namespace zap;
 using namespace zap::engine;
+using namespace zap::maths::geometry;
 using namespace zap::graphics;
 using namespace zap::renderer;
 
@@ -32,6 +34,7 @@ struct text_string {
     uint32_t reserved;          // total chars available
     vec2i translation;          // the string translation in orthographic space for now
     vec4f colour;               // flat colour for string
+    geometry::recti bound;      // bound in model coordinates
     std::string text;
 };
 
@@ -186,11 +189,14 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
 
     LOG("Text Inp:", char_count, quad_count, idx_count);
 
-    float x = 0.f, y = float(px_height);
+    int32_t x = 0, y = px_height;
 
     s.vbuffer.bind();
     s.ibuffer.bind();
 
+    vec2i top_left{0, px_height}, bottom_right;
+
+    // TODO: Map range for new string
     if(s.vbuffer.map(range_access::BA_MAP_WRITE, s.vertex_ptr, quad_count)
        && s.ibuffer.map(range_access::BA_MAP_WRITE, s.index_ptr, idx_count)) {
         uint32_t quad = 0;
@@ -207,21 +213,24 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
             }
 
             uint32_t idx = 4 * quad;
-            s.vbuffer[idx].position.set(x + curr_glyph.bound.left, y + curr_glyph.bound.top);
+            s.vbuffer[idx].position.set(float(x) + curr_glyph.bound.left, float(y) + curr_glyph.bound.top);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.left, curr_glyph.texcoord.top);
             idx++;
-            s.vbuffer[idx].position.set(x + curr_glyph.bound.left, y + curr_glyph.bound.bottom);
+            s.vbuffer[idx].position.set(float(x) + curr_glyph.bound.left, float(y) + curr_glyph.bound.bottom);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.left, curr_glyph.texcoord.bottom);
             idx++;
-            s.vbuffer[idx].position.set(x + curr_glyph.bound.right, y + curr_glyph.bound.bottom);
+            s.vbuffer[idx].position.set(float(x) + curr_glyph.bound.right, float(y) + curr_glyph.bound.bottom);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.right, curr_glyph.texcoord.bottom);
             idx++;
-            s.vbuffer[idx].position.set(x + curr_glyph.bound.right, y + curr_glyph.bound.top);
+            s.vbuffer[idx].position.set(float(x) + curr_glyph.bound.right, float(y) + curr_glyph.bound.top);
             s.vbuffer[idx].texcoord1.set(curr_glyph.texcoord.right, curr_glyph.texcoord.top);
 
             uint32_t iidx = 6 * quad; idx = s.vertex_ptr + 4 * quad;
             s.ibuffer[iidx++] = idx;   s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+3;
             s.ibuffer[iidx++] = idx+1; s.ibuffer[iidx++] = idx+2; s.ibuffer[iidx]   = idx+3;
+
+            top_left.set(0, std::min(y + curr_glyph.bound.top, top_left.y));
+            bottom_right.set(std::max(x + curr_glyph.bound.right, bottom_right.x), std::max(y + curr_glyph.bound.bottom, bottom_right.y));
 
             x += curr_glyph.advance;
             ++quad;
@@ -250,6 +259,7 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
     text_obj.reserved = char_count;
     text_obj.translation = vec2i{0, 0};
     text_obj.text = str;
+    text_obj.bound = recti{top_left.x, bottom_right.x, bottom_right.y, top_left.y};
     txt.set_fields(text_id, this);
 
     s.quad_ptr += char_count;
@@ -271,8 +281,20 @@ void text_batcher::translate_text(uint32_t text_id, int x, int y) {
     if(text_id < s.batch_index.size()) s.batch_index[text_id].translation.set(x, y);
 }
 
+vec2i text_batcher::get_text_translation(uint32_t text_id) const {
+    return text_id < s.batch_index.size() ? s.batch_index[text_id].translation : vec2i{0, 0};
+}
+
+geometry::recti text_batcher::get_AABB(uint32_t text_id) const {
+    return text_id < s.batch_index.size() ? s.batch_index[text_id].bound : recti{0, 0, 0, 0};
+}
+
 void text_batcher::set_text_colour(uint32_t text_id, float r, float g, float b, float a) {
     if(text_id < s.batch_index.size()) s.batch_index[text_id].colour.set(r, g, b, a);
+}
+
+vec4f text_batcher::get_text_colour(uint32_t text_id) const {
+    return text_id < s.batch_index.size() ? s.batch_index[text_id].colour : vec4f{0.f, 0.f, 0.f, 0.f};
 }
 
 const font* text_batcher::get_text_font(uint32_t text_id) const {

@@ -8,6 +8,7 @@
 #include <core/core.hpp>
 #include <maths/vec2.hpp>
 #include <maths/vec4.hpp>
+#include <maths/geometry/rect.hpp>
 #include <graphics/graphics.hpp>
 
 namespace zap { namespace graphics {
@@ -19,22 +20,36 @@ namespace zap { namespace graphics {
     public:
         using vec2i = maths::vec2i;
         using vec4f = maths::vec4f;
+        using recti = maths::geometry::recti;
 
+        text(text&& rhs) noexcept : id_(rhs.id_), parent_(rhs.parent_) { rhs.id_ = INVALID_IDX; }
         ~text();
 
-        bool is_allocated() const { return id_ != INVALID_IDX && parent_ != nullptr; }
+        text& operator=(text&& rhs) noexcept {
+            if(this != &rhs) {
+                std::swap(id_, rhs.id_);
+                std::swap(parent_, rhs.parent_);
+            }
+            return *this;
+        }
+
+        bool is_allocated() const { return id_ != INVALID_IDX; }
         uint32_t get_id() const { return id_; }
 
         void translate(int x, int y);
         void translate(const vec2i& v) { translate(v.x, v.y); }
+        vec2i translation() const;
 
         void set_colour(float r, float g, float b, float a);
         void set_colour(const vec4f& c) { return set_colour(c.r, c.g, c.b, c.a); }
+        vec4f get_colour() const;
 
         void set_text(const std::string& str, size_t max_len=0);
         const font* get_font() const;
         const std::string& get_text() const;
         size_t size() const;
+
+        recti get_bound() const;
 
     private:
         friend class text_batcher;

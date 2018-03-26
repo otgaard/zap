@@ -30,7 +30,7 @@ namespace zap { namespace maths {
         using col_t = typename affine_t::col_t; // Matrix column type (N)
         using vec_t = typename affine_t::vec_t; // Vector type (N-1)
         using rot_t = typename affine_t::rot_t; // The rotation matrix
-        using gltype_t = typename mat4<typename affine_t::type>;    // The OpenGL compatible matrix
+        using gltype_t = mat4<typename affine_t::type>;    // The OpenGL compatible matrix
 
         explicit transform(bool initialise=true) { if(initialise) make_identity(); }
 

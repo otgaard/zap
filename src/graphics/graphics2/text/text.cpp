@@ -11,16 +11,24 @@ zap::graphics::text::text(uint32_t id, zap::graphics::text_batcher* parent) : id
 }
 
 zap::graphics::text::~text() {
-    parent_->destroy_text(id_);
+    if(parent_ && is_allocated()) parent_->destroy_text(id_);
 }
 
 void zap::graphics::text::translate(int x, int y) {
     parent_->translate_text(id_, x, y);
 }
 
+maths::vec2i zap::graphics::text::translation() const {
+    return parent_ ? parent_->get_text_translation(id_) : vec2i(0, 0);
+}
+
 void zap::graphics::text::set_colour(float r, float g, float b, float a) {
     parent_->set_text_colour(id_, r, g, b, a);
 };
+
+maths::vec4f zap::graphics::text::get_colour() const {
+    return parent_ ? parent_->get_text_colour(id_) : vec4f(0.f, 0.f, 0.f, 0.f);
+}
 
 void zap::graphics::text::set_text(const std::string& str, size_t max_len) {
     parent_->change_text(id_, str);
@@ -38,5 +46,8 @@ size_t zap::graphics::text::size() const {
     return parent_->get_text_size(id_);
 }
 
+zap::maths::geometry::recti zap::graphics::text::get_bound() const {
+    return parent_ ? parent_->get_AABB(id_) : zap::maths::geometry::recti{0, 0, 0, 0};
+}
 
 #endif //defined(FOUND_FREETYPE)
