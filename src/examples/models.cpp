@@ -8,7 +8,7 @@
 #include <graphics/graphics2/quad.hpp>
 #include <graphics/loader/obj_loader.hpp>
 
-const char* const MODEL_PATH = "C://Development//zap//assets//models//bunny.obj";
+const char* const MODEL_PATH = "D://Development//zap//assets//models//ducky.obj";
 
 class models_app : public application {
 public:

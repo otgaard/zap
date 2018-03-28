@@ -22,7 +22,7 @@ set(PUBLIC_HEADERS
         loader/image_loader.hpp
         #loader/loader.hpp
         colour.hpp
-        graphics.hpp loader/obj_loader.hpp loader/obj_loader.cpp shadermap/shadermap.hpp)
+        graphics.hpp loader/obj_loader.hpp loader/obj_loader.cpp shadermap/shadermap.hpp loader/image_writer.hpp)
 
 set(SOURCE_FILES
         generators/geometry/surface.cpp

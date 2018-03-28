@@ -11,36 +11,38 @@
 #include <engine/texture.hpp>
 
 namespace zap { namespace loader {
-    template <typename PixelT>
-    zap::engine::pixmap<PixelT> load_image2D(const std::string& path) {
-        using namespace zap::engine;
 
-        int x, y, components;
-        byte* data = stbi_load(path.c_str(), &x, &y, &components, PixelT::size);
-        if(data != nullptr) {
-            pixmap<PixelT> img{x, y};
-            if(!img.copy(data, x*y*PixelT::size)) LOG_ERR("Failed to initialise pixmap");
-            stbi_image_free(data);
-            return img;
-        }
+template <typename PixelT>
+zap::engine::pixmap<PixelT> load_image2D(const std::string& path) {
+    using namespace zap::engine;
 
-        return pixmap<PixelT>{};
+    int x, y, components;
+    byte* data = stbi_load(path.c_str(), &x, &y, &components, PixelT::size);
+    if(data != nullptr) {
+        pixmap<PixelT> img{x, y};
+        if(!img.copy(data, x*y*PixelT::size)) LOG_ERR("Failed to initialise pixmap");
+        stbi_image_free(data);
+        return img;
     }
 
-    template <typename PixelT>
-    zap::engine::texture load_texture2D(const std::string& path, bool generate_mipmaps=false, bool flip_y=false) {
-        using namespace zap::engine;
+    return pixmap<PixelT>{};
+}
 
-        auto img = load_image2D<PixelT>(path);
-        if(img.size() > 0) {
-            if(flip_y) img.flip_y();
-            texture tex{texture_type::TT_TEX2D};
-            if(!tex.allocate() || !tex.initialise(img, generate_mipmaps)) LOG_ERR("Failed to initialise texture");
-            return tex;
-        }
+template <typename PixelT>
+zap::engine::texture load_texture2D(const std::string& path, bool generate_mipmaps=false, bool flip_y=false) {
+    using namespace zap::engine;
 
-        return texture{};
+    auto img = load_image2D<PixelT>(path);
+    if(img.size() > 0) {
+        if(flip_y) img.flip_y();
+        texture tex{texture_type::TT_TEX2D};
+        if(!tex.allocate() || !tex.initialise(img, generate_mipmaps)) LOG_ERR("Failed to initialise texture");
+        return tex;
     }
-}};
+
+    return texture{};
+}
+
+}}
 
 #endif //ZAP_IMAGE_LOADER_HPP
