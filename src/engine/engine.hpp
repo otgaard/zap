@@ -6,7 +6,17 @@
 #define ZAP_ENGINE_HPP
 
 #if defined(_WIN32)
+
+#if !defined(ENGINE_EXPORT)
+#if defined(ZAP_STATIC)
+#include "engine_exports_s.h"
+#else
+#include "engine_exports.h"
+#endif
+#else
 #include ENGINE_EXPORT
+#endif
+
 #else
 #define ZAPENGINE_EXPORT
 #endif

@@ -3,7 +3,17 @@
 #define ZAP_GLFW_APPLICATION_HPP
 
 #if defined(_WIN32)
+
+#if !defined(HOSTGLFW_EXPORT)
+#if defined(ZAP_STATIC)
+#include "hostglfw_exports_s.h"
+#else
+#include "hostglfw_exports.h"
+#endif
+#else
 #include HOSTGLFW_EXPORT
+#endif
+
 #else
 #define ZAPHOSTGLFW_EXPORT
 #endif

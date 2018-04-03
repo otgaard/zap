@@ -168,6 +168,7 @@ export(TARGETS zapMaths-static
         zapGraphics-static
         zapRenderer-static
         FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+add_definitions(-DZAP_STATIC)
 endif()
 
 if(DYNAMIC_LINKAGE)
@@ -177,6 +178,7 @@ export(TARGETS zapMaths-shared
         zapGraphics-shared
         zapRenderer-shared
         FILE "${PROJECT_BINARY_DIR}/zapTargets.cmake")
+add_definitions(-DZAP_DYNAMIC)
 endif()
 
 export(PACKAGE zap)

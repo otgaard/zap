@@ -11,7 +11,15 @@
 #include <type_traits>
 
 #if defined(_WIN32)
+#if !defined(MATHS_EXPORT)
+#if defined(ZAP_STATIC)
+#include "maths_exports_s.h"
+#else
+#include "maths_exports.h"
+#endif
+#else
 #include MATHS_EXPORT
+#endif
 #define ALIGN_DECL(w) __declspec(align(w))
 #define ALIGN_ATTR(w)
 #else //_WIN32
