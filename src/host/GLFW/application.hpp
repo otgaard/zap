@@ -30,6 +30,7 @@ struct app_config {
     int stencil_bits = 8;
     int gl_major_version = 3;
     int gl_minor_version = 3;
+    int swap_interval = 1;
     bool gl_forward_compatibility = true;
     bool gl_core_profile = true;
     bool resizeable_window = false;

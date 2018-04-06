@@ -91,7 +91,7 @@ int application::run(const app_config& config) {
     glfwSetScrollCallback(window_, ::on_scroll_handler);
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
-    glfwSwapInterval(1);
+    glfwSwapInterval(config.swap_interval);
 
     if(!initialise()) {
         LOG_ERR("Initialisation of this application failed.  Terminating.");
