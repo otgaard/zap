@@ -143,6 +143,8 @@ public:
             idx_buffer_ptr(rhs.idx_buffer_ptr),
             own_vstream(rhs.own_vstream),
             own_ibuffer(rhs.own_ibuffer) {
+        rhs.own_vstream = false;
+        rhs.own_ibuffer = false;
     }
     ~mesh() override {
         if(own_vstream) vstream.free();
@@ -153,8 +155,14 @@ public:
     mesh& operator=(mesh&& rhs) noexcept {
         if(this != &rhs) {
             mesh_base::operator=(std::move(rhs));
+            if(own_vstream) vstream.free();
             vstream = rhs.vstream;
+            own_vstream = rhs.own_vstream;
+            rhs.own_vstream = false;
+            if(own_ibuffer) delete idx_buffer_ptr;
             idx_buffer_ptr = rhs.idx_buffer_ptr;
+            own_ibuffer = rhs.own_ibuffer;
+            rhs.own_ibuffer = false;
         }
         return *this;
     }
@@ -215,7 +223,12 @@ public:
             own_vstream(own) {
     }
     mesh(const mesh&) = delete;
-    mesh(mesh&& rhs) noexcept : mesh_base(std::move(rhs)), vstream(rhs.vstream) { }
+    mesh(mesh&& rhs) noexcept :
+            mesh_base(std::move(rhs)),
+            vstream(rhs.vstream),
+            own_vstream(rhs.own_vstream) {
+        rhs.own_vstream = false;
+    }
     ~mesh() override {
         if(own_vstream) vstream.free();
     }
@@ -224,7 +237,10 @@ public:
     mesh& operator=(mesh&& rhs) noexcept {
         if(this != &rhs) {
             mesh_base::operator=(std::move(rhs));
+            if(own_vstream) vstream.free();
             vstream = rhs.vstream;
+            own_vstream = rhs.own_vstream;
+            rhs.vstream = false;
         }
         return *this;
     }
@@ -332,6 +348,35 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buf
     m.release();
     return m;
 }
+
+template <typename VertexT, primitive_type Primitive, typename IndexT>
+mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>
+make_mesh(size_t vertex_count, size_t index_count) {
+    mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>> m;
+
+    auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
+    auto ibuf_ptr = std::make_unique<index_buffer<IndexT, Primitive>>();
+
+    if(m.allocate() && vbuf_ptr->allocate() && ibuf_ptr->allocate()) {
+        m.bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
+        if(vbuf_ptr->initialise(vertex_count) && ibuf_ptr->initialise(index_count)) {
+            m.set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr.release()}, true);
+            m.set_index(ibuf_ptr.release(), true);
+            m.release();
+            gl_error_check();
+            return std::move(m);
+        } else {
+            LOG_ERR("Failed to initialise vertex_buffer or index_buffer");
+        }
+    } else {
+        LOG_ERR("Failed to allocate mesh resources");
+    }
+
+    m.release();
+    m.deallocate();
+    return std::move(m);
+}
+
 
 }}
 
