@@ -109,7 +109,6 @@ int application::run(const app_config& config) {
         curr_time = timer_.getd();
         auto dt = float(curr_time - prev_time);
         update(curr_time, dt);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         draw();
 

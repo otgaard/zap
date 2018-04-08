@@ -186,18 +186,26 @@ public:
     }
 
     void draw(size_t start=0, size_t count=0) {
+        draw(primitive, start, count);
+    }
+
+    void draw(primitive_type pt, size_t start=0, size_t count=0) {
         if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
 
-        mesh_base::draw_elements_impl(primitive,
+        mesh_base::draw_elements_impl(pt,
                                       (data_type)dt_descriptor<typename index_buffer_t::type>::value,
                                       uint32_t(start),
                                       uint32_t(count == 0 ? idx_buffer_ptr->index_count() : count));
     }
 
     void draw_inst(size_t instances, size_t start=0, size_t count=0) {
+        draw_inst(primitive, instances, start, count);
+    }
+
+    void draw_inst(primitive_type pt, size_t instances, size_t start=0, size_t count=0) {
         if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
 
-        mesh_base::draw_elements_inst_impl(primitive,
+        mesh_base::draw_elements_inst_impl(pt,
                                            (data_type)dt_descriptor<typename index_buffer_t::type>::value,
                                            uint32_t(start),
                                            uint32_t(count == 0 ? idx_buffer_ptr->index_count() : count),
