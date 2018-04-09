@@ -359,11 +359,14 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buf
 
 template <typename VertexT, primitive_type Primitive, typename IndexT>
 mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>
-make_mesh(size_t vertex_count, size_t index_count) {
+make_mesh(size_t vertex_count, size_t index_count, buffer_usage usage=buffer_usage::BU_STATIC_DRAW) {
     mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>> m;
 
     auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
     auto ibuf_ptr = std::make_unique<index_buffer<IndexT, Primitive>>();
+
+    vbuf_ptr->usage(usage);
+    ibuf_ptr->usage(usage);
 
     if(m.allocate() && vbuf_ptr->allocate() && ibuf_ptr->allocate()) {
         m.bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
