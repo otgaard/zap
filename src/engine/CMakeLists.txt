@@ -64,7 +64,7 @@ if(DYNAMIC_LINKAGE)
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
             COMPONENT dev)
 if(WIN32)
-    #set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    set_target_properties(zapEngine-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     GENERATE_EXPORT_HEADER(zapEngine-shared
             BASE_NAME zapEngine
             EXPORT_MACRO_NAME ZAPENGINE_EXPORT

@@ -59,7 +59,7 @@ protected:
     uniform_buffer<camera_block> camera_block_;
     material_block material_;
     uniform_buffer<builder_task<>::lights_block_t> lights_block_;
-    std::vector<render_args> args_; // One "pack" perr visual
+    std::vector<render_args> args_; // One "pack" per visual
 };
 
 bool scene_graph_test::initialise() {

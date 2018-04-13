@@ -248,7 +248,7 @@ public:
             if(own_vstream) vstream.free();
             vstream = rhs.vstream;
             own_vstream = rhs.own_vstream;
-            rhs.vstream = false;
+            rhs.own_vstream = false;
         }
         return *this;
     }
