@@ -7,6 +7,7 @@
 #include <host/GLFW/application.hpp>
 #include <graphics/graphics2/quad.hpp>
 #include <graphics/loader/obj_loader.hpp>
+#include <graphics/graphics3/g3_types.hpp>
 
 const char* const MODEL_PATH = "D://Development//zap//assets//models//ducky.obj";
 
@@ -23,7 +24,7 @@ public:
 
 private:
     std::unique_ptr<zap::graphics::quad> quad_;
-    std::unique_ptr<zap::graphics::mesh_p3n3t2_trii_t> mesh_;
+    std::unique_ptr<zap::graphics::mesh_p3n3t2_u32_t> mesh_;
 };
 
 bool models_app::initialise() {

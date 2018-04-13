@@ -14,9 +14,9 @@ const char* const TEXTURE_PATH = "C://Development/zap/assets/raxip.jpg";
 const char* const TEXTURE_PATH = "/Users/otgaard/Development/zap/assets/raxip.jpg";
 #endif
 
-class template_app : public application {
+class dynamic_app : public application {
 public:
-    template_app() : application{"template_app", 1024, 768} { }
+    dynamic_app() : application{"template_app", 1024, 768} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -29,7 +29,7 @@ private:
     std::unique_ptr<zap::graphics::quad> quad_;
 };
 
-bool template_app::initialise() {
+bool dynamic_app::initialise() {
     LOG("Here");
     quad_ = std::make_unique<zap::graphics::quad>();
     if(!quad_->initialise()) {
@@ -49,22 +49,22 @@ bool template_app::initialise() {
     return true;
 }
 
-void template_app::update(double t, float dt) {
+void dynamic_app::update(double t, float dt) {
 }
 
-void template_app::draw() {
+void dynamic_app::draw() {
     quad_->draw();
 }
 
-void template_app::shutdown() {
+void dynamic_app::shutdown() {
     quad_.reset(nullptr);
 }
 
-void template_app::on_resize(int width, int height) {
+void dynamic_app::on_resize(int width, int height) {
     quad_->resize(width, height);
 }
 
 int main(int argc, char* argv[]) {
-    template_app app{};
+    dynamic_app app{};
     return app.run();
 }

@@ -33,6 +33,7 @@ using spatial_t = spatial<transform4f, spheref>;
 using node_t = node<spatial_t>;
 using visual_t = visual<spatial_t>;
 using p3n3t2_geo3_tri = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>;
+using p3n3t2_geo3_tri = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLES>;
 using p3n3t2_geo3_ts = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_STRIP>;
 using p3n3t2_geo3_tf = generators::geometry3<vtx_p3n3t2_t, primitive_type::PT_TRIANGLE_FAN>;
 
@@ -166,7 +167,7 @@ bool scene_graph_test::initialise() {
     context_->add_uniform_buffer("camera", &camera_block_);
 
     auto quad_mesh = p3n3t2_geo3_tf::make_mesh(p3n3t2_geo3_tf::make_quad(200.f, 200.f));
-    visual_t quad{quad_mesh.get(), context_.get()};
+    visual_t quad{primitive_type::PT_TRIANGLE_FAN, quad_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(quad_mesh));
 
     quad.rotate(make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f));
@@ -175,7 +176,7 @@ bool scene_graph_test::initialise() {
     args_.emplace_back(context_.get());
 
     auto sphere_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_UVsphere<float,uint32_t>(30, 60, .5f, false));
-    visual_t sphere{sphere_mesh.get(), context_.get()};
+    visual_t sphere{primitive_type::PT_TRIANGLES, sphere_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(sphere_mesh));
 
     sphere.translate(vec3f{-3.f, 2.5f, 0.f});
@@ -189,7 +190,7 @@ bool scene_graph_test::initialise() {
     args_.emplace_back(context_.get());
 
     auto cylinder_mesh = p3n3t2_geo3_ts::make_mesh(p3n3t2_geo3_ts::make_cylinder(5, 30, 1.f, .5f, false));
-    visual_t cylinder{cylinder_mesh.get(), context_.get()};
+    visual_t cylinder{primitive_type::PT_TRIANGLE_STRIP, cylinder_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(cylinder_mesh));
 
     cylinder.translate(vec3f{-3.f, .5f, 0.f});
@@ -204,7 +205,7 @@ bool scene_graph_test::initialise() {
 
     // Cylinder caps
     auto disc_mesh = p3n3t2_geo3_tf::make_mesh(p3n3t2_geo3_tf::make_disc<float>(30, .5f));
-    visual_t disc{disc_mesh.get(), context_.get()};
+    visual_t disc{primitive_type::PT_TRIANGLE_FAN, disc_mesh.get(), context_.get()};
     meshes_.emplace_back(std::move(disc_mesh));
 
     disc.translate(vec3f{-3.f, 1.f, 0.f});
@@ -218,7 +219,7 @@ bool scene_graph_test::initialise() {
     args_.emplace_back(context_.get());
 
     auto box_mesh = p3n3t2_geo3_tri::make_mesh(p3n3t2_geo3_tri::make_cube(vec3f{.5f, .5f, .5f}));
-    visual_t box{box_mesh.get(), context_.get()};
+    visual_t box{primitive_type::PT_TRIANGLES, box_mesh.get(), context_.get()};
     box.translate(vec3f{-1.f, .25f, 1.f});
     visuals_.push_back(box);
     args_.emplace_back(context_.get());
@@ -354,6 +355,8 @@ void scene_graph_test::update(double t, float dt) {
 }
 
 void scene_graph_test::draw() {
+    rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 1.f);
+
     for(size_t i = 0; i != visuals_.size(); ++i) {
         auto MV = cam_.world_to_view() * visuals_[i].world_transform().gl_matrix();
         args_[i].add_parameter("mvp_matrix", cam_.projection() * MV);

@@ -36,8 +36,8 @@ const char* const line_frg_shdr = GLSL(
 struct plotter::state_t {
     plotter::grid grid;
 
-    vbuf_plot_t vbuf;
-    mesh_plot_ls_t mesh;
+    vbuf_p2c3_t vbuf;
+    mesh_p2c3_t mesh;
     program prog;
 
     size_t grid_offset;             // The offset of the buffer position pointing to the end of the grid lines

@@ -18,10 +18,10 @@
 namespace zap { namespace graphics {
     class obj_loader {
     public:
-        using mesh_p3n3t2_trii_t = zap::graphics::mesh_p3n3t2_trii_t;
-        using mesh_p3n3t2_trii_ptr = std::unique_ptr<mesh_p3n3t2_trii_t>;
+        using mesh_p3n3t2_u32_t = zap::graphics::mesh_p3n3t2_u32_t;
+        using mesh_p3n3t2_u32_ptr = std::unique_ptr<mesh_p3n3t2_u32_t>;
 
-        static mesh_p3n3t2_trii_ptr load(const std::string& path);
+        static mesh_p3n3t2_u32_ptr load(const std::string& path);
 
     protected:
 

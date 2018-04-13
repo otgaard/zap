@@ -59,40 +59,28 @@ using vbuf_p3n3t2_t = vertex_buffer<vtx_p3n3t2_t>;
 using vbuf_p3n3tn3t2_t = vertex_buffer<vtx_p3n3tn3t2_t>;
 using vbuf_p3c4t2ps4_t = vertex_buffer<vtx_p3c4t2ps4_t>;
 
-using mesh_p3_pnt_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_POINTS>;
-using mesh_p3_line_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_LINES>;
-using mesh_p3c4_line_t = mesh<vertex_stream<vbuf_p3c4_t>, primitive_type::PT_LINES>;
-using mesh_p3_ls_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_LINE_STRIP>;
-using mesh_p3_tri_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES>;
-using mesh_p3_tri2_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES, ibuf_tri2_t>;
-using mesh_p3_tri4_t = mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3t2_tri_t = mesh<vertex_stream<vbuf_p3t2_t>, primitive_type::PT_TRIANGLES>;
-using mesh_p3n3_ts_t = mesh<vertex_stream<vbuf_p3n3_t>, primitive_type::PT_TRIANGLE_STRIP>;
-using mesh_p3c4_tri_t = mesh<vertex_stream<vbuf_p3c4_t>, primitive_type::PT_TRIANGLES>;
-using mesh_p3c4_trii_t = mesh<vertex_stream<vbuf_p3c4_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3t2_trii_t = mesh<vertex_stream<vbuf_p3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3t2_ts_t = mesh<vertex_stream<vbuf_p3t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
-using mesh_p3n3t2_tri_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES>;
-using mesh_p3c4t2_trii_t = mesh<vertex_stream<vbuf_p3c4t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3c4t2_tsi_t = mesh<vertex_stream<vbuf_p3c4t2_t>, primitive_type::PT_TRIANGLE_STRIP, ibuf_tri4_t>;
-using mesh_p3n3t2_trii_t = mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3n3tn3t2_tri_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLES>;
-using mesh_p3n3tn3t2_trii_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3n3tn3t2_ts_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
-using mesh_p3c4t2ps4_tsi_t = mesh<vertex_stream<vbuf_p3c4t2ps4_t>, primitive_type::PT_TRIANGLE_STRIP, ibuf_tri4_t>;
+using mesh_p3_t = mesh<vertex_stream<vbuf_p3_t>>;
+using mesh_p3c4_t = mesh<vertex_stream<vbuf_p3c4_t>>;
+using mesh_p3_u16_t = mesh<vertex_stream<vbuf_p3_t>, ibuf_u16_t>;
+using mesh_p3_u32_t = mesh<vertex_stream<vbuf_p3_t>, ibuf_u32_t>;
+using mesh_p3t2_t = mesh<vertex_stream<vbuf_p3t2_t>>;
+using mesh_p3n3_t = mesh<vertex_stream<vbuf_p3n3_t>>;
+using mesh_p3c4_t = mesh<vertex_stream<vbuf_p3c4_t>>;
 
-using mesh_p3_ps1_trii_t = mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-using mesh_p3_n3ps1_trii_t = mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
+using mesh_p3n3t2_t = mesh<vertex_stream<vbuf_p3n3t2_t>>;
+using mesh_p3c4t2_t = mesh<vertex_stream<vbuf_p3c4t2_t>, ibuf_u32_t>;
+using mesh_p3n3t2_u32_t = mesh<vertex_stream<vbuf_p3n3t2_t>, ibuf_u32_t>;
+using mesh_p3n3tn3t2_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>>;
+using mesh_p3n3tn3t2_u32_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, ibuf_u32_t>;
 
-using mesh_particles_pnt_t = mesh<vertex_stream<vbuf_p4_t>, primitive_type::PT_POINTS>;
-using mesh_particles_col_pnt_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t>, primitive_type::PT_POINTS>;
-using mesh_particles_col_data_pnt_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps4_t>, primitive_type::PT_POINTS>;
+using mesh_p3_ps1_u32_t = mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, ibuf_u32_t>;
+using mesh_p3_n3ps1_u32_t = mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, ibuf_u32_t>;
+
 // Particle types (in separate vertex_buffers to make updating easier with vbuf_t2_t instanced)
-using mesh_particles_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
-using mesh_particles_ts_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
-using mesh_particles_col_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
-using mesh_particles_col_age_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps1_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
-using mesh_particles_col_data_tf_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps4_t, vbuf_t2_t>, primitive_type::PT_TRIANGLE_FAN>;
+using mesh_particles_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>>;
+using mesh_particles_col_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_t2_t>>;
+using mesh_particles_col_age_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps1_t, vbuf_t2_t>>;
+using mesh_particles_col_data_t = mesh<vertex_stream<vbuf_p4_t, vbuf_c4_t, vbuf_ps4_t, vbuf_t2_t>>;
 
 }}
 

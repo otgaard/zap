@@ -44,8 +44,8 @@ struct text_batcher::state_t {
     program shdr_prog;
 
     vbuf_p2t2_t vbuffer{};
-    ibuf_tri4_t ibuffer{};
-    mesh_p2t2_tri4_t batch{vstream{&vbuffer}, &ibuffer};
+    ibuf_u32_t ibuffer{};
+    mesh_p2t2_u32_t batch{vstream{&vbuffer}, &ibuffer};
 
     std::vector<text_string> batch_index;
     std::unordered_map<uint32_t, texture> textures;
@@ -145,7 +145,7 @@ void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
         auto& txt = s.batch_index[idx];
         s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation(float(txt.translation.x), float(txt.translation.y), 0.f));
         s.shdr_prog.bind_uniform("colour", txt.colour);
-        s.batch.draw(txt.start_idx, txt.idx_count);
+        s.batch.draw(primitive_type::PT_TRIANGLES, txt.start_idx, txt.idx_count);
     }
     s.textures[0].release();
     s.batch.release();

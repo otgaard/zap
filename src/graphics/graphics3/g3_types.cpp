@@ -45,16 +45,16 @@ template class vertex_buffer<vtx_n3ps1_t>;
 template class vertex_buffer<vtx_p3n3t2_t>;
 template class vertex_buffer<vtx_p3n3tn3t2_t>;
 
-template class index_buffer<unsigned int, primitive_type::PT_TRIANGLES>;
+template class index_buffer<uint8_t>;
+template class index_buffer<uint16_t>;
+template class index_buffer<uint32_t>;
 
-template struct mesh<vertex_stream<vbuf_p3_t>, primitive_type::PT_TRIANGLES>;
-template struct mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES>;
-template struct mesh<vertex_stream<vbuf_p3n3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-template struct mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLES>;
-template struct mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-template struct mesh<vertex_stream<vbuf_p3n3tn3t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
-template struct mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-template struct mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
-
+template struct mesh<vertex_stream<vbuf_p3_t>>;
+template struct mesh<vertex_stream<vbuf_p3n3t2_t>>;
+template struct mesh<vertex_stream<vbuf_p3n3t2_t>, ibuf_u32_t>;
+template struct mesh<vertex_stream<vbuf_p3n3tn3t2_t>>;
+template struct mesh<vertex_stream<vbuf_p3n3tn3t2_t>, ibuf_u32_t>;
+template struct mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, ibuf_u32_t>;
+template struct mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, ibuf_u32_t>;
 
 }}

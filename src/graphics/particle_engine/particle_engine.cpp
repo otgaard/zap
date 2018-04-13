@@ -18,12 +18,12 @@ using namespace zap::graphics;
 
 using quad_vertex_t = vertex<pos2f_t, tex2f_t>;
 using quad_vbuf_t = vertex_buffer<quad_vertex_t>;
-using quad_mesh_t = mesh<vertex_stream<quad_vbuf_t>, primitive_type::PT_TRIANGLE_FAN>;
+using quad_mesh_t = mesh<vertex_stream<quad_vbuf_t>>;
 
 using vec3_pbuf_t = pixel_buffer<rgb32f_t>;
 
 using particle_vbuf_t = vertex_buffer<vertex<pos3f_t>>;     // BU_STREAM_COPY
-using particle_mesh_t = mesh<vertex_stream<particle_vbuf_t>, primitive_type::PT_POINTS>;
+using particle_mesh_t = mesh<vertex_stream<particle_vbuf_t>>;
 
 extern const char* const particle_sim_vshdr;
 extern const char* const particle_sim_fshdr;
@@ -203,7 +203,7 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.buffers[0].get_attachment(2).bind(2);
 
         s.quad_mesh.bind();
-        s.quad_mesh.draw();
+        s.quad_mesh.draw(primitive_type::PT_TRIANGLE_FAN);
         s.quad_mesh.release();
 
         s.buffers[0].get_attachment(0).release();
@@ -238,7 +238,7 @@ void particle_engine::draw(const renderer::camera& cam) {
         s.buffers[1].get_attachment(2).bind(2);
 
         s.quad_mesh.bind();
-        s.quad_mesh.draw();
+        s.quad_mesh.draw(primitive_type::PT_TRIANGLE_FAN);
         s.quad_mesh.release();
 
         s.buffers[1].get_attachment(0).release();
@@ -270,7 +270,7 @@ void particle_engine::draw(const renderer::camera& cam) {
     s.active_buffer == 0 ? s.buffers[1].get_attachment(2).bind(0) : s.buffers[0].get_attachment(2).bind(0);
 
     s.particle_mesh.bind();
-    s.particle_mesh.draw();
+    s.particle_mesh.draw(primitive_type::PT_POINTS);
     s.particle_mesh.release();
 
     s.active_buffer == 0 ? s.buffers[1].get_attachment(2).release() : s.buffers[0].get_attachment(2).release();

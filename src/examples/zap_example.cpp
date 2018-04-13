@@ -114,7 +114,8 @@ bool zap_example::initialise() {
     quote4_proxy.translate(vec2i{300, 600});
     quote4_proxy.set_colour(1.f, 1.f, 0.f, 1.f);
 
-    sphere_ = p3n3t2_gen::make_mesh(p3n3t2_gen::make_UVsphere(10, 30, 1.f, false));
+    auto obj = p3n3t2_gen::make_UVsphere(10, 30, 1.f, false);
+    sphere_ = make_mesh(obj);
     if(!sphere_->is_allocated()) {
         LOG_ERR("Failed to allocate sphere mesh");
         return false;
@@ -156,9 +157,10 @@ void zap_example::update(double t, float dt) {
 }
 
 void zap_example::draw() {
+    rndr_state_.clear(0.f, 0.f, 0.f, 0.f);
     context_->bind();
     sphere_->bind();
-    sphere_->draw();
+    sphere_->draw(primitive_type::PT_TRIANGLES);
     sphere_->release();
     context_->release();
 

@@ -33,33 +33,33 @@ void renderer::transition(const renderer::mesh_base* mesh_ptr, const render_cont
     gl_error_check();
 }
 
-void renderer::draw(const zap::engine::mesh_base* mesh_ptr, const zap::renderer::render_context* context_ptr,
+void renderer::draw(primitive_type type, const zap::engine::mesh_base* mesh_ptr, const zap::renderer::render_context* context_ptr,
                               const zap::renderer::render_args& args) {
     transition(mesh_ptr, context_ptr, &args);
-    mesh_ptr->draw();
+    mesh_ptr->draw(type);
 }
 
-void renderer::draw(const renderer::mesh_base* mesh_ptr, const render_context* context_ptr) {
+void renderer::draw(primitive_type type, const renderer::mesh_base* mesh_ptr, const render_context* context_ptr) {
     transition(mesh_ptr, context_ptr);
-    mesh_ptr->draw();
+    mesh_ptr->draw(type);
 }
 
-void renderer::draw(const renderer::mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count) {
+void renderer::draw(primitive_type type, const renderer::mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count) {
     transition(mesh_ptr, context_ptr);
-    if(!mesh_ptr->is_indexed()) mesh_ptr->draw_arrays_impl(mesh_ptr->get_primitive_type(), first, count);
-    else mesh_ptr->draw_elements_impl(mesh_ptr->get_primitive_type(), mesh_ptr->get_index_type(), first, count);
+    if(!mesh_ptr->is_indexed()) mesh_ptr->draw_arrays_impl(type, first, count);
+    else mesh_ptr->draw_elements_impl(type, mesh_ptr->get_index_type(), first, count);
 }
 
-void renderer::draw(const renderer::mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances) {
+void renderer::draw(primitive_type type, const renderer::mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances) {
     transition(mesh_ptr, context_ptr);
-    if(!mesh_ptr->is_indexed()) mesh_ptr->draw_arrays_inst_impl(mesh_ptr->get_primitive_type(), first, count, instances);
-    else mesh_ptr->draw_elements_inst_impl(mesh_ptr->get_primitive_type(), mesh_ptr->get_index_type(), first, count, instances);
+    if(!mesh_ptr->is_indexed()) mesh_ptr->draw_arrays_inst_impl(type, first, count, instances);
+    else mesh_ptr->draw_elements_inst_impl(type, mesh_ptr->get_index_type(), first, count, instances);
 }
 
 void
-renderer::draw(const renderer::mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count,
+renderer::draw(primitive_type type, const renderer::mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count,
                uint32_t instances, uint32_t offset) {
     transition(mesh_ptr, context_ptr);
-    if(!mesh_ptr->is_indexed()) mesh_ptr->draw_arrays_inst_baseinst_impl(mesh_ptr->get_primitive_type(), first, count, instances, offset);
-    else mesh_ptr->draw_elements_inst_baseinst_impl(mesh_ptr->get_primitive_type(), mesh_ptr->get_index_type(), first, count, instances, offset);
+    if(!mesh_ptr->is_indexed()) mesh_ptr->draw_arrays_inst_baseinst_impl(type, first, count, instances, offset);
+    else mesh_ptr->draw_elements_inst_baseinst_impl(type, mesh_ptr->get_index_type(), first, count, instances, offset);
 }

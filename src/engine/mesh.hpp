@@ -14,11 +14,11 @@ namespace zap { namespace engine {
 
 class ZAPENGINE_EXPORT mesh_base {
 public:
-    mesh_base(primitive_type prim_type, size_t vertex_count, data_type idx_type=data_type::DT_VOID, size_t index_count=0)
-            : prim_type_(prim_type), idx_type_(idx_type), vertex_count_(vertex_count), index_count_(index_count) {
+    mesh_base(size_t vertex_count, data_type idx_type=data_type::DT_VOID, size_t index_count=0)
+            : idx_type_(idx_type), vertex_count_(vertex_count), index_count_(index_count) {
     }
     mesh_base(const mesh_base&) = delete;
-    mesh_base(mesh_base&& rhs) noexcept : vao_(rhs.vao_), prim_type_(rhs.prim_type_), idx_type_(rhs.idx_type_),
+    mesh_base(mesh_base&& rhs) noexcept : vao_(rhs.vao_), idx_type_(rhs.idx_type_),
                                           vertex_count_(rhs.vertex_count_), index_count_(rhs.index_count_) {
         rhs.vao_ = INVALID_RESOURCE;
     }
@@ -27,7 +27,6 @@ public:
     mesh_base& operator=(mesh_base&& rhs) noexcept {
         if(this != &rhs) {
             std::swap(vao_, rhs.vao_);
-            prim_type_ = rhs.prim_type_;
             idx_type_ = rhs.idx_type_;
             vertex_count_ = rhs.vertex_count_;
             index_count_ = rhs.index_count_;
@@ -35,11 +34,11 @@ public:
         }
         return *this;
     }
+    mesh_base& operator=(const mesh_base&& rhs) = delete;
 
     bool is_allocated() const { return vao_ != INVALID_RESOURCE; }
     bool is_indexed() const { return idx_type_ != data_type::DT_VOID; }
 
-    primitive_type get_primitive_type() const { return prim_type_; }
     data_type get_index_type() const { return idx_type_; }
     void set_vertex_count(size_t count) { vertex_count_ = count; }
     size_t get_vertex_count() const { return index_count_; }
@@ -60,13 +59,12 @@ public:
     void draw_elements_inst_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count, uint32_t instances) const;
     void draw_elements_inst_baseinst_impl(primitive_type type, data_type index_type, uint32_t first, uint32_t count, uint32_t instances, uint32_t offset) const;
 
-    void draw() const {
-        is_indexed() ? draw_elements_impl(prim_type_, idx_type_, 0, uint32_t(index_count_)) : draw_arrays_impl(prim_type_, 0, uint32_t(vertex_count_));
+    void draw(primitive_type type) const {
+        is_indexed() ? draw_elements_impl(type, idx_type_, 0, uint32_t(index_count_)) : draw_arrays_impl(type, 0, uint32_t(vertex_count_));
     }
 
 private:
     resource_t vao_ = INVALID_RESOURCE;
-    primitive_type prim_type_;
     data_type idx_type_;
     size_t vertex_count_;
     size_t index_count_;
@@ -119,19 +117,18 @@ constexpr typename std::enable_if<k!=0, typename stream_query<k, vertex_stream<V
     return get<k-1>(base);
 };
 
-template <typename VtxStream, primitive_type Primitive, typename Index=void>
+template <typename VtxStream, typename Index=void>
 struct mesh : public mesh_base {
 public:
     static_assert(is_index_buffer<Index>::value, "Index must be of type index_buffer<>");
     using vertex_stream_t = VtxStream;
     using index_buffer_t = Index;
     constexpr static data_type idx_t = (data_type)dt_descriptor<typename Index::type>::value;
-    constexpr static primitive_type primitive = Index::primitive;
 
-    mesh() : mesh_base(primitive, 0, idx_t, 0), idx_buffer_ptr(nullptr) { }
+    mesh() : mesh_base(0, idx_t, 0), idx_buffer_ptr(nullptr) { }
     explicit mesh(const mesh&) = delete;
     mesh(const vertex_stream_t& vtxstream, index_buffer_t* idx_ptr, bool own_vstream=false, bool own_ibuffer=false) :
-            mesh_base(primitive, 0, idx_t, 0),
+            mesh_base(0, idx_t, 0),
             vstream(vtxstream),
             idx_buffer_ptr(idx_ptr),
             own_vstream(own_vstream),
@@ -185,27 +182,19 @@ public:
         set_index_count(idx_buffer_ptr->index_count());
     }
 
-    void draw(size_t start=0, size_t count=0) {
-        draw(primitive, start, count);
-    }
-
-    void draw(primitive_type pt, size_t start=0, size_t count=0) {
+    void draw(primitive_type type, size_t start=0, size_t count=0) {
         if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
 
-        mesh_base::draw_elements_impl(pt,
+        mesh_base::draw_elements_impl(type,
                                       (data_type)dt_descriptor<typename index_buffer_t::type>::value,
                                       uint32_t(start),
                                       uint32_t(count == 0 ? idx_buffer_ptr->index_count() : count));
     }
 
-    void draw_inst(size_t instances, size_t start=0, size_t count=0) {
-        draw_inst(primitive, instances, start, count);
-    }
-
-    void draw_inst(primitive_type pt, size_t instances, size_t start=0, size_t count=0) {
+    void draw_inst(primitive_type type, size_t instances, size_t start=0, size_t count=0) {
         if(!idx_buffer_ptr) { LOG_ERR("No index specified"); return; }
 
-        mesh_base::draw_elements_inst_impl(pt,
+        mesh_base::draw_elements_inst_impl(type,
                                            (data_type)dt_descriptor<typename index_buffer_t::type>::value,
                                            uint32_t(start),
                                            uint32_t(count == 0 ? idx_buffer_ptr->index_count() : count),
@@ -218,15 +207,14 @@ public:
     bool own_ibuffer = false;
 };
 
-template <typename VtxStream, primitive_type Primitive>
-struct mesh<VtxStream, Primitive, void> : public mesh_base {
+template <typename VtxStream>
+struct mesh<VtxStream, void> : public mesh_base {
 public:
     using vertex_stream_t = VtxStream;
-    constexpr static primitive_type primitive = Primitive;
 
-    mesh() : mesh_base(primitive, 0) { }
+    mesh() : mesh_base(0) { }
     explicit mesh(const vertex_stream_t& vtxstream, bool own=false) :
-            mesh_base(primitive, 0),
+            mesh_base(0),
             vstream(vtxstream),
             own_vstream(own) {
     }
@@ -261,21 +249,21 @@ public:
     size_t vertex_count() const { return vstream.ptr ? vstream.ptr->vertex_count() : 0; }
     void update_counts() { set_vertex_count(vstream.ptr->vertex_count()); }
 
-    void draw(primitive_type prim=primitive, size_t start=0, size_t count=0, bool no_null_stream=true) {
+    void draw(primitive_type type, size_t start=0, size_t count=0, bool no_null_stream=true) {
         if(no_null_stream && !vstream.ptr) { LOG("No vertex stream specified"); return; }
-        mesh_base::draw_arrays_impl(prim, uint32_t(start), uint32_t(count == 0 ?vstream.ptr->vertex_count() : count));
+        mesh_base::draw_arrays_impl(type, uint32_t(start), uint32_t(count == 0 ?vstream.ptr->vertex_count() : count));
     }
 
     vertex_stream_t vstream;
     bool own_vstream = false;
 };
 
-template <typename VertexT, primitive_type Primitive>
-std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mesh(size_t vertex_count) {
+template <typename VertexT>
+std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(size_t vertex_count) {
 #if defined(__APPLE__) || defined(_WIN32)
-    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>();
+    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>>>();
 #else
-    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>{});
+    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>>{});
 #endif
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
 
@@ -298,12 +286,12 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mes
     return m;
 }
 
-template <typename VertexT, primitive_type Primitive>
-std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mesh(const std::vector<VertexT>& buffer) {
+template <typename VertexT>
+std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(const std::vector<VertexT>& buffer) {
 #if defined(__APPLE__) || defined(_WIN32)
-    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>();
+    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>>>();
 #else
-    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>{});
+    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>>{});
 #endif
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
 
@@ -326,15 +314,15 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive>> make_mes
     return m;
 }
 
-template <typename VertexT, primitive_type Primitive, typename IndexT>
-std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>> make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& def) {
+template <typename VertexT, typename IndexT>
+std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>> make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& def) {
 #if defined(__APPLE__) || defined(_WIN32)
-    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>>();
+    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>>();
 #else
-    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>{});
+    auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>{});
 #endif
     auto* vbuf_ptr = new vertex_buffer<VertexT>{};
-    auto* ibuf_ptr = new index_buffer<IndexT, Primitive>();
+    auto* ibuf_ptr = new index_buffer<IndexT>();
 
     if(m->allocate() && vbuf_ptr->allocate() && ibuf_ptr->allocate()) {
         m->bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
@@ -357,13 +345,13 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buf
     return m;
 }
 
-template <typename VertexT, primitive_type Primitive, typename IndexT>
-mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>>
+template <typename VertexT, typename IndexT>
+mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>
 make_mesh(size_t vertex_count, size_t index_count, buffer_usage usage=buffer_usage::BU_STATIC_DRAW) {
-    mesh<vertex_stream<vertex_buffer<VertexT>>, Primitive, index_buffer<IndexT, Primitive>> m;
+    mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>> m;
 
     auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
-    auto ibuf_ptr = std::make_unique<index_buffer<IndexT, Primitive>>();
+    auto ibuf_ptr = std::make_unique<index_buffer<IndexT>>();
 
     vbuf_ptr->usage(usage);
     ibuf_ptr->usage(usage);

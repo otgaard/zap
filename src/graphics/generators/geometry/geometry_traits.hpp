@@ -25,11 +25,11 @@ namespace zap { namespace generators {
 
         template <typename IndexT>
         static auto make_mesh(const std::tuple<std::vector<VertexT>, std::vector<IndexT>>& m) {
-            return engine::make_mesh<VertexT, Primitive, IndexT>(m);
+            return engine::make_mesh<VertexT, IndexT>(m);
         }
 
         static auto make_mesh(const std::vector<VertexT>& m) {
-            return engine::make_mesh<VertexT, Primitive>(m);
+            return engine::make_mesh<VertexT>(m);
         }
     };
 }}

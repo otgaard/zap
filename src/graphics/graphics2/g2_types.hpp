@@ -34,19 +34,15 @@ using vbuf_p2_t = vertex_buffer<vtx_p2_t>;
 using vbuf_t2_t = vertex_buffer<vtx_t2_t>;
 using vbuf_p2t2_t = vertex_buffer<vtx_p2t2_t>;
 using vbuf_p2c3_t = vertex_buffer<vtx_p2c3_t>;
-using vbuf_plot_t = vertex_buffer<vtx_p2c3_t>;
 
-using ibuf_tri2_t = index_buffer<uint16_t, primitive_type::PT_TRIANGLES>;
-using ibuf_tri4_t = index_buffer<uint32_t, primitive_type::PT_TRIANGLES>;
+using ibuf_u8_t = index_buffer<uint8_t>;
+using ibuf_u16_t = index_buffer<uint16_t>;
+using ibuf_u32_t = index_buffer<uint32_t>;
 
-using mesh_p2_tf_t = mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_TRIANGLE_FAN>;
-using mesh_p2_ll_t = mesh<vertex_stream<vbuf_p2_t>, primitive_type::PT_LINE_LOOP>;
-using mesh_p2t2_tf_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLE_FAN>;
-using mesh_p2t2_ts_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLE_STRIP>;
-using mesh_p2t2_tri_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type ::PT_TRIANGLES>;
-using mesh_p2c3_ls_t = mesh<vertex_stream<vbuf_p2c3_t>, primitive_type::PT_LINE_STRIP>;
-using mesh_plot_ls_t = mesh<vertex_stream<vbuf_plot_t>, primitive_type::PT_LINES>;
-using mesh_p2t2_tri4_t = mesh<vertex_stream<vbuf_p2t2_t>, primitive_type::PT_TRIANGLES, ibuf_tri4_t>;
+using mesh_p2_t = mesh<vertex_stream<vbuf_p2_t>>;
+using mesh_p2t2_t = mesh<vertex_stream<vbuf_p2t2_t>>;
+using mesh_p2c3_t = mesh<vertex_stream<vbuf_p2c3_t>>;
+using mesh_p2t2_u32_t = mesh<vertex_stream<vbuf_p2t2_t>, ibuf_u32_t>;
 
 }}
 

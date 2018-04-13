@@ -16,7 +16,7 @@ namespace zap { namespace graphics2 {
 using pos2f_t = core::position<vec2f>;
 using vtx_p2_t = vertex<pos2f_t>;
 using vbuf_p2_t = vertex_buffer<vtx_p2_t>;
-using mesh_p2_t = mesh <vertex_stream<vbuf_p2_t>, primitive_type::PT_LINE_STRIP>;
+using mesh_p2_t = mesh<vertex_stream<vbuf_p2_t>>;
 
 const char* plotter2_vtx_src = GLSL(
     uniform mat4 proj_matrix;

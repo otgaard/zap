@@ -6,11 +6,10 @@
 
 namespace zap { namespace engine {
 
-template <typename T, primitive_type PRIM>
+template <typename T>
 class index_buffer : public buffer {
 public:
     using type = T;
-    constexpr static auto primitive = PRIM;
     constexpr static auto buf_type = buffer_type::BT_ELEMENT_ARRAY;
 
     explicit index_buffer(buffer_usage use=buffer_usage::BU_STATIC_DRAW) : buffer(use) { }
@@ -81,7 +80,7 @@ protected:
 };
 
 template <typename Parm> struct is_index_buffer : std::false_type { };
-template <typename T, primitive_type PRIM> struct is_index_buffer<index_buffer<T, PRIM>> : std::true_type { };
+template <typename T> struct is_index_buffer<index_buffer<T>> : std::true_type { };
 
 }}
 

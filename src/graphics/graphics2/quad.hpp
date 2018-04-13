@@ -42,7 +42,7 @@ private:
     const engine::texture* tex_override_ = nullptr;
     engine::texture texture_;
     vbuf_p2t2_t vbuf_;
-    mesh_p2t2_tf_t mesh_;
+    mesh_p2t2_t mesh_;
     vec2i screen_ = {0, 0};
     int32_t curr_viewport_[4] = {0, 0, 0, 0};
 };

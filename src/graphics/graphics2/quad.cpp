@@ -108,7 +108,7 @@ void quad::draw() {
     gl::glGetIntegerv(GL_VIEWPORT, curr_viewport_);
     gl::glViewport(0, 0, screen_.x, screen_.y);
     gl_error_check();
-    mesh_.draw();
+    mesh_.draw(engine::primitive_type::PT_TRIANGLE_FAN);
     gl_error_check();
     gl::glViewport(curr_viewport_[0], curr_viewport_[1], curr_viewport_[2], curr_viewport_[3]);
     mesh_.release();

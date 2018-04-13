@@ -158,8 +158,8 @@ protected:
     camera cam_;
     visual_t vis1_;
     vbuf_p3_t vbuf1_;
-    ibuf_tri4_t ibuf1_;
-    mesh_p3_tri4_t mesh1_;
+    ibuf_u32_t ibuf1_;
+    mesh_p3_u32_t mesh1_;
     program prog1_;
     texture tex1_;
     sampler samp1_;
@@ -182,8 +182,8 @@ protected:
 
     // Skybox
     vbuf_p3_t skybox_vbuf_;
-    ibuf_tri2_t skybox_ibuf_;
-    mesh_p3_tri2_t skybox_mesh_;
+    ibuf_u16_t skybox_ibuf_;
+    mesh_p3_u16_t skybox_mesh_;
     program skybox_prog_;
     render_context skybox_ctx_;
     visual_t skybox_;
@@ -404,7 +404,7 @@ void blur_glow::draw_scene() {
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
     context_.set_parameter("colour[0]", red_colour_table);
-    mesh1_.draw();
+    mesh1_.draw(primitive_type::PT_TRIANGLES);
 
     // High frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -413,7 +413,7 @@ void blur_glow::draw_scene() {
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
     context_.set_parameter("colour[0]", blue_colour_table);
-    mesh1_.draw();
+    mesh1_.draw(primitive_type::PT_TRIANGLES);
 
     fbuffer1_.release();
     context_.release();
@@ -447,7 +447,7 @@ void blur_glow::draw_scene() {
     skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
     skybox_.get_context()->bind();
     skybox_mesh_.bind();
-    skybox_mesh_.draw();
+    skybox_mesh_.draw(primitive_type::PT_TRIANGLES);
     skybox_mesh_.release();
     skybox_.get_context()->release();
 
@@ -461,7 +461,7 @@ void blur_glow::draw_scene() {
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
     context_.set_texture_unit(tex_idx, 0);
     context_.set_parameter("colour[0]", red_colour_table);
-    mesh1_.draw();
+    mesh1_.draw(primitive_type::PT_TRIANGLES);
 
     // High frequency tex
     context_.set_parameter(pvm_idx, cam_.proj_view()
@@ -470,7 +470,7 @@ void blur_glow::draw_scene() {
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
     context_.set_texture_unit(tex_idx, 1);
     context_.set_parameter("colour[0]", blue_colour_table);
-    mesh1_.draw();
+    mesh1_.draw(primitive_type::PT_TRIANGLES);
 
     context_.release();
     mesh1_.release();

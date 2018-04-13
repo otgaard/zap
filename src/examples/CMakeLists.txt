@@ -91,4 +91,12 @@ if(STATIC_LINKAGE)
 
     target_link_libraries(models-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(models-static PROPERTIES OUTPUT_NAME "models")
+
+    add_executable(dynamic-static dynamic.cpp)
+    target_include_directories(dynamic-static
+            PRIVATE core
+            PRIVATE ${CMAKE_BINARY_DIR}/exports)
+
+    target_link_libraries(dynamic-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
+    set_target_properties(dynamic-static PROPERTIES OUTPUT_NAME "dynamic_s")
 endif()
