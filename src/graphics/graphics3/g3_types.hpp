@@ -68,7 +68,8 @@ using mesh_p3n3_t = mesh<vertex_stream<vbuf_p3n3_t>>;
 using mesh_p3c4_t = mesh<vertex_stream<vbuf_p3c4_t>>;
 
 using mesh_p3n3t2_t = mesh<vertex_stream<vbuf_p3n3t2_t>>;
-using mesh_p3c4t2_t = mesh<vertex_stream<vbuf_p3c4t2_t>, ibuf_u32_t>;
+using mesh_p3c4t2_t = mesh<vertex_stream<vbuf_p3c4t2_t>>;
+using mesh_p3c4t2_u32_t = mesh<vertex_stream<vbuf_p3c4t2_t>, ibuf_u32_t>;
 using mesh_p3n3t2_u32_t = mesh<vertex_stream<vbuf_p3n3t2_t>, ibuf_u32_t>;
 using mesh_p3n3tn3t2_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>>;
 using mesh_p3n3tn3t2_u32_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, ibuf_u32_t>;
