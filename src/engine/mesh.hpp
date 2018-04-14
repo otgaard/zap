@@ -376,6 +376,37 @@ make_mesh(size_t vertex_count, size_t index_count, buffer_usage usage=buffer_usa
     return m;
 }
 
+template <typename VertexT, typename IndexT>
+mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>
+make_mesh(const std::pair<std::vector<VertexT>, std::vector<IndexT>>& obj, buffer_usage usage=buffer_usage::BU_STATIC_DRAW) {
+    mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>> m;
+
+    auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
+    auto ibuf_ptr = std::make_unique<index_buffer<IndexT>>();
+
+    vbuf_ptr->usage(usage);
+    ibuf_ptr->usage(usage);
+
+    if(m.allocate() && vbuf_ptr->allocate() && ibuf_ptr->allocate()) {
+        m.bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
+        if(vbuf_ptr->initialise(obj.first) && ibuf_ptr->initialise(obj.second)) {
+            m.set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr.release()}, true);
+            m.set_index(ibuf_ptr.release(), true);
+            m.release();
+            gl_error_check();
+            return m;
+        } else {
+            LOG_ERR("Failed to initialise vertex_buffer or index_buffer");
+        }
+    } else {
+        LOG_ERR("Failed to allocate mesh resources");
+    }
+
+    m.release();
+    m.deallocate();
+    return m;
+}
+
 
 }}
 

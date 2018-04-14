@@ -344,10 +344,10 @@ namespace zap { namespace maths {
         auto u = cross(r, d);
 
         mat4<T> M;
-        M.row(0, vec4<T>{r, 0.});
-        M.row(1, vec4<T>{u, 0.});
-        M.row(2, vec4<T>{-d, 0.});
-        M.row(3, vec4<T>{0., 0., 0., 1.});
+        M.row(0, r);
+        M.row(1, u);
+        M.row(2, -d);
+        M.row(3, vec3<T>{0.});
         M.column(3, vec4<T>{-dot(r, eye), -dot(u, eye), dot(d, eye), 1.});
         return M;
     }

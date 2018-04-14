@@ -79,14 +79,19 @@ private:
     program static_prog_;
 
     mesh_p3n3t2_u32_t bunny_;
-    mat4f projMatrix_;
-    mat4f viewMatrix_;
+    mat4f proj_matrix_;
+    mat4f view_matrix_;
 
     state_stack rndr_state_;
 };
 
 bool dynamic_app::initialise() {
-    bunny_ = obj_loader::load_mesh("/Users/otgaard/Development/zap/assets/models/bunny.obj");
+    auto obj = obj_loader::load_model("/Users/otgaard/Development/zap/assets/models/bunny.obj");
+    bunny_ = make_mesh(obj);
+
+    // Load the bunny into the static_mesh
+
+
 
     static_mesh_ = make_mesh<vtx_p3n3t2_t, uint32_t>(STATIC_VCOUNT, STATIC_ICOUNT);
     stream_mesh_ = make_mesh<vtx_p3c4t2_t, uint32_t>(STREAM_VCOUNT, STREAM_ICOUNT);
@@ -112,10 +117,15 @@ bool dynamic_app::initialise() {
 }
 
 void dynamic_app::update(double t, float dt) {
-    //static_prog_.bind();
-    //static_prog_.bind_uniform("MVP", projMatrix_ * viewMatrix_ * make_scale(.5f, .5f, .5f) * make_rotation(vec3f{0.f, 1.f, 0.f}, ));
-    //static_prog_.bind_uniform("MV", viewMatrix_);
-    //static_prog_.release();
+    static float angle = 0.f;
+    angle = wrap(angle + dt, 0.f, TWO_PI<float>);
+
+    auto MV = view_matrix_ * make_scale(.2f, .2f, .2f) * make_rotation(vec3f{0.f, 1.f, 0.f}, angle);
+
+    static_prog_.bind();
+    static_prog_.bind_uniform("MVP", proj_matrix_ * MV);
+    static_prog_.bind_uniform("MV", MV);
+    static_prog_.release();
 }
 
 void dynamic_app::draw() {
@@ -131,13 +141,14 @@ void dynamic_app::shutdown() {
 }
 
 void dynamic_app::on_resize(int width, int height) {
-    projMatrix_ = make_perspective(40.f, float(width)/height, .5f, 100.f);
-    viewMatrix_ = look_at(vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 2.f, 8.f});
+    proj_matrix_ = make_perspective(40.f, float(width)/height, .5f, 100.f);
+    view_matrix_ = look_at(vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 2.f, 8.f});
+
     static_prog_.bind();
-    static_prog_.bind_uniform("MVP", projMatrix_ * viewMatrix_ * make_scale(.2f, .2f, .2f));
-    static_prog_.bind_uniform("MV", viewMatrix_);
+    static_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_ * make_scale(.2f, .2f, .2f));
+    static_prog_.bind_uniform("MV", view_matrix_);
     static_prog_.bind_uniform("light_dir", normalise(vec3f{1.f, 1.f, 1.f}));
-    static_prog_.bind_uniform("colour", vec4f{1.f, 1.f, 0.f, 1.f});
+    static_prog_.bind_uniform("colour", vec4f{1.f, 1.f, 1.f, 1.f});
     static_prog_.release();
 }
 
