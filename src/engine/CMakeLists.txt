@@ -21,7 +21,7 @@ set(PUBLIC_HEADERS
         vertex_buffer.hpp
         vertex_format.hpp
         ../tools/os.hpp
-        )
+        accessor.hpp)
 
 set(SOURCE_FILES
         buffer.cpp

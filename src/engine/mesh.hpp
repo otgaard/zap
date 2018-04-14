@@ -363,7 +363,7 @@ make_mesh(size_t vertex_count, size_t index_count, buffer_usage usage=buffer_usa
             m.set_index(ibuf_ptr.release(), true);
             m.release();
             gl_error_check();
-            return std::move(m);
+            return m;
         } else {
             LOG_ERR("Failed to initialise vertex_buffer or index_buffer");
         }
@@ -373,7 +373,7 @@ make_mesh(size_t vertex_count, size_t index_count, buffer_usage usage=buffer_usa
 
     m.release();
     m.deallocate();
-    return std::move(m);
+    return m;
 }
 
 

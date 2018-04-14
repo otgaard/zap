@@ -74,6 +74,7 @@ public:
     }
 
     const size_t index_count() const { return index_count_; }
+    const size_t count() const { return index_count_; }
 
 protected:
     size_t index_count_ = 0;

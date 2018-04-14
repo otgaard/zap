@@ -76,6 +76,7 @@ using mesh_p3n3tn3t2_u32_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, ibuf_u32_t>;
 
 using mesh_p3_ps1_u32_t = mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, ibuf_u32_t>;
 using mesh_p3_n3ps1_u32_t = mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, ibuf_u32_t>;
+using mesh_p3c4_t2_u32_t = mesh<vertex_stream<vbuf_p3c4_t, vbuf_t2_t>, ibuf_u32_t>;
 
 // Particle types (in separate vertex_buffers to make updating easier with vbuf_t2_t instanced)
 using mesh_particles_t = mesh<vertex_stream<vbuf_p4_t, vbuf_t2_t>>;

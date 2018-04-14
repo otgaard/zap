@@ -306,9 +306,9 @@ namespace zap { namespace maths {
         mat4<T> P(0);
         P(0,0) = T(1) / (ar * ha_rad_tan);
         P(1,1) = T(1) / ha_rad_tan;
-        P(2,2) = -(d_max + d_min)/(d_max - d_min);
-        P(2,3) = T(-1);
-        P(3,2) = -(T(2)*(d_max * d_min))/(d_max - d_min);
+        P(2,2) = d_max / (d_min - d_max);
+        P(2,3) = -(d_min * d_max) / (d_max - d_min);
+        P(3,2) = T(-1);
         return P;
     }
 
@@ -338,8 +338,18 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
-    mat4<T> look_at(const vec3<T>& look, const vec3<T>& position, const vec3<T>& world_up=vec3<T>{T(0.), T(1.), T(0.)}) {
-        return orthogonolise(maths::normalise(look - position), world_up);
+    mat4<T> look_at(const vec3<T>& look, const vec3<T>& eye, const vec3<T>& world_up=vec3<T>{T(0.), T(1.), T(0.)}) {
+        auto d = normalise(look - eye);
+        auto r = normalise(cross(d, world_up));
+        auto u = cross(r, d);
+
+        mat4<T> M;
+        M.row(0, vec4<T>{r, 0.});
+        M.row(1, vec4<T>{u, 0.});
+        M.row(2, vec4<T>{-d, 0.});
+        M.row(3, vec4<T>{0., 0., 0., 1.});
+        M.column(3, vec4<T>{-dot(r, eye), -dot(u, eye), dot(d, eye), 1.});
+        return M;
     }
 
     template <typename T>
