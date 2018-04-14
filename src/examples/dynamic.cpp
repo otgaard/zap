@@ -55,10 +55,10 @@ const char* const static_prog_fshdr = GLSL(
     }
 );
 
-const size_t STATIC_VCOUNT = 100000;
-const size_t STATIC_ICOUNT = 3*STATIC_VCOUNT;
-const size_t STREAM_VCOUNT = 100000;
-const size_t STREAM_ICOUNT = 3*STREAM_VCOUNT;
+const size_t STATIC_VCOUNT = 200000;
+const size_t STATIC_ICOUNT = 1000000;
+const size_t STREAM_VCOUNT = 200000;
+const size_t STREAM_ICOUNT = 1000000;
 
 class dynamic_app : public application {
 public:
@@ -72,13 +72,12 @@ public:
     void on_resize(int width, int height) final;
 
 private:
-    std::array<range, 10> objects;
+    std::array<std::pair<range, range>, 10> objects;
     mesh_p3n3t2_u32_t static_mesh_;
     mesh_p3c4t2_u32_t stream_mesh_;
     mesh_p3c4_t2_u32_t instanced_mesh_;
     program static_prog_;
 
-    mesh_p3n3t2_u32_t bunny_;
     mat4f proj_matrix_;
     mat4f view_matrix_;
 
@@ -86,19 +85,46 @@ private:
 };
 
 bool dynamic_app::initialise() {
-    auto obj = obj_loader::load_model("/Users/otgaard/Development/zap/assets/models/bunny.obj");
-    bunny_ = make_mesh(obj);
-
-    // Load the bunny into the static_mesh
-
-
-
     static_mesh_ = make_mesh<vtx_p3n3t2_t, uint32_t>(STATIC_VCOUNT, STATIC_ICOUNT);
     stream_mesh_ = make_mesh<vtx_p3c4t2_t, uint32_t>(STREAM_VCOUNT, STREAM_ICOUNT);
 
     if(!static_mesh_.is_allocated() || !stream_mesh_.is_allocated()) {
         LOG_ERR("Failed to allocate meshes");
         return false;
+    }
+
+    std::string models[3] = { "/Users/otgaard/Development/zap/assets/models/bunny.obj",
+                              "/Users/otgaard/Development/zap/assets/models/dragon.obj",
+                              "/Users/otgaard/Development/zap/assets/models/buddha.obj" };
+
+    {
+        accessor<vbuf_p3n3t2_t> vbuf_acc(static_mesh_.vstream.ptr);
+        accessor<ibuf_u32_t> ibuf_acc(static_mesh_.idx_buffer_ptr);
+
+        int counter = 0;
+        for(const auto &model : models) {
+            auto obj = obj_loader::load_model(model);
+            auto vrng = vbuf_acc.allocate(obj.first.size());
+            LOG(vrng.start, vrng.count, vbuf_acc.capacity(), vbuf_acc.allocated(), vbuf_acc.available());
+            if(vbuf_acc.map_write(vrng)) {
+                vbuf_acc.set(vrng, 0, obj.first);
+                LOG("Vbuf written");
+                vbuf_acc.flush();
+                vbuf_acc.unmap();
+            }
+
+            auto irng = ibuf_acc.allocate(obj.second.size());
+            LOG(irng.start, irng.count, ibuf_acc.capacity(), ibuf_acc.allocated(), ibuf_acc.available());
+            if(ibuf_acc.map_write(irng)) {
+                for(auto& idx : obj.second) idx += vrng.start;
+                ibuf_acc.set(irng, 0, obj.second);
+                LOG("Ibuf written");
+                ibuf_acc.flush();
+                ibuf_acc.unmap();
+            }
+
+            objects[counter++] = std::make_pair(vrng, irng);
+        }
     }
 
     static_prog_.add_shader(shader_type::ST_VERTEX, static_prog_vshdr);
@@ -117,23 +143,22 @@ bool dynamic_app::initialise() {
 }
 
 void dynamic_app::update(double t, float dt) {
-    static float angle = 0.f;
-    angle = wrap(angle + dt, 0.f, TWO_PI<float>);
-
-    auto MV = view_matrix_ * make_scale(.2f, .2f, .2f) * make_rotation(vec3f{0.f, 1.f, 0.f}, angle);
-
-    static_prog_.bind();
-    static_prog_.bind_uniform("MVP", proj_matrix_ * MV);
-    static_prog_.bind_uniform("MV", MV);
-    static_prog_.release();
 }
 
 void dynamic_app::draw() {
+    static float angle = 0.f;
+    angle = wrap(angle + .016f, 0.f, TWO_PI<float>);
+
     rndr_state_.clear(0.f, 0.f, 0.f, 1.f);
     static_prog_.bind();
-    bunny_.bind();
-    bunny_.draw(primitive_type::PT_TRIANGLES);
-    bunny_.release();
+    static_mesh_.bind();
+    for(int i = 0; i != 3; ++i) {
+        auto MV = view_matrix_ * make_translation(-2.f + 2.f*i, 0.f, 0.f) * make_scale(.2f, .2f, .2f) * make_rotation(vec3f{0.f, 1.f, 0.f}, angle);
+        static_prog_.bind_uniform("MVP", proj_matrix_ * MV);
+        static_prog_.bind_uniform("MV", MV);
+        static_mesh_.draw(primitive_type::PT_TRIANGLES, objects[i].second.start, objects[i].second.count);
+    }
+    static_mesh_.release();
     static_prog_.release();
 }
 
