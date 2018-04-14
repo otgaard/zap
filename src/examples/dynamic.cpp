@@ -82,6 +82,7 @@ private:
     mat4f view_matrix_;
 
     state_stack rndr_state_;
+    render_state default_state_{false, true, true, false};
 };
 
 bool dynamic_app::initialise() {
@@ -93,9 +94,15 @@ bool dynamic_app::initialise() {
         return false;
     }
 
+#ifdef __APPLE__
     std::string models[3] = { "/Users/otgaard/Development/zap/assets/models/bunny.obj",
                               "/Users/otgaard/Development/zap/assets/models/dragon.obj",
                               "/Users/otgaard/Development/zap/assets/models/buddha.obj" };
+#else
+    std::string models[3] = { "D:/Development/zap/assets/models/bunny.obj",
+                              "D:/Development/zap/assets/models/dragon.obj",
+                              "D:/Development/zap/assets/models/buddha.obj" };
+#endif
 
     {
         accessor<vbuf_p3n3t2_t> vbuf_acc(static_mesh_.vstream.ptr);
@@ -138,6 +145,12 @@ bool dynamic_app::initialise() {
         LOG_ERR("Failed to initialise render state");
         return false;
     }
+
+    default_state_.get_depth_state()->enabled = true;
+    default_state_.get_rasterisation_state()->enable_culling = true;
+    default_state_.get_rasterisation_state()->cull_face = render_state::rasterisation_state::cull_mode::CM_BACK;
+    default_state_.get_rasterisation_state()->poly_mode = render_state::rasterisation_state::polygon_mode::PM_LINE;
+    rndr_state_.push_state(&default_state_);
 
     return true;
 }
