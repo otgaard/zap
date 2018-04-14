@@ -109,11 +109,11 @@ bool dynamic_app::initialise() {
         accessor<ibuf_u32_t> ibuf_acc(static_mesh_.idx_buffer_ptr);
 
         int counter = 0;
-        for(const auto &model : models) {
+        for (const auto &model : models) {
             auto obj = obj_loader::load_model(model);
             auto vrng = vbuf_acc.allocate(obj.first.size());
             LOG(vrng.start, vrng.count, vbuf_acc.capacity(), vbuf_acc.allocated(), vbuf_acc.available());
-            if(vbuf_acc.map_write(vrng)) {
+            if (vbuf_acc.map_write(vrng)) {
                 vbuf_acc.set(vrng, 0, obj.first);
                 LOG("Vbuf written");
                 vbuf_acc.flush();
@@ -122,8 +122,8 @@ bool dynamic_app::initialise() {
 
             auto irng = ibuf_acc.allocate(obj.second.size());
             LOG(irng.start, irng.count, ibuf_acc.capacity(), ibuf_acc.allocated(), ibuf_acc.available());
-            if(ibuf_acc.map_write(irng)) {
-                for(auto& idx : obj.second) idx += vrng.start;
+            if (ibuf_acc.map_write(irng)) {
+                for (auto &idx : obj.second) idx += vrng.start;
                 ibuf_acc.set(irng, 0, obj.second);
                 LOG("Ibuf written");
                 ibuf_acc.flush();
@@ -132,6 +132,37 @@ bool dynamic_app::initialise() {
 
             objects[counter++] = std::make_pair(vrng, irng);
         }
+
+        // Now free "dragon" and replace it with "bunny"
+        bool replace = true;
+        if(replace) {
+            vbuf_acc.release(objects[1].first);
+            ibuf_acc.release(objects[1].second);
+
+            auto obj = obj_loader::load_model(models[2]);
+            auto vrng = vbuf_acc.allocate(obj.first.size());
+            LOG(vrng.start, vrng.count, vbuf_acc.capacity(), vbuf_acc.allocated(), vbuf_acc.available());
+            if (vbuf_acc.map_write(vrng)) {
+                vbuf_acc.set(vrng, 0, obj.first);
+                LOG("Vbuf written");
+                vbuf_acc.flush();
+                vbuf_acc.unmap();
+            }
+
+            auto irng = ibuf_acc.allocate(obj.second.size());
+            LOG(irng.start, irng.count, ibuf_acc.capacity(), ibuf_acc.allocated(), ibuf_acc.available());
+            if (ibuf_acc.map_write(irng)) {
+                for (auto &idx : obj.second) idx += vrng.start;
+                ibuf_acc.set(irng, 0, obj.second);
+                LOG("Ibuf written");
+                ibuf_acc.flush();
+                ibuf_acc.unmap();
+            }
+
+            objects[1] = std::make_pair(vrng, irng);
+        }
+
+        LOG("Cleanup");
     }
 
     static_prog_.add_shader(shader_type::ST_VERTEX, static_prog_vshdr);

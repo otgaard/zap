@@ -44,7 +44,7 @@ public:
     uint32_t available() const;
 
     range allocate(uint32_t count);
-    bool release(const range& blk);
+    void release(const range& blk);
 
     // Map the whole buffer
     bool map_read();
@@ -138,8 +138,36 @@ range accessor<BufferT>::allocate(uint32_t count) {
 }
 
 template <typename BufferT>
-bool accessor<BufferT>::release(const range& blk) {
-
+void accessor<BufferT>::release(const range& blk) {
+    if(freelist_.empty()) freelist_.push_back(blk);
+    else {
+        auto it = freelist_.begin();
+        while(it->start < blk.start && it != freelist_.end())
+            it = std::next(it);
+        if(it == freelist_.end()) {
+            if(freelist_.back().start + freelist_.back().count == blk.start) freelist_.back().count += blk.count;
+            else                                                             freelist_.push_back(blk);
+        } if(blk.start + blk.count == it->start) {
+            it->start = blk.start;
+            it->count += blk.count;
+            if(it != freelist_.begin()) {
+                auto prev = std::prev(it);
+                if(prev->start + prev->count == it->start) {
+                    prev->count += it->count;
+                    freelist_.erase(it);
+                }
+            }
+        } else if(it == freelist_.begin()) {
+            freelist_.insert(it, blk);
+        } else {
+            auto prev = std::prev(it);
+            if(prev->start + prev->count == blk.start) {
+                prev->count += blk.count;
+            } else {
+                freelist_.insert(it, blk);
+            }
+        }
+    }
 }
 
 template <typename BufferT>
