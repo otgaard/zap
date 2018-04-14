@@ -2,7 +2,6 @@
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
@@ -27,8 +26,7 @@
 *.out
 *.app
 
+.idea/
 build/
-assets/
 cmake-build-debug/
 cmake-build-release/
-
