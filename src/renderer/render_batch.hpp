@@ -90,8 +90,8 @@ public:
     bool unmap() { return vbuf_acc_.unmap(); }
 
     void set(const token& tok, uint32_t offset, const vertex_t& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
-    void set(const token& tok, uint32_t offset, uint32_t count, const vertex_t* p) { vbuf_acc_.set(tok.vtx_range, count, p); }
-    void set(const token& tok, uint32_t offset, const std::vector<vertex_t>& v) { vbuf_acc_.set(tok.vtx_range, 0, v); }
+    void set(const token& tok, uint32_t offset, uint32_t count, const vertex_t* p) { vbuf_acc_.set(tok.vtx_range, offset, count, p); }
+    void set(const token& tok, uint32_t offset, const std::vector<vertex_t>& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
 
     void draw(const token& tok) { mesh_.draw(tok.type, tok.vtx_range.start, tok.vtx_range.count); }
 
