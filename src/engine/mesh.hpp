@@ -265,19 +265,20 @@ public:
 };
 
 template <typename VertexT>
-std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(size_t vertex_count) {
+mesh<vertex_stream<vertex_buffer<VertexT>>> make_mesh(size_t vertex_count, buffer_usage usage=buffer_usage::BU_STATIC_DRAW) {
 #if defined(__APPLE__) || defined(_WIN32)
-    auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>>>();
+    auto m = mesh<vertex_stream<vertex_buffer<VertexT>>>();
 #else
     auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>>{});
 #endif
-    auto* vbuf_ptr = new vertex_buffer<VertexT>{};
+    auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
+    vbuf_ptr->usage(usage);
 
-    if(m->allocate() && vbuf_ptr->allocate()) {
-        m->bind(); vbuf_ptr->bind();
+    if(m.allocate() && vbuf_ptr->allocate()) {
+        m.bind(); vbuf_ptr->bind();
         if(vbuf_ptr->initialise(vertex_count)) {
-            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
-            m->release();
+            m.set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr.release()}, true);
+            m.release();
             gl_error_check();
             return m;
         } else {
@@ -287,24 +288,24 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(size_t ve
         LOG_ERR("Failed to allocate mesh resources");
     }
 
-    delete vbuf_ptr;
     m.release();
     return m;
 }
 
 template <typename VertexT>
-std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(const std::vector<VertexT>& buffer) {
+std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(const std::vector<VertexT>& buffer, buffer_usage usage=buffer_usage::BU_STATIC_DRAW) {
 #if defined(__APPLE__) || defined(_WIN32)
     auto m = std::make_unique<mesh<vertex_stream<vertex_buffer<VertexT>>>>();
 #else
     auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>>{});
 #endif
-    auto* vbuf_ptr = new vertex_buffer<VertexT>{};
+    auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
 
+    vbuf_ptr->usage(usage);
     if(m->allocate() && vbuf_ptr->allocate()) {
         m->bind(); vbuf_ptr->bind();
         if(vbuf_ptr->initialise(buffer)) {
-            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
+            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr.release()}, true);
             m->release();
             gl_error_check();
             return m;
@@ -315,7 +316,6 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>>> make_mesh(const std
         LOG_ERR("Failed to allocate mesh resources");
     }
 
-    delete vbuf_ptr;
     m.release();
     return m;
 }
@@ -327,14 +327,14 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>
 #else
     auto m = std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>>(new mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>>{});
 #endif
-    auto* vbuf_ptr = new vertex_buffer<VertexT>{};
-    auto* ibuf_ptr = new index_buffer<IndexT>();
+    auto vbuf_ptr = std::make_unique<vertex_buffer<VertexT>>();
+    auto ibuf_ptr = std::make_unique<index_buffer<IndexT>>();
 
     if(m->allocate() && vbuf_ptr->allocate() && ibuf_ptr->allocate()) {
         m->bind(); vbuf_ptr->bind(); ibuf_ptr->bind();
         if(vbuf_ptr->initialise(get<0>(def)) && ibuf_ptr->initialise(get<1>(def))) {
-            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr}, true);
-            m->set_index(ibuf_ptr, true);
+            m->set_stream(vertex_stream<vertex_buffer<VertexT>>{vbuf_ptr.release()}, true);
+            m->set_index(ibuf_ptr.release(), true);
             m->release();
             gl_error_check();
             return m;
@@ -345,8 +345,6 @@ std::unique_ptr<mesh<vertex_stream<vertex_buffer<VertexT>>, index_buffer<IndexT>
         LOG_ERR("Failed to allocate mesh resources");
     }
 
-    delete vbuf_ptr;
-    delete ibuf_ptr;
     m.release();
     return m;
 }

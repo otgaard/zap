@@ -19,7 +19,9 @@ struct range {
     uint32_t start;
     uint32_t count;
 
+    operator bool() const { return is_valid(); }
     bool is_valid() const { return start != uint32_t(-1); }
+
     range() : start(uint32_t(-1)), count(0) { }
     range(uint32_t start, uint32_t count) : start(start), count(count) { }
 };
@@ -33,9 +35,13 @@ public:
     using freelist_t = std::list<range>;
     using flushlist_t = std::vector<range>;
 
+    accessor() = default;
     explicit accessor(BufferT* buffer_ptr);
     ~accessor();
 
+    bool initialise(BufferT* buffer_ptr);
+
+    bool is_initialised() const;
     bool is_mapped() const;
     bool is_flushed() const;
 
@@ -75,7 +81,7 @@ protected:
     void enqueue_flush(const range& blk);
 
 private:
-    buffer_t* buffer_ptr_;
+    buffer_t* buffer_ptr_ = nullptr;
     freelist_t freelist_;
     flushlist_t flushlist_;
     uint32_t map_start_ = INVALID_IDX;
@@ -83,16 +89,30 @@ private:
 };
 
 template <typename BufferT>
-accessor<BufferT>::accessor(BufferT *buffer_ptr) : buffer_ptr_(buffer_ptr) {
-    freelist_.push_back(range{0, uint32_t(buffer_ptr->count())});
+accessor<BufferT>::accessor(BufferT *buffer_ptr) {
+    initialise(buffer_ptr);
 }
 
 template <typename BufferT>
 accessor<BufferT>::~accessor() {
-    if(is_mapped()) {
+    if(is_initialised() && is_mapped()) {
         flush();
         unmap();
     }
+}
+
+template <typename BufferT>
+bool accessor<BufferT>::initialise(BufferT* buffer_ptr) {
+    if(buffer_ptr_) return false;
+
+    buffer_ptr_ = buffer_ptr;
+    freelist_.push_back(range(0, uint32_t(buffer_ptr_->count())));
+    return true;
+}
+
+template <typename BufferT>
+bool accessor<BufferT>::is_initialised() const {
+    return buffer_ptr_ != nullptr;
 }
 
 template <typename BufferT>
@@ -228,6 +248,7 @@ template <typename BufferT>
 bool accessor<BufferT>::unmap() {
     bool success = true;
     if(buffer_ptr_->is_mapped()) {
+        if(!is_flushed()) flush();
         buffer_ptr_->bind();
         success = buffer_ptr_->unmap();
         buffer_ptr_->release();

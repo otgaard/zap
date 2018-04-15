@@ -14,12 +14,14 @@
 #include <graphics/loader/obj_loader.hpp>
 #include <engine/state_stack.hpp>
 #include <renderer/render_batch.hpp>
+#include <maths/rand_functions.hpp>
 
 using namespace zap;
 using namespace zap::core;
 using namespace zap::maths;
 using namespace zap::engine;
 using namespace zap::graphics;
+using namespace zap::renderer;
 
 // Provides examples of how to use buffers, accessors, and render batches in conjunction with models and procedurally
 // generated geometry
@@ -56,10 +58,35 @@ const char* const static_prog_fshdr = GLSL(
     }
 );
 
+const char* const stream_prog_vshdr = GLSL(
+    uniform mat4 MVP;
+
+    in vec3 position;
+    in ivec4 colour1;
+
+    out vec4 col;
+
+    void main() {
+        gl_Position = MVP * vec4(position, 1.);
+        col = vec4(colour1 / 255.);
+    }
+);
+
+const char* const stream_prog_fshdr = GLSL(
+    in vec4 col;
+
+    out vec4 frag_colour;
+    void main() {
+        frag_colour = col;
+    }
+);
+
 const size_t STATIC_VCOUNT = 200000;
 const size_t STATIC_ICOUNT = 1000000;
 const size_t STREAM_VCOUNT = 200000;
 const size_t STREAM_ICOUNT = 1000000;
+
+using p3c4_batch = render_batch<mesh_p3c4_t::vertex_stream_t>;
 
 class dynamic_app : public application {
 public:
@@ -85,8 +112,11 @@ private:
     state_stack rndr_state_;
     render_state default_state_{false, true, true, false};
 
-    renderer::render_batch<mesh_p3c4_t2_u32_t::vertex_stream_t, mesh_p3c4_t2_u32_t::index_buffer_t> foo;
-    //renderer::render_batch<mesh_p3n3t2_t::vertex_stream_t> bar;
+    // Points or line segments
+    p3c4_batch p3c4_batch_;
+    std::vector<p3c4_batch::token> particle_batch_;
+    program particle_prog_;
+    p3c4_batch::token token_;
 };
 
 bool dynamic_app::initialise() {
@@ -109,8 +139,6 @@ bool dynamic_app::initialise() {
                               "D:/Development/zap/assets/models/buddha.obj" };
 #endif
 
-    foo.initialise(instanced_mesh_.vstream, instanced_mesh_.idx_buffer_ptr);
-
     {
         accessor<vbuf_p3n3t2_t> vbuf_acc(static_mesh_.vstream.ptr);
         accessor<ibuf_u32_t> ibuf_acc(static_mesh_.idx_buffer_ptr);
@@ -123,7 +151,6 @@ bool dynamic_app::initialise() {
             if (vbuf_acc.map_write(vrng)) {
                 vbuf_acc.set(vrng, 0, obj.first);
                 LOG("Vbuf written");
-                vbuf_acc.flush();
                 vbuf_acc.unmap();
             }
 
@@ -133,7 +160,6 @@ bool dynamic_app::initialise() {
                 for (auto &idx : obj.second) idx += vrng.start;
                 ibuf_acc.set(irng, 0, obj.second);
                 LOG("Ibuf written");
-                ibuf_acc.flush();
                 ibuf_acc.unmap();
             }
 
@@ -152,7 +178,6 @@ bool dynamic_app::initialise() {
             if (vbuf_acc.map_write(vrng)) {
                 vbuf_acc.set(vrng, 0, obj.first);
                 LOG("Vbuf written");
-                vbuf_acc.flush();
                 vbuf_acc.unmap();
             }
 
@@ -162,7 +187,6 @@ bool dynamic_app::initialise() {
                 for (auto &idx : obj.second) idx += vrng.start;
                 ibuf_acc.set(irng, 0, obj.second);
                 LOG("Ibuf written");
-                ibuf_acc.flush();
                 ibuf_acc.unmap();
             }
 
@@ -172,10 +196,36 @@ bool dynamic_app::initialise() {
         LOG("Cleanup");
     }
 
+    if(!p3c4_batch_.initialise(100000, buffer_usage::BU_STREAM_DRAW)) {
+        LOG_ERR("Failed to allocate particle_batch");
+        return false;
+    }
+
+    token_ = p3c4_batch_.allocate(primitive_type::PT_LINES, 2000);
+
+    auto rnd = rand_generator();
+
+    if(token_.is_valid()) {
+        particle_batch_.push_back(token_);
+        if(p3c4_batch_.map_write(token_)) {
+            for(int i = 0; i != 2000; ++i) {
+                p3c4_batch_.set(token_, i, vtx_p3c4_t{ rnd.rand3f(vec3f{-2.f, -2.f, -2.f}, vec3f{+2.f, +0.f, +2.f}), rnd.rand4b() });
+            }
+            p3c4_batch_.unmap();
+        }
+    }
+
     static_prog_.add_shader(shader_type::ST_VERTEX, static_prog_vshdr);
     static_prog_.add_shader(shader_type::ST_FRAGMENT, static_prog_fshdr);
     if(!static_prog_.link()) {
         LOG_ERR("Failed to link static_prog");
+        return false;
+    }
+
+    particle_prog_.add_shader(shader_type::ST_VERTEX, stream_prog_vshdr);
+    particle_prog_.add_shader(shader_type::ST_FRAGMENT, stream_prog_fshdr);
+    if(!particle_prog_.link()) {
+        LOG_ERR("Failed to link particle_prog");
         return false;
     }
 
@@ -211,6 +261,12 @@ void dynamic_app::draw() {
     }
     static_mesh_.release();
     static_prog_.release();
+
+    particle_prog_.bind();
+    p3c4_batch_.bind();
+    particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_ * make_rotation(vec3f{0.f, 1.f, 0.f}, angle));
+    p3c4_batch_.draw(token_);
+    p3c4_batch_.release();
 }
 
 void dynamic_app::shutdown() {
@@ -226,6 +282,10 @@ void dynamic_app::on_resize(int width, int height) {
     static_prog_.bind_uniform("light_dir", normalise(vec3f{1.f, 1.f, 1.f}));
     static_prog_.bind_uniform("colour", vec4f{1.f, 1.f, 1.f, 1.f});
     static_prog_.release();
+
+    particle_prog_.bind();
+    particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    particle_prog_.release();
 }
 
 int main(int argc, char* argv[]) {
