@@ -30,16 +30,16 @@ public:
     const render_state* peek() const { return stack_.top(); }
     void pop();
 
-    const blend_state* peek_blend_state() const { return peek()->get_blend_state(); }
+    const blend_state* peek_blend_state() const { return peek()->blend(); }
     const blend_state* curr_blend_state() const { return blend_stack_.top(); }
 
-    const depth_state* peek_depth_state() const { return peek()->get_depth_state(); }
+    const depth_state* peek_depth_state() const { return peek()->depth(); }
     const depth_state* curr_depth_state() const { return depth_stack_.top(); }
 
-    const rasterisation_state* peek_rasterisation_state() const { return peek()->get_rasterisation_state(); }
+    const rasterisation_state* peek_rasterisation_state() const { return peek()->rasterisation(); }
     const rasterisation_state* curr_rasterisation_state() const { return rasterisation_stack_.top(); }
 
-    const stencil_state* peek_stencil_state() const { return peek()->get_stencil_state(); }
+    const stencil_state* peek_stencil_state() const { return peek()->stencil(); }
     const stencil_state* curr_stencil_state() const { return stencil_stack_.top(); }
 
     void clear_colour(float r, float g, float b, float a);

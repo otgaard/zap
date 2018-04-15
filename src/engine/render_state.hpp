@@ -9,7 +9,8 @@
 namespace zap { namespace engine {
     class ZAPENGINE_EXPORT render_state {
     public:
-        explicit render_state(bool blend, bool depth, bool rasterisation, bool stencil) {
+        render_state() = default;
+        render_state(bool blend, bool depth, bool rasterisation, bool stencil) {
             initialise(blend, depth, rasterisation, stencil);
         }
 
@@ -200,10 +201,10 @@ namespace zap { namespace engine {
             }
         };
 
-        blend_state* get_blend_state() const { return blend_state_; }
-        depth_state* get_depth_state() const { return depth_state_; }
-        rasterisation_state* get_rasterisation_state() const { return rasterisation_state_; }
-        stencil_state* get_stencil_state() const { return stencil_state_; }
+        blend_state* blend() const { return blend_state_; }
+        depth_state* depth() const { return depth_state_; }
+        rasterisation_state* rasterisation() const { return rasterisation_state_; }
+        stencil_state* stencil() const { return stencil_state_; }
 
         enum class compare_mode {
             CM_NEVER,
@@ -225,6 +226,12 @@ namespace zap { namespace engine {
         stencil_state* stencil_state_ = nullptr;
         rasterisation_state* rasterisation_state_ = nullptr;
     };
+
+    using blend_state = render_state::blend_state;
+    using depth_state = render_state::depth_state;
+    using scissor_state = render_state::scissor_state;
+    using stencil_state = render_state::stencil_state;
+    using rasterisation_state = render_state::rasterisation_state;
 }}
 
 #endif //ZAP_RENDER_STATE_HPP

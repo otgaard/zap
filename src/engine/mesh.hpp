@@ -74,6 +74,7 @@ template <typename... VBuffers>
 struct vertex_stream {
     virtual void free() { }
     virtual void bind() { }
+    virtual void append(buffer** arr) { }
 };
 
 template <typename VBuf, typename... VBuffers>
@@ -89,6 +90,11 @@ struct vertex_stream<VBuf, VBuffers...> : vertex_stream<VBuffers...> {
     virtual void free() {
         vertex_stream<VBuffers...>::free();
         delete ptr;
+    }
+
+    virtual void append(buffer** arr) {
+        *arr++ = ptr;
+        vertex_stream<VBuffers...>::append(arr);
     }
 
     ptr_t ptr;
@@ -400,6 +406,55 @@ make_mesh(const std::pair<std::vector<VertexT>, std::vector<IndexT>>& obj, buffe
         }
     } else {
         LOG_ERR("Failed to allocate mesh resources");
+    }
+
+    m.release();
+    m.deallocate();
+    return m;
+}
+
+template <typename Vertex0T, typename Vertex1T, typename IndexT>
+mesh<vertex_stream<vertex_buffer<Vertex0T>, vertex_buffer<Vertex1T>>, index_buffer<IndexT>>
+make_mesh(size_t v0_count, size_t v1_count, size_t index_count, buffer_usage usage=buffer_usage::BU_STATIC_DRAW) {
+    using stream_t = vertex_stream<vertex_buffer<Vertex0T>, vertex_buffer<Vertex1T>>;
+    mesh<stream_t, index_buffer<IndexT>> m;
+
+    auto vbuf0_ptr = std::make_unique<typename stream_query<0, stream_t>::type>();
+    auto vbuf1_ptr = std::make_unique<typename stream_query<1, stream_t>::type>();
+    auto ibuf_ptr = std::make_unique<index_buffer<IndexT>>();
+
+    vbuf0_ptr->usage(usage);
+    vbuf1_ptr->usage(usage);
+    ibuf_ptr->usage(usage);
+
+    if(m.allocate() && vbuf0_ptr->allocate() && vbuf1_ptr->allocate() && ibuf_ptr->allocate()) {
+        m.bind();
+        vbuf0_ptr->bind();
+        if (!vbuf0_ptr->initialise(v0_count)) {
+            LOG_ERR("Failed to initialise vertex buffer 0");
+            gl_error_check();
+            return m;
+        }
+
+        vbuf1_ptr->bind();
+        if (!vbuf1_ptr->initialise(v1_count)) {
+            LOG_ERR("Failed to initialise vertex buffer 1");
+            gl_error_check();
+            return m;
+        }
+
+        ibuf_ptr->bind();
+        if (!ibuf_ptr->initialise(index_count)) {
+            LOG_ERR("Failed to initialise index buffer");
+            gl_error_check();
+            return m;
+        }
+
+        m.set_stream(stream_t{vbuf0_ptr.release(), vbuf1_ptr.release()}, true);
+        m.set_index(ibuf_ptr.release(), true);
+        m.release();
+        gl_error_check();
+        return m;
     }
 
     m.release();

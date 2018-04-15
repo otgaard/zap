@@ -72,6 +72,7 @@ public:
     uint32_t get(const range& blk, uint32_t offset, uint32_t count, std::vector<type>& v);
 
 protected:
+    void enqueue_flush(const range& blk);
 
 private:
     buffer_t* buffer_ptr_;
@@ -256,12 +257,7 @@ void accessor<BufferT>::set(const range& blk, uint32_t offset, const type& i) {
     const auto idx = map_start_ == 0 ? blk.start + offset : offset;
     buffer_ptr_->operator[](idx) = i;
 
-    if(is_flushed()) flushlist_.push_back(range(idx, 1));
-    else {
-        auto& back = flushlist_.back();
-        if(back.start + back.count == idx) back.count += 1;
-        else flushlist_.push_back(range(idx, 1));
-    }
+    enqueue_flush(range(idx, 1));
 }
 
 template <typename BufferT>
@@ -271,12 +267,7 @@ void accessor<BufferT>::set(const range& blk, uint32_t offset, uint32_t count, c
     const uint32_t idx = map_start_ == 0 ? blk.start + offset : offset;
     for(auto i = 0; i != count; ++i) buffer_ptr_->operator[](idx+i) = *(p + i);
 
-    if(is_flushed()) flushlist_.push_back(range(idx, count));
-    else {
-        auto& back = flushlist_.back();
-        if(back.start + back.count == idx) back.count += count;
-        else flushlist_.push_back(range(idx, count));
-    }
+    enqueue_flush(range(idx, count));
 }
 
 template <typename BufferT>
@@ -286,12 +277,7 @@ void accessor<BufferT>::set(const range& blk, uint32_t offset, const std::vector
     const uint32_t idx = map_start_ == 0 ? blk.start + offset : offset, count = uint32_t(v.size());
     for(auto i = 0; i != count; ++i) buffer_ptr_->operator[](idx+i) = v[i];
 
-    if(is_flushed()) flushlist_.push_back(range(idx, uint32_t(v.size())));
-    else {
-        auto& back = flushlist_.back();
-        if(back.start + back.count == idx) back.count += uint32_t(v.size());
-        else flushlist_.push_back(range(idx, uint32_t(v.size())));
-    }
+    enqueue_flush(range(idx, uint32_t(v.size())));
 }
 
 template <typename BufferT>
@@ -306,6 +292,18 @@ uint32_t accessor<BufferT>::get(const range& blk, uint32_t offset, uint32_t coun
 
 template <typename BufferT>
 uint32_t accessor<BufferT>::get(const range& blk, uint32_t offset, uint32_t count, std::vector<type>& v) {
+
+}
+
+template <typename BufferT>
+void accessor<BufferT>::enqueue_flush(const range& blk) {
+    if(is_flushed()) flushlist_.push_back(blk);
+    else {
+        // Optimise the sequential Use-case
+        auto& back = flushlist_.back();
+        if(back.start + back.count == blk.start) back.count += blk.count;
+        else flushlist_.push_back(blk);
+    }
 
 }
 

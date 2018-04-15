@@ -13,6 +13,7 @@
 #include <graphics/graphics3/g3_types.hpp>
 #include <graphics/loader/obj_loader.hpp>
 #include <engine/state_stack.hpp>
+#include <renderer/render_batch.hpp>
 
 using namespace zap;
 using namespace zap::core;
@@ -83,11 +84,15 @@ private:
 
     state_stack rndr_state_;
     render_state default_state_{false, true, true, false};
+
+    renderer::render_batch<mesh_p3c4_t2_u32_t::vertex_stream_t, mesh_p3c4_t2_u32_t::index_buffer_t> foo;
+    //renderer::render_batch<mesh_p3n3t2_t::vertex_stream_t> bar;
 };
 
 bool dynamic_app::initialise() {
     static_mesh_ = make_mesh<vtx_p3n3t2_t, uint32_t>(STATIC_VCOUNT, STATIC_ICOUNT);
     stream_mesh_ = make_mesh<vtx_p3c4t2_t, uint32_t>(STREAM_VCOUNT, STREAM_ICOUNT);
+    instanced_mesh_ = make_mesh<vtx_p3c4_t, vtx_t2_t, uint32_t>(STATIC_VCOUNT, 4, STATIC_ICOUNT);
 
     if(!static_mesh_.is_allocated() || !stream_mesh_.is_allocated()) {
         LOG_ERR("Failed to allocate meshes");
@@ -103,6 +108,8 @@ bool dynamic_app::initialise() {
                               "D:/Development/zap/assets/models/dragon.obj",
                               "D:/Development/zap/assets/models/buddha.obj" };
 #endif
+
+    foo.initialise(instanced_mesh_.vstream, instanced_mesh_.idx_buffer_ptr);
 
     {
         accessor<vbuf_p3n3t2_t> vbuf_acc(static_mesh_.vstream.ptr);
@@ -133,7 +140,7 @@ bool dynamic_app::initialise() {
             objects[counter++] = std::make_pair(vrng, irng);
         }
 
-        // Now free "dragon" and replace it with "bunny"
+        // Now free "dragon" and replace it with "buddha"
         bool replace = true;
         if(replace) {
             vbuf_acc.release(objects[1].first);
@@ -177,10 +184,10 @@ bool dynamic_app::initialise() {
         return false;
     }
 
-    default_state_.get_depth_state()->enabled = true;
-    default_state_.get_rasterisation_state()->enable_culling = true;
-    default_state_.get_rasterisation_state()->cull_face = render_state::rasterisation_state::cull_mode::CM_BACK;
-    default_state_.get_rasterisation_state()->poly_mode = render_state::rasterisation_state::polygon_mode::PM_LINE;
+    default_state_.depth()->enabled = true;
+    default_state_.rasterisation()->enable_culling = true;
+    default_state_.rasterisation()->cull_face = rasterisation_state::cull_mode::CM_BACK;
+    default_state_.rasterisation()->poly_mode = rasterisation_state::polygon_mode::PM_LINE;
     rndr_state_.push_state(&default_state_);
 
     return true;

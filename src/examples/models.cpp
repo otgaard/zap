@@ -24,7 +24,7 @@ public:
 
 private:
     std::unique_ptr<zap::graphics::quad> quad_;
-    std::unique_ptr<zap::graphics::mesh_p3n3t2_u32_t> mesh_;
+    zap::graphics::mesh_p3n3t2_u32_t mesh_;
 };
 
 bool models_app::initialise() {
@@ -34,8 +34,8 @@ bool models_app::initialise() {
         return false;
     }
 
-    mesh_ = zap::graphics::obj_loader::load(MODEL_PATH);
-    if(!mesh_) {
+    mesh_ = zap::graphics::obj_loader::load_mesh(MODEL_PATH);
+    if(!mesh_.is_allocated()) {
         LOG_ERR("Failed to load Stanford Bunny Mesh");
         return false;
     }

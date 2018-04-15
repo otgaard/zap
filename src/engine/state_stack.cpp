@@ -17,17 +17,17 @@ state_stack::state_stack() : base_state_(true, true, true, true), clear_colour_{
 }
 
 bool state_stack::initialise() {
-    initialise(base_state_.get_blend_state());
-    blend_stack_.push(base_state_.get_blend_state());
+    initialise(base_state_.blend());
+    blend_stack_.push(base_state_.blend());
 
-    initialise(base_state_.get_depth_state());
-    depth_stack_.push(base_state_.get_depth_state());
+    initialise(base_state_.depth());
+    depth_stack_.push(base_state_.depth());
 
-    initialise(base_state_.get_rasterisation_state());
-    rasterisation_stack_.push(base_state_.get_rasterisation_state());
+    initialise(base_state_.rasterisation());
+    rasterisation_stack_.push(base_state_.rasterisation());
 
-    initialise(base_state_.get_stencil_state());
-    stencil_stack_.push(base_state_.get_stencil_state());
+    initialise(base_state_.stencil());
+    stencil_stack_.push(base_state_.stencil());
 
     stack_.push(&base_state_);
 
@@ -58,10 +58,10 @@ void zap::engine::state_stack::clear(bool colour, bool depth, bool stencil) {
 void zap::engine::state_stack::push_state(const render_state* state) {
     assert(state != nullptr && "Cannot push a null state!");
     if(state != peek()) {
-        if(state->get_blend_state() != nullptr) push_state(state->get_blend_state());
-        if(state->get_depth_state() != nullptr) push_state(state->get_depth_state());
-        if(state->get_rasterisation_state() != nullptr) push_state(state->get_rasterisation_state());
-        if(state->get_stencil_state() != nullptr) push_state(state->get_stencil_state());
+        if(state->blend() != nullptr) push_state(state->blend());
+        if(state->depth() != nullptr) push_state(state->depth());
+        if(state->rasterisation() != nullptr) push_state(state->rasterisation());
+        if(state->stencil() != nullptr) push_state(state->stencil());
 
         stack_.push(state);
     }

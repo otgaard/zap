@@ -131,7 +131,7 @@ bool zap_example::initialise() {
     task.diffuse_map = builder_task<>::texture_type::TT_NONE;
     context_ = shader_builder::build_basic_lights(task);
 
-    override_.get_blend_state()->enabled = true;
+    override_.blend()->enabled = true;
 
     return true;
 }
@@ -167,7 +167,6 @@ void zap_example::draw() {
     rndr_state_.push_state(&override_);
     batcher.draw(cam_);
     rndr_state_.pop();
-
 }
 
 void zap_example::shutdown() {
