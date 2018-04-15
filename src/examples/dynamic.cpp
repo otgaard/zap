@@ -244,6 +244,16 @@ bool dynamic_app::initialise() {
 }
 
 void dynamic_app::update(double t, float dt) {
+    static rand_generator rnd;
+    static std::vector<vtx_p3c4_t> vertices(2000);
+
+    for(int i = 0; i != 2000; ++i) vertices[i] = vtx_p3c4_t{ rnd.rand3f(vec3f{-2.f, -2.f, -2.f}, vec3f{+2.f, +0.f, +2.f}), rnd.rand4b() };
+
+    particle_batch_.push_back(token_);
+    if(p3c4_batch_.map_write(token_)) {
+        p3c4_batch_.set(token_, 0, vertices);
+        p3c4_batch_.unmap();
+    }
 }
 
 void dynamic_app::draw() {
@@ -251,6 +261,7 @@ void dynamic_app::draw() {
     angle = wrap(angle + .016f, 0.f, TWO_PI<float>);
 
     rndr_state_.clear(0.f, 0.f, 0.f, 1.f);
+
     static_prog_.bind();
     static_mesh_.bind();
     for(int i = 0; i != 3; ++i) {
