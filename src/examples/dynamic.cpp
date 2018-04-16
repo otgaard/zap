@@ -87,6 +87,7 @@ const size_t STREAM_VCOUNT = 200000;
 const size_t STREAM_ICOUNT = 1000000;
 
 using p3c4_batch = render_batch<mesh_p3c4_t::vertex_stream_t>;
+using p3c4t2_u32_batch = render_batch<mesh_p3c4t2_t::vertex_stream_t, ibuf_u32_t>;
 
 class dynamic_app : public application {
 public:
@@ -117,6 +118,10 @@ private:
     std::vector<p3c4_batch::token> particle_batch_;
     program particle_prog_;
     p3c4_batch::token token_;
+
+    // Camera-oriented quads
+    p3c4t2_u32_batch quad_batch_;
+    p3c4t2_u32_batch::token quads_;
 };
 
 bool dynamic_app::initialise() {
@@ -167,7 +172,7 @@ bool dynamic_app::initialise() {
         }
 
         // Now free "dragon" and replace it with "buddha"
-        bool replace = true;
+        bool replace = false;
         if(replace) {
             vbuf_acc.release(objects[1].first);
             ibuf_acc.release(objects[1].second);
@@ -196,6 +201,7 @@ bool dynamic_app::initialise() {
         LOG("Cleanup");
     }
 
+    // Test the Vertex Buffer only Render Batch
     if(!p3c4_batch_.initialise(100000, buffer_usage::BU_STREAM_DRAW)) {
         LOG_ERR("Failed to allocate particle_batch");
         return false;
@@ -212,6 +218,36 @@ bool dynamic_app::initialise() {
                 p3c4_batch_.set(token_, i, vtx_p3c4_t{ rnd.rand3f(vec3f{-2.f, -2.f, -2.f}, vec3f{+2.f, +0.f, +2.f}), rnd.rand4b() });
             }
             p3c4_batch_.unmap();
+        }
+    }
+
+    // Test the Vertex Buffer + Index Buffer Render Batch
+    if(!quad_batch_.initialise(100000, 600000, buffer_usage::BU_STREAM_DRAW)) {
+        LOG_ERR("Failed to allocate quad_batch");
+        return false;
+    }
+
+    quads_ = quad_batch_.allocate(primitive_type::PT_TRIANGLES, 4*100, 6*100);
+    if(quads_) {
+        std::vector<vtx_p3c4t2_t> vertices(400);
+        std::vector<uint32_t> indices(600);
+        const vec3f min = vec3f{-5.f, -5.f, -5.f}, max = vec3f{+5.f, +5.f, +5.f};
+        for(int i = 0; i != 100; ++i) {
+            const auto vidx = 4*i, iidx = 6*i;
+            const auto P = rnd.rand3f(min, max);
+            const auto C = rnd.rand4b();
+            vertices[vidx+0] = vtx_p3c4t2_t{ P + vec3f{-1.f, -1.f, 0.f}, C, vec2f{0.f, 0.f}};
+            vertices[vidx+1] = vtx_p3c4t2_t{ P + vec3f{+1.f, -1.f, 0.f}, C, vec2f{1.f, 0.f}};
+            vertices[vidx+2] = vtx_p3c4t2_t{ P + vec3f{+1.f, +1.f, 0.f}, C, vec2f{1.f, 1.f}};
+            vertices[vidx+3] = vtx_p3c4t2_t{ P + vec3f{-1.f, +1.f, 0.f}, C, vec2f{0.f, 1.f}};
+            indices[iidx+0] = vidx+0; indices[iidx+1] = vidx+1; indices[iidx+2] = vidx+2;
+            indices[iidx+3] = vidx+0; indices[iidx+4] = vidx+2; indices[iidx+5] = vidx+3;
+        }
+
+        if(quad_batch_.map_write(quads_)) {
+            quad_batch_.set(quads_, 0, vertices);
+            quad_batch_.set(quads_, 0, indices);
+            quad_batch_.unmap();
         }
     }
 
@@ -246,10 +282,10 @@ bool dynamic_app::initialise() {
 void dynamic_app::update(double t, float dt) {
     static rand_generator rnd;
     static std::vector<vtx_p3c4_t> vertices(2000);
+    const vec3f min = vec3f{-2.f, -2.f, -2.f}, max = vec3f{+2.f, +0.f, +2.f};
 
-    for(int i = 0; i != 2000; ++i) vertices[i] = vtx_p3c4_t{ rnd.rand3f(vec3f{-2.f, -2.f, -2.f}, vec3f{+2.f, +0.f, +2.f}), rnd.rand4b() };
+    for(int i = 0; i != 2000; ++i) vertices[i] = vtx_p3c4_t{ rnd.rand3f(min, max), rnd.rand4b() };
 
-    particle_batch_.push_back(token_);
     if(p3c4_batch_.map_write(token_)) {
         p3c4_batch_.set(token_, 0, vertices);
         p3c4_batch_.unmap();
@@ -278,6 +314,13 @@ void dynamic_app::draw() {
     particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_ * make_rotation(vec3f{0.f, 1.f, 0.f}, angle));
     p3c4_batch_.draw(token_);
     p3c4_batch_.release();
+
+    quad_batch_.bind();
+    particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    quad_batch_.draw(quads_);
+    quad_batch_.release();
+
+    particle_prog_.release();
 }
 
 void dynamic_app::shutdown() {
