@@ -90,6 +90,49 @@ using p3c4_batch = render_batch<mesh_p3c4_t::vertex_stream_t>;
 using p3n3t2_u32_batch = render_batch<mesh_p3n3t2_u32_t::vertex_stream_t, ibuf_u32_t>;
 using p3c4t2_u32_batch = render_batch<mesh_p3c4t2_u32_t::vertex_stream_t, ibuf_u32_t>;
 
+struct particles {
+    static std::unique_ptr<particles> make_particles(size_t count) {
+        auto ptr = std::make_unique<particles>();
+        ptr->count = count;
+        ptr->base_ptr = std::unique_ptr<byte[]>(new byte[count*particle_size]);
+        byte* offset = ptr->base_ptr.get();
+        ptr->position = reinterpret_cast<vec3f*>(offset); offset += sizeof(vec3f) * count;
+        ptr->velocity = reinterpret_cast<vec3f*>(offset); offset += sizeof(vec3f) * count;
+        ptr->rotation = reinterpret_cast<float*>(offset); offset += sizeof(float) * count;
+        ptr->angular = reinterpret_cast<float*>(offset); offset += sizeof(float) * count;
+        ptr->scale = reinterpret_cast<float*>(offset); offset += sizeof(float) * count;
+        ptr->colourS = reinterpret_cast<vec4b*>(offset); offset += sizeof(vec4b) * count;
+        ptr->colourD = reinterpret_cast<vec4b*>(offset); offset += sizeof(vec4b) * count;
+        ptr->data = reinterpret_cast<vec4f*>(offset); offset += sizeof(vec4f) * count;
+        assert(offset - ptr->base_ptr.get() == count * particle_size && "Invalid Size!");
+        return ptr;
+    }
+
+    vec3f* position;
+    vec3f* velocity;
+    float* rotation;
+    float* angular;
+    float* scale;
+    vec4b* colourS;
+    vec4b* colourD;
+    vec4f* data;
+
+    std::unique_ptr<byte[]> base_ptr;
+    size_t count;
+
+    size_t size() const { return count; }
+
+    static const size_t particle_size =
+            sizeof(vec3f) +
+            sizeof(vec3f) +
+            sizeof(float) +
+            sizeof(float) +
+            sizeof(float) +
+            sizeof(vec4b) +
+            sizeof(vec4b) +
+            sizeof(vec4f);
+};
+
 class dynamic_app : public application {
 public:
     dynamic_app() : application{"dynamic_app", 1024, 768} { }
@@ -113,6 +156,7 @@ private:
 
     state_stack rndr_state_;
     render_state default_state_{false, true, true, false};
+    render_state additive_blend_state_{true, true, false, false};
 
     // Points or line segments
     p3c4_batch p3c4_batch_;
@@ -123,6 +167,7 @@ private:
     // Camera-oriented quads
     p3c4t2_u32_batch quad_batch_;
     p3c4t2_u32_batch::token quads_;
+    std::unique_ptr<particles> quad_particles_;
 };
 
 bool dynamic_app::initialise() {
@@ -171,41 +216,56 @@ bool dynamic_app::initialise() {
 
     if(token_.is_valid()) {
         particle_batch_.push_back(token_);
+        const vec3f min = vec3f{-2.f, -2.f, -2.f}, max = vec3f{+2.f, +0.f, +2.f};
+
         if(p3c4_batch_.map_write(token_)) {
             for(int i = 0; i != 2000; ++i) {
-                p3c4_batch_.set(token_, i, vtx_p3c4_t{ rnd.rand3f(vec3f{-2.f, -2.f, -2.f}, vec3f{+2.f, +0.f, +2.f}), rnd.rand4b() });
+                p3c4_batch_.set(token_, i, vtx_p3c4_t{ rnd.rand3f(min, max), rnd.rand4b() });
             }
             p3c4_batch_.unmap();
         }
     }
 
     // Test the Vertex Buffer + Index Buffer Render Batch
-    if(!quad_batch_.initialise(100000, 600000, buffer_usage::BU_STREAM_DRAW)) {
+    if(!quad_batch_.initialise(4*1000, 6*1000, buffer_usage::BU_STREAM_DRAW)) {
         LOG_ERR("Failed to allocate quad_batch");
         return false;
     }
 
-    quads_ = quad_batch_.allocate(primitive_type::PT_TRIANGLES, 4*100, 6*100);
-    if(quads_) {
-        std::vector<vtx_p3c4t2_t> vertices(400);
-        std::vector<uint32_t> indices(600);
+    {
+        const int pcount = 100;
+        quad_particles_ = particles::make_particles(pcount);
+
+        auto& arr = *quad_particles_;
         const vec3f min = vec3f{-5.f, -5.f, -5.f}, max = vec3f{+5.f, +5.f, +5.f};
-        for(int i = 0; i != 100; ++i) {
-            const auto vidx = 4*i, iidx = 6*i;
-            const auto P = rnd.rand3f(min, max);
-            const auto C = rnd.rand4b();
-            vertices[vidx+0] = vtx_p3c4t2_t{ P + vec3f{-1.f, -1.f, 0.f}, C, vec2f{0.f, 0.f}};
-            vertices[vidx+1] = vtx_p3c4t2_t{ P + vec3f{+1.f, -1.f, 0.f}, C, vec2f{1.f, 0.f}};
-            vertices[vidx+2] = vtx_p3c4t2_t{ P + vec3f{+1.f, +1.f, 0.f}, C, vec2f{1.f, 1.f}};
-            vertices[vidx+3] = vtx_p3c4t2_t{ P + vec3f{-1.f, +1.f, 0.f}, C, vec2f{0.f, 1.f}};
-            indices[iidx+0] = vidx+0; indices[iidx+1] = vidx+1; indices[iidx+2] = vidx+2;
-            indices[iidx+3] = vidx+0; indices[iidx+4] = vidx+2; indices[iidx+5] = vidx+3;
+        for (int i = 0; i != pcount; ++i) {
+            arr.position[i] = rnd.rand3f(min, max);
+            arr.velocity[i] = rnd.rand3f({ -1.f, -1.f, -1.f }, { 1.f, 1.f, 1.f });
+            arr.rotation[i] = rnd.rand1f(0.f, TWO_PI<float>);
+            arr.angular[i] = rnd.rand1f();
+            arr.scale[i] = rnd.rand1f(.05f, .1f);
+            arr.colourS[i] = rnd.rand4b();
+            arr.colourD[i] = rnd.rand4b();
+            arr.data[i] = { 0.f, 0.f, 0.f, 0.f };
         }
 
-        if(quad_batch_.map_write(quads_)) {
-            quad_batch_.set(quads_, 0, vertices);
-            quad_batch_.set(quads_, 0, indices);
-            quad_batch_.unmap();
+        quads_ = quad_batch_.allocate(primitive_type::PT_TRIANGLES, 4*pcount, 6*pcount);
+        if(quads_) {
+            std::vector<vtx_p3c4t2_t> vertices(4*pcount);
+            std::vector<uint32_t> indices(6*pcount);
+            for(int i = 0; i != pcount; ++i) {
+                const auto vidx = 4*i, iidx = 6*i;
+                const auto P = arr.position[i];
+                const auto C = arr.colourS[i];
+                vertices[vidx+0] = vtx_p3c4t2_t{ P + arr.scale[i]*vec3f{-1.f, -1.f, 0.f}, C, vec2f{0.f, 0.f}};
+                vertices[vidx+1] = vtx_p3c4t2_t{ P + arr.scale[i]*vec3f{+1.f, -1.f, 0.f}, C, vec2f{1.f, 0.f}};
+                vertices[vidx+2] = vtx_p3c4t2_t{ P + arr.scale[i]*vec3f{+1.f, +1.f, 0.f}, C, vec2f{1.f, 1.f}};
+                vertices[vidx+3] = vtx_p3c4t2_t{ P + arr.scale[i]*vec3f{-1.f, +1.f, 0.f}, C, vec2f{0.f, 1.f}};
+                indices[iidx+0] = vidx+0; indices[iidx+1] = vidx+1; indices[iidx+2] = vidx+2;
+                indices[iidx+3] = vidx+0; indices[iidx+4] = vidx+2; indices[iidx+5] = vidx+3;
+            }
+
+            quad_batch_.load(quads_, std::make_pair(vertices, indices));
         }
     }
 
@@ -234,20 +294,58 @@ bool dynamic_app::initialise() {
     default_state_.rasterisation()->poly_mode = rasterisation_state::polygon_mode::PM_LINE;
     rndr_state_.push_state(&default_state_);
 
+    additive_blend_state_.depth()->enabled = false;
+    additive_blend_state_.blend()->enabled = true;
+    additive_blend_state_.blend()->src_mode = blend_state::src_blend_mode::SBM_SRC_ALPHA;
+    additive_blend_state_.blend()->dst_mode = blend_state::dst_blend_mode::DBM_ONE;
+
     return true;
 }
 
 void dynamic_app::update(double t, float dt) {
     static rand_generator rnd;
     static std::vector<vtx_p3c4_t> vertices(2000);
-    const vec3f min = vec3f{-2.f, -2.f, -2.f}, max = vec3f{+2.f, +0.f, +2.f};
+    static std::vector<vec3f> pos_scale(100);
+    static std::vector<vtx_p3c4t2_t> p_vertices(4*100);
 
-    for(int i = 0; i != 2000; ++i) vertices[i] = vtx_p3c4_t{ rnd.rand3f(min, max), rnd.rand4b() };
-
-    if(p3c4_batch_.map_write(token_)) {
-        p3c4_batch_.set(token_, 0, vertices);
-        p3c4_batch_.unmap();
+    {
+        const vec3f min = vec3f{-2.f, -2.f, -2.f}, max = vec3f{+2.f, +0.f, +2.f};
+        for(int i = 0; i != 2000; ++i) vertices[i] = vtx_p3c4_t{rnd.rand3f(min, max), rnd.rand4b()};
+        p3c4_batch_.load(token_, vertices);
     }
+
+    {
+        const uint32_t pcount = 100;
+        const vec3f gravity = vec3f{0.f, -5.f, 0.f};
+        const auto V = view_matrix_;
+
+        auto& arr = *quad_particles_.get();
+        for (size_t i = 0; i != pcount; ++i) {
+            arr.position[i] += arr.velocity[i] * dt;
+            arr.velocity[i] += gravity * dt;
+            if (arr.position[i].length() > 10.f || arr.position[i].y < -1.f) {
+                arr.position[i] = {0.f, 0.f, 0.f};
+                arr.velocity[i] = 5.f * rnd.rand3f({-1.f, -1.f, -1.f}, {+1.f, +1.f, +1.f});
+            }
+        }
+
+        for (uint32_t i = 0; i != pcount; ++i) {
+            uint32_t vidx = 4 * i;
+
+            const auto& P = arr.position[i];
+            const auto& S = arr.scale[i];
+
+            auto R = orthogonolise(normalise(P - vec3f{0.f, 2.f, 8.f}));
+
+            p_vertices[vidx + 0] = vtx_p3c4t2_t{ P + R * S * vec3f{ -1.f, -1.f, 0.f }, arr.colourS[i], vec2f{ 0.f, 0.f } };
+            p_vertices[vidx + 1] = vtx_p3c4t2_t{ P + R * S * vec3f{ +1.f, -1.f, 0.f }, arr.colourS[i], vec2f{ 1.f, 0.f } };
+            p_vertices[vidx + 2] = vtx_p3c4t2_t{ P + R * S * vec3f{ +1.f, +1.f, 0.f }, arr.colourS[i], vec2f{ 1.f, 1.f } };
+            p_vertices[vidx + 3] = vtx_p3c4t2_t{ P + R * S * vec3f{ -1.f, +1.f, 0.f }, arr.colourS[i], vec2f{ 0.f, 1.f } };
+        }
+
+        quad_batch_.load(quads_, p_vertices);
+    }
+
 }
 
 void dynamic_app::draw() {

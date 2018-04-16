@@ -7,7 +7,7 @@ directly in the third_party folder.
 macOS/Linux Build Instructions
 ------------------------------
 
-Tested on GCC 5.4.0 && Apple LLVM 7.3.0.
+Tested on GCC 5.4.0 && Apple LLVM 9.0.0
 
 Checkout repository:
 
@@ -40,14 +40,14 @@ Build zap:
 * cd build
 * cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL] -DCMAKE_BUILD_TYPE=Release
 * (example -DCMAKE_INSTALL_PREFIX=/usr/local/)
+* make -j 4 && make install
 
 Windows Build Instructions (x64)
 --------------------------------
 
-Note: The windows dynamic build is not complete, therefore the engine will be built statically.  This
-should be completed soon.
+Requires Visual Studio 2015 or 2017.
 
-Tested with the "Visual Studio 14 2015 Win64" and "Visual Studio 14 2015" generators.
+Tested with the "Visual Studio 15 2017 Win64" and "Visual Studio 15 2017" generators.
 
 Checkout repository:
 
@@ -64,9 +64,9 @@ Compile GLFW and install in zap/third_party:
 * cd third_party/glfw
 * mkdir build
 * cd build
-* cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_THIRD_PARTY] -G "Visual Studio 14 2015 Win64"
-* (example -DCMAKE_INSTALL_PREFIX=/home/otgaard/zap/third_party/)
-* Open GLFW.sln in Visual Studio 2015 and build the Release build
+* cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_THIRD_PARTY] -G "Visual Studio 15 2017 Win64"
+* (example -DCMAKE_INSTALL_PREFIX=D:\zap\third_party)
+* cmake --build . --config Release --target Install
 
 Compile GLEW (included in zap source code):
 
@@ -78,6 +78,5 @@ Build zap:
 * cd ../..
 * mkdir build
 * cd build
-* cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL] -G "Visual Studio 14 2015 Win64"
-* (example -DCMAKE_INSTALL_PREFIX=/usr/local/)
-* Open zap.sln and build the Win64 Release build
+* cmake .. -DCMAKE_BUILD_TYPE=[Release|Debug] -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL] -G "Visual Studio 14 2015 Win64"
+* cmake --build . --config [Release|Debug] --target Install

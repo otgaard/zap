@@ -92,6 +92,15 @@ public:
 
     bool unmap() { return vbuf_acc_.unmap(); }
 
+    bool load(const token& tok, const std::vector<vertex_t>& m) {
+        if(map_write(tok)) {
+            set(tok, 0, m);
+            return unmap();
+        }
+
+        return false;
+    }
+
     void set(const token& tok, uint32_t offset, const vertex_t& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
     void set(const token& tok, uint32_t offset, uint32_t count, const vertex_t* p) { vbuf_acc_.set(tok.vtx_range, offset, count, p); }
     void set(const token& tok, uint32_t offset, const std::vector<vertex_t>& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
@@ -191,6 +200,15 @@ public:
     bool map_readwrite(const token tok, bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_readwrite(tok.vtx_range) : true) && (ibuf ? ibuf_acc_.map_readwrite(tok.idx_range) : true); }
 
     bool unmap() { return (vbuf_acc_.is_mapped() ? vbuf_acc_.unmap() : true) && (ibuf_acc_.is_mapped() ? ibuf_acc_.unmap() : true); }
+
+    bool load(const token& tok, const std::vector<vertex_t>& v) {
+        if(map_write(tok, true, false)) {
+            set(tok, 0, v);
+            return unmap();
+        }
+
+        return false;
+    }
 
     bool load(const token& tok, const std::pair<std::vector<vertex_t>, std::vector<uint32_t>>& m, bool remap=true) {
         if(map_write(tok)) {
