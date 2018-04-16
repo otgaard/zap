@@ -192,6 +192,15 @@ public:
 
     bool unmap() { return (vbuf_acc_.is_mapped() ? vbuf_acc_.unmap() : true) && (ibuf_acc_.is_mapped() ? ibuf_acc_.unmap() : true); }
 
+    bool load(const token& tok, const std::pair<std::vector<vertex_t>, std::vector<uint32_t>>& m, bool remap=true) {
+        if(map_write(tok)) {
+            set(tok, 0, 0, m, remap);
+            return unmap();
+        }
+
+        return false;
+    }
+
     void set(const token& tok, uint32_t offset, const vertex_t& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
     void set(const token& tok, uint32_t offset, uint32_t count, const vertex_t* p) { vbuf_acc_.set(tok.vtx_range, offset, count, p); }
     void set(const token& tok, uint32_t offset, const std::vector<vertex_t>& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
@@ -220,6 +229,11 @@ public:
         } else {
             ibuf_acc_.set(tok.idx_range, offset, v);
         }
+    }
+
+    void set(const token& tok, uint32_t voffset, uint32_t ioffset, const std::pair<std::vector<vertex_t>, std::vector<index_t>>& m, bool remap=true) {
+        set(tok, voffset, m.first);
+        set(tok, ioffset, m.second, remap);
     }
 
     void draw(const token& tok) { mesh_.draw(tok.type, tok.idx_range.start, tok.idx_range.count); }

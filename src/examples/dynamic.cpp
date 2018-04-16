@@ -87,7 +87,8 @@ const size_t STREAM_VCOUNT = 200000;
 const size_t STREAM_ICOUNT = 1000000;
 
 using p3c4_batch = render_batch<mesh_p3c4_t::vertex_stream_t>;
-using p3c4t2_u32_batch = render_batch<mesh_p3c4t2_t::vertex_stream_t, ibuf_u32_t>;
+using p3n3t2_u32_batch = render_batch<mesh_p3n3t2_u32_t::vertex_stream_t, ibuf_u32_t>;
+using p3c4t2_u32_batch = render_batch<mesh_p3c4t2_u32_t::vertex_stream_t, ibuf_u32_t>;
 
 class dynamic_app : public application {
 public:
@@ -101,8 +102,8 @@ public:
     void on_resize(int width, int height) final;
 
 private:
-    std::array<std::pair<range, range>, 10> objects;
-    mesh_p3n3t2_u32_t static_mesh_;
+    std::array<p3n3t2_u32_batch::token, 10> objects;
+    p3n3t2_u32_batch static_batch_;
     mesh_p3c4t2_u32_t stream_mesh_;
     mesh_p3c4_t2_u32_t instanced_mesh_;
     program static_prog_;
@@ -125,12 +126,16 @@ private:
 };
 
 bool dynamic_app::initialise() {
-    static_mesh_ = make_mesh<vtx_p3n3t2_t, uint32_t>(STATIC_VCOUNT, STATIC_ICOUNT);
     stream_mesh_ = make_mesh<vtx_p3c4t2_t, uint32_t>(STREAM_VCOUNT, STREAM_ICOUNT);
     instanced_mesh_ = make_mesh<vtx_p3c4_t, vtx_t2_t, uint32_t>(STATIC_VCOUNT, 4, STATIC_ICOUNT);
 
-    if(!static_mesh_.is_allocated() || !stream_mesh_.is_allocated()) {
-        LOG_ERR("Failed to allocate meshes");
+    if(!static_batch_.initialise(STATIC_VCOUNT, STATIC_ICOUNT, buffer_usage::BU_STATIC_DRAW)) {
+        LOG_ERR("Failed to allocate static batch");
+        return false;
+    }
+
+    if(!stream_mesh_.is_allocated()) {
+        LOG_ERR("Failed to allocate stream mesh");
         return false;
     }
 
@@ -144,61 +149,14 @@ bool dynamic_app::initialise() {
                               "D:/Development/zap/assets/models/buddha.obj" };
 #endif
 
-    {
-        accessor<vbuf_p3n3t2_t> vbuf_acc(static_mesh_.vstream.ptr);
-        accessor<ibuf_u32_t> ibuf_acc(static_mesh_.idx_buffer_ptr);
+    int counter = 0;
+    for (const auto &model : models) {
+        auto obj = obj_loader::load_model(model);
+        auto tok = static_batch_.allocate(primitive_type::PT_TRIANGLES, obj.first.size(), obj.second.size());
 
-        int counter = 0;
-        for (const auto &model : models) {
-            auto obj = obj_loader::load_model(model);
-            auto vrng = vbuf_acc.allocate(obj.first.size());
-            LOG(vrng.start, vrng.count, vbuf_acc.capacity(), vbuf_acc.allocated(), vbuf_acc.available());
-            if (vbuf_acc.map_write(vrng)) {
-                vbuf_acc.set(vrng, 0, obj.first);
-                LOG("Vbuf written");
-                vbuf_acc.unmap();
-            }
+        static_batch_.load(tok, obj);
 
-            auto irng = ibuf_acc.allocate(obj.second.size());
-            LOG(irng.start, irng.count, ibuf_acc.capacity(), ibuf_acc.allocated(), ibuf_acc.available());
-            if (ibuf_acc.map_write(irng)) {
-                for (auto &idx : obj.second) idx += vrng.start;
-                ibuf_acc.set(irng, 0, obj.second);
-                LOG("Ibuf written");
-                ibuf_acc.unmap();
-            }
-
-            objects[counter++] = std::make_pair(vrng, irng);
-        }
-
-        // Now free "dragon" and replace it with "buddha"
-        bool replace = false;
-        if(replace) {
-            vbuf_acc.release(objects[1].first);
-            ibuf_acc.release(objects[1].second);
-
-            auto obj = obj_loader::load_model(models[2]);
-            auto vrng = vbuf_acc.allocate(obj.first.size());
-            LOG(vrng.start, vrng.count, vbuf_acc.capacity(), vbuf_acc.allocated(), vbuf_acc.available());
-            if (vbuf_acc.map_write(vrng)) {
-                vbuf_acc.set(vrng, 0, obj.first);
-                LOG("Vbuf written");
-                vbuf_acc.unmap();
-            }
-
-            auto irng = ibuf_acc.allocate(obj.second.size());
-            LOG(irng.start, irng.count, ibuf_acc.capacity(), ibuf_acc.allocated(), ibuf_acc.available());
-            if (ibuf_acc.map_write(irng)) {
-                for (auto &idx : obj.second) idx += vrng.start;
-                ibuf_acc.set(irng, 0, obj.second);
-                LOG("Ibuf written");
-                ibuf_acc.unmap();
-            }
-
-            objects[1] = std::make_pair(vrng, irng);
-        }
-
-        LOG("Cleanup");
+        objects[counter++] = tok;
     }
 
     // Test the Vertex Buffer only Render Batch
@@ -299,14 +257,14 @@ void dynamic_app::draw() {
     rndr_state_.clear(0.f, 0.f, 0.f, 1.f);
 
     static_prog_.bind();
-    static_mesh_.bind();
+    static_batch_.bind();
     for(int i = 0; i != 3; ++i) {
         auto MV = view_matrix_ * make_translation(-2.f + 2.f*i, 0.f, 0.f) * make_scale(.2f, .2f, .2f) * make_rotation(vec3f{0.f, 1.f, 0.f}, angle);
         static_prog_.bind_uniform("MVP", proj_matrix_ * MV);
         static_prog_.bind_uniform("MV", MV);
-        static_mesh_.draw(primitive_type::PT_TRIANGLES, objects[i].second.start, objects[i].second.count);
+        static_batch_.draw(objects[i]);
     }
-    static_mesh_.release();
+    static_batch_.release();
     static_prog_.release();
 
     particle_prog_.bind();
