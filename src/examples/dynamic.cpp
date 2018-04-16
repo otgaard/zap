@@ -15,6 +15,8 @@
 #include <engine/state_stack.hpp>
 #include <renderer/render_batch.hpp>
 #include <maths/rand_functions.hpp>
+#include <engine/pixmap.hpp>
+#include <engine/texture.hpp>
 
 using namespace zap;
 using namespace zap::core;
@@ -25,6 +27,28 @@ using namespace zap::renderer;
 
 // Provides examples of how to use buffers, accessors, and render batches in conjunction with models and procedurally
 // generated geometry
+
+inline float bias(float base, float x) { return std::pow(x, std::log(base) / std::log(.5f)); }
+inline float arc_length(float radius, float theta) { return radius * theta; }
+inline float step(float a, float x) { return (float)(x >= a); }
+inline float pulse(float a, float b, float x) { return step(a, x) - step(b, x); }
+
+pixmap<r8_t> make_sphere(size_t dim, float bias_factor) {
+    pixmap<r8_t> img{ int(dim), int(dim), 1 };
+    const float inv = 1.f / dim;
+    const vec2f centre = { .5f, .5f }, inv_dims = { inv, inv };
+
+    for (size_t r = 0; r != dim; ++r) {
+        for (size_t c = 0; c != dim; ++c) {
+            const vec2f V = (vec2f{ float(c), float(r) } *inv_dims) - centre;
+            float len = 2.f * V.length();
+            len = len > 1.f ? 1.f : len;
+            img(c, r).set(lerp(bias(bias_factor, len), 255, 0));
+        }
+    }
+
+    return img;
+}
 
 const char* const static_prog_vshdr = GLSL(
     uniform mat4 MVP;
@@ -78,6 +102,34 @@ const char* const stream_prog_fshdr = GLSL(
     out vec4 frag_colour;
     void main() {
         frag_colour = col;
+    }
+);
+
+const char* const particle_prog_vshdr = GLSL(
+    uniform mat4 MVP;
+
+    in vec3 position;
+    in ivec4 colour1;
+    in vec2 texcoord1;
+
+    out vec4 col;
+    out vec2 tex;
+
+    void main() {
+        gl_Position = MVP * vec4(position, 1.);
+        col = vec4(colour1 / 255.);
+        tex = texcoord1;
+    }
+);
+
+const char* const particle_prog_fshdr = GLSL(
+    uniform sampler2D diffuse_tex;
+    in vec4 col;
+    in vec2 tex;
+
+    out vec4 frag_colour;
+    void main() {
+        frag_colour = col * texture(diffuse_tex, tex).rrrr;
     }
 );
 
@@ -156,18 +208,20 @@ private:
 
     state_stack rndr_state_;
     render_state default_state_{false, true, true, false};
-    render_state additive_blend_state_{true, true, false, false};
+    render_state additive_blend_state_{true, true, true, false};
 
     // Points or line segments
     p3c4_batch p3c4_batch_;
     std::vector<p3c4_batch::token> particle_batch_;
-    program particle_prog_;
+    program stream_prog_;
     p3c4_batch::token token_;
 
     // Camera-oriented quads
     p3c4t2_u32_batch quad_batch_;
     p3c4t2_u32_batch::token quads_;
     std::unique_ptr<particles> quad_particles_;
+    program particle_prog_;
+    texture quad_tex_;
 };
 
 bool dynamic_app::initialise() {
@@ -233,7 +287,7 @@ bool dynamic_app::initialise() {
     }
 
     {
-        const int pcount = 100;
+        const int pcount = 500;
         quad_particles_ = particles::make_particles(pcount);
 
         auto& arr = *quad_particles_;
@@ -266,7 +320,16 @@ bool dynamic_app::initialise() {
             }
 
             quad_batch_.load(quads_, std::make_pair(vertices, indices));
+
+            quad_tex_.set_mag_filter(tex_filter::TF_LINEAR);
+            quad_tex_.set_min_filter(tex_filter::TF_LINEAR);
+            quad_tex_.allocate();
+            if(!quad_tex_.initialise(make_sphere(128, .3f))) {
+                LOG_ERR("Failed to initialise texture");
+                return false;
+            }
         }
+
     }
 
     static_prog_.add_shader(shader_type::ST_VERTEX, static_prog_vshdr);
@@ -276,8 +339,15 @@ bool dynamic_app::initialise() {
         return false;
     }
 
-    particle_prog_.add_shader(shader_type::ST_VERTEX, stream_prog_vshdr);
-    particle_prog_.add_shader(shader_type::ST_FRAGMENT, stream_prog_fshdr);
+    stream_prog_.add_shader(shader_type::ST_VERTEX, stream_prog_vshdr);
+    stream_prog_.add_shader(shader_type::ST_FRAGMENT, stream_prog_fshdr);
+    if(!stream_prog_.link()) {
+        LOG_ERR("Failed to link stream_prog");
+        return false;
+    }
+
+    particle_prog_.add_shader(shader_type::ST_VERTEX, particle_prog_vshdr);
+    particle_prog_.add_shader(shader_type::ST_FRAGMENT, particle_prog_fshdr);
     if(!particle_prog_.link()) {
         LOG_ERR("Failed to link particle_prog");
         return false;
@@ -305,8 +375,7 @@ bool dynamic_app::initialise() {
 void dynamic_app::update(double t, float dt) {
     static rand_generator rnd;
     static std::vector<vtx_p3c4_t> vertices(2000);
-    static std::vector<vec3f> pos_scale(100);
-    static std::vector<vtx_p3c4t2_t> p_vertices(4*100);
+    static std::vector<vtx_p3c4t2_t> p_vertices(4*500);
 
     {
         const vec3f min = vec3f{-2.f, -2.f, -2.f}, max = vec3f{+2.f, +0.f, +2.f};
@@ -315,7 +384,7 @@ void dynamic_app::update(double t, float dt) {
     }
 
     {
-        const uint32_t pcount = 100;
+        const uint32_t pcount = 500;
         const vec3f gravity = vec3f{0.f, -5.f, 0.f};
         const auto V = view_matrix_;
 
@@ -365,18 +434,23 @@ void dynamic_app::draw() {
     static_batch_.release();
     static_prog_.release();
 
-    particle_prog_.bind();
+    stream_prog_.bind();
     p3c4_batch_.bind();
-    particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_ * make_rotation(vec3f{0.f, 1.f, 0.f}, angle));
+    stream_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_ * make_rotation(vec3f{0.f, 1.f, 0.f}, angle));
     p3c4_batch_.draw(token_);
     p3c4_batch_.release();
+    stream_prog_.release();
 
+    rndr_state_.push_state(&additive_blend_state_);
+    particle_prog_.bind();
     quad_batch_.bind();
     particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    quad_tex_.bind(0);
     quad_batch_.draw(quads_);
+    quad_tex_.release();
     quad_batch_.release();
-
     particle_prog_.release();
+    rndr_state_.pop();
 }
 
 void dynamic_app::shutdown() {
@@ -393,8 +467,13 @@ void dynamic_app::on_resize(int width, int height) {
     static_prog_.bind_uniform("colour", vec4f{1.f, 1.f, 1.f, 1.f});
     static_prog_.release();
 
+    stream_prog_.bind();
+    stream_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    stream_prog_.release();
+
     particle_prog_.bind();
     particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    particle_prog_.bind_uniform("diffuse_tex", 0);
     particle_prog_.release();
 }
 
