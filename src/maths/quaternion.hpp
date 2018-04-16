@@ -5,9 +5,9 @@
 #ifndef ZAP_QUATERNION_HPP
 #define ZAP_QUATERNION_HPP
 
-#include "maths.hpp"
-#include "vec3.hpp"
-#include "vec4.hpp"
+#include <maths/maths.hpp>
+#include <maths/vec3.hpp>
+#include <maths/vec4.hpp>
 
 namespace zap { namespace maths {
     template <typename T>

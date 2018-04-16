@@ -1,0 +1,8 @@
+get_filename_component(ZAP_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(ZAP_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+
+if(NOT zap_BINARY_DIR)
+	include("${ZAP_CMAKE_DIR}/zapTargets.cmake")
+endif()
+
+set(ZAP_LIBRARIES core zapMaths-static zapEngine-static zapGLFWHost-static zapGraphics-static zapRenderer-static)

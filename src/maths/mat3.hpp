@@ -5,10 +5,10 @@
 #ifndef ZAP_MAT3_HPP
 #define ZAP_MAT3_HPP
 
-#include "maths.hpp"
-#include "vec2.hpp"
-#include "vec3.hpp"
-#include "mat2.hpp"
+#include <maths/maths.hpp>
+#include <maths/vec2.hpp>
+#include <maths/vec3.hpp>
+#include <maths/mat2.hpp>
 
 /* Note:
  * Matrices are represented in standard mathematical notation:

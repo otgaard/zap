@@ -134,6 +134,7 @@ namespace zap { namespace engine {
     using alpha32_t = channel<channel_type::CT_ALPHA, 32>;
 
     using depth24_t = channel<channel_type::CT_DEPTH, 24>;
+    using depth32_t = channel<channel_type::CT_DEPTH, 32>;
     using stencil8_t = channel<channel_type::CT_STENCIL, 8>;
 
     using rgb332_t = pixel<core::bitfield<byte, 3, 3, 2>, red3_t, green3_t, blue2_t>;
@@ -144,6 +145,8 @@ namespace zap { namespace engine {
     using rgb32f_t = pixel<float, red32_t, green32_t, blue32_t>;
     using rgba32f_t = pixel<float, red32_t, green32_t, blue32_t, alpha32_t>;
     using rgba8888_t = pixel<byte, red8_t, green8_t, blue8_t, alpha8_t>;
+    using d32f_t = pixel<float, depth32_t>;
+    using d32u_t = pixel<uint32_t, depth32_t>;
     using d24s8_t = pixel<core::bitfield<uint32_t, 24, 8>, depth24_t, stencil8_t>;
 
     template <typename PixelT> struct pixel_type { };

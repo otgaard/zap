@@ -14,17 +14,16 @@ namespace gl {
     void bind_buffer_base(buffer_type type, int idx, uint32_t bo);
 }
 
-class ubuffer_base : public buffer {
+class ZAPENGINE_EXPORT ubuffer_base : public buffer {
 public:
     constexpr static auto buf_type = buffer_type::BT_UNIFORM;
 
     explicit ubuffer_base(buffer_usage use=buffer_usage::BU_STREAM_COPY) : buffer(use) { }
     ~ubuffer_base() override = default;
 
-    void bind() const { buffer::bind(buf_type); }
-    void release() const { buffer::release(buf_type); }
-
-    void bind_point(int location) const { gl::bind_buffer_base(buf_type, location, id_); }
+    void bind() const;
+    void release() const;
+    void bind_point(int location) const;
 };
 
 template <typename UBlock>
@@ -48,7 +47,9 @@ public:
 
     char* map(buffer_access access) { return buffer::map(buf_type, access); }
     char* map(buffer_access access, size_t offset, size_t length) {
-        return buffer::map(buf_type, access, offset, length);
+        assert(false && "This code is broken");
+        return nullptr;
+        //return buffer::map(buf_type, access, offset, length);
     }
     bool unmap() { return buffer::unmap(buf_type); }
 

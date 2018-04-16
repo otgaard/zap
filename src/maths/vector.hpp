@@ -5,7 +5,7 @@
 #ifndef ZAP_VECTOR_HPP
 #define ZAP_VECTOR_HPP
 
-#include "maths.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace maths {
 

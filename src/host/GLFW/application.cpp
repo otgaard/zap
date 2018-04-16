@@ -52,6 +52,7 @@ int application::run(const app_config& config) {
 
     glfwWindowHint(GLFW_SAMPLES, config.multisamples);
     glfwWindowHint(GLFW_DEPTH_BITS, config.depth_bits);
+    glfwWindowHint(GLFW_STENCIL_BITS, config.stencil_bits);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.gl_major_version);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.gl_minor_version);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, config.gl_forward_compatibility ? GL_TRUE : GL_FALSE);
@@ -90,7 +91,7 @@ int application::run(const app_config& config) {
     glfwSetScrollCallback(window_, ::on_scroll_handler);
 
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
-    glfwSwapInterval(1);
+    glfwSwapInterval(config.swap_interval);
 
     if(!initialise()) {
         LOG_ERR("Initialisation of this application failed.  Terminating.");
@@ -108,7 +109,6 @@ int application::run(const app_config& config) {
         curr_time = timer_.getd();
         auto dt = float(curr_time - prev_time);
         update(curr_time, dt);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         draw();
 
@@ -152,5 +152,6 @@ void application::on_mousewheel(double xoffset, double yoffset) {
 }
 
 void application::resize(int width, int height) {
+    sc_width_ = width; sc_height_ = height;
     glfwSetWindowSize(window_, width, height);
 }

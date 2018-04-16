@@ -42,7 +42,7 @@ namespace zap { namespace engine {
         parameter(int32_t l, const std::string& n, parameter_type t, int32_t c) : location(l), name(n), type(t), count(c) { }
     };
 
-    class program {
+    class ZAPENGINE_EXPORT program {
     public:
         program();
         explicit program(const std::vector<shader_ptr>& shaders);
@@ -111,31 +111,31 @@ namespace zap { namespace engine {
         return *this;
     }
 
-    template <> void program::bind_uniform<int>(int location, const int& value);
-    template <> void program::bind_uniform<float>(int location, const float& value);
-    template <> void program::bind_uniform<zap::maths::vec2f>(int location, const zap::maths::vec2f& type);
-    template <> void program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type);
-    template <> void program::bind_uniform<zap::maths::vec4f>(int location, const zap::maths::vec4f& type);
-    template <> void program::bind_uniform<zap::maths::mat3f>(int location, const zap::maths::mat3f& type);
-    template <> void program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type);
-    template <> void program::bind_uniform<std::vector<int>>(int location, const std::vector<int>& type);
-    template <> void program::bind_uniform<std::vector<zap::maths::vec2f>>(int location, const std::vector<zap::maths::vec2f>& type);
-    template <> void program::bind_uniform<std::vector<zap::maths::vec3f>>(int location, const std::vector<zap::maths::vec3f>& type);
-    template <> void program::bind_uniform<std::vector<zap::maths::vec4f>>(int location, const std::vector<zap::maths::vec4f>& type);
-    template <> void program::bind_uniform<std::vector<float>>(int location, const std::vector<float>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<int>(int location, const int& value);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<float>(int location, const float& value);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::vec2f>(int location, const zap::maths::vec2f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::vec3f>(int location, const zap::maths::vec3f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::vec4f>(int location, const zap::maths::vec4f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::mat3f>(int location, const zap::maths::mat3f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::mat4f>(int location, const zap::maths::mat4f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<int>>(int location, const std::vector<int>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<zap::maths::vec2f>>(int location, const std::vector<zap::maths::vec2f>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<zap::maths::vec3f>>(int location, const std::vector<zap::maths::vec3f>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<zap::maths::vec4f>>(int location, const std::vector<zap::maths::vec4f>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<float>>(int location, const std::vector<float>& type);
 
-    template <> void program::bind_uniform<int>(const char* name, const int& value);
-    template <> void program::bind_uniform<float>(const char* name, const float& value);
-    template <> void program::bind_uniform<zap::maths::vec2f>(const char* name, const zap::maths::vec2f& type);
-    template <> void program::bind_uniform<zap::maths::vec3f>(const char* name, const zap::maths::vec3f& type);
-    template <> void program::bind_uniform<zap::maths::vec4f>(const char* name, const zap::maths::vec4f& type);
-    template <> void program::bind_uniform<zap::maths::mat3f>(const char* name, const zap::maths::mat3f& type);
-    template <> void program::bind_uniform<zap::maths::mat4f>(const char* name, const zap::maths::mat4f& type);
-    template <> void program::bind_uniform<std::vector<int>>(const char* name, const std::vector<int>& type);
-    template <> void program::bind_uniform<std::vector<zap::maths::vec2f>>(const char* name, const std::vector<zap::maths::vec2f>& type);
-    template <> void program::bind_uniform<std::vector<zap::maths::vec3f>>(const char* name, const std::vector<zap::maths::vec3f>& type);
-    template <> void program::bind_uniform<std::vector<zap::maths::vec4f>>(const char* name, const std::vector<zap::maths::vec4f>& type);
-    template <> void program::bind_uniform<std::vector<float>>(const char* name, const std::vector<float>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<int>(const char* name, const int& value);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<float>(const char* name, const float& value);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::vec2f>(const char* name, const zap::maths::vec2f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::vec3f>(const char* name, const zap::maths::vec3f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::vec4f>(const char* name, const zap::maths::vec4f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::mat3f>(const char* name, const zap::maths::mat3f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<zap::maths::mat4f>(const char* name, const zap::maths::mat4f& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<int>>(const char* name, const std::vector<int>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<zap::maths::vec2f>>(const char* name, const std::vector<zap::maths::vec2f>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<zap::maths::vec3f>>(const char* name, const std::vector<zap::maths::vec3f>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<zap::maths::vec4f>>(const char* name, const std::vector<zap::maths::vec4f>& type);
+    template <> ZAPENGINE_EXPORT void program::bind_uniform<std::vector<float>>(const char* name, const std::vector<float>& type);
 
 }}
 

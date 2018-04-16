@@ -5,8 +5,8 @@
 #ifndef ZAP_HERMITE_HPP
 #define ZAP_HERMITE_HPP
 
-#include "maths/maths.hpp"
-#include "maths/matrix.hpp"
+#include <maths/maths.hpp>
+#include <maths/matrix.hpp>
 
 /* Hermite Curve, uses the matrix form
  * Curve definition, via substitution of PO, T0, P1 and T1 into au^3 + bu^2 + cu + D is

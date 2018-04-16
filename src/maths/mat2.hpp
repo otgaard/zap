@@ -5,8 +5,8 @@
 #ifndef ZAP_MAT2_HPP
 #define ZAP_MAT2_HPP
 
-#include "maths.hpp"
-#include "vec2.hpp"
+#include <maths/maths.hpp>
+#include <maths/vec2.hpp>
 
 /* Note:
  * Matrices are represented in standard mathematical notation:

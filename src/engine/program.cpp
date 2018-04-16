@@ -20,6 +20,7 @@ std::int32_t program::uniform_block_index(const char* name) {
     return gl::glGetUniformBlockIndex(id_, name);
 }
 
+
 void program::bind() const {
     gl::glUseProgram(id_);
 }

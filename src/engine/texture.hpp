@@ -9,7 +9,7 @@
 
 namespace zap { namespace engine {
 
-class texture {
+class ZAPENGINE_EXPORT texture {
 public:
     explicit texture(texture_type type=texture_type::TT_TEX2D) : type_(type) { }
     ~texture() { if(is_allocated()) deallocate(); }
@@ -30,6 +30,16 @@ public:
 
     void set_type(texture_type type) { if(!is_allocated()) type_ = type; }
     texture_type get_type() const { return type_; }
+    void set_wrap_s(tex_wrap mode) { if(!is_allocated()) wrap_mode_[0] = mode; }
+    void set_wrap_t(tex_wrap mode) { if(!is_allocated()) wrap_mode_[1] = mode; }
+    void set_wrap_r(tex_wrap mode) { if(!is_allocated()) wrap_mode_[2] = mode; }
+    tex_wrap get_wrap_s() const { return wrap_mode_[0]; }
+    tex_wrap get_wrap_t() const { return wrap_mode_[1]; }
+    tex_wrap get_wrap_r() const { return wrap_mode_[2]; }
+    void set_min_filter(tex_filter filter) { if(!is_allocated()) min_filter_ = filter; }
+    void set_mag_filter(tex_filter filter) { if(!is_allocated()) mag_filter_ = filter; }
+    tex_filter get_min_filter() const { return min_filter_; }
+    tex_filter get_mag_filter() const { return mag_filter_; }
 
     inline int width() const { return w_; }
     inline int height() const { return h_; }
@@ -100,6 +110,8 @@ protected:
     void initialise_default();
 
     texture_type type_ = texture_type::TT_TEX2D;
+    tex_wrap wrap_mode_[3] = { tex_wrap::TW_CLAMP_TO_EDGE, tex_wrap::TW_CLAMP_TO_EDGE, tex_wrap::TW_CLAMP_TO_EDGE };
+    tex_filter min_filter_ = tex_filter::TF_NEAREST, mag_filter_ = tex_filter::TF_NEAREST;
     resource_t id_ = INVALID_IDX;
     int w_ = 0;
     int h_ = 0;

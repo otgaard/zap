@@ -4,16 +4,18 @@
 
 // The OpenGL renderer
 
+#include <renderer/rndr.hpp>
 #include <engine/state_stack.hpp>
-#include <scene_graph/visual.hpp>
+#include <renderer/scene_graph/visual.hpp>
 #include <renderer/render_context.hpp>
 
 namespace zap { namespace renderer {
-    class renderer {
+    class ZAPRENDERER_EXPORT renderer {
     public:
         using mesh_base = engine::mesh_base;
         using state_stack = engine::state_stack;
         using render_state = engine::render_state;
+        using primitive_type = engine::primitive_type;
 
         renderer() = default;
         ~renderer() = default;
@@ -22,20 +24,20 @@ namespace zap { namespace renderer {
 
         void resize(int width, int height) { screen_width_ = width; screen_height_ = height; }
 
-        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr);
-        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count);
-        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances);
-        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances, uint32_t offset);
-        void draw(const mesh_base* mesh_ptr, const render_context* context_ptr, const render_args& args);
+        void draw(primitive_type type, const mesh_base* mesh_ptr, const render_context* context_ptr);
+        void draw(primitive_type type, const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count);
+        void draw(primitive_type type, const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances);
+        void draw(primitive_type type, const mesh_base* mesh_ptr, const render_context* context_ptr, uint32_t first, uint32_t count, uint32_t instances, uint32_t offset);
+        void draw(primitive_type type, const mesh_base* mesh_ptr, const render_context* context_ptr, const render_args& args);
 
         template <typename SpatialT>
         void draw(const scene_graph::visual<SpatialT>& v, const render_context* context_ptr, const render_args& args) {
-            draw(v.get_mesh(), context_ptr, args);
+            draw(v.get_type(), v.get_mesh(), context_ptr, args);
         }
 
         template <typename SpatialT>
         void draw(const scene_graph::visual<SpatialT>& v, const render_args& args) {
-            draw(v.get_mesh(), args.get_context(), args);
+            draw(v.get_type(), v.get_mesh(), args.get_context(), args);
         }
 
         void push_state(const render_state* rndr_state) { state_stack_.push_state(rndr_state); }

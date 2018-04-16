@@ -6,6 +6,7 @@
 #include <memory>
 #include <sstream>
 #include <iostream>
+#include <functional>
 
 #include <core/core.hpp>
 

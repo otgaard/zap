@@ -5,6 +5,22 @@
 #ifndef ZAP_ENGINE_HPP
 #define ZAP_ENGINE_HPP
 
+#if defined(_WIN32)
+
+#if !defined(ENGINE_EXPORT)
+#if defined(ZAP_STATIC)
+#include "engine_exports_s.h"
+#else
+#include "engine_exports.h"
+#endif
+#else
+#include ENGINE_EXPORT
+#endif
+
+#else
+#define ZAPENGINE_EXPORT
+#endif
+
 #include <core/core.hpp>
 #include <maths/maths.hpp>
 #include <memory>
@@ -466,10 +482,10 @@ namespace zap { namespace engine {
             sizeof(int32_t)
     };
 
-    bool init();
+    ZAPENGINE_EXPORT bool init();
 
-    bool _gl_error_log(const char* file, int line);
-    bool _gl_error_check();
+    ZAPENGINE_EXPORT bool _gl_error_log(const char* file, int line);
+    ZAPENGINE_EXPORT bool _gl_error_check();
 
 #ifdef LOGGING_ENABLED
 #define gl_error_check() _gl_error_log(__FILE__, __LINE__)

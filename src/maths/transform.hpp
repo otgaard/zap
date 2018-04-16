@@ -5,9 +5,10 @@
 #ifndef ZAP_TRANSFORM_HPP
 #define ZAP_TRANSFORM_HPP
 
-#include "mat2.hpp"
-#include "mat3.hpp"
-#include "mat4.hpp"
+#include <maths/mat2.hpp>
+#include <maths/mat3.hpp>
+#include <maths/mat4.hpp>
+#include <maths/maths.hpp>
 #include <core/enumfield.hpp>
 
 namespace zap { namespace maths {
@@ -29,6 +30,7 @@ namespace zap { namespace maths {
         using col_t = typename affine_t::col_t; // Matrix column type (N)
         using vec_t = typename affine_t::vec_t; // Vector type (N-1)
         using rot_t = typename affine_t::rot_t; // The rotation matrix
+        using gltype_t = mat4<typename affine_t::type>;    // The OpenGL compatible matrix
 
         explicit transform(bool initialise=true) { if(initialise) make_identity(); }
 
@@ -48,8 +50,8 @@ namespace zap { namespace maths {
         const rot_t& matrix() const;
         const affine_t& affine() const;
         const affine_t& inv_affine() const;
-        mat4<type> gl_matrix() const;
-        mat4<type> gl_inverse() const;
+        gltype_t gl_matrix() const;
+        gltype_t gl_inverse() const;
 
         transform operator*(const transform& rhs) const;
         vec_t vtransform(const vec_t& vec) const;
@@ -263,6 +265,12 @@ namespace zap { namespace maths {
     typename transform<AFFINE_MAT_T>::vec_t transform<AFFINE_MAT_T>::ptransform(const typename transform<AFFINE_MAT_T>::vec_t& point) const {
         return affine().transform(point);
     }
+
+    template class ZAPMATHS_EXPORT transform<mat3f>;
+    template class ZAPMATHS_EXPORT transform<mat3d>;
+    template class ZAPMATHS_EXPORT transform<mat4f>;
+    template class ZAPMATHS_EXPORT transform<mat4d>;
+
 }}
 
 #endif //ZAP_TRANSFORM_HPP

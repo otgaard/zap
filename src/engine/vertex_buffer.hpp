@@ -9,18 +9,19 @@
 namespace zap { namespace engine {
 
 namespace gl {
-    void vertex_attrib_ptr(uint32_t index, int32_t size, data_type type, bool normalized, uint32_t stride, const void* ptr);
-    void vertex_attrib_iptr(uint32_t index, int32_t size, data_type type, uint32_t stride, const void* ptr);
-    void vertex_attrib_lptr(uint32_t index, int32_t size, data_type type, uint32_t stride, const void* ptr);
+    ZAPENGINE_EXPORT void vertex_attrib_ptr(uint32_t index, int32_t size, data_type type, bool normalized, uint32_t stride, const void* ptr);
+    ZAPENGINE_EXPORT void vertex_attrib_iptr(uint32_t index, int32_t size, data_type type, uint32_t stride, const void* ptr);
+    ZAPENGINE_EXPORT void vertex_attrib_lptr(uint32_t index, int32_t size, data_type type, uint32_t stride, const void* ptr);
 }
 
-template <typename VTX_T>
+template <typename VertexT>
 class vertex_buffer : public buffer {
-    static_assert(is_specialisation_of<vertex, VTX_T>::value, "VTX_T must be a specialisation of vertex<>");
+    static_assert(is_specialisation_of<vertex, VertexT>::value, "VertexT must be a specialisation of vertex<>");
 
 public:
-    using vertex_t = VTX_T;
-    using iterator = vertex_iterator<VTX_T>;
+    using type = VertexT;
+    using vertex_t = VertexT;
+    using iterator = vertex_iterator<VertexT>;
     using pod_t = typename vertex_t::pod_t;
     constexpr static auto buf_type = buffer_type::BT_ARRAY;
 
@@ -132,6 +133,7 @@ public:
     }
 
     size_t vertex_count() const { return vertex_count_; }
+    const size_t count() const { return vertex_count_; }
     size_t capacity() const { return size() / vertex_t::bytesize(); }
 
     bool configure_attributes();
@@ -140,8 +142,8 @@ private:
     size_t vertex_count_ = 0;
 };
 
-template <typename VTX_T>
-bool vertex_buffer<VTX_T>::configure_attributes() {
+template <typename VertexT>
+bool vertex_buffer<VertexT>::configure_attributes() {
     static_assert(vertex_t::size > 0, "An empty vertex<> type cannot be configured");
 
     for(size_t i = 0; i != vertex_t::size; ++i) {
@@ -161,11 +163,11 @@ bool vertex_buffer<VTX_T>::configure_attributes() {
     return true;
 }
 
-template <typename VTX_T>
-bool vertex_buffer<VTX_T>::copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count) {
-    const size_t length = vertex_count * VTX_T::bytesize();
-    const size_t source_offset = src_off * VTX_T::bytesize();
-    const size_t target_offset = trg_off * VTX_T::bytesize();
+template <typename VertexT>
+bool vertex_buffer<VertexT>::copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count) {
+    const size_t length = vertex_count * VertexT::bytesize();
+    const size_t source_offset = src_off * VertexT::bytesize();
+    const size_t target_offset = trg_off * VertexT::bytesize();
     if(source_offset + length <= src.size_ && target_offset + length <= size_) {
         src.buffer::bind(buffer_type::BT_COPY_READ);
         buffer::bind(buffer_type::BT_COPY_WRITE);
@@ -178,7 +180,7 @@ bool vertex_buffer<VTX_T>::copy(const vertex_buffer& src, size_t src_off, size_t
 }
 
 template <typename Parm> struct is_vertex_buffer : std::false_type { };
-template <typename VTX_T> struct is_vertex_buffer<vertex_buffer<VTX_T>> : std::true_type { };
+template <typename VertexT> struct is_vertex_buffer<vertex_buffer<VertexT>> : std::true_type { };
 
 }}
 

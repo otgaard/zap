@@ -5,7 +5,7 @@
 #ifndef ZAP_FUNCTIONS_HPP
 #define ZAP_FUNCTIONS_HPP
 
-#include "maths/maths.hpp"
+#include <maths/maths.hpp>
 #include <chrono>
 
 namespace zap { namespace maths {

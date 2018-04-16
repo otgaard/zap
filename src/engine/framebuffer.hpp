@@ -8,7 +8,7 @@
 
 namespace zap { namespace engine {
 
-class framebuffer {
+class ZAPENGINE_EXPORT framebuffer {
 public:
     using vec4i = maths::vec4i;
 

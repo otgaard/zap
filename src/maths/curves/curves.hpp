@@ -5,7 +5,7 @@
 #ifndef ZAP_CURVES_HPP
 #define ZAP_CURVES_HPP
 
-#include "maths/maths.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace maths { namespace curves {
     template <typename T, typename FncX, typename FncY>

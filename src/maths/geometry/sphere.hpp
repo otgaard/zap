@@ -6,7 +6,7 @@
 #define ZAP_SPHERE_HPP
 
 #include <limits>
-#include "ray.hpp"
+#include <maths/geometry/ray.hpp>
 
 namespace zap { namespace maths { namespace geometry {
 

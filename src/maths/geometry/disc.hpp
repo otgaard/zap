@@ -5,7 +5,7 @@
 #ifndef ZAP_DISC_HPP
 #define ZAP_DISC_HPP
 
-#include "maths/maths.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace maths { namespace geometry {
 

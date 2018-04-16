@@ -2,7 +2,7 @@
 #ifndef ZAP_VEC3_HPP
 #define ZAP_VEC3_HPP
 
-#include "maths.hpp"
+#include <maths/maths.hpp>
 
 namespace zap { namespace maths {
     template <typename T> constexpr T dot(const vec3<T>& lhs, const vec3<T>& rhs);

@@ -2,18 +2,18 @@
 // Created by Darren Otgaar on 2016/07/24.
 //
 
-#include "transform.hpp"
+#include <maths/transform.hpp>
 
 namespace zap { namespace maths {
 
 template <>
-mat4<typename transform<mat4f>::type> transform<mat4f>::gl_matrix() const {
+typename transform<mat4f>::gltype_t transform<mat4f>::gl_matrix() const {
     if(!transform_state_.is_set(transform_state::TS_SYNCED)) update_transform();
     return matrix_;
 }
 
 template <>
-mat4<typename transform<mat3f>::type> transform<mat3f>::gl_matrix() const {
+typename transform<mat3f>::gltype_t transform<mat3f>::gl_matrix() const {
     if(!transform_state_.is_set(transform_state::TS_SYNCED)) update_transform();
     mat4f m(1.f, 1.f, 1.f, 1.f);
     m.column(0, vec3f(matrix_.col2(0), 0.f));
@@ -23,13 +23,13 @@ mat4<typename transform<mat3f>::type> transform<mat3f>::gl_matrix() const {
 }
 
 template <>
-mat4<typename transform<mat4f>::type> transform<mat4f>::gl_inverse() const {
+typename transform<mat4f>::gltype_t transform<mat4f>::gl_inverse() const {
     if(!transform_state_.is_set(transform_state::TS_SYNCEDINV)) invert_affine();
     return inv_matrix_;
 }
 
 template <>
-mat4<typename transform<mat3f>::type> transform<mat3f>::gl_inverse() const {
+typename transform<mat3f>::gltype_t transform<mat3f>::gl_inverse() const {
     if(!transform_state_.is_set(transform_state::TS_SYNCEDINV)) invert_affine();
     mat4f m(1.f, 1.f, 1.f, 1.f);
     m.column(0, vec3f(inv_matrix_.col2(0), 0.f));
@@ -39,6 +39,3 @@ mat4<typename transform<mat3f>::type> transform<mat3f>::gl_inverse() const {
 }
 
 }}
-
-template class zap::maths::transform<zap::maths::mat3f>;
-template class zap::maths::transform<zap::maths::mat4f>;
