@@ -179,8 +179,7 @@ namespace zap { namespace maths {
 
     template <typename T>
     constexpr vec2<T> operator/(const vec2<T>& lhs, const T& scalar) {
-        const T inv_scalar = T(1) / scalar;
-        return vec2<T>(lhs.x * inv_scalar, lhs.y * inv_scalar);
+        return vec2<T>(lhs.x / scalar, lhs.y / scalar);
     }
 
     template <typename T>
