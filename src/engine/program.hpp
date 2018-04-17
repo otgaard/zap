@@ -78,6 +78,8 @@ namespace zap { namespace engine {
         }
         // clear - clear the strings & delete the shader objects.  bind-generic = bind the loc0 - loc15 vertex attributes
         bool link(bool clear=true, bool bind_generic=false);
+        bool link(const char* const vshdr, const char* const fshdr, bool clear=true, bool bind_generic=false);
+        bool link(const char* const vshdr, const char* const gshdr, const char* const fshdr, bool clear=true, bool bind_generic=false);
 
         void bind_uniform(int location, parameter_type type, int count, const char* data);
         template <typename T> void bind_uniform(int location, const T& type);

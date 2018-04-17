@@ -70,6 +70,18 @@ bool program::link(bool clear, bool bind_generic) {
     return linked_;
 }
 
+bool program::link(const char* const vshdr, const char* const fshdr, bool clear, bool bind_generic) {
+    add_shader(shader_type::ST_VERTEX, vshdr);
+    add_shader(shader_type::ST_FRAGMENT, fshdr);
+    return link(clear, bind_generic);
+}
+bool program::link(const char* const vshdr, const char* const gshdr, const char* const fshdr, bool clear, bool bind_generic) {
+    add_shader(shader_type::ST_VERTEX, vshdr);
+    add_shader(shader_type::ST_GEOMETRY, gshdr);
+    add_shader(shader_type::ST_FRAGMENT, fshdr);
+    return link(clear, bind_generic);
+}
+
 void program::bind_texture_unit(int location, int unit) {
     gl::glUniform1i(location, unit);
 }

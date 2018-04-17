@@ -38,16 +38,16 @@ Build zap:
 * cd ../..
 * mkdir build
 * cd build
-* cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL] -DCMAKE_BUILD_TYPE=Release
+* cmake .. -DCMAKE_BUILD_TYPE=[Release|Debug] [-DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL]]
 * (example -DCMAKE_INSTALL_PREFIX=/usr/local/)
-* make -j 4 && make install
+* make -j 4 [&& make install]
 
 Windows Build Instructions (x64)
 --------------------------------
 
 Requires Visual Studio 2015 or 2017.
 
-Tested with the "Visual Studio 15 2017 Win64" and "Visual Studio 15 2017" generators.
+Tested with the "Visual Studio 15 2017 Win64" and "Visual Studio 14 2015" generators.
 
 Checkout repository:
 
@@ -78,5 +78,5 @@ Build zap:
 * cd ../..
 * mkdir build
 * cd build
-* cmake .. -DCMAKE_BUILD_TYPE=[Release|Debug] -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL] -G "Visual Studio 14 2015 Win64"
-* cmake --build . --config [Release|Debug] --target Install
+* cmake .. -DCMAKE_BUILD_TYPE=[Release|Debug] [-DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL]] -G "Visual Studio 15 2017 Win64"
+* cmake --build . --config [Release|Debug] [--target Install]

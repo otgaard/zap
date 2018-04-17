@@ -130,8 +130,9 @@ public:
     using ibuf_t = IndexBufferT;
     using vertex_t = typename vbuf_t::type;
     using index_t = typename ibuf_t::type;
-    using mesh_t = engine::mesh<VertexStreamT, ibuf_t>;
+    using mesh_t = engine::mesh<stream_t, ibuf_t>;
     using vbuf_acc_t = engine::accessor<vbuf_t>;
+    using ibuf_acc_t = engine::accessor<ibuf_t>;
     using range = engine::range;
     using primitive_type = engine::primitive_type;
 
@@ -149,6 +150,8 @@ public:
         token(uint32_t id, primitive_type pt, const range& vrange, const range& irange)
                 : id(id), type(pt), vtx_range(vrange), idx_range(irange) { }
     };
+
+    using batch_t = std::vector<token>;
 
     static const token invalid_token;
 
@@ -266,13 +269,11 @@ private:
     mesh_t mesh_;
     vbuf_t* vbuf_ptr_ = nullptr;
     ibuf_t* ibuf_ptr_ = nullptr;
-    engine::accessor<vbuf_t> vbuf_acc_;
-    engine::accessor<ibuf_t> ibuf_acc_;
-    std::vector<token> batch_;
+    vbuf_acc_t vbuf_acc_;
+    ibuf_acc_t ibuf_acc_;
+    batch_t batch_;
     bool search_free_ = false;
 };
-
-
 
 template <typename VertexStreamT>
 const typename render_batch<VertexStreamT, void, 1>::token render_batch<VertexStreamT, void, 1>::invalid_token = {INVALID_IDX, engine::primitive_type::PT_NONE, engine::range()};

@@ -252,9 +252,7 @@ bool dynamic_app::initialise() {
     for (const auto &model : models) {
         auto obj = obj_loader::load_model(model);
         auto tok = static_batch_.allocate(primitive_type::PT_TRIANGLES, obj.first.size(), obj.second.size());
-
         static_batch_.load(tok, obj);
-
         objects[counter++] = tok;
     }
 
@@ -332,23 +330,17 @@ bool dynamic_app::initialise() {
 
     }
 
-    static_prog_.add_shader(shader_type::ST_VERTEX, static_prog_vshdr);
-    static_prog_.add_shader(shader_type::ST_FRAGMENT, static_prog_fshdr);
-    if(!static_prog_.link()) {
+    if(!static_prog_.link(static_prog_vshdr, static_prog_fshdr)) {
         LOG_ERR("Failed to link static_prog");
         return false;
     }
 
-    stream_prog_.add_shader(shader_type::ST_VERTEX, stream_prog_vshdr);
-    stream_prog_.add_shader(shader_type::ST_FRAGMENT, stream_prog_fshdr);
-    if(!stream_prog_.link()) {
+    if(!stream_prog_.link(stream_prog_vshdr, stream_prog_fshdr)) {
         LOG_ERR("Failed to link stream_prog");
         return false;
     }
 
-    particle_prog_.add_shader(shader_type::ST_VERTEX, particle_prog_vshdr);
-    particle_prog_.add_shader(shader_type::ST_FRAGMENT, particle_prog_fshdr);
-    if(!particle_prog_.link()) {
+    if(!particle_prog_.link(particle_prog_vshdr, particle_prog_fshdr)) {
         LOG_ERR("Failed to link particle_prog");
         return false;
     }
@@ -388,7 +380,7 @@ void dynamic_app::update(double t, float dt) {
         const vec3f gravity = vec3f{0.f, -5.f, 0.f};
         const auto V = view_matrix_;
 
-        auto& arr = *quad_particles_.get();
+        auto& arr = *quad_particles_;
         for (size_t i = 0; i != pcount; ++i) {
             arr.position[i] += arr.velocity[i] * dt;
             arr.velocity[i] += gravity * dt;
@@ -414,7 +406,6 @@ void dynamic_app::update(double t, float dt) {
 
         quad_batch_.load(quads_, p_vertices);
     }
-
 }
 
 void dynamic_app::draw() {

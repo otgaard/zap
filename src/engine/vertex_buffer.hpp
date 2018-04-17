@@ -72,7 +72,10 @@ public:
     // All sizes are in vertices, i.e src_off = 0 is the first vertex, src_off = 1 is the second and so on.
     bool copy(const vertex_buffer& src, size_t src_off, size_t trg_off, size_t vertex_count);
     bool copy(const std::vector<vertex_t>& data, size_t offset, size_t vertex_count) {
-        return buffer::copy(buf_type, offset, vertex_t::bytesize()*data.size(), reinterpret_cast<const char*>(data.data()));
+        return buffer::copy(buf_type,
+                            vertex_t::bytesize()*offset,
+                            vertex_t::bytesize()*vertex_count,
+                            reinterpret_cast<const char*>(data.data()));
     }
     bool copy(const char* data, size_t offset, size_t count) {
         return buffer::copy(buf_type, offset, count, data);
@@ -86,6 +89,15 @@ public:
     char* map(int access, size_t offset, size_t length) { return map((range_access::code)access, offset, length); }
     void flush(size_t offset, size_t length) { return buffer::flush(buf_type, offset*vertex_t::bytesize(), length*vertex_t::bytesize()); }
     bool unmap() { return buffer::unmap(buf_type); }
+
+    void mapped_copy(const vertex_t* ptr, size_t trg_offset, size_t vertex_count) {
+        assert(is_mapped() && trg_offset + vertex_count <= vertex_count_ && ZERR_IDX_OUT_OF_RANGE);
+        memcpy(data()+trg_offset, ptr, vertex_t::bytesize()*vertex_count);
+    }
+
+    void mapped_copy(const std::vector<vertex_t>& arr, size_t trg_offset, size_t vertex_count) {
+        mapped_copy(arr.data(), trg_offset, vertex_count);
+    }
 
     const vertex_t& operator[](size_t idx) const {
         assert(is_mapped() && "Vertex Buffer must be mapped!");

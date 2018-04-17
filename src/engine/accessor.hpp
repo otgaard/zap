@@ -259,16 +259,29 @@ bool accessor<BufferT>::unmap() {
 
 template <typename BufferT>
 void accessor<BufferT>::set(uint32_t offset, const type& i) {
+    if(!is_mapped()) return;
+
+    buffer_ptr_->operator[](offset) = i;
+
+    enqueue_flush(range(offset, 1));
 }
 
 template <typename BufferT>
 void accessor<BufferT>::set(uint32_t offset, uint32_t count, const type* p) {
+    if(!is_mapped()) return;
 
+    buffer_ptr_->mapped_copy(p, offset, count);
+
+    enqueue_flush(range(offset, count));
 }
 
 template <typename BufferT>
 void accessor<BufferT>::set(uint32_t offset, const std::vector<type>& v) {
+    if(!is_mapped()) return;
 
+    buffer_ptr_->mapped_copy(v, offset, v.size());
+
+    enqueue_flush(range(offset, v.size()));
 }
 
 template <typename BufferT>
@@ -286,7 +299,7 @@ void accessor<BufferT>::set(const range& blk, uint32_t offset, uint32_t count, c
     if(!blk.is_valid() || offset + count > blk.count || !is_mapped()) return;
 
     const uint32_t idx = map_start_ == 0 ? blk.start + offset : offset;
-    for(auto i = 0; i != count; ++i) buffer_ptr_->operator[](idx+i) = *(p + i);
+    buffer_ptr_->mapped_copy(p, idx, count);
 
     enqueue_flush(range(idx, count));
 }
@@ -296,7 +309,7 @@ void accessor<BufferT>::set(const range& blk, uint32_t offset, const std::vector
     if(!blk.is_valid() || offset + v.size() > blk.count || !is_mapped()) return;
 
     const uint32_t idx = map_start_ == 0 ? blk.start + offset : offset, count = uint32_t(v.size());
-    for(auto i = 0; i != count; ++i) buffer_ptr_->operator[](idx+i) = v[i];
+    buffer_ptr_->mapped_copy(v, idx, count);
 
     enqueue_flush(range(idx, uint32_t(v.size())));
 }
