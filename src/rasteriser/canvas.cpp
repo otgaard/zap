@@ -1,6 +1,6 @@
 /* Created by Darren Otgaar on 2016/08/20. http://www.github.com/otgaard/zap */
 
-#include <renderer/colour.hpp>
+#include <graphics/colour.hpp>
 #include "canvas.hpp"
 
 #include <algorithm>
@@ -8,6 +8,8 @@
 
 using namespace zap::engine;
 using namespace zap::rasteriser;
+
+using colour = zap::graphics::colour;
 
 template <typename PixelT>
 canvas<PixelT, pixel_buffer>::canvas() : mapped_ptr_(nullptr) {
@@ -614,9 +616,9 @@ void canvas<PixelT, pixmap>::update(texture& tex) {
     max_.x += 1; max_.y += 1;
     auto w = max_.x - min_.x, h = max_.y - min_.y;
     if(w > 0 && h > 0) {
-        if(tex.width() != width() || tex.height() != height()) {
-            tex.initialise(raster_);
-        }
+        tex.initialise(raster_);
+        //if(tex.width() != width() || tex.height() != height()) {
+        //}
     }
 }
 

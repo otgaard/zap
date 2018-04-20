@@ -201,10 +201,10 @@ namespace zap { namespace maths {
         // This is a transform
         vec4<T> operator*(const vec4<T>& v) {
             vec4<T> r;
-            r[0] = arr[idx(0,0)]*v[0] + arr[idx(0,1)]*v[1] + arr[idx(0,2)]*v[2] + arr[idx(0,3)*v[3]];
-            r[1] = arr[idx(1,0)]*v[0] + arr[idx(1,1)]*v[1] + arr[idx(1,2)]*v[2] + arr[idx(1,3)*v[3]];
-            r[2] = arr[idx(2,0)]*v[0] + arr[idx(2,1)]*v[1] + arr[idx(2,2)]*v[2] + arr[idx(2,3)*v[3]];
-            r[3] = arr[3];
+            r[0] = arr[idx(0,0)]*v[0] + arr[idx(0,1)]*v[1] + arr[idx(0,2)]*v[2] + arr[idx(0,3)]*v[3];
+            r[1] = arr[idx(1,0)]*v[0] + arr[idx(1,1)]*v[1] + arr[idx(1,2)]*v[2] + arr[idx(1,3)]*v[3];
+            r[2] = arr[idx(2,0)]*v[0] + arr[idx(2,1)]*v[1] + arr[idx(2,2)]*v[2] + arr[idx(2,3)]*v[3];
+            r[3] = arr[idx(3,0)]*v[0] + arr[idx(3,1)]*v[1] + arr[idx(3,2)]*v[2] + arr[idx(3,3)]*v[3];
             return r;
         }
 
