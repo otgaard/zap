@@ -343,7 +343,7 @@ void canvas<PixelT, pixel_buffer>::filled_rect(int x1, int y1, int x2, int y2) {
 
 template <typename PixelT>
 void canvas<PixelT, pixel_buffer>::vertical_line(int x1, int y1, int y2) {
-    if(y1 < y2) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
+    if(y1 > y2) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
     while(y <= y2) raster_(x1,y++).set3(pen_colour_);
 }
@@ -550,7 +550,7 @@ void canvas<PixelT, pixel_buffer>::polygon(const std::vector<vec2i>& polygon) {
     int curr_bucket = 0;
     int curr_y = global_et.min_y;
     while(curr_y != global_et.max_y) {
-        while(global_et.buckets[curr_bucket].y == curr_y) {
+        while(global_et.buckets.size() != curr_bucket && global_et.buckets[curr_bucket].y == curr_y) {
             auto& current = global_et.buckets[curr_bucket];
             std::copy(current.edges.begin(), current.edges.end(), std::back_inserter(AET));
             ++curr_bucket;
@@ -675,7 +675,7 @@ void canvas<PixelT, pixmap>::line_impl(int x1, int y1, int x2, int y2) {
 
     // Horizontal or Vertical Case
     if(dx == 0) {
-        y1 < y2 ? vertical_line(x1, y1, y2)   : vertical_line(x1, y2, y1);
+        y1 < y2 ? vertical_line(x1, y1, y2) : vertical_line(x1, y2, y1);
         return;
     } else if(dy == 0) {
         x1 < x2 ? horizontal_line(x1, x2, y1) : horizontal_line(x2, x1, y1);
@@ -857,7 +857,7 @@ size_t canvas<PixelT, pixmap>::copy(const typename canvas<PixelT, pixmap>::pixma
 
 template <typename PixelT>
 void canvas<PixelT, pixmap>::vertical_line(int x1, int y1, int y2) {
-    if(y2 < y1) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
+    if(y1 > y2) std::swap(y1, y2); //assert(y1 < y2 && "vertical_line requires y1 < y2");
     int y = y1;
     while(y <= y2) raster_(x1,y++).set3(pen_colour_);
 }
@@ -985,7 +985,7 @@ void canvas<PixelT, pixmap>::polygon(const std::vector<vec2i>& polygon) {
     int curr_bucket = 0;
     int curr_y = global_et.min_y;
     while(curr_y != global_et.max_y) {
-        while(global_et.buckets[curr_bucket].y == curr_y) {
+        while(global_et.buckets.size() != curr_bucket && global_et.buckets[curr_bucket].y == curr_y) {
             auto& current = global_et.buckets[curr_bucket];
             std::copy(current.edges.begin(), current.edges.end(), std::back_inserter(AET));
             ++curr_bucket;
