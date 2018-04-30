@@ -29,11 +29,13 @@ using vtx_t2_t = vertex<tex2f_t>;
 using vtx_p2t2_t = vertex<pos2f_t, tex2f_t>;
 using vtx_p2c3_t = vertex<pos2f_t, col3b_t>;
 using vtx_p2c4_t = vertex<pos2f_t, col4b_t>;
+using vtx_p2t2c4_t = vertex<pos2f_t, tex2f_t, col4b_t>;
 
 using vbuf_p2_t = vertex_buffer<vtx_p2_t>;
 using vbuf_t2_t = vertex_buffer<vtx_t2_t>;
 using vbuf_p2t2_t = vertex_buffer<vtx_p2t2_t>;
 using vbuf_p2c3_t = vertex_buffer<vtx_p2c3_t>;
+using vbuf_p2t2c4_t = vertex_buffer<vtx_p2t2c4_t>;
 
 using ibuf_u8_t = index_buffer<uint8_t>;
 using ibuf_u16_t = index_buffer<uint16_t>;
@@ -43,6 +45,7 @@ using mesh_p2_t = mesh<vertex_stream<vbuf_p2_t>>;
 using mesh_p2t2_t = mesh<vertex_stream<vbuf_p2t2_t>>;
 using mesh_p2c3_t = mesh<vertex_stream<vbuf_p2c3_t>>;
 using mesh_p2t2_u32_t = mesh<vertex_stream<vbuf_p2t2_t>, ibuf_u32_t>;
+using mesh_p2t2c4_u32_t = mesh<vertex_stream<vbuf_p2t2c4_t>, ibuf_u32_t>;
 
 }}
 
