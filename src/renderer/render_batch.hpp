@@ -199,7 +199,7 @@ public:
     bool map_readwrite(bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_readwrite() : true) && (ibuf ? ibuf_acc_.map_readwrite() : true); }
 
     bool map_read(const token& tok, bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_read(tok.vtx_range) : true) && (ibuf ? ibuf_acc_.map_read(tok.idx_range) : true); }
-    bool map_write(const token& tok, bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_write(tok.vtx_range) : true) && (ibuf ? ibuf_acc_.map_write(tok.idx_range) : true); }
+    bool map_write(const token& tok, bool vbuf=true, bool ibuf=true, bool invalidate=true) { return (vbuf ? vbuf_acc_.map_write(tok.vtx_range, invalidate) : true) && (ibuf ? ibuf_acc_.map_write(tok.idx_range, invalidate) : true); }
     bool map_readwrite(const token tok, bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_readwrite(tok.vtx_range) : true) && (ibuf ? ibuf_acc_.map_readwrite(tok.idx_range) : true); }
 
     bool unmap() { return (vbuf_acc_.is_mapped() ? vbuf_acc_.unmap() : true) && (ibuf_acc_.is_mapped() ? ibuf_acc_.unmap() : true); }

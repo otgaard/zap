@@ -59,20 +59,20 @@ void camera::update_view() {
 }
 
 void camera::update_frustum() {
-    const float& d_min = frustum_[FP_DMIN];
-    const float& d_max = frustum_[FP_DMAX];
-    const float& u_min = frustum_[FP_UMIN];
-    const float& u_max = frustum_[FP_UMAX];
-    const float& r_min = frustum_[FP_RMIN];
-    const float& r_max = frustum_[FP_RMAX];
+    const auto& d_min = frustum_[FP_DMIN];
+    const auto& d_max = frustum_[FP_DMAX];
+    const auto& u_min = frustum_[FP_UMIN];
+    const auto& u_max = frustum_[FP_UMAX];
+    const auto& r_min = frustum_[FP_RMIN];
+    const auto& r_max = frustum_[FP_RMAX];
 
     float inv_D_diff = 1.0f / (d_max - d_min);
     float inv_U_diff = 1.0f / (u_max - u_min);
     float inv_R_diff = 1.0f / (r_max - r_min);
 
-    float sumR = (r_min + r_max) * inv_R_diff;
-    float sumU = (u_min + u_max) * inv_U_diff;
     float sumD = (d_min + d_max) * inv_D_diff;
+    float sumU = (u_min + u_max) * inv_U_diff;
+    float sumR = (r_min + r_max) * inv_R_diff;
 
     if(cam_state_.is_set(camera_state::CS_PERSPECTIVE)) {
         float two_dmin_inv_R_diff = 2.0f * d_min * inv_R_diff;
@@ -130,7 +130,7 @@ bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
     float dd = frustum_[FP_DMIN];
 
     origin = world_pos();
-    d = dd*dir() + dr*right() + du*up();
+    d = dr*right() + du*up() + dd*dir();
     d.normalise();
     return true;
 }
