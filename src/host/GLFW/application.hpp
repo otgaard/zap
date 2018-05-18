@@ -47,8 +47,8 @@ public:
     virtual void draw() { }
     virtual void shutdown() { } // Note:  All OpenGL resources must be freed before this function returns
 
-    virtual void on_keypress(char ch);
-    virtual void on_keyrelease(char ch);
+    virtual void on_keydown(int ch);
+    virtual void on_keyup(int ch);
     virtual void on_resize(int width, int height);
     virtual void on_mousedown(int button);
     virtual void on_mouseup(int button);

@@ -17,8 +17,8 @@ static void on_resize_handler(GLFWwindow* window_ptr, int width, int height) {
 
 static void on_keypress_handler(GLFWwindow* window_ptr, int key, int scancode, int action, int mods) {
     if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
-        if(action == GLFW_PRESS)        app_ptr->on_keypress(char(key));
-        else if(action == GLFW_RELEASE) app_ptr->on_keyrelease(char(key));
+        if(action == GLFW_PRESS)        app_ptr->on_keydown(key);
+        else if(action == GLFW_RELEASE) app_ptr->on_keyup(key);
     }
 }
 
@@ -123,11 +123,11 @@ int application::run(const app_config& config) {
     return 0;
 }
 
-void application::on_keypress(char ch) {
+void application::on_keydown(int ch) {
 
 }
 
-void application::on_keyrelease(char ch) {
+void application::on_keyup(int ch) {
 
 }
 
