@@ -11,33 +11,58 @@ namespace zap { namespace maths { namespace geometry {
 
 template <typename T>
 struct disc {
-    using vector = vec2<T>;
-    using real = T;
+    using type = T;
+    using vector_t = vec2<T>;
+    using affine_t = mat3<T>;
 
     disc() = default;
     disc(const disc& rhs) = default;
-    disc(const vec2<T>& P, T radius) : P(P), r(radius) { }
+    disc(const vec2<T>& centre, T radius) : centre(centre), radius(radius) { }
+
+    disc& translate(const vector_t& T) {
+        centre += T;
+        return *this;
+    }
+
+    disc& transform(const affine_t& T) {
+        centre += T.col(2);
+        return *this;
+    }
 
     disc& operator=(const disc& rhs) = default;
 
-    vector P;
-    real r;
+    vector_t centre;
+    type radius;
 };
 
 template <typename T>
 T distance(const vec2<T>& P, const disc<T>& D) {
-    return std::sqrt((D.P - P).length_sqr()) - D.r;
+    return std::sqrt((D.centre - P).length_sqr()) - D.radius;
 }
 
 template <typename T>
 T distance_sqr(const disc<T>& A, const disc<T>& B) {
-    return (A.P - B.P).length_sqr() - (A.r*A.r) - (B.r*B.r);
+    return (A.centre - B.centre).length_sqr() - A.radius*A.radius - B.radius*B.radius;
 }
 
 template <typename T>
 T distance(const disc<T>& A, const disc<T>& B) {
     return std::sqrt(distance_sqr(A, B));
 }
+
+template <typename T>
+bool intersection(const disc<T>& D, const vec2<T>& P) {
+    return (P - D.centre).length_sqr() < D.radius*D.radius;
+}
+
+template <typename T>
+bool intersection(const disc<T>& A, const disc<T>& B) {
+    return (A.centre - B.centre).length_sqr() < A.radius*A.radius + B.radius*B.radius;
+}
+
+using disc2i = disc<int>;
+using disc2f = disc<float>;
+using disc2d = disc<double>;
 
 }}}
 

@@ -23,20 +23,20 @@ namespace zap { namespace maths {
         constexpr vec2(const static_list<T, 2>& lst) : x(lst[0]), y(lst[1]) { }
         constexpr vec2(const vec2<T>& rhs) : x(rhs.x), y(rhs.y) { }
 
-        inline vec2<T>& operator=(const vec2<T>& rhs) {
+        vec2<T>& operator=(const vec2<T>& rhs) {
             if(this != &rhs) { x = rhs.x; y = rhs.y; }
             return *this;
         }
 
-        inline T* begin() { return arr; }
-        inline T* end() { return arr + size(); }
-        inline const T* begin() const { return arr; }
-        inline const T* end() const { return arr + size(); }
-        inline const T* data() const { return arr; }
-        inline T* data() { return arr; }
+        T* begin() { return arr; }
+        T* end() { return arr + size(); }
+        const T* begin() const { return arr; }
+        const T* end() const { return arr + size(); }
+        const T* data() const { return arr; }
+        T* data() { return arr; }
 
-        inline T& operator[](size_t idx) { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
-        inline const T& operator[](size_t idx) const { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
+        T& operator[](size_t idx) { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
+        const T& operator[](size_t idx) const { assert(idx < size() && ZERR_IDX_OUT_OF_RANGE); return arr[idx]; }
 
         void set(T nx, T ny) { x = nx; y = ny; }
 
@@ -85,19 +85,23 @@ namespace zap { namespace maths {
         }
 
         bool operator<(const vec2<T>& rhs) const {
-            return y < rhs.y || x < rhs.x;
+            for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
+            return true;
         }
 
         bool operator<=(const vec2<T>& rhs) const {
-            return y <= rhs.y || x <= rhs.x;
+            for(size_t i = 0; i != size(); ++i) if(arr[i] > rhs.arr[i]) return false;
+            return true;
         }
 
         bool operator>(const vec2<T>& rhs) const {
-            return y > rhs.y || x > rhs.x;
+            for(size_t i = 0; i != size(); ++i) if(arr[i] <= rhs.arr[i]) return false;
+            return true;
         }
 
         bool operator>=(const vec2<T>& rhs) const {
-            return y >= rhs.y || x >= rhs.x;
+            for(size_t i = 0; i != size(); ++i) if(arr[i] < rhs.arr[i]) return false;
+            return true;
         }
 
         bool eq(const vec2<T>& rhs) const {
