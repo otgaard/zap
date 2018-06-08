@@ -12,52 +12,54 @@
 #include <maths/geometry/AABB.hpp>
 
 namespace zap {
-    namespace engine {
-        class texture;
-    }
-    namespace renderer {
-        class camera;
-    }
+namespace engine {
+class texture;
+}
+namespace renderer {
+class camera;
+}
 }
 
 namespace zap { namespace graphics {
-    struct font;
-    class text;
-    class font_manager;
 
-    // The text_batcher controls batching and rendering of multiple on-screen text strings with fonts stored as
-    // texture atlases with matching texcoord, boundary and advance instructions from Freetype.
-    class ZAPGRAPHICS_EXPORT text_batcher {
-    public:
-        using texture = engine::texture;
+struct font;
+class text;
+class font_manager;
 
-        text_batcher();
-        ~text_batcher();
+// The text_batcher controls batching and rendering of multiple on-screen text strings with fonts stored as
+// texture atlases with matching texcoord, boundary and advance instructions from Freetype.
+class ZAPGRAPHICS_EXPORT text_batcher {
+public:
+    using texture = engine::texture;
 
-        bool initialise(font_manager* font_mgr);
+    text_batcher();
+    ~text_batcher();
 
-        void draw(const renderer::camera& cam);
+    bool initialise(font_manager* font_mgr);
 
-        const texture* get_texture(uint32_t font_id) const;
+    void draw(const renderer::camera& cam);
 
-        text create_text(uint32_t font_id, const std::string& str, uint32_t max_len=0);
-        bool change_text(uint32_t text_id, const std::string& str, uint32_t max_len=0);
-        void destroy_text(uint32_t text_id);
-        void translate_text(uint32_t text_id, int x, int y);
-        void set_text_colour(uint32_t text_id, float r, float g, float b, float a);
+    const texture* get_texture(uint32_t font_id) const;
 
-        maths::vec2i get_text_translation(uint32_t text_id) const;
-        maths::geometry::recti get_AABB(uint32_t text_id) const;
-        maths::vec4f get_text_colour(uint32_t text_id) const;
-        const font* get_text_font(uint32_t text_id) const;
-        const std::string& get_text_string(uint32_t text_id);
-        size_t get_text_size(uint32_t text_id);
+    text create_text(uint32_t font_id, const std::string& str, uint32_t max_len=0);
+    bool change_text(uint32_t text_id, const std::string& str, uint32_t max_len=0);
+    void destroy_text(uint32_t text_id);
+    void translate_text(uint32_t text_id, int x, int y);
+    void set_text_colour(uint32_t text_id, float r, float g, float b, float a);
 
-    private:
-        struct state_t;
-        std::unique_ptr<state_t> state_;
-        state_t& s;
-    };
+    maths::vec2i get_text_translation(uint32_t text_id) const;
+    maths::geometry::recti get_AABB(uint32_t text_id) const;
+    maths::vec4f get_text_colour(uint32_t text_id) const;
+    const font* get_text_font(uint32_t text_id) const;
+    const std::string& get_text_string(uint32_t text_id);
+    size_t get_text_size(uint32_t text_id);
+
+private:
+    struct state_t;
+    std::unique_ptr<state_t> state_;
+    state_t& s;
+};
+
 }}
 
 #endif //defined(FOUND_FREETYPE)

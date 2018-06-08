@@ -22,7 +22,6 @@ static void on_keypress_handler(GLFWwindow* window_ptr, int key, int scancode, i
     }
 }
 
-
 static void on_mousemove_handler(GLFWwindow* window_ptr, double x, double y) {
     if(auto app_ptr = reinterpret_cast<application*>(glfwGetWindowUserPointer(window_ptr))) {
         app_ptr->on_mousemove(x, y);

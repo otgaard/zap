@@ -81,15 +81,17 @@ bool line_batch::initialise(uint32_t line_count) {
     return true;
 }
 
-uint32_t line_batch::create_line(const vec3f &A, const vec3f &B, const vec4b &colour, float width) {
+uint32_t line_batch::create_line(const vec3f& A, const vec3f& B, const vec4b& colour, float width) {
     auto tok = batch_.allocate(primitive_type::PT_TRIANGLES, 4, 6);
     if(!tok) return uint32_t(-1);
 
+    const auto D = normalise(B - A);
+
     std::vector<vertex_t> vertices = {
-        vertex_t{A, normalise(B - A), colour, vec2f{0.f, 0.f}, width},
-        vertex_t{B, normalise(B - A), colour, vec2f{1.f, 0.f}, width},
-        vertex_t{B, normalise(B - A), colour, vec2f{1.f, 1.f}, width},
-        vertex_t{A, normalise(B - A), colour, vec2f{0.f, 1.f}, width}
+        vertex_t{A, D, colour, vec2f{0.f, 0.f}, width},
+        vertex_t{B, D, colour, vec2f{1.f, 0.f}, width},
+        vertex_t{B, D, colour, vec2f{1.f, 1.f}, width},
+        vertex_t{A, D, colour, vec2f{0.f, 1.f}, width}
     };
 
     if(!batch_.load(tok, vertices, { 0, 2, 1, 0, 3, 2 })) {
@@ -103,7 +105,18 @@ uint32_t line_batch::create_line(const vec3f &A, const vec3f &B, const vec4b &co
     return uint32_t(id);
 }
 
+uint32_t line_batch::create_line(const std::vector<vec3f>& points, const vec4b& colour, float width) {
+    auto tok = batch_.allocate(primitive_type::PT_TRIANGLES, 4*points.size(), 6*points.size());
+    if(!tok) return uint32_t(-1);
+
+    return uint32_t(-1);
+}
+
 bool line_batch::update_line(uint32_t id, const vec3f& A, const vec3f& B, const vec4b& colour, float width) {
+    return false;
+}
+
+bool line_batch::update_line(uint32_t id, const std::vector<vec3f>& points, const vec4b& colour, float width) {
     return false;
 }
 

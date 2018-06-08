@@ -52,15 +52,17 @@ struct rect {
     }
 
     vec2<T> centre() const { return vec2<T>((right-left)/2, (top-bottom)/2); }
-    vec2<T> bl() const { return vec2<T>(left, bottom); }
-    vec2<T> tl() const { return vec2<T>(left, top); }
-    vec2<T> br() const { return vec2<T>(right, bottom); }
-    vec2<T> tr() const { return vec2<T>(right, top); }
+    vec2<T> left_bottom() const { return vec2<T>(left, bottom); }
+    vec2<T> right_bottom() const { return vec2<T>(right, bottom); }
+    vec2<T> left_top() const { return vec2<T>(left, top); }
+    vec2<T> right_top() const { return vec2<T>(right, top); }
 
     T left, right, bottom, top;
 };
 
-using recti = rect<int>;
+using rectb = rect<int8_t>;
+using rects = rect<int16_t>;
+using recti = rect<int32_t>;
 using rectf = rect<float>;
 
 }}}

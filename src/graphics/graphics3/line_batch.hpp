@@ -29,7 +29,9 @@ public:
     bool is_mapped() const { return batch_.is_mapped(); }
 
     uint32_t create_line(const vec3f& A, const vec3f& B, const vec4b& colour, float width);
+    uint32_t create_line(const std::vector<vec3f>& points, const vec4b& colour, float width);
     bool update_line(uint32_t id, const vec3f& A, const vec3f& B, const vec4b& colour, float width);
+    bool update_line(uint32_t id, const std::vector<vec3f>& points, const vec4b& colour, float width);
 
     void draw(uint32_t id, const mat4f& MVP);
 
@@ -38,6 +40,7 @@ protected:
 private:
     rndr_batch_t batch_;
     std::vector<rndr_batch_t::token> segments_;
+    std::vector<rndr_batch_t::token> strips_;
     program prog_;
     uint32_t uniforms_[3];
 };
