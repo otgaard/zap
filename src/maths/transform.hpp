@@ -69,7 +69,9 @@ namespace zap { namespace maths {
         mutable core::enumfield<int, transform_state> transform_state_;
     };
 
+    using transform3i = transform<mat3i>;
     using transform3f = transform<mat3f>;
+    using transform4i = transform<mat4i>;
     using transform4f = transform<mat4f>;
     using transform3d = transform<mat3d>;
     using transform4d = transform<mat4d>;

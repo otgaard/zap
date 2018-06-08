@@ -20,6 +20,7 @@
 #include <renderer/light.hpp>
 #include <renderer/shader_builder.hpp>
 #include <renderer/render_args.hpp>
+#include <maths/geometry/sphere.hpp>
 
 using namespace zap;
 using namespace zap::maths;

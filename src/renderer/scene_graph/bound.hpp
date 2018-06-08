@@ -1,7 +1,7 @@
 //
 // Created by Darren Otgaar on 2016/10/10.
 //
-
+/*
 #ifndef ZAP_BOUND_HPP
 #define ZAP_BOUND_HPP
 
@@ -48,3 +48,4 @@ namespace zap { namespace scene_graph {
 }}
 
 #endif //ZAP_BOUND_HPP
+*/

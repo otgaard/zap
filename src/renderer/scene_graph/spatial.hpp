@@ -7,6 +7,7 @@
 
 #include <tools/log.hpp>
 #include <core/enumfield.hpp>
+#include <maths/bound.hpp>
 #include <maths/transform.hpp>
 #include <renderer/scene_graph/bound.hpp>
 
@@ -29,7 +30,7 @@ namespace zap { namespace scene_graph {
     class spatial {
     public:
         using transform_t = TransformT;
-        using bound_t = bound<GeoT, TransformT>;
+        using bound_t = maths::bound<GeoT, TransformT>;
         using type = typename transform_t::type;
         using affine_t = typename transform_t::affine_t;
         using vec_t = typename transform_t::vec_t;

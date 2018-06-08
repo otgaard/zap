@@ -13,29 +13,37 @@ namespace zap { namespace maths { namespace geometry {
 template <typename T>
 struct sphere {
     using type = T;
-    using vector = vec3<type>;
+    using vector_t = vec3<type>;
+    using affine_t = mat4<type>;
 
     sphere() = default;
     sphere(const sphere& rhs) = default;
-    sphere(const vector& C, const type& r) : C(C), r(r) { }
+    sphere(const vector_t& centre, const type& r) : centre(centre), radius(r) { }
 
     sphere& operator=(const sphere& rhs) = default;
 
-    inline const vector& centre() const { return C; }
-    inline const type& radius() const { return r; }
+    sphere& translate(const vector_t& trans) {
+        centre += trans;
+        return *this;
+    }
 
-    vector C;
-    type r;
+    sphere& transform(const affine_t& trans) {
+        centre = trans.transform(centre);
+        return *this;
+    }
+
+    vector_t centre;
+    type radius;
 };
 
 using spheref = sphere<float>;
 using sphered = sphere<double>;
 
 template <typename T>
-int intersection(const sphere<T>& S, const ray<typename sphere<T>::vector>& R, T t[2], const T& epsilon=std::numeric_limits<T>::epsilon()) {
-    using vector = typename sphere<T>::vector;
-    vector v = R.O - S.C;
-    T a = R.d.length_sqr(), b = T(2) * dot(R.d, v), c = v.length_sqr() - S.r*S.r;
+int intersection(const sphere<T>& S, const ray<typename sphere<T>::vector_t>& R, T t[2], const T& epsilon=std::numeric_limits<T>::epsilon()) {
+    using vector = typename sphere<T>::vector_t;
+    vector v = R.O - S.centre;
+    T a = R.d.length_sqr(), b = T(2) * dot(R.d, v), c = v.length_sqr() - S.radius*S.radius;
     T discrim = b*b - 4*a*c;
     if(discrim > 0) {           // Two Roots
         T a2 = 2*a, rt = std::sqrt(discrim);

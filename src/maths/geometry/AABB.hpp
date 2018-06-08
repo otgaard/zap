@@ -6,6 +6,7 @@
 #define ZAP_AABB_HPP
 
 #include <maths/algebra.hpp>
+#include <maths/geometry/ray.hpp>
 
 namespace zap { namespace maths { namespace geometry {
 
@@ -26,8 +27,8 @@ struct AABB<T, vec2> {
 
     AABB& operator=(const AABB& rhs) = default;
 
-    AABB& translate(const vector_t& t) {
-        centre += t;
+    AABB& translate(const vector_t& trans) {
+        centre += trans;
         return *this;
     }
 
@@ -94,6 +95,11 @@ bool intersection(const AABB<T, vec2>& A, const AABB<T, vec2>& B) {
     if(std::abs(A.centre[0] - B.centre[0]) > (A.hextent[0] + B.hextent[0])) return false;
     if(std::abs(A.centre[1] - B.centre[1]) > (A.hextent[1] + B.hextent[1])) return false;
     return true;
+}
+
+template <typename T>
+bool intersection(const AABB<T, vec2>& A, const geometry::ray<vec2<T>>& r) {
+    return false;
 }
 
 using AABB2i = AABB<int, vec2>;
@@ -200,6 +206,11 @@ bool intersection(const AABB<T, vec3>& A, const AABB<T, vec3>& B) {
     if(std::abs(A.centre[1] - B.centre[1]) > (A.hextent[1] + B.hextent[1])) return false;
     if(std::abs(A.centre[2] - B.centre[2]) > (A.hextent[2] + B.hextent[2])) return false;
     return true;
+}
+
+template <typename T>
+bool intersection(const AABB<T, vec3>& A, const geometry::ray<vec3<T>>& r) {
+    return false;
 }
 
 using AABB3i = AABB<int, vec3>;

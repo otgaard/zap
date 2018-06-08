@@ -26,7 +26,7 @@ set(PUBLIC_HEADERS
         vec3.hpp
         vec4.hpp
         vector.hpp
-        rand_functions.hpp)
+        rand_functions.hpp bound.hpp)
 
 set(SOURCE_FILES
         io.cpp
