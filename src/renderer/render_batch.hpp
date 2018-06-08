@@ -222,18 +222,37 @@ public:
         return false;
     }
 
+    bool load(const token& tok, uint32_t count, const vertex_t* ptr) {
+        if(map_write(tok, true, false)) {
+            set(tok, 0, count, ptr);
+            return unmap();
+        }
+
+        return false;
+    }
+
+    bool load(const token& tok, uint32_t vtx_count, const vertex_t* vtx_ptr, uint32_t idx_count, const index_t* idx_ptr) {
+        if(map_write(tok)) {
+            set(tok, 0, vtx_count, vtx_ptr);
+            set(tok, 0, idx_count, idx_ptr);
+            return unmap();
+        }
+
+        return false;
+    }
+
     void set(const token& tok, uint32_t offset, const vertex_t& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
     void set(const token& tok, uint32_t offset, uint32_t count, const vertex_t* p) { vbuf_acc_.set(tok.vtx_range, offset, count, p); }
     void set(const token& tok, uint32_t offset, const std::vector<vertex_t>& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
 
-    void set(const token& tok, uint32_t offset, const index_t& v, bool remap=true) {
-        ibuf_acc_.set(tok.idx_range, remap ? tok.vtx_range.start + offset : offset, v);
+    void set(const token& tok, uint32_t offset, const index_t& v, bool remap=true, uint32_t vtx_offset=0) {
+        ibuf_acc_.set(tok.idx_range, remap ? tok.vtx_range.start + vtx_offset : offset, v);
     }
 
-    void set(const token& tok, uint32_t offset, uint32_t count, const index_t* p, bool remap=true) {
+    void set(const token& tok, uint32_t offset, uint32_t count, const index_t* p, bool remap=true, uint32_t vtx_offset=0) {
         if(remap) {
             std::vector<index_t> arr(count);
-            const auto start = tok.vtx_range.start;
+            const auto start = tok.vtx_range.start + vtx_offset;
             std::transform(p, p+count, arr.begin(), [start](auto& v) { return v + start; });
             ibuf_acc_.set(tok.idx_range, offset, arr);
         } else {
@@ -241,10 +260,10 @@ public:
         }
     }
 
-    void set(const token& tok, uint32_t offset, const std::vector<index_t>& v, bool remap=true) {
+    void set(const token& tok, uint32_t offset, const std::vector<index_t>& v, bool remap=true, uint32_t vtx_offset=0) {
         if(remap) {
             std::vector<index_t> arr(v.size());
-            const auto start = tok.vtx_range.start;
+            const auto start = tok.vtx_range.start + vtx_offset;
             std::transform(v.begin(), v.end(), arr.begin(), [start](auto& v) { return v + start; });
             ibuf_acc_.set(tok.idx_range, offset, arr);
         } else {

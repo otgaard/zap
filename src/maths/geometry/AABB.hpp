@@ -67,6 +67,11 @@ struct AABB<T, vec2> {
     vector_t max() const { return centre + hextent; }
     type radius() const { return normalise(max() - min())/2; }
 
+    vector_t left_bottom() const { return vector_t{ left(), bottom() };}
+    vector_t right_bottom() const { return vector_t{ right(), bottom() };}
+    vector_t left_top() const { return vector_t{ left(), top() };}
+    vector_t right_top() const { return vector_t{ right(), top() };}
+
     vector_t centre;
     vector_t hextent;
 };
@@ -160,6 +165,15 @@ struct AABB<T, vec3> {
     vector_t min() const { return centre - hextent; }
     vector_t max() const { return centre + hextent; }
     type radius() const { return normalise(max() - min())/2; }
+
+    vector_t left_bottom_back() const { return vector_t{ left(), bottom(), back() }; }
+    vector_t right_bottom_back() const { return vector_t{ right(), bottom(), back() }; }
+    vector_t left_top_back() const { return vector_t{ left(), top(), back() }; }
+    vector_t right_top_back() const { return vector_t{ right(), top(), back() }; }
+    vector_t left_bottom_front() const { return vector_t{ left(), bottom(), front() }; }
+    vector_t right_bottom_front() const { return vector_t{ right(), bottom(), front() }; }
+    vector_t left_top_front() const { return vector_t{ left(), top(), front() }; }
+    vector_t right_top_front() const { return vector_t{ right(), top(), front() }; }
 
     vector_t centre;
     vector_t hextent;
