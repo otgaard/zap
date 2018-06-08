@@ -37,15 +37,15 @@ set(SOURCE_FILES
         graphics2/text/font_manager.cpp
         graphics2/text/text.cpp
         graphics2/text/text_batcher.cpp
-        graphics2/curve_input.cpp
+        #graphics2/curve_input.cpp
         graphics2/g2_types.cpp
         graphics2/plotter2.cpp
         graphics2/quad.cpp
         graphics3/g3_types.cpp
         particle_engine/particle_engine.cpp
-        #colour.cpp
+        colour.cpp
         loader/obj_loader.cpp
-        shadermap/shadermap.cpp
+        #shadermap/shadermap.cpp
         graphics3/line_batch.cpp)
 
 if(APPLE OR UNIX)
