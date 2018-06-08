@@ -106,7 +106,7 @@ uint32_t line_batch::create_line(const vec3f& A, const vec3f& B, const vec4b& co
 }
 
 uint32_t line_batch::create_line(const std::vector<vec3f>& points, const vec4b& colour, float width) {
-    auto tok = batch_.allocate(primitive_type::PT_TRIANGLES, 4*points.size(), 6*points.size());
+    auto tok = batch_.allocate(primitive_type::PT_TRIANGLES, uint32_t(4*points.size()), uint32_t(6*points.size()));
     if(!tok) return uint32_t(-1);
 
     return uint32_t(-1);

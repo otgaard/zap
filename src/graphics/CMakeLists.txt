@@ -43,7 +43,7 @@ set(SOURCE_FILES
         graphics2/quad.cpp
         graphics3/g3_types.cpp
         particle_engine/particle_engine.cpp
-        colour.cpp
+        #colour.cpp
         loader/obj_loader.cpp
         shadermap/shadermap.cpp
         graphics3/line_batch.cpp)
@@ -107,6 +107,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/graphics_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapGraphics-shared PUBLIC -DGRAPHICS_EXPORT="graphics_exports.h")
+    set_target_properties(zapGraphics-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     install(FILES "${CMAKE_BINARY_DIR}/exports/graphics_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/graphics/${dir})
 endif()
 

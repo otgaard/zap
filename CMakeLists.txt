@@ -100,6 +100,7 @@ endif()
 
 if(WIN32 AND NOT CYGWIN)
     set(DEF_INSTALL_CMAKE_DIR CMake)
+    add_compile_options(/wd4251)
 else()
     set(DEF_INSTALL_CMAKE_DIR lib/CMake/zap)
 endif()

@@ -42,7 +42,7 @@ struct rand_generator {
     }
 
     byte rand1b(byte min = 0, byte max = 255) {
-        return lerp(rnd.random(), min, max);
+        return byte(lerp(rnd.random(), min, max));
     }
 
     vec3b rand3b(const vec3b& min = {0, 0, 0}, const vec3b& max = {255, 255, 255}) {

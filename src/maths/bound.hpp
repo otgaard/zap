@@ -5,6 +5,7 @@
 #ifndef ZAP_BOUND_HPP
 #define ZAP_BOUND_HPP
 
+#include <cfloat>
 #include <vector>
 #include <maths/transform.hpp>
 #include <maths/geometry/ray.hpp>
@@ -44,8 +45,15 @@ public:
     bound transform(const affine_t& T) const;
     bound transform_cref(const affine_t& T) const { return transform(T); }
 
-    bound& compute_bound(const std::vector<vector_t>& points);
-    bound& grow(const bound& rhs);
+    bound& compute_bound(const std::vector<vector_t>& points) {
+        assert(false && "This method requires specialisation");
+        return *this;
+    }
+
+    bound& grow(const bound& rhs) {
+        assert(false && "This method requires specialisation");
+        return *this;
+    }
 
     bool intersection(const vector_t& P) const;
     bool intersection(const bound& B) const;
@@ -104,7 +112,7 @@ inline bound<geometry::disc2f, transform3f>& bound<geometry::disc2f, transform3f
     geometry.centre = vec2f(0.f, 0.f);
 
     for (auto& p : points) geometry.centre += p;
-    geometry.centre /= points.size();
+    geometry.centre /= float(points.size());
 
     geometry.radius = 0.f;
     for (auto& p : points) {
@@ -347,12 +355,12 @@ using bound_AABB3f = bound<geometry::AABB3f, transform4f>;
 using bound_AABB2d = bound<geometry::AABB2d, transform3d>;
 using bound_AABB3d = bound<geometry::AABB3d, transform4d>;
 
-template class ZAPMATHS_EXPORT bound<geometry::AABB2i, transform3i>;
-template class ZAPMATHS_EXPORT bound<geometry::AABB3i, transform4i>;
-template class ZAPMATHS_EXPORT bound<geometry::AABB2f, transform3f>;
-template class ZAPMATHS_EXPORT bound<geometry::AABB3f, transform4f>;
-template class ZAPMATHS_EXPORT bound<geometry::AABB2d, transform3d>;
-template class ZAPMATHS_EXPORT bound<geometry::AABB3d, transform4d>;
+template struct ZAPMATHS_EXPORT bound<geometry::AABB2i, transform3i>;
+template struct ZAPMATHS_EXPORT bound<geometry::AABB3i, transform4i>;
+template struct ZAPMATHS_EXPORT bound<geometry::AABB2f, transform3f>;
+template struct ZAPMATHS_EXPORT bound<geometry::AABB3f, transform4f>;
+template struct ZAPMATHS_EXPORT bound<geometry::AABB2d, transform3d>;
+template struct ZAPMATHS_EXPORT bound<geometry::AABB3d, transform4d>;
 
 }}
 

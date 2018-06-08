@@ -268,8 +268,20 @@ namespace zap { namespace maths {
         return affine().transform(point);
     }
 
+    template <typename AFFINE_MAT_T>
+    typename transform<AFFINE_MAT_T>::gltype_t transform<AFFINE_MAT_T>::gl_matrix() const {
+        return gltype_t();
+    }
+
+    template <typename AFFINE_MAT_T>
+    typename transform<AFFINE_MAT_T>::gltype_t transform<AFFINE_MAT_T>::gl_inverse() const {
+        return gltype_t();
+    }
+
+    template class ZAPMATHS_EXPORT transform<mat3i>;
     template class ZAPMATHS_EXPORT transform<mat3f>;
     template class ZAPMATHS_EXPORT transform<mat3d>;
+    template class ZAPMATHS_EXPORT transform<mat4i>;
     template class ZAPMATHS_EXPORT transform<mat4f>;
     template class ZAPMATHS_EXPORT transform<mat4d>;
 

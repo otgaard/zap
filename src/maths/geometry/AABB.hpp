@@ -85,8 +85,8 @@ bool intersection(const AABB<T, vec2>& A, const vec2<T>& P) {
 
 inline bool intersection(const AABB<int, vec2>& A, const AABB<int, vec2>& B) {
     int r;
-    r = A.hextent[0] + B.hextent[0]; if((uint32_t)(A.centre[0] - B.centre[0] + r) > r + r) return false;
-    r = A.hextent[1] + B.hextent[1]; if((uint32_t)(A.centre[1] - B.centre[1] + r) > r + r) return false;
+    r = A.hextent[0] + B.hextent[0]; if(A.centre[0] - B.centre[0] + r > r + r) return false;
+    r = A.hextent[1] + B.hextent[1]; if(A.centre[1] - B.centre[1] + r > r + r) return false;
     return true;
 }
 
@@ -194,9 +194,9 @@ bool intersection(const AABB<T, vec3>& A, const vec3<T>& P) {
 
 inline bool intersection(const AABB<int, vec3>& A, const AABB<int, vec3>& B) {
     int r;
-    r = A.hextent[0] + B.hextent[0]; if((uint32_t)(A.centre[0] - B.centre[0] + r) > r + r) return false;
-    r = A.hextent[1] + B.hextent[1]; if((uint32_t)(A.centre[1] - B.centre[1] + r) > r + r) return false;
-    r = A.hextent[2] + B.hextent[2]; if((uint32_t)(A.centre[2] - B.centre[2] + r) > r + r) return false;
+    r = A.hextent[0] + B.hextent[0]; if(A.centre[0] - B.centre[0] + r > r + r) return false;
+    r = A.hextent[1] + B.hextent[1]; if(A.centre[1] - B.centre[1] + r > r + r) return false;
+    r = A.hextent[2] + B.hextent[2]; if(A.centre[2] - B.centre[2] + r > r + r) return false;
     return true;
 }
 

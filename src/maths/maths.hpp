@@ -90,7 +90,7 @@ namespace zap { namespace maths {
     }
 
     template <typename T, typename S> T lerp(const S& u, const T& P0, const T& P1) {
-        return (S(1) - u)*P0 + u*P1;
+        return T((S(1) - u)*P0 + u*P1);
     };
 
     inline byte lerp(byte u, byte P0, byte P1) {

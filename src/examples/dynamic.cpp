@@ -39,12 +39,12 @@ pixmap<r8_t> make_sphere(size_t dim, float bias_factor) {
     const float inv = 1.f / dim;
     const vec2f centre = { .5f, .5f }, inv_dims = { inv, inv };
 
-    for (size_t r = 0; r != dim; ++r) {
-        for (size_t c = 0; c != dim; ++c) {
+    for (int r = 0; r != dim; ++r) {
+        for (int c = 0; c != dim; ++c) {
             const vec2f V = (vec2f{ float(c), float(r) } *inv_dims) - centre;
             float len = 2.f * V.length();
             len = len > 1.f ? 1.f : len;
-            img(c, r).set(lerp(bias(bias_factor, len), 255, 0));
+            img(c, r).set(byte(lerp(bias(bias_factor, len), 255, 0)));
         }
     }
 
@@ -254,7 +254,8 @@ bool dynamic_app::initialise() {
     int counter = 0;
     for (const auto &model : models) {
         auto obj = obj_loader::load_model(model);
-        auto tok = static_batch_.allocate(primitive_type::PT_TRIANGLES, obj.first.size(), obj.second.size());
+        auto tok = static_batch_.allocate(primitive_type::PT_TRIANGLES, uint32_t(obj.first.size()),
+                                          uint32_t(obj.second.size()));
         static_batch_.load(tok, obj);
         objects[counter++] = tok;
     }

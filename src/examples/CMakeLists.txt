@@ -81,6 +81,10 @@ if(STATIC_LINKAGE)
             PRIVATE core
             PRIVATE ${CMAKE_BINARY_DIR}/exports)
 
+    if(WIN32)
+        set_target_properties(template-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
+
     target_link_libraries(template-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(template-static PROPERTIES OUTPUT_NAME "template_s")
 
@@ -89,6 +93,10 @@ if(STATIC_LINKAGE)
             PRIVATE core
             PRIVATE ${CMAKE_BINARY_DIR}/exports)
 
+    if(WIN32)
+        set_target_properties(models-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
+
     target_link_libraries(models-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(models-static PROPERTIES OUTPUT_NAME "models")
 
@@ -96,6 +104,10 @@ if(STATIC_LINKAGE)
     target_include_directories(dynamic-static
             PRIVATE core
             PRIVATE ${CMAKE_BINARY_DIR}/exports)
+
+    if(WIN32)
+        set_target_properties(dynamic-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
 
     target_link_libraries(dynamic-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(dynamic-static PROPERTIES OUTPUT_NAME "dynamic_s")

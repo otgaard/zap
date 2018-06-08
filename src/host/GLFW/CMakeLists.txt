@@ -43,6 +43,7 @@ if(WIN32)
             EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/hostglfw_exports.h
             STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
     target_compile_definitions(zapHostGLFW-shared PUBLIC -DHOSTGLFW_EXPORT="hostglfw_exports.h")
+    set_target_properties(zapHostGLFW-shared PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
     install(FILES "${CMAKE_BINARY_DIR}/exports/hostglfw_exports.h" DESTINATION ${INSTALL_INCLUDE_DIR}/zap/host/GLFW/${dir})
 endif()
 
