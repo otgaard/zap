@@ -79,8 +79,16 @@ public:
         return invalid_token;
     }
 
+    bool free(const token& tok) {
+        if(tok.is_valid() && tok.id < batch_.size()) batch_[tok.id].clear();
+        vbuf_acc_.release(tok.vtx_range);
+        return true;
+    }
+
     void bind() { mesh_.bind(); }
     void release() { mesh_.release(); }
+
+    bool is_mapped() const { return (vbuf_ptr_ && vbuf_ptr_->is_mapped()); }
 
     bool map_read() { return vbuf_acc_.map_read(); }
     bool map_write() { return vbuf_acc_.map_write(); }
@@ -191,8 +199,18 @@ public:
         return invalid_token;
     }
 
+    bool free(const token& tok) {
+        if(tok.is_valid() && tok.id < batch_.size()) batch_[tok.id].clear();
+        vbuf_acc_.release(tok.vtx_range);
+        ibuf_acc_.release(tok.idx_range);
+        return true;
+    }
+
+
     void bind() { mesh_.bind(); }
     void release() { mesh_.release(); }
+
+    bool is_mapped() const { return (vbuf_ptr_ && vbuf_ptr_->is_mapped()) || (ibuf_ptr_ && ibuf_ptr_->is_mapped()); }
 
     bool map_read(bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_read() : true) && (ibuf ? ibuf_acc_.map_read() : true); }
     bool map_write(bool vbuf=true, bool ibuf=true) { return (vbuf ? vbuf_acc_.map_write() : true) && (ibuf ? ibuf_acc_.map_write() : true); }
@@ -211,6 +229,10 @@ public:
         }
 
         return false;
+    }
+
+    bool load(const token& tok, const std::vector<vertex_t>& v, const std::vector<uint32_t>& i, bool remap=true) {
+        return load(tok, std::make_pair(v,i), remap);
     }
 
     bool load(const token& tok, const std::pair<std::vector<vertex_t>, std::vector<uint32_t>>& m, bool remap=true) {

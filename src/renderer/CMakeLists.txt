@@ -11,7 +11,9 @@ set(PUBLIC_HEADERS
         scene_graph/bound.hpp
         scene_graph/node.hpp
         scene_graph/spatial.hpp
-        scene_graph/visual.hpp rndr.hpp render_batch.hpp)
+        scene_graph/visual.hpp
+        rndr.hpp
+        render_batch.hpp)
 
 set(SOURCE_FILES
         camera.cpp

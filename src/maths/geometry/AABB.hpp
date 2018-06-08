@@ -32,7 +32,7 @@ struct AABB<T, vec2> {
     }
 
     // Note: Repeatedly rotating an AABB will increase its size to infinity, rather use OBB
-    AABB& transform(const affine_t& T) {
+    AABB& transform(const affine_t& trans) {
         vector_t arr[4] = {
             centre + -hextent,
             centre + vector_t{+1, -1} * hextent,
@@ -40,7 +40,7 @@ struct AABB<T, vec2> {
             centre + hextent
         };
 
-        for(auto& P : arr) P = T.transform(P);
+        for(auto& P : arr) P = trans.transform(P);
 
         type x_min = std::numeric_limits<type>::max(), x_max = -x_min;
         type y_min = x_min, y_max = x_max;
@@ -116,12 +116,12 @@ struct AABB<T, vec3> {
 
     AABB& operator=(const AABB& rhs) = default;
 
-    AABB& translate(const vector_t& t) {
-        centre += t;
+    AABB& translate(const vector_t& trans) {
+        centre += trans;
         return *this;
     }
 
-    AABB& transform(const affine_t& T) {
+    AABB& transform(const affine_t& trans) {
         vector_t arr[8] = {
             centre + -hextent,
             centre + vector_t{+1, -1, -1} * hextent,
@@ -133,7 +133,7 @@ struct AABB<T, vec3> {
             centre + vector_t{-1, +1, +1} * hextent
         };
 
-        for(auto& P : arr) P = T.transform(P);
+        for(auto& P : arr) P = trans.transform(P);
 
         type x_min = std::numeric_limits<type>::max(), x_max = -x_min;
         type y_min = x_min, y_max = x_max;

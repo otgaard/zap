@@ -17,6 +17,7 @@
 #include <maths/rand_functions.hpp>
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
+#include <graphics/graphics3/line_batch.hpp>
 
 using namespace zap;
 using namespace zap::core;
@@ -222,6 +223,8 @@ private:
     std::unique_ptr<particles> quad_particles_;
     program particle_prog_;
     texture quad_tex_;
+
+    line_batch lines_;
 };
 
 bool dynamic_app::initialise() {
@@ -327,7 +330,6 @@ bool dynamic_app::initialise() {
                 return false;
             }
         }
-
     }
 
     if(!static_prog_.link(static_prog_vshdr, static_prog_fshdr)) {
@@ -354,12 +356,19 @@ bool dynamic_app::initialise() {
     default_state_.rasterisation()->enable_culling = true;
     default_state_.rasterisation()->cull_face = rasterisation_state::cull_mode::CM_BACK;
     default_state_.rasterisation()->poly_mode = rasterisation_state::polygon_mode::PM_LINE;
-    rndr_state_.push_state(&default_state_);
 
     additive_blend_state_.depth()->enabled = false;
     additive_blend_state_.blend()->enabled = true;
     additive_blend_state_.blend()->src_mode = blend_state::src_blend_mode::SBM_SRC_ALPHA;
     additive_blend_state_.blend()->dst_mode = blend_state::dst_blend_mode::DBM_ONE;
+
+    // Line Batch
+    if(!lines_.initialise(10000)) {
+        LOG_ERR("Failed to initialise line batch");
+        return false;
+    }
+
+    lines_.create_line(vec3f{-1.f, -1.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec4b{255, 255, 0, 255}, .005f);
 
     return true;
 }
@@ -412,7 +421,11 @@ void dynamic_app::draw() {
     static float angle = 0.f;
     angle = wrap(angle + .016f, 0.f, TWO_PI<float>);
 
-    rndr_state_.clear(0.f, 0.f, 0.f, 1.f);
+    rndr_state_.clear(1.f, 0.f, 0.f, 1.f);
+
+    const auto MVP = proj_matrix_ * view_matrix_;
+
+    rndr_state_.push_state(&default_state_);
 
     static_prog_.bind();
     static_batch_.bind();
@@ -431,17 +444,20 @@ void dynamic_app::draw() {
     p3c4_batch_.draw(token_);
     p3c4_batch_.release();
     stream_prog_.release();
+    rndr_state_.pop();
 
     rndr_state_.push_state(&additive_blend_state_);
     particle_prog_.bind();
     quad_batch_.bind();
-    particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    particle_prog_.bind_uniform("MVP", MVP);
     quad_tex_.bind(0);
     quad_batch_.draw(quads_);
     quad_tex_.release();
     quad_batch_.release();
     particle_prog_.release();
     rndr_state_.pop();
+
+    lines_.draw(0, MVP);
 }
 
 void dynamic_app::shutdown() {

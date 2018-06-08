@@ -19,13 +19,13 @@ struct disc {
     disc(const disc& rhs) = default;
     disc(const vec2<T>& centre, T radius) : centre(centre), radius(radius) { }
 
-    disc& translate(const vector_t& T) {
-        centre += T;
+    disc& translate(const vector_t& trans) {
+        centre += trans;
         return *this;
     }
 
-    disc& transform(const affine_t& T) {
-        centre += T.col(2);
+    disc& transform(const affine_t& trans) {
+        centre += trans.col(2);
         return *this;
     }
 

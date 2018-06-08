@@ -20,9 +20,12 @@ set(PUBLIC_HEADERS
         graphics3/g3_types.hpp
         particle_engine/particle_engine.hpp
         loader/image_loader.hpp
-        #loader/loader.hpp
         colour.hpp
-        graphics.hpp loader/obj_loader.hpp loader/obj_loader.cpp shadermap/shadermap.hpp loader/image_writer.hpp)
+        graphics.hpp
+        loader/obj_loader.hpp
+        shadermap/shadermap.hpp
+        loader/image_writer.hpp
+        graphics3/line_batch.hpp)
 
 set(SOURCE_FILES
         generators/geometry/surface.cpp
@@ -40,9 +43,10 @@ set(SOURCE_FILES
         graphics2/quad.cpp
         graphics3/g3_types.cpp
         particle_engine/particle_engine.cpp
-        #loader/loader.cpp
         colour.cpp
-        shadermap/shadermap.cpp)
+        loader/obj_loader.cpp
+        shadermap/shadermap.cpp
+        graphics3/line_batch.cpp)
 
 if(APPLE OR UNIX)
     find_package(PkgConfig)

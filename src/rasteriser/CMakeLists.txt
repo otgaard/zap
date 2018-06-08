@@ -16,8 +16,8 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapCanvas-shared PROPERTIES OUTPUT_NAME "zapCanvas")
     endif()
 
-    add_dependencies(zapCanvas-shared zapEngine-shared zapMaths-shared core)
-    target_link_libraries(zapCanvas-shared zapEngine-shared zapMaths-shared)
+    add_dependencies(zapCanvas-shared zapGraphics-shared zapEngine-shared zapMaths-shared core)
+    target_link_libraries(zapCanvas-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
 
     install(TARGETS zapCanvas-shared
             EXPORT zapTargets
@@ -49,10 +49,10 @@ if(STATIC_LINKAGE)
         set_target_properties(zapCanvas-static PROPERTIES OUTPUT_NAME "zapCanvas")
     endif()
 
-    add_dependencies(zapCanvas-static zapEngine-static zapMaths-static core)
+    add_dependencies(zapCanvas-static zapGraphics-static zapEngine-static zapMaths-static core)
 
     set_target_properties(zapCanvas-static PROPERTIES PREFIX "lib")
-    target_link_libraries(zapCanvas-static zapEngine-static zapMaths-static)
+    target_link_libraries(zapCanvas-static zapGraphics-static zapEngine-static zapMaths-static)
 
     install(TARGETS zapCanvas-static
             EXPORT zapTargets

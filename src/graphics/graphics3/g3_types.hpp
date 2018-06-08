@@ -41,7 +41,7 @@ using vtx_p3c4t2_t = vertex<pos3f_t, col4b_t, tex2f_t>;
 using vtx_p3c4ps1_t = vertex<pos3f_t, col4f_t, psize1_t>;
 using vtx_p3n3t2c3_t = vertex<pos3f_t, nor3f_t, tex2f_t, col3f_t>;
 using vtx_p3n3tn3t2_t = vertex<pos3f_t, nor3f_t, tan3f_t, tex2f_t>;
-using vtx_p3c4t2ps4_t = vertex<pos3f_t, col4b_t, tex2f_t, psize4_t>;
+using vtx_p3tn3c4t2ps1_t = vertex<pos3f_t, tan3f_t, col4b_t, tex2f_t, psize1_t>;
 
 using vbuf_p3_t = vertex_buffer<vtx_p3_t>;
 using vbuf_p4_t = vertex_buffer<vtx_p4_t>;
@@ -57,7 +57,7 @@ using vbuf_n3ps1_t = vertex_buffer<vtx_n3ps1_t>;
 using vbuf_p3c4t2_t = vertex_buffer<vtx_p3c4t2_t>;
 using vbuf_p3n3t2_t = vertex_buffer<vtx_p3n3t2_t>;
 using vbuf_p3n3tn3t2_t = vertex_buffer<vtx_p3n3tn3t2_t>;
-using vbuf_p3c4t2ps4_t = vertex_buffer<vtx_p3c4t2ps4_t>;
+using vbuf_p3tn3c4t2ps1_t = vertex_buffer<vtx_p3tn3c4t2ps1_t>;
 
 using mesh_p3_t = mesh<vertex_stream<vbuf_p3_t>>;
 using mesh_p3c4_t = mesh<vertex_stream<vbuf_p3c4_t>>;
@@ -73,6 +73,7 @@ using mesh_p3c4t2_u32_t = mesh<vertex_stream<vbuf_p3c4t2_t>, ibuf_u32_t>;
 using mesh_p3n3t2_u32_t = mesh<vertex_stream<vbuf_p3n3t2_t>, ibuf_u32_t>;
 using mesh_p3n3tn3t2_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>>;
 using mesh_p3n3tn3t2_u32_t = mesh<vertex_stream<vbuf_p3n3tn3t2_t>, ibuf_u32_t>;
+using mesh_p3tn3c4t2ps1_u32_t = mesh<vertex_stream<vbuf_p3tn3c4t2ps1_t>, ibuf_u32_t>;
 
 using mesh_p3_ps1_u32_t = mesh<vertex_stream<vbuf_p3_t, vbuf_ps1_t>, ibuf_u32_t>;
 using mesh_p3_n3ps1_u32_t = mesh<vertex_stream<vbuf_p3_t, vbuf_n3ps1_t>, ibuf_u32_t>;
