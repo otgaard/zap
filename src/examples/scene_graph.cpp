@@ -236,6 +236,7 @@ bool scene_graph_test::initialise() {
 }
 
 void scene_graph_test::on_resize(int width, int height) {
+    application::on_resize(width, height);
     cam_.viewport(0, 0, width, height);
     cam_.world_pos(vec3f{0.f, 2.f, 10.f});
     cam_.look_at(vec3f{0.f, 0.f, -10.f});
@@ -378,5 +379,6 @@ int main(int argc, char* argv[]) {
     scene_graph_test app;
     app_config config;
     config.multisamples = 8;
+    config.resizeable_window = true;
     return app.run(config);
 }

@@ -69,13 +69,6 @@ namespace zap { namespace maths {
         mutable core::enumfield<int, transform_state> transform_state_;
     };
 
-    using transform3i = transform<mat3i>;
-    using transform3f = transform<mat3f>;
-    using transform4i = transform<mat4i>;
-    using transform4f = transform<mat4f>;
-    using transform3d = transform<mat3d>;
-    using transform4d = transform<mat4d>;
-
     template <typename AffineT>
     void transform<AffineT>::make_identity() {
         rotation_ = rot_t::identity();
@@ -269,21 +262,53 @@ namespace zap { namespace maths {
     }
 
     template <typename AFFINE_MAT_T>
-    typename transform<AFFINE_MAT_T>::gltype_t transform<AFFINE_MAT_T>::gl_matrix() const {
+    inline typename transform<AFFINE_MAT_T>::gltype_t transform<AFFINE_MAT_T>::gl_matrix() const {
         return gltype_t();
     }
 
     template <typename AFFINE_MAT_T>
-    typename transform<AFFINE_MAT_T>::gltype_t transform<AFFINE_MAT_T>::gl_inverse() const {
+    inline typename transform<AFFINE_MAT_T>::gltype_t transform<AFFINE_MAT_T>::gl_inverse() const {
         return gltype_t();
     }
 
-    template class ZAPMATHS_EXPORT transform<mat3i>;
-    template class ZAPMATHS_EXPORT transform<mat3f>;
-    template class ZAPMATHS_EXPORT transform<mat3d>;
-    template class ZAPMATHS_EXPORT transform<mat4i>;
-    template class ZAPMATHS_EXPORT transform<mat4f>;
-    template class ZAPMATHS_EXPORT transform<mat4d>;
+    template <>
+    inline typename transform<mat4f>::gltype_t transform<mat4f>::gl_matrix() const {
+        if(!transform_state_.is_set(transform_state::TS_SYNCED)) update_transform();
+        return matrix_;
+    }
+
+    template <>
+    inline typename transform<mat3f>::gltype_t transform<mat3f>::gl_matrix() const {
+        if(!transform_state_.is_set(transform_state::TS_SYNCED)) update_transform();
+        mat4f m(1.f, 1.f, 1.f, 1.f);
+        m.column(0, vec3f(matrix_.col2(0), 0.f));
+        m.column(1, vec3f(matrix_.col2(1), 0.f));
+        m.column(3, vec3f(matrix_.col2(2), 0.f));
+        return m;
+    }
+
+    template <>
+    inline typename transform<mat4f>::gltype_t transform<mat4f>::gl_inverse() const {
+        if(!transform_state_.is_set(transform_state::TS_SYNCEDINV)) invert_affine();
+        return inv_matrix_;
+    }
+
+    template <>
+    inline typename transform<mat3f>::gltype_t transform<mat3f>::gl_inverse() const {
+        if(!transform_state_.is_set(transform_state::TS_SYNCEDINV)) invert_affine();
+        mat4f m(1.f, 1.f, 1.f, 1.f);
+        m.column(0, vec3f(inv_matrix_.col2(0), 0.f));
+        m.column(1, vec3f(inv_matrix_.col2(1), 0.f));
+        m.column(3, vec3f(inv_matrix_.col2(2), 0.f));
+        return m;
+    }
+
+    using transform3i = transform<mat3i>;
+    using transform3f = transform<mat3f>;
+    using transform4i = transform<mat4i>;
+    using transform4f = transform<mat4f>;
+    using transform3d = transform<mat3d>;
+    using transform4d = transform<mat4d>;
 
 }}
 

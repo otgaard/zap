@@ -188,7 +188,7 @@ struct particles {
 
 class dynamic_app : public application {
 public:
-    dynamic_app() : application{"dynamic_app", 1024, 768} { }
+    dynamic_app() : application{"dynamic_app", 1024*2, 768*2} { }
 
     bool initialise() final;
     void update(double t, float dt) final;
@@ -465,27 +465,33 @@ void dynamic_app::shutdown() {
 }
 
 void dynamic_app::on_resize(int width, int height) {
+    LOG("RESIZE", width, height);
+    application::on_resize(width, height);
     proj_matrix_ = make_perspective(40.f, float(width)/height, .5f, 100.f);
     view_matrix_ = look_at(vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 2.f, 8.f});
 
+    auto PV = proj_matrix_ * view_matrix_;
+
     static_prog_.bind();
-    static_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_ * make_scale(.2f, .2f, .2f));
+    static_prog_.bind_uniform("MVP", PV * make_scale(.2f, .2f, .2f));
     static_prog_.bind_uniform("MV", view_matrix_);
     static_prog_.bind_uniform("light_dir", normalise(vec3f{1.f, 1.f, 1.f}));
     static_prog_.bind_uniform("colour", vec4f{1.f, 1.f, 1.f, 1.f});
     static_prog_.release();
 
     stream_prog_.bind();
-    stream_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    stream_prog_.bind_uniform("MVP", PV);
     stream_prog_.release();
 
     particle_prog_.bind();
-    particle_prog_.bind_uniform("MVP", proj_matrix_ * view_matrix_);
+    particle_prog_.bind_uniform("MVP", PV);
     particle_prog_.bind_uniform("diffuse_tex", 0);
     particle_prog_.release();
 }
 
 int main(int argc, char* argv[]) {
     dynamic_app app{};
-    return app.run();
+    app_config conf;
+    conf.resizeable_window = true;
+    return app.run(conf);
 }

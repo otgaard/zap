@@ -62,6 +62,7 @@ public:
     int width() const { return sc_width_; }
     int height() const { return sc_height_; }
     void resize(int width, int height);
+    void set_viewport(int x, int y, int width, int height);
 
 protected:
     int sc_width_;

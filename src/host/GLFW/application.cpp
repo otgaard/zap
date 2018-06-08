@@ -97,7 +97,6 @@ int application::run(const app_config& config) {
         return -1;
     }
 
-    glViewport(0, 0, sc_width_, sc_height_);
     on_resize(sc_width_, sc_height_);
 
     timer_.start();
@@ -132,6 +131,7 @@ void application::on_keyup(int ch) {
 
 void application::on_resize(int width, int height) {
     sc_width_ = width; sc_height_ = height;
+    set_viewport(0, 0, sc_width_, sc_height_);
 }
 
 void application::on_mousemove(double x, double y) {
@@ -151,6 +151,10 @@ void application::on_mousewheel(double xoffset, double yoffset) {
 }
 
 void application::resize(int width, int height) {
-    sc_width_ = width; sc_height_ = height;
     glfwSetWindowSize(window_, width, height);
+}
+
+// TODO: Should eventually sit in the renderer or camera, but here for now
+void application::set_viewport(int x, int y, int width, int height) {
+    glViewport(x, y, width, height);
 }
