@@ -7,43 +7,60 @@
 #include <vector>
 
 namespace zap { namespace engine {
+    enum rndr_state_type {
+        RS_BLEND = 1 << 0,
+        RS_DEPTH = 1 << 1,
+        RS_SCISSOR = 1 << 2,
+        RS_STENCIL = 1 << 3,
+        RS_RASTERISATION = 1 << 4
+    };
+
     class ZAPENGINE_EXPORT render_state {
     public:
         render_state() = default;
-        render_state(bool blend, bool depth, bool rasterisation, bool stencil) {
-            initialise(blend, depth, rasterisation, stencil);
+        explicit render_state(int states) {
+            initialise((rndr_state_type)states);
         }
 
-        void initialise(bool blend, bool depth, bool rasterisation, bool stencil) {
+        void initialise(int states) { initialise((rndr_state_type)states); }
+
+        void initialise(rndr_state_type states) {
             size_t alloc = 0;
-            if(blend) alloc += sizeof(blend_state);
-            if(depth) alloc += sizeof(depth_state);
-            if(rasterisation) alloc += sizeof(rasterisation_state);
-            if(stencil) alloc += sizeof(stencil_state);
+            if((states & RS_BLEND) != 0) alloc += sizeof(blend_state);
+            if((states & RS_DEPTH) != 0) alloc += sizeof(depth_state);
+            if((states & RS_SCISSOR) != 0) alloc += sizeof(scissor_state);
+            if((states & RS_RASTERISATION) != 0) alloc += sizeof(rasterisation_state);
+            if((states & RS_STENCIL) != 0) alloc += sizeof(stencil_state);
 
             storage_.resize(alloc);
 
             size_t offset = 0;
 
-            if(blend) {
+            if((states & RS_BLEND) != 0) {
                 blend_state_ = reinterpret_cast<blend_state*>(storage_.data());
                 blend_state_->init();
                 offset += sizeof(blend_state);
             }
 
-            if(depth) {
+            if((states & RS_DEPTH) != 0) {
                 depth_state_ = reinterpret_cast<depth_state*>(storage_.data()+offset);
                 depth_state_->init();
                 offset += sizeof(depth_state);
             }
 
-            if(rasterisation) {
+            if((states & RS_SCISSOR) != 0) {
+                scissor_state_ = reinterpret_cast<scissor_state*>(storage_.data()+offset);
+                scissor_state_->init();
+                offset += sizeof(scissor_state);
+            }
+
+            if((states & RS_RASTERISATION) != 0) {
                 rasterisation_state_ = reinterpret_cast<rasterisation_state*>(storage_.data()+offset);
                 rasterisation_state_->init();
                 offset += sizeof(rasterisation_state);
             }
 
-            if(stencil) {
+            if((states & RS_STENCIL) != 0) {
                 stencil_state_ = reinterpret_cast<stencil_state*>(storage_.data()+offset);
                 stencil_state_->init();
                 offset += sizeof(stencil_state);
@@ -118,6 +135,22 @@ namespace zap { namespace engine {
             }
         };
 
+        struct scissor_state {
+            int32_t x;
+            int32_t y;
+            int32_t width;
+            int32_t height;
+            bool enabled;
+
+            void init() {
+                enabled = false;
+                x = 0;
+                y = 0;
+                width = 0;
+                height = 0;
+            }
+        };
+
         struct rasterisation_state {
             enum class polygon_mode {
                 PM_POINT,
@@ -166,8 +199,6 @@ namespace zap { namespace engine {
             }
         };
 
-        struct scissor_state { };
-
         struct stencil_state {
             enum class operation_type {
                 OT_KEEP,
@@ -203,6 +234,7 @@ namespace zap { namespace engine {
 
         blend_state* blend() const { return blend_state_; }
         depth_state* depth() const { return depth_state_; }
+        scissor_state* scissor() const { return scissor_state_; }
         rasterisation_state* rasterisation() const { return rasterisation_state_; }
         stencil_state* stencil() const { return stencil_state_; }
 

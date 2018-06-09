@@ -18,6 +18,7 @@ public:
     using stack_t = std::stack<const render_state*>;
     using blend_state = render_state::blend_state;
     using depth_state = render_state::depth_state;
+    using scissor_state = render_state::scissor_state;
     using rasterisation_state = render_state::rasterisation_state;
     using stencil_state = render_state::stencil_state;
 
@@ -35,6 +36,9 @@ public:
 
     const depth_state* peek_depth_state() const { return peek()->depth(); }
     const depth_state* curr_depth_state() const { return depth_stack_.top(); }
+
+    const scissor_state* peek_scissor_state() const { return peek()->scissor(); }
+    const scissor_state* curr_scissor_state() const { return scissor_stack_.top(); }
 
     const rasterisation_state* peek_rasterisation_state() const { return peek()->rasterisation(); }
     const rasterisation_state* curr_rasterisation_state() const { return rasterisation_stack_.top(); }
@@ -62,6 +66,12 @@ private:
     void initialise(const depth_state* state);
     void transition(const depth_state* source, const depth_state* target);
 
+    // Scissor state
+    void push_state(const scissor_state* state);
+    void pop_scissor_state();
+    void initialise(const scissor_state* state);
+    void transition(const scissor_state* source, const scissor_state* target);
+
     // Rasterisation state
     void push_state(const rasterisation_state* state);
     void pop_rasterisation_state();
@@ -78,6 +88,7 @@ private:
     render_state base_state_;
     std::stack<const blend_state*> blend_stack_;
     std::stack<const depth_state*> depth_stack_;
+    std::stack<const scissor_state*> scissor_stack_;
     std::stack<const rasterisation_state*> rasterisation_stack_;
     std::stack<const stencil_state*> stencil_stack_;
     vec4f clear_colour_;

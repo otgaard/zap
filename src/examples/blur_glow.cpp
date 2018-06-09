@@ -354,7 +354,7 @@ bool blur_glow::initialise() {
 
     stack.initialise();
 
-    render_state new_state(true, true, true, true);
+    render_state new_state(RS_BLEND | RS_DEPTH | RS_RASTERISATION); //true, true, true, true);
     new_state.depth()->enabled = false;
     new_state.blend()->enabled = false;
     new_state.blend()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_ALPHA;

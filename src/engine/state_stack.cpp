@@ -13,7 +13,8 @@ extern const GLenum gl_compare_mode[(int)render_state::compare_mode::CM_SIZE];
 extern const GLenum gl_cull_mode[(int)render_state::rasterisation_state::cull_mode::CM_SIZE];
 extern const GLenum gl_operation_type[(int)render_state::stencil_state::operation_type::OT_SIZE];
 
-state_stack::state_stack() : base_state_(true, true, true, true), clear_colour_{0.f, 0.f, 0.f, 0.f} {
+state_stack::state_stack() : base_state_(RS_BLEND | RS_DEPTH | RS_SCISSOR | RS_RASTERISATION | RS_STENCIL),
+                             clear_colour_{0.f, 0.f, 0.f, 0.f} {
 }
 
 bool state_stack::initialise() {
@@ -22,6 +23,9 @@ bool state_stack::initialise() {
 
     initialise(base_state_.depth());
     depth_stack_.push(base_state_.depth());
+
+    initialise(base_state_.scissor());
+    scissor_stack_.push(base_state_.scissor());
 
     initialise(base_state_.rasterisation());
     rasterisation_stack_.push(base_state_.rasterisation());
@@ -60,6 +64,7 @@ void zap::engine::state_stack::push_state(const render_state* state) {
     if(state != peek()) {
         if(state->blend() != nullptr) push_state(state->blend());
         if(state->depth() != nullptr) push_state(state->depth());
+        if(state->scissor() != nullptr) push_state(state->scissor());
         if(state->rasterisation() != nullptr) push_state(state->rasterisation());
         if(state->stencil() != nullptr) push_state(state->stencil());
 
@@ -71,6 +76,7 @@ void zap::engine::state_stack::pop() {
     if(stack_.size() > 1) {
         if(peek_blend_state() != nullptr) pop_blend_state();
         if(peek_depth_state() != nullptr) pop_depth_state();
+        if(peek_scissor_state() != nullptr) pop_scissor_state();
         if(peek_rasterisation_state() != nullptr) pop_rasterisation_state();
         if(peek_stencil_state() != nullptr) pop_stencil_state();
 
@@ -157,6 +163,43 @@ void state_stack::transition(const state_stack::depth_state* source, const state
     if(target->clear_depth != source->clear_depth) glClearDepth(target->clear_depth);
 
     gl_error_check();
+}
+
+void state_stack::push_state(const scissor_state* state) {
+    if(state == nullptr || state == curr_scissor_state()) return;
+    transition(curr_scissor_state(), state);
+    scissor_stack_.push(state);
+}
+
+void state_stack::pop_scissor_state() {
+    if(scissor_stack_.size() > 1) {
+        auto curr = curr_scissor_state();
+        scissor_stack_.pop();
+        auto prev = curr_scissor_state();
+        transition(curr, prev);
+    }
+}
+
+void state_stack::initialise(const scissor_state* state) {
+    if(state == nullptr) return;
+    if(state->enabled) {
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(state->x, state->y, state->width, state->height);
+    } else {
+        glDisable(GL_SCISSOR_TEST);
+    }
+    // Default scissor state is entire viewport
+}
+
+void state_stack::transition(const scissor_state* source, const scissor_state* target) {
+    if(target->enabled) {
+        if(!source->enabled) {
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(target->x, target->y, target->width, target->height);
+        }
+    } else {
+        if(source->enabled) glDisable(GL_SCISSOR_TEST);
+    }
 }
 
 void state_stack::push_state(const rasterisation_state* state) {

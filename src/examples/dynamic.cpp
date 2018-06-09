@@ -208,8 +208,8 @@ private:
     mat4f view_matrix_;
 
     state_stack rndr_state_;
-    render_state default_state_{false, true, true, false};
-    render_state additive_blend_state_{true, true, true, false};
+    render_state default_state_{RS_DEPTH | RS_RASTERISATION};//false, true, true, false};
+    render_state additive_blend_state_{RS_BLEND | RS_DEPTH | RS_RASTERISATION};//true, true, true, false};
 
     // Points or line segments
     p3c4_batch p3c4_batch_;
