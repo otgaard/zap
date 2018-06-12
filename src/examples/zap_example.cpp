@@ -11,7 +11,7 @@
 #include <renderer/render_context.hpp>
 #include <renderer/shader_builder.hpp>
 #include <engine/state_stack.hpp>
-#include <graphics/graphics2/text/text_batcher.hpp>
+#include <graphics/graphics2/text/text_batch.hpp>
 #include <graphics/graphics2/quad.hpp>
 #include <graphics/graphics2/text/text.hpp>
 #include <graphics/graphics2/text/font_manager.hpp>
@@ -60,7 +60,7 @@ public:
 
 protected:
     font_manager font_mgr_;
-    text_batcher batcher_;
+    text_batch batch_;
     camera cam_;
 };
 
@@ -74,7 +74,7 @@ bool zap_example::initialise() {
         return false;
     }
 
-    if(!batcher_.initialise(&font_mgr_)) {
+    if(!batch_.initialise(&font_mgr_)) {
         LOG_ERR("Failed to initialise batcher");
         return false;
     }
@@ -84,29 +84,29 @@ bool zap_example::initialise() {
         LOG(arial->name, arial->px_height, arial->font_id);
     }
 
-    auto tex = batcher_.get_texture(arial->font_id);
+    auto tex = batch_.get_texture(arial->font_id);
     LOG(arial->name, tex->is_allocated(), tex->width(), tex->height());
     UNUSED(tex);
 
     // Test building a text object
-    auto quote1_proxy = batcher_.create_text(arial->font_id, quote1);
+    auto quote1_proxy = batch_.create_text(arial->font_id, quote1);
     LOG("Proxy:", quote1_proxy.get_font()->name, quote1_proxy.get_text(), quote1_proxy.get_id());
     LOG(quote1_proxy.get_bound());
     quote1_proxy.set_colour(1.f, 0.f, 0.f, 1.f);
 
-    auto quote2_proxy = batcher_.create_text(arial->font_id, quote2);
+    auto quote2_proxy = batch_.create_text(arial->font_id, quote2);
     LOG("Proxy:", quote2_proxy.get_font()->name, quote2_proxy.get_text(), quote2_proxy.get_id());
     LOG(quote2_proxy.get_bound());
     quote2_proxy.translate(vec2i{100, 200});
     quote2_proxy.set_colour(0.f, 1.f, 0.f, 1.f);
 
-    auto quote3_proxy = batcher_.create_text(arial->font_id, quote2);
+    auto quote3_proxy = batch_.create_text(arial->font_id, quote2);
     LOG("Proxy:", quote3_proxy.get_font()->name, quote3_proxy.get_text(), quote3_proxy.get_id());
     LOG(quote3_proxy.get_bound());
     quote3_proxy.translate(vec2i{200, 400});
     quote3_proxy.set_colour(0.f, 0.f, 1.f, 1.f);
 
-    auto quote4_proxy = batcher_.create_text(arial->font_id, quote1);
+    auto quote4_proxy = batch_.create_text(arial->font_id, quote1);
     LOG("Proxy:", quote4_proxy.get_font()->name, quote4_proxy.get_text(), quote4_proxy.get_id());
     LOG(quote4_proxy.get_bound());
     quote4_proxy.translate(vec2i{300, 600});
@@ -132,7 +132,7 @@ void zap_example::update(double t, float dt) {
 }
 
 void zap_example::draw() {
-    batcher_.draw(cam_);
+    batch_.draw(cam_);
 }
 
 void zap_example::shutdown() {

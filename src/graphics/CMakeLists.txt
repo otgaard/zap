@@ -12,7 +12,7 @@ set(PUBLIC_HEADERS
         generators/generator.hpp
         graphics2/text/font_manager.hpp
         graphics2/text/text.hpp
-        graphics2/text/text_batcher.hpp
+        graphics2/text/text_batch.hpp
         graphics2/curve_input.hpp
         graphics2/g2_types.hpp
         graphics2/plotter2.hpp
@@ -36,7 +36,7 @@ set(SOURCE_FILES
         graphics2/plotter/plotter.hpp
         graphics2/text/font_manager.cpp
         graphics2/text/text.cpp
-        graphics2/text/text_batcher.cpp
+        graphics2/text/text_batch.cpp
         #graphics2/curve_input.cpp
         graphics2/g2_types.cpp
         graphics2/plotter2.cpp

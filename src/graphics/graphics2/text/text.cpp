@@ -2,12 +2,12 @@
 
 #if defined(FOUND_FREETYPE)
 #include "text.hpp"
-#include "text_batcher.hpp"
+#include "text_batch.hpp"
 
 using namespace zap;
 using namespace engine;
 
-zap::graphics::text::text(uint32_t id, zap::graphics::text_batcher* parent) : id_(id), parent_(parent) {
+zap::graphics::text::text(uint32_t id, zap::graphics::text_batch* parent) : id_(id), parent_(parent) {
 }
 
 zap::graphics::text::~text() {

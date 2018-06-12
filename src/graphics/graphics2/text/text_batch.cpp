@@ -2,7 +2,7 @@
 
 #if defined(FOUND_FREETYPE)
 
-#include "text_batcher.hpp"
+#include "text_batch.hpp"
 #include "text.hpp"
 #include <unordered_map>
 #include <engine/texture.hpp>
@@ -28,8 +28,6 @@ const int CHAR_RESERVE = 1024 * 10;                 // 10k chars to start
 const int CHAR_VTX_RESERVE = 4 * CHAR_RESERVE;      // 40k vertex space (1 quad per char)
 const int CHAR_IDX_RESERVE = 6 * CHAR_RESERVE;      // 60k index space (2 * tri per char)
 
-//using vstream = vertex_stream<vbuf_p2t2_t>;
-
 struct text_string {
     uint32_t font_id;
     render_batch_t::token tok;  // token
@@ -41,7 +39,7 @@ struct text_string {
     std::string text;
 };
 
-struct text_batcher::state_t {
+struct text_batch::state_t {
     font_manager* font_mgr_;
 
     program shdr_prog;
@@ -50,6 +48,8 @@ struct text_batcher::state_t {
     std::vector<text_string> batch_index;
 
     std::unordered_map<uint32_t, texture> textures;
+    bool is_bound = false;
+    bool is_mapped = false;
 };
 
 const char* const text_vshdr = GLSL(
@@ -79,14 +79,14 @@ const char* const text_fshdr = GLSL(
     }
 );
 
-text_batcher::text_batcher() : state_(new state_t{}), s(*state_) {
+text_batch::text_batch() : state_(new state_t{}), s(*state_) {
 }
 
-text_batcher::~text_batcher() {
+text_batch::~text_batch() {
     gl_error_check();
 }
 
-bool text_batcher::initialise(font_manager* font_mgr) {
+bool text_batch::initialise(font_manager* font_mgr) {
     if(!font_mgr) {
         LOG_ERR("Text Batcher requires a valid font_manager");
         return false;
@@ -117,24 +117,57 @@ bool text_batcher::initialise(font_manager* font_mgr) {
     return true;
 }
 
-void zap::graphics::text_batcher::draw(const renderer::camera& cam) {
+void text_batch::bind() {
     s.shdr_prog.bind();
     s.textures[0].bind(0);
     s.rndr_batch.bind();
+    s.is_bound = true;
+}
+
+void text_batch::release() {
+    s.rndr_batch.release();
+    s.textures[0].release();
+    s.shdr_prog.release();
+    s.is_bound = false;
+}
+
+void text_batch::draw(const renderer::camera& cam) {
+    return draw(cam.proj_view());
+}
+
+void text_batch::draw(const maths::mat4f& vp) {
+    bool was_bound = !s.is_bound;
+    if(was_bound) bind();
 
     for(uint32_t idx = 0; idx != s.batch_index.size(); ++idx) {
         auto& txt = s.batch_index[idx];
-        s.shdr_prog.bind_uniform("pvm", cam.proj_view() * make_translation(float(txt.translation.x), float(txt.translation.y), 0.f));
+        s.shdr_prog.bind_uniform("pvm", vp * make_translation(float(txt.translation.x), float(txt.translation.y), 0.f));
         s.shdr_prog.bind_uniform("colour", txt.colour);
         s.rndr_batch.draw(txt.tok);
     }
 
-    s.rndr_batch.release();
-    s.textures[0].release();
-    s.shdr_prog.release();
+    if(was_bound) release();
 }
 
-const texture* text_batcher::get_texture(uint32_t font_id) const {
+void text_batch::draw(uint32_t text_id, const renderer::camera& cam) {
+    draw(text_id, cam.proj_view());
+}
+
+void text_batch::draw(uint32_t text_id, const maths::mat4f& vp) {
+    if(text_id >= s.batch_index.size()) return;
+
+    bool was_bound = !s.is_bound;
+    if(was_bound) bind();
+
+    auto& txt = s.batch_index[text_id];
+    s.shdr_prog.bind_uniform("pvm", vp * make_translation(float(txt.translation.x), float(txt.translation.y), 0.f));
+    s.shdr_prog.bind_uniform("colour", txt.colour);
+    s.rndr_batch.draw(txt.tok);
+
+    if(was_bound) release();
+}
+
+const texture* text_batch::get_texture(uint32_t font_id) const {
     auto font_ptr = s.font_mgr_->get_font(font_id);
     if(!font_ptr) return nullptr;
 
@@ -152,13 +185,10 @@ const texture* text_batcher::get_texture(uint32_t font_id) const {
     }
 }
 
-// TODO: 1) Organise free store according to font
-// TODO: 2) Defragment free store
-
 // The following could be implemented far better by using instanced rendering, but base offset instanced drawing
 // isn't available in OpenGL 3.3
 
-text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_t max_len) {
+text text_batch::create_text(uint32_t font_id, const std::string& str, uint32_t max_len) {
     text txt{};
     auto font_ptr = s.font_mgr_->get_font(font_id);
     if(!font_ptr || (str.empty() && max_len == 0)) return txt;
@@ -243,44 +273,44 @@ text text_batcher::create_text(uint32_t font_id, const std::string& str, uint32_
 
 }
 
-bool text_batcher::change_text(uint32_t text_id, const std::string& str, uint32_t max_len) {
+bool text_batch::change_text(uint32_t text_id, const std::string& str, uint32_t max_len) {
     return false;
 }
 
-void text_batcher::destroy_text(uint32_t text_id) {
+void text_batch::destroy_text(uint32_t text_id) {
 
 }
 
-void text_batcher::translate_text(uint32_t text_id, int x, int y) {
+void text_batch::translate_text(uint32_t text_id, int x, int y) {
     if(text_id < s.batch_index.size()) s.batch_index[text_id].translation.set(x, y);
 }
 
-vec2i text_batcher::get_text_translation(uint32_t text_id) const {
+vec2i text_batch::get_text_translation(uint32_t text_id) const {
     return text_id < s.batch_index.size() ? s.batch_index[text_id].translation : vec2i{0, 0};
 }
 
-geometry::recti text_batcher::get_AABB(uint32_t text_id) const {
+geometry::recti text_batch::get_AABB(uint32_t text_id) const {
     return text_id < s.batch_index.size() ? s.batch_index[text_id].bound : recti{0, 0, 0, 0};
 }
 
-void text_batcher::set_text_colour(uint32_t text_id, float r, float g, float b, float a) {
+void text_batch::set_text_colour(uint32_t text_id, float r, float g, float b, float a) {
     if(text_id < s.batch_index.size()) s.batch_index[text_id].colour.set(r, g, b, a);
 }
 
-vec4f text_batcher::get_text_colour(uint32_t text_id) const {
+vec4f text_batch::get_text_colour(uint32_t text_id) const {
     return text_id < s.batch_index.size() ? s.batch_index[text_id].colour : vec4f{0.f, 0.f, 0.f, 0.f};
 }
 
-const font* text_batcher::get_text_font(uint32_t text_id) const {
+const font* text_batch::get_text_font(uint32_t text_id) const {
     return text_id < s.batch_index.size() ? s.font_mgr_->get_font(s.batch_index[text_id].font_id) : nullptr;
 }
 
-const std::string& text_batcher::get_text_string(uint32_t text_id) {
+const std::string& text_batch::get_text_string(uint32_t text_id) {
     static std::string str{};
     return str;
 }
 
-size_t text_batcher::get_text_size(uint32_t text_id) {
+size_t text_batch::get_text_size(uint32_t text_id) {
     return text_id < s.batch_index.size() ? s.batch_index[text_id].size : 0;
 }
 

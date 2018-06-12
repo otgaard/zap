@@ -26,18 +26,24 @@ struct font;
 class text;
 class font_manager;
 
-// The text_batcher controls batching and rendering of multiple on-screen text strings with fonts stored as
+// The text_batch controls batching and rendering of multiple on-screen text strings with fonts stored as
 // texture atlases with matching texcoord, boundary and advance instructions from Freetype.
-class ZAPGRAPHICS_EXPORT text_batcher {
+class ZAPGRAPHICS_EXPORT text_batch {
 public:
     using texture = engine::texture;
 
-    text_batcher();
-    ~text_batcher();
+    text_batch();
+    ~text_batch();
 
     bool initialise(font_manager* font_mgr);
 
+    void bind();        // Binding for rendering
+    void release();
+
     void draw(const renderer::camera& cam);
+    void draw(const maths::mat4f& vp);
+    void draw(uint32_t text_id, const renderer::camera& cam);
+    void draw(uint32_t text_id, const maths::mat4f& vp);
 
     const texture* get_texture(uint32_t font_id) const;
 

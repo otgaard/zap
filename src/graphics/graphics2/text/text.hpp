@@ -14,7 +14,7 @@
 namespace zap { namespace graphics {
 
 struct font;
-class text_batcher;
+class text_batch;
 
 class ZAPGRAPHICS_EXPORT text {
 public:
@@ -52,15 +52,15 @@ public:
     recti get_bound() const;
 
 private:
-    friend class text_batcher;
+    friend class text_batch;
 
-    void set_fields(uint32_t id, text_batcher* parent) { id_ = id; parent_ = parent; }
+    void set_fields(uint32_t id, text_batch* parent) { id_ = id; parent_ = parent; }
 
     text() = default;
-    text(uint32_t id, text_batcher* parent);
+    text(uint32_t id, text_batch* parent);
 
     uint32_t id_ = INVALID_IDX;
-    text_batcher* parent_ = nullptr;
+    text_batch* parent_ = nullptr;
 };
 
 }}

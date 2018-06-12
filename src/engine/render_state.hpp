@@ -12,7 +12,8 @@ namespace zap { namespace engine {
         RS_DEPTH = 1 << 1,
         RS_SCISSOR = 1 << 2,
         RS_STENCIL = 1 << 3,
-        RS_RASTERISATION = 1 << 4
+        RS_RASTERISATION = 1 << 4,
+        RS_ALL = (RS_BLEND | RS_DEPTH | RS_SCISSOR | RS_STENCIL | RS_RASTERISATION)
     };
 
     class ZAPENGINE_EXPORT render_state {
