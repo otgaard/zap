@@ -187,6 +187,13 @@ bool zap::generator::initialise(threadpool* pool_ptr, int pool_size, ulonglong s
     return true;
 }
 
+void generator::shutdown() {
+    s.fbuffer.deallocate();
+    s.pbuffer.deallocate();
+    s.grad1_tex.deallocate();
+    s.prn_tex.deallocate();
+}
+
 std::future<generator::pixmap<float>> generator::render(const render_task& req, generator::gen_method method) {
     if(method == gen_method::GPU) {
         std::promise<generator::pixmap<float>> promise;

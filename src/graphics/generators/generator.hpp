@@ -98,6 +98,7 @@ public:
     generator& operator=(generator&&) = delete;
 
     bool initialise(threadpool* pool_ptr=nullptr, int pool_size=2, ulonglong seed=1);
+    void shutdown();
 
     // This is a temporary interface for sharing the PRN tables with other shaders via the loaded textures
     const texture* prn_table() const;

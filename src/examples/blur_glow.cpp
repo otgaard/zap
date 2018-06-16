@@ -197,7 +197,6 @@ bool blur_glow::initialise() {
     }
 
     rndr_.get_state_stack()->clear_colour(0.f, 0.f, 0.f, 0.f);
-
     rndr_.initialise();
 
     sphere_ = make_mesh(generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(100, 200, 1.f, false));
@@ -464,6 +463,12 @@ void blur_glow::draw() {
 }
 
 void blur_glow::shutdown() {
+    fbuffer1_.deallocate();
+    fbuffer2_.deallocate();
+    fbuffer3_.deallocate();
+    planet_tex1_.deallocate();
+    planet_tex2_.deallocate();
+    gen_.shutdown();
 }
 
 int main(int argc, char* argv[]) {
