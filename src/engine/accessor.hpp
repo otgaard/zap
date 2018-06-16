@@ -165,10 +165,13 @@ void accessor<BufferT>::release(const range& blk) {
         auto it = freelist_.begin();
         while(it->start < blk.start && it != freelist_.end())
             it = std::next(it);
+
         if(it == freelist_.end()) {
             if(freelist_.back().start + freelist_.back().count == blk.start) freelist_.back().count += blk.count;
             else                                                             freelist_.push_back(blk);
-        } if(blk.start + blk.count == it->start) {
+        }
+
+        if(blk.start + blk.count == it->start) {
             it->start = blk.start;
             it->count += blk.count;
             if(it != freelist_.begin()) {

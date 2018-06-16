@@ -126,7 +126,7 @@ const char* const blend_fshdr = GLSL(
         void main() {
             vec4 colA = texture(texA, tex);
             vec4 colB = texture(texB, tex);
-            frag_colour = min((colA + colB) - (colA*colB), 1.);
+            frag_colour = min((colA + colB) - colA*colB, 1.);
         }
 );
 
@@ -156,24 +156,20 @@ public:
 
 protected:
     camera cam_;
-    visual_t vis1_;
-    vbuf_p3_t vbuf1_;
-    ibuf_u32_t ibuf1_;
-    mesh_p3_u32_t mesh1_;
-    program prog1_;
-    texture tex1_;
+    std::unique_ptr<mesh_p3_u32_t> sphere_;
+    program planet_prog_;
+    texture planet_tex1_;
     sampler samp1_;
 
-    texture tex2_;
+    texture planet_tex2_;
 
     generator gen_;
-    render_context context_;
+    render_context planet_ctx_;
 
     framebuffer fbuffer1_;
     framebuffer fbuffer2_;
     framebuffer fbuffer3_;
-    quad quad1_;
-    //quad quad2_;
+    quad blur_quad_;
     sampler samp2_;
 
     int tex_idx = -1;
@@ -181,17 +177,17 @@ protected:
     float inc = 0.f;
 
     // Skybox
-    vbuf_p3_t skybox_vbuf_;
-    ibuf_u16_t skybox_ibuf_;
-    mesh_p3_u16_t skybox_mesh_;
+    std::unique_ptr<mesh_p3_u16_t> skybox_;
     program skybox_prog_;
     render_context skybox_ctx_;
-    visual_t skybox_;
 
-    quad output_;   // The final output (the blend shader)
+    quad output_quad_;   // The final output (the blend shader)
 
     state_stack stack;
     zap::renderer::renderer rndr_;
+
+    render_state blend_state_;
+    render_state depth_state_;
 };
 
 bool blur_glow::initialise() {
@@ -204,29 +200,9 @@ bool blur_glow::initialise() {
 
     rndr_.initialise();
 
-    if(!vbuf1_.allocate() || !ibuf1_.allocate() || !mesh1_.allocate()) {
-        LOG_ERR("Failed to initialise vbuf or mesh");
-        return false;
-    }
+    sphere_ = make_mesh(generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(100, 200, 1.f, false));
 
-    mesh1_.bind(); vbuf1_.bind(); ibuf1_.bind();
-    mesh1_.set_stream(&vbuf1_);
-    mesh1_.set_index(&ibuf1_);
-
-    auto sphere = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_UVsphere<float, uint32_t>(100, 200, 1.f, false);
-    if(!vbuf1_.initialise(get<0>(sphere))) {
-        LOG_ERR("Failed to initialise sphere");
-        return false;
-    }
-
-    if(!ibuf1_.initialise(get<1>(sphere))) {
-        LOG_ERR("Failed to initialise sphere");
-        return false;
-    }
-
-    prog1_.add_shader(shader_type::ST_VERTEX, basic_vshdr);
-    prog1_.add_shader(shader_type::ST_FRAGMENT, basic_fshdr);
-    if(!prog1_.link()) {
+    if(!planet_prog_.link(basic_vshdr, basic_fshdr)) {
         LOG_ERR("Failed to compile shader program");
         return false;
     }
@@ -241,8 +217,8 @@ bool blur_glow::initialise() {
     req.project = render_task::projection::CUBE_MAP;
     auto pm = gen_.render_image<rgb888_t>(req).get();
 
-    tex1_.set_type(texture_type::TT_CUBE_MAP);
-    if(!tex1_.allocate() || !tex1_.initialise(pm, true)) {
+    planet_tex1_.set_type(texture_type::TT_CUBE_MAP);
+    if(!planet_tex1_.allocate() || !planet_tex1_.initialise(pm, true)) {
         LOG_ERR("Failed to allocate or initialise texture");
         return false;
     }
@@ -254,8 +230,8 @@ bool blur_glow::initialise() {
 
     req.scale.set(30.f, 30.f);
     pm = gen_.render_image<rgb888_t>(req).get();
-    tex2_.set_type(texture_type::TT_CUBE_MAP);
-    if(!tex2_.allocate() || !tex2_.initialise(pm,true)) {
+    planet_tex2_.set_type(texture_type::TT_CUBE_MAP);
+    if(!planet_tex2_.allocate() || !planet_tex2_.initialise(pm,true)) {
         LOG_ERR("Failed to allocate or initialise texture");
         return false;
     }
@@ -264,47 +240,47 @@ bool blur_glow::initialise() {
     samp1_.set_anisotropy(16.f);
     samp1_.set_min_filter(tex_filter::TF_LINEAR_MIPMAP_LINEAR);
     samp1_.set_mag_filter(tex_filter::TF_LINEAR);
-    samp1_.set_wrap_s(tex_wrap::TW_MIRRORED_REPEAT);
-    samp1_.set_wrap_t(tex_wrap::TW_MIRRORED_REPEAT);
-    samp1_.set_wrap_r(tex_wrap::TW_MIRRORED_REPEAT);
+    samp1_.set_wrap_s(tex_wrap::TW_CLAMP_TO_EDGE);
+    samp1_.set_wrap_t(tex_wrap::TW_CLAMP_TO_EDGE);
+    samp1_.set_wrap_r(tex_wrap::TW_CLAMP_TO_EDGE);
     samp1_.release(0);
 
-    context_.set_program(&prog1_);
-    context_.add_sampler(&tex1_, &samp1_, &tex2_, &samp1_);
-    context_.initialise();
-    context_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
-    context_.set_texture_unit("diffuse_tex", 0);
+    planet_ctx_.set_program(&planet_prog_);
+    planet_ctx_.add_sampler(&planet_tex1_, &samp1_, &planet_tex2_, &samp1_);
+    planet_ctx_.initialise();
+    planet_ctx_.set_parameter("colour[0]", {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}});
+    planet_ctx_.set_texture_unit("diffuse_tex", 0);
 
-    tex_idx = context_.get_index("diffuse_tex");
-    pvm_idx = context_.get_index("PVM");
+    tex_idx = planet_ctx_.get_index("diffuse_tex");
+    pvm_idx = planet_ctx_.get_index("PVM");
 
-    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_/8, sc_height_/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
+    if(!fbuffer1_.allocate() || !fbuffer1_.initialise(1, sc_width_/8, sc_height_/8, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false)) {
         LOG_ERR("Failed to initialise the framebuffer");
         return false;
     }
 
-    if(!fbuffer2_.allocate() || !fbuffer2_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false)) {
+    if(!fbuffer2_.allocate() || !fbuffer2_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
         LOG_ERR("Failed to initialise the framebuffer");
         return false;
     }
 
-    if(!fbuffer3_.allocate() || !fbuffer3_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false)) {
+    if(!fbuffer3_.allocate() || !fbuffer3_.initialise(1, sc_width_, sc_height_, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true)) {
         LOG_ERR("Failed to initialise the framebuffer");
         return false;
     }
 
-    if(!quad1_.initialise(blur_fshdr) || !output_.initialise(blend_fshdr)) {
+    if(!blur_quad_.initialise(blur_fshdr) || !output_quad_.initialise(blend_fshdr)) {
         LOG_ERR("Failed to initialise quad");
         return false;
     }
 
     //quad2_.set_override(&fbuffer3_.get_attachment(0));
 
-    quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("blur_factor", 8.f/sc_width_);
-    quad1_.get_program()->bind_uniform("direction", 0);
-    quad1_.get_program()->bind_texture_unit("input_tex", 0);
-    quad1_.get_program()->release();
+    blur_quad_.get_program()->bind();
+    blur_quad_.get_program()->bind_uniform("blur_factor", 8.f/sc_width_);
+    blur_quad_.get_program()->bind_uniform("direction", 0);
+    blur_quad_.get_program()->bind_texture_unit("input_tex", 0);
+    blur_quad_.get_program()->release();
 
     samp2_.allocate();
     samp2_.initialise();
@@ -315,24 +291,13 @@ bool blur_glow::initialise() {
     samp2_.set_wrap_r(tex_wrap::TW_CLAMP_TO_EDGE);
     samp2_.release(0);
 
-    auto skybox = generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_skybox<float>();
-    if(!skybox_mesh_.allocate() || !skybox_vbuf_.allocate() || !skybox_ibuf_.allocate()) {
-        LOG_ERR("Error building skybox");
-        return false;
-    }
-
-    skybox_mesh_.bind(); skybox_vbuf_.bind(), skybox_ibuf_.bind();
-    skybox_mesh_.set_stream(&skybox_vbuf_);
-    skybox_mesh_.set_index(&skybox_ibuf_);
-
-    if(!skybox_vbuf_.initialise(get<0>(skybox)) || !skybox_ibuf_.initialise(get<1>(skybox))) {
+    skybox_ = make_mesh(generators::geometry3<vtx_p3_t, primitive_type::PT_TRIANGLES>::make_skybox<float>());
+    if(!skybox_) {
         LOG_ERR("Failed to initialise skybox");
         return false;
     }
 
-    skybox_prog_.add_shader(shader_type::ST_VERTEX, basic_vshdr);
-    skybox_prog_.add_shader(shader_type::ST_FRAGMENT, skybox_fshdr);
-    if(!skybox_prog_.link()) {
+    if(!skybox_prog_.link(basic_vshdr, skybox_fshdr)) {
         LOG_ERR("Failed to build skybox fragment shader");
         return false;
     }
@@ -343,24 +308,24 @@ bool blur_glow::initialise() {
     skybox_ctx_.set_texture_unit("perm", 0);
     skybox_ctx_.set_texture_unit("grad", 1);
 
-    skybox_.set_context(&skybox_ctx_);
-    skybox_.set_mesh(&skybox_mesh_);
-    skybox_mesh_.update_counts();
-
-    output_.get_program()->bind();
-    output_.get_program()->bind_texture_unit("texA", 0);
-    output_.get_program()->bind_texture_unit("texB", 1);
-    output_.get_program()->release();
+    output_quad_.get_program()->bind();
+    output_quad_.get_program()->bind_texture_unit("texA", 0);
+    output_quad_.get_program()->bind_texture_unit("texB", 1);
+    output_quad_.get_program()->release();
 
     stack.initialise();
 
-    render_state new_state(RS_BLEND | RS_DEPTH | RS_RASTERISATION); //true, true, true, true);
-    new_state.depth()->enabled = false;
-    new_state.blend()->enabled = false;
-    new_state.blend()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_ALPHA;
-    new_state.blend()->dst_mode = render_state::blend_state::dst_blend_mode::DBM_DST_ALPHA;
+    blend_state_.initialise(RS_BLEND | RS_DEPTH | RS_RASTERISATION);
+    blend_state_.depth()->enabled = false;
+    blend_state_.blend()->enabled = false;
+    blend_state_.blend()->src_mode = render_state::blend_state::src_blend_mode::SBM_ONE_MINUS_DST_ALPHA;
+    blend_state_.blend()->dst_mode = render_state::blend_state::dst_blend_mode::DBM_DST_ALPHA;
 
-    stack.push_state(&new_state);
+    stack.push_state(&blend_state_);
+
+    depth_state_.initialise(RS_DEPTH | RS_BLEND);
+    depth_state_.depth()->enabled = true;
+    depth_state_.blend()->enabled = false;
 
     gl_error_check();
 
@@ -372,60 +337,61 @@ void blur_glow::on_resize(int width, int height) {
     cam_.frustum(45.f, width/float(height), .5f, 100.f);
     cam_.viewport(0, 0, width, height);
     cam_.frame(vec3f{0.f, 1.f, 0.f}, vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 2.f});
-    quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("blur_factor", float(blur_radius)/width);
-    quad1_.get_program()->bind();
+    blur_quad_.get_program()->bind();
+    blur_quad_.get_program()->bind_uniform("blur_factor", float(blur_radius)/width);
+    blur_quad_.get_program()->release();
     fbuffer1_.initialise(1, width/blur_radius, height/blur_radius, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
-    fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
-    fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, false);
-    quad1_.resize(width, height);
-    output_.resize(width, height);
+    fbuffer2_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
+    fbuffer3_.initialise(1, width, height, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE, false, true);
+    blur_quad_.resize(width, height);
+    output_quad_.resize(width, height);
     gl_error_check();
 }
 
 void blur_glow::update(double t, float dt) {
     inc += .5f*dt;
-    //vec3f dir{cosf(inc + PI/2), 0.f, -sinf(inc + PI/2)};
-    //cam_.orthogonolise(normalise(dir));
 }
 
 void blur_glow::draw_scene() {
+    stack.push_state(&depth_state_);
     const auto red_colour_table = {vec3f{0.f, 0.f, 0.f}, vec3f{1.f, 0.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec3f{1.f, 1.f, 1.f}};
     const auto blue_colour_table = {vec3f{0.f, 0.f, 0.f}, vec3f{0.f, 0.f, 1.f}, vec3f{0.f, 1.f, 1.f}, vec3f{1.f, 1.f, 1.f}};
     fbuffer1_.bind();
     rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 0.f);
-    mesh1_.bind();
-    context_.bind();
+    sphere_->bind();
+    planet_ctx_.bind();
 
     // Low frequency tex
-    context_.set_parameter(pvm_idx, cam_.proj_view()
+    planet_ctx_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
-    context_.set_texture_unit(tex_idx, 0);
-    context_.set_parameter("colour[0]", red_colour_table);
-    mesh1_.draw(primitive_type::PT_TRIANGLES);
+    planet_ctx_.set_texture_unit(tex_idx, 0);
+    planet_ctx_.set_parameter("colour[0]", red_colour_table);
+    sphere_->draw(primitive_type::PT_TRIANGLES);
 
     // High frequency tex
-    context_.set_parameter(pvm_idx, cam_.proj_view()
+    planet_ctx_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(+0.f, 0.f, -4.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
-    context_.set_texture_unit(tex_idx, 1);
-    context_.set_parameter("colour[0]", blue_colour_table);
-    mesh1_.draw(primitive_type::PT_TRIANGLES);
+    planet_ctx_.set_texture_unit(tex_idx, 1);
+    planet_ctx_.set_parameter("colour[0]", blue_colour_table);
+    sphere_->draw(primitive_type::PT_TRIANGLES);
 
     fbuffer1_.release();
-    context_.release();
-    mesh1_.release();
+    planet_ctx_.release();
+    sphere_->release();
+    stack.pop();
 
     // Horizontal Pass
     fbuffer2_.bind();
+    rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 0.f);
     fbuffer1_.get_attachment(0).bind(0);
     samp2_.bind(0);
-    quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("direction", 0);
-    quad1_.draw();
+    blur_quad_.get_program()->bind();
+    blur_quad_.get_program()->bind_uniform("direction", 0);
+    blur_quad_.draw();
     samp2_.release(0);
     fbuffer1_.get_attachment(0).release();
     fbuffer2_.release();
@@ -435,53 +401,56 @@ void blur_glow::draw_scene() {
     rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 0.f);
     fbuffer2_.get_attachment(0).bind(0);
     samp2_.bind(0);
-    quad1_.get_program()->bind();
-    quad1_.get_program()->bind_uniform("direction", 1);
-    quad1_.draw();
+    blur_quad_.get_program()->bind();
+    blur_quad_.get_program()->bind_uniform("direction", 1);
+    blur_quad_.draw();
     samp2_.release(0);
     fbuffer2_.get_attachment(0).release();
     fbuffer3_.release();
 
     fbuffer2_.bind();
+    rndr_.get_state_stack()->clear(0.f, 0.f, 0.f, 0.f);
+    stack.push_state(&depth_state_);
 
-    skybox_.get_context()->set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
-    skybox_.get_context()->bind();
-    skybox_mesh_.bind();
-    skybox_mesh_.draw(primitive_type::PT_TRIANGLES);
-    skybox_mesh_.release();
-    skybox_.get_context()->release();
+    skybox_->bind();
+    skybox_ctx_.set_parameter("PVM", cam_.proj_view()*make_scale(100.f, 100.f, 100.f));
+    skybox_ctx_.bind();
+    skybox_->draw(primitive_type::PT_TRIANGLES);
+    skybox_ctx_.release();
+    skybox_->release();
 
-    mesh1_.bind();
-    context_.bind();
+    sphere_->bind();
+    planet_ctx_.bind();
 
     // Low frequency tex
-    context_.set_parameter(pvm_idx, cam_.proj_view()
+    planet_ctx_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(-4.f, 0.f, -8.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f},  PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, -1.f}, 4*inc));
-    context_.set_texture_unit(tex_idx, 0);
-    context_.set_parameter("colour[0]", red_colour_table);
-    mesh1_.draw(primitive_type::PT_TRIANGLES);
+    planet_ctx_.set_texture_unit(tex_idx, 0);
+    planet_ctx_.set_parameter("colour[0]", red_colour_table);
+    sphere_->draw(primitive_type::PT_TRIANGLES);
 
     // High frequency tex
-    context_.set_parameter(pvm_idx, cam_.proj_view()
+    planet_ctx_.set_parameter(pvm_idx, cam_.proj_view()
                                     * make_translation(+0.f, 0.f, -4.f)
                                     * make_rotation(vec3f{1.f, 0.f, 0.f}, PI<float>/2.f)
                                     * make_rotation(vec3f{0.f, 0.f, 1.f}, inc));
-    context_.set_texture_unit(tex_idx, 1);
-    context_.set_parameter("colour[0]", blue_colour_table);
-    mesh1_.draw(primitive_type::PT_TRIANGLES);
+    planet_ctx_.set_texture_unit(tex_idx, 1);
+    planet_ctx_.set_parameter("colour[0]", blue_colour_table);
+    sphere_->draw(primitive_type::PT_TRIANGLES);
 
-    context_.release();
-    mesh1_.release();
+    planet_ctx_.release();
+    sphere_->release();
 
     fbuffer2_.release();
+    stack.pop();
 
     samp2_.bind(0);
 
     fbuffer3_.get_attachment(0).bind(0);
     fbuffer2_.get_attachment(0).bind(1);
-    output_.draw();
+    output_quad_.draw();
     fbuffer2_.get_attachment(0).release();
     fbuffer3_.get_attachment(0).release();
 
