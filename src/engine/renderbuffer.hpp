@@ -5,32 +5,37 @@
 #ifndef ZAP_RENDERBUFFER_HPP
 #define ZAP_RENDERBUFFER_HPP
 
-#include "engine.hpp"
-#include "pixel_format.hpp"
-#include "pixel_buffer.hpp"
+#include "render_target.hpp"
 
 namespace zap { namespace engine {
 
-class ZAPENGINE_EXPORT renderbuffer {
+class ZAPENGINE_EXPORT renderbuffer : public render_target {
 public:
-    renderbuffer();
-    renderbuffer(pixel_format pf, pixel_datatype dt, int32_t width, int32_t height);
-    ~renderbuffer();
+    static constexpr auto rt_type = render_target_type::RT_RENDERBUFFER;
+
+    renderbuffer() : render_target(rt_type) { }
+    renderbuffer(pixel_format pf, pixel_datatype dt, int32_t width, int32_t height) : render_target(rt_type) {
+        pixel_fmt_ = pf;
+        pixel_dt_ = dt;
+        w_ = width;
+        h_ = height;
+        d_ = 1;
+        int_fmt_ = gl_internal_format(pf, dt);
+    }
+
+    virtual ~renderbuffer() { if(is_allocated()) deallocate(); }
 
     bool allocate();
-    bool deallocate();
-    bool is_allocated() const { return id_ != INVALID_RESOURCE; }
-
+    virtual bool deallocate();
     bool initialise();
+    bool initialise(pixel_format pf, pixel_datatype dt, int32_t width, int32_t height);
+
+    void bind();
+    void release();
 
 private:
-    resource_t id_ = INVALID_IDX;
-    pixel_format pixel_fmt_;
-    pixel_datatype datatype_;
-    int32_t w_ = 0;
-    int32_t h_ = 0;
+    uint32_t int_fmt_;
 };
-
 
 }}
 

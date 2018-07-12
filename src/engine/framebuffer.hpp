@@ -4,6 +4,7 @@
 
 #include "engine.hpp"
 #include "texture.hpp"
+#include "renderbuffer.hpp"
 #include <maths/vec4.hpp>
 
 namespace zap { namespace engine {
@@ -78,7 +79,8 @@ public:
 
     const texture& get_attachment(size_t idx) const {
         checkidx(idx, colour_target_count_ + has_depth_stencil());
-        return attachments_[idx];
+        auto rt = attachments_[idx].get();
+        return *(rt->is_texture() ? dynamic_cast<texture*>(rt) : nullptr);
     }
 
     // Framebuffer must be bound for read/write operations to succeed
@@ -123,13 +125,15 @@ public:
         }
 
         pbuf.bind(pbuf.write_type);
-        auto err = attachments_[idx].copy(pbuf, viewport[0], viewport[1], viewport[2], viewport[3], 0, false);
+        auto rt = attachments_[idx]->is_texture() ? dynamic_cast<texture*>(attachments_[idx].get()) : nullptr;
+        if(!rt) return false;
+
+        auto err = rt->copy(pbuf, viewport[0], viewport[1], viewport[2], viewport[3], 0, false);
         pbuf.release(pbuf.write_type);
         return err;
     }
 
     bool initialise();
-    /*
     bool initialise(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                     bool mipmaps, bool depthstencil);
     template <typename PixelT>
@@ -137,7 +141,6 @@ public:
         return initialise(target_count, width, height, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype,
                           mipmaps, depthstencil);
     }
-    */
     bool is_initialised() const { return attachments_.size() > 0; }
 
 protected:
@@ -158,7 +161,7 @@ protected:
 
     resource_t framebuffer_ = INVALID_IDX;
     size_t colour_target_count_ = 0;
-    std::vector<texture> attachments_;
+    std::vector<std::unique_ptr<render_target>> attachments_;
 
     mutable std::array<int32_t, 4> curr_viewport_;
     mutable std::array<double, 2> curr_depthrange_;

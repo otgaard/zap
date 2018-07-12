@@ -50,3 +50,24 @@ bool zap::engine::init() {
 #endif
     return true;
 }
+
+uint32_t zap::engine::gl_internal_format(zap::engine::pixel_format pf, zap::engine::pixel_datatype dt) {
+    using namespace zap::engine; using namespace gl;
+    if(dt == pixel_datatype::PD_UNSIGNED_BYTE) return gl_type(pf);
+    else if(dt == pixel_datatype::PD_UNSIGNED_INT_24_8) return GL_DEPTH24_STENCIL8;
+    else if(dt == pixel_datatype::PD_UNSIGNED_BYTE_3_3_2) return gl_type(pf);
+    else if(dt == pixel_datatype::PD_DN_UNSIGNED_BYTE) {
+        if(pf == pixel_format::PF_RED_INTEGER)  return GL_R8UI;
+        if(pf == pixel_format::PF_RG_INTEGER)   return GL_RG8UI;
+        if(pf == pixel_format::PF_RGB_INTEGER)  return GL_RGB8UI;
+        if(pf == pixel_format::PF_RGBA_INTEGER) return GL_RGBA8UI;
+    }
+    else if(dt == pixel_datatype::PD_FLOAT) {
+        if(pf == pixel_format::PF_RED)  return GL_R32F;
+        if(pf == pixel_format::PF_RG)   return GL_RG32F;
+        if(pf == pixel_format::PF_RGB)  return GL_RGB32F;
+        if(pf == pixel_format::PF_RGBA) return GL_RGBA32F;
+        if(pf == pixel_format::PF_DEPTH_COMPONENT) return GL_DEPTH_COMPONENT32F;
+    }
+    return GL_NONE;
+}

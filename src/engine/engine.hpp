@@ -485,6 +485,8 @@ namespace zap { namespace engine {
 
     ZAPENGINE_EXPORT bool init();
 
+    ZAPENGINE_EXPORT uint32_t gl_internal_format(pixel_format pf, pixel_datatype dt);
+
     ZAPENGINE_EXPORT bool _gl_error_log(const char* file, int line);
     ZAPENGINE_EXPORT bool _gl_error_check();
 

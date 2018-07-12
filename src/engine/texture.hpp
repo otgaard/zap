@@ -3,18 +3,22 @@
 #define ZAP_TEXTURE_HPP
 
 #include <vector>
-#include "engine.hpp"
-#include "pixel_format.hpp"
-#include "pixel_buffer.hpp"
+#include "render_target.hpp"
 
 namespace zap { namespace engine {
 
-class ZAPENGINE_EXPORT texture {
+class ZAPENGINE_EXPORT texture : public render_target {
 public:
-    explicit texture(texture_type type=texture_type::TT_TEX2D) : type_(type) { }
-    ~texture() { if(is_allocated()) deallocate(); }
+    static constexpr auto rt_type = render_target_type::RT_TEXTURE;
+
+    explicit texture(texture_type type=texture_type::TT_TEX2D) : render_target(rt_type), type_(type) { }
+    virtual ~texture() { if(is_allocated()) deallocate(); }
     texture(const texture& rhs) = delete;
-    texture(texture&& rhs) noexcept : type_(rhs.type_), id_(rhs.id_), w_(rhs.w_), h_(rhs.h_), d_(rhs.d_) {
+    texture(texture&& rhs) noexcept : render_target(rt_type), type_(rhs.type_) {
+        id_ = rhs.id_;
+        w_ = rhs.w_;
+        h_ = rhs.h_;
+        d_ = rhs.d_;
         rhs.id_ = INVALID_RESOURCE;
     }
 
@@ -41,13 +45,8 @@ public:
     tex_filter get_min_filter() const { return min_filter_; }
     tex_filter get_mag_filter() const { return mag_filter_; }
 
-    inline int width() const { return w_; }
-    inline int height() const { return h_; }
-    inline int depth() const { return d_; }
-
     bool allocate();
     bool deallocate();
-    bool is_allocated() const { return id_ != INVALID_RESOURCE; }
 
     resource_t resource() const { return id_; }
 
@@ -112,10 +111,6 @@ protected:
     texture_type type_ = texture_type::TT_TEX2D;
     tex_wrap wrap_mode_[3] = { tex_wrap::TW_CLAMP_TO_EDGE, tex_wrap::TW_CLAMP_TO_EDGE, tex_wrap::TW_CLAMP_TO_EDGE };
     tex_filter min_filter_ = tex_filter::TF_NEAREST, mag_filter_ = tex_filter::TF_NEAREST;
-    resource_t id_ = INVALID_IDX;
-    int w_ = 0;
-    int h_ = 0;
-    int d_ = 0;
 };
 
 }}

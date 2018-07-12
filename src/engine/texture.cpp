@@ -56,6 +56,7 @@ int pixel_size(zap::engine::pixel_format format, zap::engine::pixel_datatype dat
     assert(channels != 0 && "Unknown channels in Pixel");
 }
 
+/*
 zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap::engine::pixel_datatype datatype) {
     using namespace zap::engine; using namespace gl;
     if(datatype == pixel_datatype::PD_UNSIGNED_BYTE) return gl_type(format);
@@ -75,6 +76,7 @@ zap::engine::gl::GLenum gl_internal_format(zap::engine::pixel_format format, zap
     }
     return GL_NONE;
 }
+*/
 
 bool texture::allocate() {
     glGenTextures(1, &id_);
@@ -120,6 +122,9 @@ bool texture::initialise(texture_type type, int width, int height, int depth, pi
         pixel_datatype datatype, bool generate_mipmaps, const char* data) {
     using namespace gl;
     type_ = type;
+
+    pixel_fmt_ = format;
+    pixel_dt_ = datatype;
 
     glBindTexture(gl_type(type_), id_);
     initialise_default();
