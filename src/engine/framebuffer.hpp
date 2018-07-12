@@ -8,15 +8,35 @@
 
 namespace zap { namespace engine {
 
+enum class framebuffer_type {
+    FT_COLOUR = 1 << 0,
+    FT_DEPTH = 1 << 1,
+    FT_STENCIL = 1 << 2,
+    FT_COLOUR_DEPTH = FT_COLOUR | FT_DEPTH,
+    FT_COLOUR_STENCIL = FT_COLOUR | FT_STENCIL,
+    FT_COLOUR_DEPTH_STENCIL = FT_COLOUR | FT_DEPTH | FT_STENCIL,
+    FT_DEPTH_STENCIL = FT_DEPTH | FT_STENCIL,
+};
+
+enum class attachment_type {
+    AT_NONE,
+    AT_TEXTUREBUFFER,
+    AT_RENDERBUFFER
+};
+
 class ZAPENGINE_EXPORT framebuffer {
 public:
     using vec4i = maths::vec4i;
 
     framebuffer() = default;
+    framebuffer(framebuffer_type ft);
+    framebuffer(framebuffer_type ft, attachment_type colour_type, attachment_type depth_type=attachment_type::AT_NONE);
     framebuffer(const framebuffer&) = delete;
     framebuffer(framebuffer&&) = delete;
+    /*
     framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                 bool mipmaps, bool depthstencil);
+    */
     ~framebuffer() { if(is_allocated()) deallocate(); }
 
     framebuffer& operator=(const framebuffer&) = delete;
@@ -33,8 +53,31 @@ public:
     void release() const;
     bool is_bound() const;
 
+    void set_framebuffer_type(framebuffer_type ft);
+    void set_colour_target(attachment_type at, pixel_format pf, pixel_datatype pd);
+    void set_depth_stencil_target(attachment_type at, pixel_format pf, pixel_datatype pd);
+    bool is_valid_format() const;
+
+    bool has_attachment(framebuffer_type ft) const { return (uint32_t(ftype_) & uint32_t(ft)) != 0; }
+    bool has_colour() const { return has_attachment(framebuffer_type::FT_COLOUR); }
+    bool has_depth() const { return has_attachment(framebuffer_type::FT_DEPTH); }
+    bool has_stencil() const { return has_attachment(framebuffer_type::FT_STENCIL); }
+    bool has_depth_stencil() const {
+        return has_attachment(framebuffer_type(
+                uint32_t(framebuffer_type::FT_STENCIL)
+                | uint32_t(framebuffer_type::FT_DEPTH)));
+    }
+    framebuffer_type get_framebuffer_type() const { return ftype_; }
+    attachment_type get_colour_attachment() const { return col_attachment_; }
+    attachment_type get_depth_stencil_attachment() const { return ds_attachment_; }
+
+    size_t get_attachment_count() const {
+        return (get_colour_attachment() == attachment_type::AT_TEXTUREBUFFER ? colour_target_count_ : 0)
+               + (get_depth_stencil_attachment() == attachment_type::AT_TEXTUREBUFFER ? 1 : 0);
+    }
+
     const texture& get_attachment(size_t idx) const {
-        checkidx(idx, target_count_ + depthstencil_);
+        checkidx(idx, colour_target_count_ + has_depth_stencil());
         return attachments_[idx];
     }
 
@@ -42,10 +85,13 @@ public:
     // Note: viewport = [x, y, width, height]
     template <typename PixelT>
     bool read_attachment(pixel_buffer<PixelT>& pbuf, const vec4i& viewport, size_t idx) const {
-        checkidx(idx, target_count_ + depthstencil_);
+        checkidx(idx, colour_target_count_ + has_depth_stencil());
+
+        const auto& fmt = idx == colour_target_count_ ? pf_ds_ : pf_col_;
+        const auto& dt = idx == colour_target_count_ ? dt_ds_ : dt_col_;
 
         // Check type is compatible
-        if(pixel_type<PixelT>::format != pix_format_ || pixel_type<PixelT>::datatype != pix_dtype_) {
+        if(pixel_type<PixelT>::format != fmt || pixel_type<PixelT>::datatype != dt) {
             LOG_ERR("Cannot copy framebuffer attachment with mismatched pixel format to data type");
             return false;
         }
@@ -57,7 +103,7 @@ public:
     }
 
     bool read_attachment(buffer& buf, const vec4i& viewport, size_t idx) const {
-        checkidx(idx, target_count_ + depthstencil_);
+        checkidx(idx, colour_target_count_ + has_depth_stencil());
         buf.bind(buffer_type::BT_PIXEL_PACK);
         auto err = read_attachment(viewport, idx);
         buf.release(buffer_type::BT_PIXEL_PACK);
@@ -66,10 +112,12 @@ public:
 
     template <typename PixelT>
     bool write_attachment(const pixel_buffer<PixelT>& pbuf, const vec4i& viewport, size_t idx) {
-        checkidx(idx, target_count_ + depthstencil_);
+        checkidx(idx, colour_target_count_ + has_depth_stencil());
 
-        // Check type is compatible
-        if(pixel_type<PixelT>::format != pix_format_ || pixel_type<PixelT>::datatype != pix_dtype_) {
+        const auto& fmt = idx == colour_target_count_ ? pf_ds_ : pf_col_;
+        const auto& dt = idx == colour_target_count_ ? dt_ds_ : dt_col_;
+
+        if(pixel_type<PixelT>::format != fmt || pixel_type<PixelT>::datatype != dt) {
             LOG_ERR("Cannot copy framebuffer attachment with mismatched pixel format to data type");
             return false;
         }
@@ -81,6 +129,7 @@ public:
     }
 
     bool initialise();
+    /*
     bool initialise(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                     bool mipmaps, bool depthstencil);
     template <typename PixelT>
@@ -88,34 +137,32 @@ public:
         return initialise(target_count, width, height, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype,
                           mipmaps, depthstencil);
     }
+    */
     bool is_initialised() const { return attachments_.size() > 0; }
 
 protected:
     // viewport = [x, y, width, height]
     bool read_attachment(const vec4i& viewport, size_t idx) const;
 
-    resource_t framebuffer_ = INVALID_IDX;
-    size_t target_count_ = 0;
+    framebuffer_type ftype_;
     size_t width_;
     size_t height_;
-    pixel_format pix_format_;
-    pixel_datatype pix_dtype_;
-    std::vector<texture> attachments_;  // If depthstencil == true, attachments_.size() == target_count + 1
-    std::vector<uint32_t> draw_buffers_;
     bool mipmaps_;
-    bool depthstencil_;
-    mutable int32_t curr_viewport_[4];
-    mutable double curr_depthrange_[2];
+
+    attachment_type col_attachment_;
+    pixel_format pf_col_;
+    pixel_datatype dt_col_;
+    attachment_type ds_attachment_;
+    pixel_format pf_ds_;
+    pixel_datatype dt_ds_;
+
+    resource_t framebuffer_ = INVALID_IDX;
+    size_t colour_target_count_ = 0;
+    std::vector<texture> attachments_;
+
+    mutable std::array<int32_t, 4> curr_viewport_;
+    mutable std::array<double, 2> curr_depthrange_;
 };
-
-inline framebuffer::framebuffer(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
-                                bool mipmaps, bool depthstencil) :
-                                      target_count_(target_count), width_(width),
-                                      height_(height), pix_format_(format),
-                                      pix_dtype_(datatype), mipmaps_(mipmaps),
-                                      depthstencil_(depthstencil) {
-}
-
 
 }}
 

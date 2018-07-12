@@ -112,6 +112,7 @@ namespace zap { namespace engine {
         PF_RGBA,
         PF_BGRA,
         PF_DEPTH_COMPONENT,
+        PF_STENCIL_INDEX,
         PF_DEPTH_STENCIL,
         PF_RED_INTEGER,
         PF_RG_INTEGER,

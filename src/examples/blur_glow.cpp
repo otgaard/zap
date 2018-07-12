@@ -143,7 +143,7 @@ using visual_t = visual<spatial_t>;
 
 class blur_glow : public application {
 public:
-    blur_glow() : application{"blur_glow", 2*1280, 2*900}, cam_{true} { }
+    blur_glow() : application{"blur_glow", 1280, 900}, cam_{true} { }
 
     bool initialise() final;
     void update(double t, float dt) final;

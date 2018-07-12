@@ -5,6 +5,21 @@
 using namespace zap::engine;
 using namespace zap::engine::gl;
 
+static constexpr std::array<uint32_t, 12> draw_buffers = {{
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+        GL_COLOR_ATTACHMENT3,
+        GL_COLOR_ATTACHMENT4,
+        GL_COLOR_ATTACHMENT5,
+        GL_COLOR_ATTACHMENT6,
+        GL_COLOR_ATTACHMENT7,
+        GL_COLOR_ATTACHMENT8,
+        GL_COLOR_ATTACHMENT9,
+        GL_COLOR_ATTACHMENT10,
+        GL_COLOR_ATTACHMENT11
+}};
+
 bool framebuffer::allocate() {
     glGenFramebuffers(1, &framebuffer_);
     LOG("Framebuffer Allocated: ", framebuffer_);
@@ -21,9 +36,9 @@ void framebuffer::deallocate() {
 
 void framebuffer::bind() const {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    target_count_ == 0 ? glDrawBuffer(GL_NONE) : glDrawBuffers(uint32_t(target_count_), draw_buffers_.data());
-    glGetIntegerv(GL_VIEWPORT, curr_viewport_);
-    glGetDoublev(GL_DEPTH_RANGE, curr_depthrange_);
+    colour_target_count_ == 0 ? glDrawBuffer(GL_NONE) : glDrawBuffers(uint32_t(colour_target_count_), draw_buffers.data());
+    glGetIntegerv(GL_VIEWPORT, curr_viewport_.data());
+    glGetDoublev(GL_DEPTH_RANGE, curr_depthrange_.data());
     glViewport(0, 0, uint32_t(width_), uint32_t(height_));
     glDepthRange(0., 1.);
 }
@@ -32,11 +47,11 @@ void framebuffer::release() const {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     if(mipmaps_) {
-        for(size_t i = 0; i != target_count_; ++i) {
+        for(size_t i = 0; i != colour_target_count_; ++i) {
             attachments_[i].bind();
             glGenerateMipmap(GL_TEXTURE_2D);
         }
-        attachments_[target_count_-1].release();
+        attachments_[colour_target_count_-1].release();
     }
 
     glViewport(curr_viewport_[0], curr_viewport_[1], curr_viewport_[2], curr_viewport_[3]);
@@ -47,9 +62,10 @@ bool framebuffer::is_bound() const {
     return false;
 }
 
+/*
 bool framebuffer::initialise(size_t target_count, size_t width, size_t height, pixel_format format,
                              pixel_datatype datatype, bool mipmaps, bool depthstencil) {
-    target_count_ = target_count;
+    colour_target_count_ = target_count;
     width_ = width;
     height_ = height;
     pix_format_ = format;
@@ -58,17 +74,65 @@ bool framebuffer::initialise(size_t target_count, size_t width, size_t height, p
     depthstencil_ = depthstencil;
     return initialise();
 }
-
+*/
 bool framebuffer::initialise() {
     assert(is_allocated() && "Framebuffer is not allocated");
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-
     attachments_.clear();
-    attachments_.reserve(target_count_ + depthstencil_);
-    draw_buffers_.reserve(target_count_);
-    for(uint32_t i = 0; i != target_count_; ++i) {
+    attachments_.reserve(get_attachment_count());
+
+    if(has_colour()) {
+        if(col_attachment_ == attachment_type::AT_TEXTUREBUFFER) {
+            for(uint32_t i = 0; i != colour_target_count_; ++i) {
+                attachments_.emplace_back(texture());
+                attachments_[i].allocate();
+                attachments_[i].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1, pf_col_, dt_col_, false); // mipmaps are handled explicitly
+                attachments_[i].bind();
+                if(mipmaps_) {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                } else {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                }
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER, draw_buffers[i], GL_TEXTURE_2D, attachments_[i].resource(), 0);
+                gl_error_check();
+            }
+        } else if(col_attachment_ == attachment_type::AT_RENDERBUFFER) {
+            for(uint32_t i = 0; i != colour_target_count_; ++i) {
+                attachments_.emplace_back(texture());
+                attachments_[i].allocate();
+                attachments_[i].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1, pf_col_, dt_col_, false); // mipmaps are handled explicitly
+                attachments_[i].bind();
+                if(mipmaps_) {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                } else {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                }
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER, draw_buffers[i], GL_TEXTURE_2D, attachments_[i].resource(), 0);
+                gl_error_check();
+            }
+        }
+    }
+
+    if(has_depth_stencil()) {
+        if(ds_attachment_ == attachment_type::AT_TEXTUREBUFFER) {
+
+        } else if(ds_attachment_ == attachment_type::AT_RENDERBUFFER) {
+
+        }
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return !gl_error_check();
+
+    /*
+    for(uint32_t i = 0; i != colour_target_count_; ++i) {
         attachments_.emplace_back(texture());
-        draw_buffers_.push_back(GL_COLOR_ATTACHMENT0 + i);
         attachments_[i].allocate();
         attachments_[i].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1, pix_format_,
                                    pix_dtype_, false);
@@ -87,17 +151,17 @@ bool framebuffer::initialise() {
 
     if(depthstencil_) {
         attachments_.emplace_back(texture());
-        attachments_[target_count_].allocate();
-        attachments_[target_count_].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1,
+        attachments_[colour_target_count_].allocate();
+        attachments_[colour_target_count_].initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1,
                                                pixel_format::PF_DEPTH_STENCIL, pixel_datatype::PD_UNSIGNED_INT_24_8,
                                                false);
-        attachments_[target_count_].bind();
+        attachments_[colour_target_count_].bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
-                               attachments_[target_count_].resource(), 0);
+                               attachments_[colour_target_count_].resource(), 0);
         gl_error_check();
-        attachments_[target_count_].release();
+        attachments_[colour_target_count_].release();
     }
 
     switch(glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
@@ -132,6 +196,7 @@ bool framebuffer::initialise() {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return !gl_error_check();
+    */
 }
 
 bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) const {
@@ -140,9 +205,12 @@ bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) const {
         return false;
     }
 
+    const auto& fmt = idx == colour_target_count_ ? pf_ds_ : pf_col_;
+    const auto& dt = idx == colour_target_count_ ? dt_ds_ : dt_col_;
+
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
     glReadBuffer(GL_COLOR_ATTACHMENT0 + uint32_t(idx));
-    glReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], gl_type(pix_format_), gl_type(pix_dtype_), 0);
+    glReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], gl_type(fmt), gl_type(dt), 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return !gl_error_check();
 }

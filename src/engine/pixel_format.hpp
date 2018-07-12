@@ -148,6 +148,7 @@ namespace zap { namespace engine {
     using d32f_t = pixel<float, depth32_t>;
     using d32u_t = pixel<uint32_t, depth32_t>;
     using d24s8_t = pixel<core::bitfield<uint32_t, 24, 8>, depth24_t, stencil8_t>;
+    using s8_t = pixel<byte, stencil8_t>;
 
     template <typename PixelT> struct pixel_type { };
 
@@ -164,7 +165,10 @@ namespace zap { namespace engine {
     DEF_PIXEL_TYPE(rgb32f_t, pixel_format::PF_RGB, pixel_datatype::PD_FLOAT)
     DEF_PIXEL_TYPE(rgba32f_t, pixel_format::PF_RGBA, pixel_datatype::PD_FLOAT)
     DEF_PIXEL_TYPE(rgba8888_t, pixel_format::PF_RGBA, pixel_datatype::PD_UNSIGNED_BYTE)
+    DEF_PIXEL_TYPE(d32f_t, pixel_format::PF_DEPTH_COMPONENT, pixel_datatype::PD_FLOAT)
+    DEF_PIXEL_TYPE(d32u_t, pixel_format::PF_DEPTH_COMPONENT, pixel_datatype::PD_UNSIGNED_INT)
     DEF_PIXEL_TYPE(d24s8_t, pixel_format::PF_DEPTH_STENCIL, pixel_datatype::PD_UNSIGNED_INT_24_8)
+    DEF_PIXEL_TYPE(s8_t, pixel_format::PF_STENCIL_INDEX, pixel_datatype::PD_UNSIGNED_BYTE)
 
 }}
 
