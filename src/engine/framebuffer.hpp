@@ -30,7 +30,7 @@ public:
     using vec4i = maths::vec4i;
 
     framebuffer() = default;
-    framebuffer(framebuffer_type ft);
+    explicit framebuffer(framebuffer_type ft);
     framebuffer(framebuffer_type ft, attachment_type colour_type, attachment_type depth_type=attachment_type::AT_NONE);
     framebuffer(const framebuffer&) = delete;
     framebuffer(framebuffer&&) = delete;
@@ -54,10 +54,9 @@ public:
     void release() const;
     bool is_bound() const;
 
-    void set_framebuffer_type(framebuffer_type ft);
-    void set_colour_target(attachment_type at, pixel_format pf, pixel_datatype pd);
-    void set_depth_stencil_target(attachment_type at, pixel_format pf, pixel_datatype pd);
-    bool is_valid_format() const;
+    void set_framebuffer_type(framebuffer_type ft) { ftype_ = ft; }
+    void set_colour_target(attachment_type at, pixel_format pf, pixel_datatype dt);
+    void set_depth_stencil_target(attachment_type at, pixel_format pf, pixel_datatype dt);
 
     bool has_attachment(framebuffer_type ft) const { return (uint32_t(ftype_) & uint32_t(ft)) != 0; }
     bool has_colour() const { return has_attachment(framebuffer_type::FT_COLOUR); }
@@ -134,6 +133,7 @@ public:
     }
 
     bool initialise();
+    bool initialise(size_t target_count, size_t width, size_t height, bool mipmaps);
     bool initialise(size_t target_count, size_t width, size_t height, pixel_format format, pixel_datatype datatype,
                     bool mipmaps, bool depthstencil);
     template <typename PixelT>

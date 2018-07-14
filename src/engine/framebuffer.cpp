@@ -20,6 +20,14 @@ static constexpr std::array<uint32_t, 12> draw_buffers = {{
         GL_COLOR_ATTACHMENT11
 }};
 
+framebuffer::framebuffer(framebuffer_type ft) : ftype_(ft) {
+}
+
+framebuffer::framebuffer(framebuffer_type ft, attachment_type colour_type, attachment_type depth_type) : ftype_(ft),
+                                                                                                         col_attachment_(colour_type),
+                                                                                                         ds_attachment_(depth_type) {
+}
+
 bool framebuffer::allocate() {
     glGenFramebuffers(1, &framebuffer_);
     LOG("Framebuffer Allocated: ", framebuffer_);
@@ -62,6 +70,18 @@ bool framebuffer::is_bound() const {
     return false;
 }
 
+void framebuffer::set_colour_target(attachment_type at, pixel_format pf, pixel_datatype dt) {
+    col_attachment_ = at;
+    pf_col_ = pf;
+    dt_col_ = dt;
+}
+
+void framebuffer::set_depth_stencil_target(attachment_type at, pixel_format pf, pixel_datatype dt) {
+    ds_attachment_ = at;
+    pf_ds_ = pf;
+    dt_ds_ = dt;
+}
+
 bool framebuffer::initialise(size_t target_count, size_t width, size_t height, pixel_format format,
                              pixel_datatype datatype, bool mipmaps, bool depthstencil) {
     colour_target_count_ = target_count;
@@ -96,9 +116,6 @@ bool framebuffer::initialise() {
                 if(mipmaps_) {
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                } else {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 }
 
                 glFramebufferTexture2D(GL_FRAMEBUFFER, draw_buffers[i], GL_TEXTURE_2D, tex_ptr->resource_id(), 0);
@@ -111,39 +128,33 @@ bool framebuffer::initialise() {
                 auto rb_ptr = std::make_unique<renderbuffer>();
                 rb_ptr->allocate();
                 rb_ptr->initialise(pf_col_, dt_col_, int32_t(width_), int32_t(height_));
-                rb_ptr->bind();
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, draw_buffers[i], GL_RENDERBUFFER, rb_ptr->resource_id());
-                rb_ptr->release();
                 attachments_.emplace_back(std::move(rb_ptr));
                 gl_error_check();
             }
         }
+    } else {
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
     }
 
     if(has_depth_stencil()) {
+        uint32_t attachment = GL_NONE;
+        if(has_depth() && has_stencil()) attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+        else if(has_depth())             attachment = GL_DEPTH_ATTACHMENT;
+        else if(has_stencil())           attachment = GL_STENCIL_ATTACHMENT;
+
         if(ds_attachment_ == attachment_type::AT_TEXTUREBUFFER) {
             auto tex_ptr = std::make_unique<texture>();
             tex_ptr->allocate();
             tex_ptr->initialise(texture_type::TT_TEX2D, int32_t(width_), int32_t(height_), 1, pf_ds_, dt_ds_, false);
-            tex_ptr->bind();
-            uint32_t attachment = GL_NONE;
-            if(has_depth() && has_stencil()) attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-            else if(has_depth())             attachment = GL_DEPTH_ATTACHMENT;
-            else if(has_stencil())           attachment = GL_STENCIL_ATTACHMENT;
             glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex_ptr->resource_id(), 0);
-            tex_ptr->release();
             attachments_.emplace_back(std::move(tex_ptr));
         } else if(ds_attachment_ == attachment_type::AT_RENDERBUFFER) {
             auto rb_ptr = std::make_unique<renderbuffer>();
             rb_ptr->allocate();
             rb_ptr->initialise(pf_ds_, dt_ds_, int32_t(width_), int32_t(height_));
-            rb_ptr->bind();
-            uint32_t attachment = GL_NONE;
-            if(has_depth() && has_stencil()) attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-            else if(has_depth())             attachment = GL_DEPTH_ATTACHMENT;
-            else if(has_stencil())           attachment = GL_STENCIL_ATTACHMENT;
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rb_ptr->resource_id());
-            rb_ptr->release();
             attachments_.emplace_back(std::move(rb_ptr));
         }
     }
@@ -179,6 +190,14 @@ bool framebuffer::initialise() {
     }
 
     return !gl_error_check();
+}
+
+bool framebuffer::initialise(size_t target_count, size_t width, size_t height, bool mipmaps) {
+    colour_target_count_ = target_count;
+    width_ = width;
+    height_ = height;
+    mipmaps_ = mipmaps;
+    return initialise();
 }
 
 bool framebuffer::read_attachment(const vec4i& viewport, size_t idx) const {

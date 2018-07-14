@@ -27,7 +27,7 @@ const char* const quadfshdr_source = GLSL(
     }
 );
 
-quad::quad() : frag_shdr_(nullptr), screen_(0,0) {
+quad::quad() : frag_shdr_(nullptr), screen_(0, 0) {
 }
 
 quad::~quad() {
@@ -67,7 +67,7 @@ bool quad::initialise(shader* frag_shdr) {
     gl_error_check();
 
     frag_shdr_ = frag_shdr;
-    program_.add_shader(new shader(shader_type::ST_VERTEX, quadvshdr_source));
+    program_.add_shader(shader_type::ST_VERTEX, quadvshdr_source);
     program_.add_shader(frag_shdr_ ? frag_shdr_ : new shader(shader_type::ST_FRAGMENT, quadfshdr_source));
     if(!program_.link()) {
         LOG_ERR("An error occurred during compilation or linkage of the Quad shader program");
