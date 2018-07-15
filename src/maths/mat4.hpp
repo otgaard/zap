@@ -313,7 +313,7 @@ namespace zap { namespace maths {
     }
 
     template <typename T>
-    mat4<T> make_ortho(T r_min, T r_max, T u_min, T u_max, T d_min, T d_max) {
+    mat4<T> make_ortho_u(T r_min, T r_max, T u_min, T u_max, T d_min, T d_max) {
         mat4<T> P(1,1,1,1);
         P(0,0) = T(2) / (r_max - r_min);
         P(1,1) = T(2) / (u_max - u_min);
@@ -321,6 +321,18 @@ namespace zap { namespace maths {
         P(0,3) = -(r_max + r_min) / (r_max - r_min);
         P(1,3) = -(u_max + u_min) / (u_max - u_min);
         P(2,3) = -d_min / (d_max - d_min);
+        return P;
+    }
+
+    template <typename T>
+    mat4<T> make_ortho(T r_min, T r_max, T u_min, T u_max, T d_min, T d_max) {
+        mat4<T> P(1,1,1,1);
+        P(0,0) = T(2) / (r_max - r_min);
+        P(1,1) = T(2) / (u_max - u_min);
+        P(2,2) = -T(2) / (d_max - d_min);
+        P(0,3) = -(r_max + r_min) / (r_max - r_min);
+        P(1,3) = -(u_max + u_min) / (u_max - u_min);
+        P(2,3) = -(d_max + d_min) / (d_max - d_min);
         return P;
     }
 
