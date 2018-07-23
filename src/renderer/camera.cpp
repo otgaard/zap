@@ -5,6 +5,9 @@
 
 #include "engine/gl_api.hpp"
 
+#define LOGGING_ENABLED 1
+#include "tools/log.hpp"
+
 using namespace zap::maths;
 using namespace zap::engine;
 using namespace zap::renderer;
@@ -124,7 +127,7 @@ void camera::update_frustum() {
 
 bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
     if(x < block_.viewport[0] || x > block_.viewport[2] || y < block_.viewport[1] || y > block_.viewport[3]) return false;
-    auto r = (x - block_.viewport[0])/block_.viewport[2]; auto u = (y - block_.viewport[1])/block_.viewport[3];
+    auto r = float(x - block_.viewport[0])/block_.viewport[2]; auto u = float(y - block_.viewport[1])/block_.viewport[3];
     float dr = maths::lerp(r, frustum_[FP_RMIN], frustum_[FP_RMAX]);
     float du = maths::lerp(u, frustum_[FP_UMIN], frustum_[FP_UMAX]);
     float dd = frustum_[FP_DMIN];

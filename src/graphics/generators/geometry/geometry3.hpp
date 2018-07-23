@@ -519,6 +519,9 @@ namespace zap { namespace generators {
         static std::vector<VertexT>
         make_quad(float width, float height);
 
+        static std::vector<VertexT>
+        make_plane(const std::array<vec3f,4>& points);
+
         template <typename T>
         static std::vector<VertexT>
         make_disc(int slices, T radius=1.f, const vec2<T>& C=vec2f{0.f, 0.f});
@@ -545,6 +548,32 @@ namespace zap { namespace generators {
         if(texcoord_idx != INVALID_IDX) quad[2].set(texcoord_idx, vec2f{1.f, 1.f});
 
         quad[3].position.set(-hwidth, +hheight, 0.f);
+        if(normal_idx != INVALID_IDX) quad[3].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[3].set(texcoord_idx, vec2f{0.f, 1.f});
+
+        return quad;
+    }
+
+    template <typename VertexT>
+    std::vector<VertexT> geometry3<VertexT, primitive_type::PT_TRIANGLE_FAN>::make_plane(const std::array<vec3f, 4>& points) {
+        const auto normal = maths::normalise(maths::cross(points[1] - points[0], points[2] - points[0]));
+        const auto normal_idx = VertexT::find(engine::attribute_type::AT_NORMAL);
+        const auto texcoord_idx = VertexT::find(engine::attribute_type::AT_TEXCOORD1);
+        std::vector<VertexT> quad(4);
+
+        quad[0].position = points[0];
+        if(normal_idx != INVALID_IDX) quad[0].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[0].set(texcoord_idx, vec2f{0.f, 0.f});
+
+        quad[1].position = points[1];
+        if(normal_idx != INVALID_IDX) quad[1].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[1].set(texcoord_idx, vec2f{1.f, 0.f});
+
+        quad[2].position = points[2];
+        if(normal_idx != INVALID_IDX) quad[2].set(normal_idx, normal);
+        if(texcoord_idx != INVALID_IDX) quad[2].set(texcoord_idx, vec2f{1.f, 1.f});
+
+        quad[3].position = points[3];
         if(normal_idx != INVALID_IDX) quad[3].set(normal_idx, normal);
         if(texcoord_idx != INVALID_IDX) quad[3].set(texcoord_idx, vec2f{0.f, 1.f});
 

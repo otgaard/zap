@@ -5,6 +5,7 @@
 #include <renderer/rndr.hpp>
 #include <maths/algebra.hpp>
 #include <core/enumfield.hpp>
+#include <maths/geometry/plane.hpp>
 #include <engine/uniform_buffer.hpp>
 
 namespace zap { namespace renderer {
@@ -31,6 +32,15 @@ namespace zap { namespace renderer {
         };
 
     public:
+        enum frustum_plane {
+            FP_DMIN = 0,
+            FP_DMAX = 1,
+            FP_UMIN = 2,
+            FP_UMAX = 3,
+            FP_RMIN = 4,
+            FP_RMAX = 5
+        };
+
         using vec2f = maths::vec2f;
         using vec2i = maths::vec2i;
         using vec3f = maths::vec3f;
@@ -39,6 +49,7 @@ namespace zap { namespace renderer {
         using mat4f = maths::mat4f;
         using frustum_t = maths::vector<float, 6>;
         using viewport_t = maths::vec4i;
+        using plane3f = maths::geometry::plane3f;
 
         camera(bool perspective=true);
         camera(const vec3f& up, const vec3f& dir, const vec3f& pos, bool perspective=true);
@@ -105,6 +116,68 @@ namespace zap { namespace renderer {
             update_frustum();
         }
 
+        std::array<vec3f, 4> get_frustum_plane_points(frustum_plane fp) {
+            const auto r = right(), u = up(), d = dir(), P = world_pos();
+            const auto near_centre = P + d * frustum_[FP_DMIN];
+            const auto far_centre = P + d * frustum_[FP_DMAX];
+            const auto fov = frustum_[FP_UMAX] / frustum_[FP_DMIN];
+            const auto ar = frustum_[FP_RMAX] / frustum_[FP_UMAX];
+            const auto nh = frustum_[FP_DMIN] * fov;
+            const auto nw = nh * ar;
+            const auto fh = frustum_[FP_DMAX] * fov;
+            const auto fw = fh * ar;
+
+            switch(fp) {
+                case FP_RMIN: {
+                    const auto ltn = near_centre + nh * u - nw * r,
+                            lbn = near_centre - nh * u - nw * r,
+                            lbf = far_centre - fh * u - fw * r,
+                            ltf = far_centre + fh * u - fw * r;
+                    return std::array<vec3f, 4>{{ltn, lbn, lbf, ltf}};
+                }
+                case FP_RMAX: {
+                    const auto rbf = far_centre - fh * u + fw * r,
+                            rbn = near_centre - nh * u + nw * r,
+                            rtn = near_centre + nh * u + nw * r,
+                            rtf = far_centre + fh * u + fw * r;
+                    return std::array<vec3f, 4>{{rbf, rbn, rtn, rtf}};
+                };
+                case FP_UMIN: {
+                    const auto lbn = near_centre - nh * u - nw * r,
+                            rbn = near_centre - nh * u + nw * r,
+                            rbf = far_centre - fh * u + fw * r,
+                            lbf = far_centre - fh * u - fw * r;
+                    return std::array<vec3f, 4>{{lbn, rbn, rbf, lbf}};
+                }
+                case FP_UMAX: {
+                    const auto ltn = near_centre + nh * u - nw * r,
+                            ltf = far_centre + fh * u - fw * r,
+                            rtf = far_centre + fh * u + fw * r,
+                            rtn = near_centre + nh * u + nw * r;
+                    return std::array<vec3f, 4>{{ltn, ltf, rtf, rtn}};
+                }
+                case FP_DMIN: {
+                    const auto lbn = near_centre - nh * u - nw * r,
+                            ltn = near_centre + nh * u - nw * r,
+                            rtn = near_centre + nh * u + nw * r,
+                            rbn = near_centre - nh * u + nw * r;
+                    return std::array<vec3f, 4>{{lbn, ltn, rtn, rbn}};
+                }
+                case FP_DMAX: {
+                    const auto lbf = far_centre - fh * u - fw * r,
+                            rbf = far_centre - fh * u + fw * r,
+                            rtf = far_centre + fh * u + fw * r,
+                            ltf = far_centre + fh * u - fw * r;
+                    return std::array<vec3f, 4>{{lbf, rbf, rtf, ltf}};
+                }
+            }
+        }
+
+        plane3f get_frustum_plane(frustum_plane fp) {
+            const auto points = get_frustum_plane_points(fp);
+            return plane3f::make_plane(points[0], points[1], points[2]);
+        }
+
         void viewport(int left, int bottom, int right, int top) {
             viewport(viewport_t({{left, bottom, right, top}}));
         }
@@ -123,15 +196,6 @@ namespace zap { namespace renderer {
         size_t sequence_id() const { return seq_id_; }
 
     protected:
-        enum frustum_plane {
-            FP_DMIN = 0,
-            FP_DMAX = 1,
-            FP_UMIN = 2,
-            FP_UMAX = 3,
-            FP_RMIN = 4,
-            FP_RMAX = 5
-        };
-
         void update_view();
         void update_frustum();
 

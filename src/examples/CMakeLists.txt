@@ -111,4 +111,18 @@ if(STATIC_LINKAGE)
 
     target_link_libraries(dynamic-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(dynamic-static PROPERTIES OUTPUT_NAME "dynamic_s")
+
+    # Frustum
+    add_executable(frustum-static frustum.cpp)
+    target_include_directories(frustum-static
+            PRIVATE core
+            PRIVATE ${CMAKE_BINARY_DIR}/exports)
+
+    if(WIN32)
+        set_target_properties(frustum-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
+
+    target_link_libraries(frustum-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
+    set_target_properties(frustum-static PROPERTIES OUTPUT_NAME "frustum_s")
+
 endif()
