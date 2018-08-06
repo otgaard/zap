@@ -79,10 +79,14 @@ public:
         return invalid_token;
     }
 
-    bool free(const token& tok) {
+    void free(const token& tok) {
         if(tok.is_valid() && tok.id < batch_.size()) batch_[tok.id].clear();
         vbuf_acc_.release(tok.vtx_range);
-        return true;
+    }
+
+    void clear() {
+        for(auto& b : batch_) free(b);
+        batch_.clear();
     }
 
     void bind() { mesh_.bind(); }
@@ -114,6 +118,7 @@ public:
     void set(const token& tok, uint32_t offset, const std::vector<vertex_t>& v) { vbuf_acc_.set(tok.vtx_range, offset, v); }
 
     void draw(const token& tok) { mesh_.draw(tok.type, tok.vtx_range.start, tok.vtx_range.count); }
+    void draw(const token& tok, uint32_t count) { mesh_.draw(tok.type, tok.vtx_range.start, count); }
 
 protected:
     uint32_t find_free() const {
@@ -199,13 +204,16 @@ public:
         return invalid_token;
     }
 
-    bool free(const token& tok) {
+    void free(const token& tok) {
         if(tok.is_valid() && tok.id < batch_.size()) batch_[tok.id].clear();
         vbuf_acc_.release(tok.vtx_range);
         ibuf_acc_.release(tok.idx_range);
-        return true;
     }
 
+    void clear() {
+        for(auto& b : batch_) free(b);
+        batch_.clear();
+    }
 
     void bind() { mesh_.bind(); }
     void release() { mesh_.release(); }
@@ -299,6 +307,7 @@ public:
     }
 
     void draw(const token& tok) { mesh_.draw(tok.type, tok.idx_range.start, tok.idx_range.count); }
+    void draw(const token& tok, uint32_t count) { mesh_.draw(tok.type, tok.idx_range.start, count); }
 
 protected:
     uint32_t find_free() const {
