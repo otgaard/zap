@@ -419,6 +419,7 @@ void frustum::on_mousedown(int button) {
     for(size_t i = 0; i != spheres_.size(); ++i) {
         auto sp = zap::maths::geometry::sphere<float>(rot.transform(spheres_[i]), .2f);
         selected_[i] = intersection(sp, zap::maths::geometry::ray3f(O, d), parms) > 0;
+        if(selected_[i]) LOG(i);
     }
 
     prog_tex_.bind();
