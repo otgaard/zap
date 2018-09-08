@@ -140,6 +140,7 @@ if(STATIC_LINKAGE)
 
     # Raytracer
     add_executable(tracer-static tracer.cpp)
+    add_dependencies(tracer-static zapTracer-static zapGraphics-static zapEngine-static zapMaths-static core)
     target_include_directories(tracer-static
             PRIVATE core
             PRIVATE ${CMAKE_BINARY_DIR}/exports)

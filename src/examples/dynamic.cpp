@@ -370,6 +370,7 @@ bool dynamic_app::initialise() {
     }
 
     lines_.create_line(vec3f{-1.f, -1.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec4b{255, 255, 0, 255}, .005f);
+    lines_.create_line(vec3f{-1.f, +1.f, 0.f}, vec3f{1.f, -1.f, 0.f}, vec4b{255, 0, 0, 255}, .01f);
 
     return true;
 }
@@ -459,6 +460,7 @@ void dynamic_app::draw() {
     rndr_state_.pop();
 
     lines_.draw(0, MVP);
+    lines_.draw(1, MVP);
 }
 
 void dynamic_app::shutdown() {

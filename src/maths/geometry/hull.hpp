@@ -17,7 +17,7 @@ struct hull {
 
     hull() = default;
     hull(const hull& rhs) = default;
-    hull(const std::vector<vector>& vertices) : vertices(vertices) { }
+    explicit hull(const std::vector<vector>& vertices) : vertices(vertices) { }
 
     hull& operator=(const hull& rhs) = default;
 

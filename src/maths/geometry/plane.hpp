@@ -45,7 +45,7 @@ struct plane {
         return *this;
     }
 
-    const vector& origin() const {
+    const vector origin() const {
         const vector O(0, 0, 0);
         return O - distance(O)*normal();
     }
