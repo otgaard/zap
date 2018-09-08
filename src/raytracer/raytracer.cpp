@@ -49,7 +49,7 @@ std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
 
                 if(int count = intersection(sphere1, ray1, roots.data())) {
                     auto P = ray1.position(count == 2 ? roots.y : roots.x);
-                    auto N = normalise(P - sphere1.C);
+                    auto N = normalise(P - sphere1.centre);
                     auto ld = normalise(light_pos - P);
                     pixel += vec3f(byte(25+max(dot(ld,N),0.f)*220),0,0);
                 } else if((t = intersection(plane1, ray1)) > 0.f && t < z_max) {
@@ -58,7 +58,7 @@ std::vector<zap::engine::rgb888_t> raytracer::render(int w, int h) {
                     if(intersection(sphere1, ray<vec3f>(P, ld), roots.data())) {
                         pixel += vec3f(0, 0, 25);
                     } else {
-                        pixel += vec3f(0, 0, byte(max(dot(ld, plane1.n), 0.f) * 255));
+                        pixel += vec3f(0, 0, byte(max(dot(ld, plane1.normal()), 0.f) * 255));
                     }
                 }
             }

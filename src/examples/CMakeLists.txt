@@ -125,4 +125,29 @@ if(STATIC_LINKAGE)
     target_link_libraries(frustum-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(frustum-static PROPERTIES OUTPUT_NAME "frustum_s")
 
+    # Raster
+    add_executable(raster-static raster.cpp)
+    target_include_directories(raster-static
+            PRIVATE core
+            PRIVATE ${CMAKE_BINARY_DIR}/exports)
+
+    if(WIN32)
+        set_target_properties(raster-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
+
+    target_link_libraries(raster-static zapCanvas-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
+    set_target_properties(raster-static PROPERTIES OUTPUT_NAME "raster_s")
+
+    # Raytracer
+    add_executable(tracer-static tracer.cpp)
+    target_include_directories(tracer-static
+            PRIVATE core
+            PRIVATE ${CMAKE_BINARY_DIR}/exports)
+
+    if(WIN32)
+        set_target_properties(tracer-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
+
+    target_link_libraries(tracer-static zapTracer-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
+    set_target_properties(tracer-static PROPERTIES OUTPUT_NAME "tracer_s")
 endif()

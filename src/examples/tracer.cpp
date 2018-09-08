@@ -3,7 +3,7 @@
 #include <maths/io.hpp>
 #include <tools/log.hpp>
 #include "host/GLFW/application.hpp"
-#include "graphics2/quad.hpp"
+#include "graphics/graphics2/quad.hpp"
 #include "raytracer/raytracer.hpp"
 
 using namespace zap;
@@ -14,7 +14,7 @@ using namespace zap::graphics;
 
 class tracer : public application {
 public:
-    tracer() : application{"tracer", 1280, 768} { }
+    tracer() : application{"tracer", 800, 600} { }
     virtual ~tracer() { }
 
     bool initialise() override final;
@@ -50,7 +50,7 @@ void tracer::draw() {
 }
 
 void tracer::shutdown() {
-
+    image.release();
 }
 
 void tracer::on_resize(int width, int height) {

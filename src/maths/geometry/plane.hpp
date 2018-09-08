@@ -50,7 +50,7 @@ struct plane {
         return O - distance(O)*normal();
     }
 
-    const vector& normal() const { return vector(a, b, c); }
+    const vector normal() const { return vector(a, b, c); }
 
     real a, b, c, d;
 };

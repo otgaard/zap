@@ -5,15 +5,14 @@
 #include <algorithm>
 #include <maths/io.hpp>
 #include <tools/log.hpp>
-#include <renderer/colour.hpp>
+#include <graphics/colour.hpp>
 #include "host/GLFW/application.hpp"
-#include "graphics2/quad.hpp"
+#include "graphics/graphics2/quad.hpp"
 #include "rasteriser/canvas.hpp"
 
 using namespace zap;
 using namespace zap::maths;
 using namespace zap::engine;
-using namespace zap::renderer;
 using namespace zap::graphics;
 using namespace zap::rasteriser;
 
