@@ -151,4 +151,18 @@ if(STATIC_LINKAGE)
 
     target_link_libraries(tracer-static zapTracer-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
     set_target_properties(tracer-static PROPERTIES OUTPUT_NAME "tracer_s")
+
+    # Curves
+    add_executable(curves-static curves.cpp)
+    add_dependencies(curves-static zapGraphics-static zapEngine-static zapMaths-static core)
+    target_include_directories(curves-static
+            PRIVATE core
+            PRIVATE ${CMAKE_BINARY_DIR}/exports)
+
+    if(WIN32)
+        set_target_properties(curves-static PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+    endif()
+
+    target_link_libraries(curves-static zapHostGLFW-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static stb)
+    set_target_properties(curves-static PROPERTIES OUTPUT_NAME "curves_s")
 endif()

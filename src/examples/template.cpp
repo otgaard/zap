@@ -9,7 +9,7 @@
 #include <graphics/loader/image_loader.hpp>
 
 #if defined(_WIN32)
-const char* const TEXTURE_PATH = "C://Development/zap/assets/raxip.jpg";
+const char* const TEXTURE_PATH = "D://Development/zap/assets/raxip.jpg";
 #elif defined(__APPLE__)
 const char* const TEXTURE_PATH = "/Users/otgaard/Development/zap/assets/raxip.jpg";
 #endif

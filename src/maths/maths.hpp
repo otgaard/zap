@@ -184,17 +184,16 @@ namespace zap { namespace maths {
     template <typename Container, typename T=typename Container::value_type>
     size_t find_interval_idx(const Container& container, T value, bool loop=false) {
         if(loop) {
-            for(size_t i = 0, end = container.size(); i != end; ++i) {
-                auto last = i+1 == container.size() ? T(1.) : container[(i+1)];
-                if(container[i] <= value && value < last) return i;
+            for(size_t i = 0, end = container.size()-1; i != end; ++i) {
+                if(container[i] <= value && value < container[i+1]) return i;
             }
+            return container.size()-1;
         } else {
             for(size_t i = 0, end = container.size()-1; i != end; ++i) {
                 if(container[i] <= value && value < container[i+1]) return i;
             }
+            return container.size()-1;
         }
-
-        return 0;
     }
 }}
 

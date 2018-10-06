@@ -29,16 +29,13 @@ namespace zap { namespace maths { namespace curves {
         catmull_rom_spline(const vertices_t& vertices, bool loop=false) : vertices(vertices) {
             assert(vertices.size() >= 3 && "Catmull-Rom requires at least 3 vertices");
             is_looped = loop;
-            LOG("Is Looped:", is_looped);
-            const auto count = is_looped ? vertices.size() : vertices.size()-2;
+            const auto count = is_looped ? vertices.size() : vertices.size();
             times.resize(count);
-            const auto inv = type(1.) / count;
+            const auto inv = type(1.) / (is_looped ? vertices.size() : vertices.size()-1);
             auto total = type(0.);
-            LOG("Dumping:");
             for(auto& t : times) {
                 t = total;
                 total = t + inv;
-                LOG("total=", total);
             }
         }
         catmull_rom_spline(const vertices_t& vertices, const times_t& times) : vertices(vertices), times(times) {
@@ -49,8 +46,8 @@ namespace zap { namespace maths { namespace curves {
             const size_t count = vertices.size();
             assert(count >= 3 && "Catmull-Rom requires at least 3 vertices");
             const auto idx = find_interval_idx(times, u, is_looped);
-             const auto end = idx == times.size()-1 ? type(1.) : times[idx+1];
-            u = (u - times[idx])/(times[idx+1] - times[idx]);
+            const auto last = is_looped && idx == times.size()-1 ? type(1.) : times[idx+1];
+            u = (u - times[idx])/(last - times[idx]);
             const U_t U = {{u*u*u, u*u, u, type(1)}};
             G_t G;
             if(is_looped) {
@@ -74,7 +71,7 @@ namespace zap { namespace maths { namespace curves {
                     vertices[idx+1],
                     vertices[idx+1] - (vertices[idx] - vertices[idx+1])
                 }};
-            } else {
+            } else if(idx < count-2) {
                 G = G_t{{
                     vertices[idx-1],
                     vertices[idx],
