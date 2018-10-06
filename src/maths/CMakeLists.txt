@@ -27,7 +27,7 @@ set(PUBLIC_HEADERS
         vec4.hpp
         vector.hpp
         rand_functions.hpp
-        bound.hpp)
+        bound.hpp curves/catmull_rom.hpp)
 
 set(SOURCE_FILES
         io.cpp

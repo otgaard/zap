@@ -445,6 +445,31 @@ void canvas<PixelT, pixel_buffer>::line(int x1, int y1, int x2, int y2) {
 }
 
 template <typename PixelT>
+void canvas<PixelT, pixel_buffer>::lineB(int x1, int y1, int x2, int y2) {
+    int dx =  abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+    int dy = -abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
+    int err = dx + dy, e2;
+
+    while(true) {
+        raster_(x1, y1).set3(pen_colour_);
+
+        e2 = 2 * err;
+
+        if(e2 >= dy) {
+            if(x1 == x2) break;
+            err += dy;
+            x1 += sx;
+        }
+
+        if(e2 <= dx) {
+            if(y1 == y2) break;
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
+template <typename PixelT>
 void canvas<PixelT, pixel_buffer>::polyline(const std::vector<segment2i>& polyline) {
     for(const auto& l : polyline) {
         line(l.P0, l.P1);
@@ -949,6 +974,31 @@ void canvas<PixelT, pixmap>::line(int x1, int y1, int x2, int y2) {
     } while(!done);
 
     if(accept) line_impl(x1, y1, x2, y2);
+}
+
+template <typename PixelT>
+void canvas<PixelT, pixmap>::lineB(int x1, int y1, int x2, int y2) {
+    int dx =  abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+    int dy = -abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
+    int err = dx + dy, e2;
+
+    while(true) {
+        raster_(x1, y1).set3(pen_colour_);
+
+        e2 = 2 * err;
+
+        if(e2 >= dy) {
+            if(x1 == x2) break;
+            err += dy;
+            x1 += sx;
+        }
+
+        if(e2 <= dx) {
+            if(y1 == y2) break;
+            err += dx;
+            y1 += sy;
+        }
+    }
 }
 
 template <typename PixelT>

@@ -21,7 +21,9 @@ set(PUBLIC_HEADERS
         vertex_buffer.hpp
         vertex_format.hpp
         ../tools/os.hpp
-        accessor.hpp renderbuffer.hpp render_target.hpp)
+        accessor.hpp
+        renderbuffer.hpp
+        render_target.hpp)
 
 set(SOURCE_FILES
         buffer.cpp
@@ -37,7 +39,8 @@ set(SOURCE_FILES
         texture.cpp
         vertex_buffer.cpp
         uniform_buffer.cpp
-        ../tools/os.cpp renderbuffer.cpp)
+        ../tools/os.cpp
+        renderbuffer.cpp)
 
 if(DYNAMIC_LINKAGE)
     add_library(zapEngine-shared SHARED ${PUBLIC_HEADERS} ${SOURCE_FILES})

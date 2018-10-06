@@ -37,7 +37,7 @@ namespace zap { namespace maths { namespace curves {
         G_t G;
         const static M_t M;
 
-        hermite() { }
+        hermite() = default;
         hermite(const VecT& P0, const VecT& P1, const VecT& T0, const VecT& T1) : G({P0, P1, T0, T1}) { }
 
         const VecT& position(size_t idx) const { checkidx<size_t>(idx,2); return G[idx]; }

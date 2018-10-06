@@ -49,6 +49,7 @@ namespace zap { namespace rasteriser {
 
         void line(int x1, int y1, int x2, int y2);
         void line(const vec2i& A, const vec2i& B) { line(A.x, A.y, B.x, B.y); }
+        void lineB(int x1, int y1, int x2, int y2);
 
         void polyline(const std::vector<segment2i>& polyline);
         void polyline(const std::vector<vec2i>& polyline);
@@ -124,6 +125,7 @@ public:
 
     void line(int x1, int y1, int x2, int y2);
     void line(const vec2i& A, const vec2i& B) { line(A.x, A.y, B.x, B.y); }
+    void lineB(int x1, int y1, int x2, int y2);
 
     void polyline(const std::vector<segment2i>& polyline);
     void polyline(const std::vector<vec2i>& polyline);

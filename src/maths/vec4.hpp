@@ -94,7 +94,8 @@ namespace zap { namespace maths {
         }
 
         bool operator<(const vec4<T>& rhs) const {
-            return !operator==(rhs);
+            for(size_t i = 0; i != size(); ++i) if(arr[i] >= rhs.arr[i]) return false;
+            return true;
         }
 
         bool operator<=(const vec4<T>& rhs) const {
@@ -209,6 +210,15 @@ namespace zap { namespace maths {
         return T(1)/v;
     }
 
+    template <typename T>
+    bool eq(const vec4<T>& A, const vec4<T>& B, T epsilon=std::numeric_limits<T>::epsilon()) {
+        return A.eq(B, epsilon);
+    }
+
+    template <typename T>
+    bool neq(const vec4<T>& A, const vec4<T>& B, T epsilon=std::numeric_limits<T>::epsilon()) {
+        return !eq(A, B, epsilon);
+    }
 
     using vec4b = vec4<uint8_t>;
     using vec4s = vec4<int16_t>;

@@ -18,6 +18,7 @@
 #include <engine/pixmap.hpp>
 #include <engine/texture.hpp>
 #include <graphics/graphics3/line_batch.hpp>
+#include <maths/curves/catmull_rom.hpp>
 
 using namespace zap;
 using namespace zap::core;
@@ -208,8 +209,8 @@ private:
     mat4f view_matrix_;
 
     state_stack rndr_state_;
-    render_state default_state_{RS_DEPTH | RS_RASTERISATION};//false, true, true, false};
-    render_state additive_blend_state_{RS_BLEND | RS_DEPTH | RS_RASTERISATION};//true, true, true, false};
+    render_state default_state_{RS_DEPTH | RS_RASTERISATION};
+    render_state additive_blend_state_{RS_BLEND | RS_DEPTH | RS_RASTERISATION};
 
     // Points or line segments
     p3c4_batch p3c4_batch_;
@@ -369,8 +370,31 @@ bool dynamic_app::initialise() {
         return false;
     }
 
-    lines_.create_line(vec3f{-1.f, -1.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec4b{255, 255, 0, 255}, .005f);
-    lines_.create_line(vec3f{-1.f, +1.f, 0.f}, vec3f{1.f, -1.f, 0.f}, vec4b{255, 0, 0, 255}, .01f);
+    // Create a catmull-rom spline
+    std::vector<vec2f> vertices = {
+            vec2f{-1.f, -.5f},
+            vec2f{-.8f, 0.f},
+            vec2f{-.6f, .5f},
+            vec2f{-.4f, 0.f},
+            vec2f{-.2f, -.5f},
+            vec2f{0.f, 0.f},
+            vec2f{+.2f, .5f},
+            vec2f{+.4f, 0.f},
+            vec2f{+.6f, -.5f},
+            vec2f{+.8f, 0.f},
+            vec2f{+1.f, .5f}
+    };
+    curves::catmull_rom_spline<vec2f> spline{vertices};
+
+    float t = 0.f;
+    while(t < 1.f) {
+        LOG(t, spline.pos(t));
+        lines_.create_line(vec3f{spline.pos(t), 0.f}, vec3f{spline.pos(t+.01f), 0.f}, vec4b{255, 255, 255, 255}, .002f);
+        t += .01f;
+    }
+
+    //lines_.create_line(vec3f{-1.f, -1.f, 0.f}, vec3f{1.f, 1.f, 0.f}, vec4b{255, 255, 0, 255}, .005f);
+    //lines_.create_line(vec3f{-1.f, +1.f, 0.f}, vec3f{1.f, -1.f, 0.f}, vec4b{255, 0, 0, 255}, .01f);
 
     return true;
 }

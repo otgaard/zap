@@ -218,6 +218,16 @@ namespace zap { namespace maths {
         return vec2<T>(v[1]*inv_s, v[0]*inv_s);
     }
 
+    template <typename T>
+    bool eq(const vec2<T>& A, const vec2<T>& B, T epsilon=std::numeric_limits<T>::epsilon()) {
+        return A.eq(B, epsilon);
+    }
+
+    template <typename T>
+    bool neq(const vec2<T>& A, const vec2<T>& B, T epsilon=std::numeric_limits<T>::epsilon()) {
+        return !eq(A, B, epsilon);
+    }
+
     using vec2b = vec2<uint8_t>;
     using vec2s = vec2<int16_t>;
     using vec2i = vec2<int32_t>;
