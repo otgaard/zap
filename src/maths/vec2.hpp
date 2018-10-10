@@ -40,10 +40,13 @@ namespace zap { namespace maths {
 
         void set(T nx, T ny) { x = nx; y = ny; }
 
-        constexpr vec2<T> operator-() const { return vec2<T>(-x, -y); }
-        vec2<T>& operator+=(const vec2<T>& rhs) { for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i]; return *this; }
-
         vec2<T>& perp() { std::swap(x,y); x *= -1; return *this; }
+        constexpr vec2<T> operator-() const { return vec2<T>(-x, -y); }
+
+        vec2<T>& operator+=(const vec2<T>& rhs) {
+            for(size_t i = 0; i != size(); ++i) arr[i] += rhs.arr[i];
+            return *this;
+        }
 
         vec2<T>& operator-=(const vec2<T>& rhs) {
             for(size_t i = 0; i != size(); ++i) arr[i] -= rhs.arr[i];

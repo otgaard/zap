@@ -14,51 +14,51 @@ struct rand_generator {
     rand_generator(uint64_t seed=1) : rnd(seed) { }
 
     float rand1f(float min=0.f, float max=1.f) {
-        return lerp(rnd.random(), min, max);
+        return lerp(min, max, rnd.random());
     }
 
     vec2f rand2f(const vec2f& min = {0.f, 0.f}, const vec2f& max = {1.f, 1.f}) {
         return vec2f{
-            lerp(rnd.random(), min.x, max.x),
-            lerp(rnd.random(), min.y, max.y)
+            lerp(min.x, max.x, rnd.random()),
+            lerp(min.y, max.y, rnd.random())
         };
     }
 
     vec3f rand3f(const vec3f& min = {0.f, 0.f, 0.f}, const vec3f& max = {1.f, 1.f, 1.f}) {
         return vec3f{
-            lerp(rnd.random(), min.x, max.x),
-            lerp(rnd.random(), min.y, max.y),
-            lerp(rnd.random(), min.z, max.z)
+            lerp(min.x, max.x, rnd.random()),
+            lerp(min.y, max.y, rnd.random()),
+            lerp(min.z, max.z, rnd.random())
         };
     }
 
     vec4f rand4f(const vec4f& min = {0.f, 0.f, 0.f, 0.f}, const vec4f& max = {1.f, 1.f, 1.f, 1.f}) {
         return vec4f{
-            lerp(rnd.random(), min.x, max.x),
-            lerp(rnd.random(), min.y, max.y),
-            lerp(rnd.random(), min.z, max.z),
-            lerp(rnd.random(), min.w, max.w)
+            lerp(min.x, max.x, rnd.random()),
+            lerp(min.y, max.y, rnd.random()),
+            lerp(min.z, max.z, rnd.random()),
+            lerp(min.w, max.w, rnd.random())
         };
     }
 
     byte rand1b(byte min = 0, byte max = 255) {
-        return byte(lerp(rnd.random(), min, max));
+        return byte(lerp(min, max, rnd.random()));
     }
 
     vec3b rand3b(const vec3b& min = {0, 0, 0}, const vec3b& max = {255, 255, 255}) {
         return vec3b{
-            lerp(rnd.random(), min.x, max.x),
-            lerp(rnd.random(), min.y, max.y),
-            lerp(rnd.random(), min.z, max.z)
+            lerp(min.x, max.x, rnd.random()),
+            lerp(min.y, max.y, rnd.random()),
+            lerp(min.z, max.z, rnd.random())
         };
     }
 
     vec4b rand4b(const vec4b& min = {0, 0, 0, 0}, const vec4b& max = {255, 255, 255, 255}) {
         return vec4b{
-                lerp(rnd.random(), min.x, max.x),
-                lerp(rnd.random(), min.y, max.y),
-                lerp(rnd.random(), min.z, max.z),
-                lerp(rnd.random(), min.w, max.w)
+                lerp(min.x, max.x, rnd.random()),
+                lerp(min.y, max.y, rnd.random()),
+                lerp(min.z, max.z, rnd.random()),
+                lerp(min.w, max.w, rnd.random())
         };
     }
 

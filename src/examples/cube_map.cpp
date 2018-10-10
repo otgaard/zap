@@ -96,7 +96,7 @@ bool scene_graph_app::initialise() {
         if(value < min) min = value;
         if(value > max) max = value;
 
-        vec3b colour = lerp(value, vec3b(20, 0, 0), vec3b(55, 20, 55));
+        vec3b colour = lerp(vec3b(20, 0, 0), vec3b(55, 20, 55), value);
         return rgb888_t{colour};
     });
 
@@ -157,7 +157,7 @@ bool scene_graph_app::initialise() {
         float parm = (rotation + TWO_PI<float>)/(2.f*TWO_PI<float>);
 
         v.translate(make_rotation(vec3f{0.f, 1.f, 0.f}, rotation) * vec3f{1.f, 0.f, 0.f});
-        a.add_parameter("colour", lerp(parm, vec4f{1.f, 0.f, 0.f, 1.f}, vec4f{1.f, 1.f, 0.f, 1.f}));
+        a.add_parameter("colour", lerp(vec4f{1.f, 0.f, 0.f, 1.f}, vec4f{1.f, 1.f, 0.f, 1.f}, parm));
     });
 
     // Store created contexts

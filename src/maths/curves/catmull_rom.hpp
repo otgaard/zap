@@ -8,11 +8,14 @@
 #include <vector>
 #include <maths/matrix.hpp>
 
-/*
- * Catmull-Rom Spline
- */
-
 namespace zap { namespace maths { namespace curves {
+    enum class sampling_method {
+        SM_UNIFORM,
+        SM_ARC_LENGTH,
+        SM_MIDPOINT,
+        SM_FAST_CUBIC
+    };
+
     template <typename VecT>
     struct catmull_rom_spline {
         using type = typename VecT::type;
@@ -26,31 +29,46 @@ namespace zap { namespace maths { namespace curves {
         const static M_t M;
 
         catmull_rom_spline() = default;
-        catmull_rom_spline(const vertices_t& vertices, bool loop=false) : vertices(vertices) {
+        catmull_rom_spline(const vertices_t& vertices, bool loop=false) : vertices(vertices), looped(loop) {
             assert(vertices.size() >= 3 && "Catmull-Rom requires at least 3 vertices");
-            is_looped = loop;
-            const auto count = is_looped ? vertices.size() : vertices.size();
-            times.resize(count);
-            const auto inv = type(1.) / (is_looped ? vertices.size() : vertices.size()-1);
+            normalise_uniform();
+        }
+
+        // Assign every curve segment a uniform speed
+        void normalise_uniform() {
+            times.resize(vertices.size());
+            const auto inv = type(1.) / (looped ? vertices.size() : vertices.size()-1);
             auto total = type(0.);
             for(auto& t : times) {
                 t = total;
                 total = t + inv;
             }
         }
-        catmull_rom_spline(const vertices_t& vertices, const times_t& times) : vertices(vertices), times(times) {
-            is_looped = eq(vertices[0], vertices.back());
+
+        // Normalise curve segments by speed (simple polygonal approximation - use Gaussian integration?)
+        void normalise_distance(int steps=10, sampling_method method=sampling_method::SM_UNIFORM) {
+            times.resize(vertices.size());
+        }
+
+        type distance(type u) const {
+            u = clamp(u, type(0), type(1));
+            return times[find_interval_idx(times, u)];
+        }
+
+        VecT deriv1(type u, type step=type(.01)) {
+            return (type(1.)/step) * (pos(u+step) - pos(u));
         }
 
         VecT pos(type u) const {
-            const size_t count = vertices.size();
+            u = clamp(u, type(0), type(1));
+            const auto count = vertices.size();
             assert(count >= 3 && "Catmull-Rom requires at least 3 vertices");
-            const auto idx = find_interval_idx(times, u, is_looped);
-            const auto last = is_looped && idx == times.size()-1 ? type(1.) : times[idx+1];
-            u = (u - times[idx])/(last - times[idx]);
+            const auto idx = find_interval_idx(times, u);
+            const auto end = looped && idx == times.size()-1 ? type(1.) : times[idx+1];
+            u = (u - times[idx])/(end - times[idx]);
             const U_t U = {{u*u*u, u*u, u, type(1)}};
             G_t G;
-            if(is_looped) {
+            if(looped) {
                 G = G_t{{
                     vertices[idx == 0 ? count-1 : idx-1],
                     vertices[idx],
@@ -84,7 +102,7 @@ namespace zap { namespace maths { namespace curves {
 
         vertices_t vertices;
         times_t times;
-        bool is_looped = false;
+        bool looped = false;
     };
 
     template <typename VecT>

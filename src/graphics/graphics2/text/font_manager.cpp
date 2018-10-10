@@ -258,7 +258,7 @@ pixmap<rgb888_t> font_manager::rasterise(uint32_t font_id, const std::string& tx
 
     // Conversion Function
     auto conv_fnc = [&fore, &back](const r8_t& i) -> rgb888_t {
-        return rgb888_t{lerp(i.get1(), back, fore)};
+        return rgb888_t{lerp(back, fore, i.get1())};
     };
 
     int x = 0, y = px_height;

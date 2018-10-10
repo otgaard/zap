@@ -23,7 +23,7 @@ struct segment {
     inline const vector& origin() const { return P0; }
     inline const vector dir() const { return normalise(P1 - P0); }
 
-    inline vector position(const type& t) const { return lerp(t, P0, P1); }
+    inline vector position(const type& t) const { return lerp(P0, P1, t); }
 
     vector P0;
     vector P1;

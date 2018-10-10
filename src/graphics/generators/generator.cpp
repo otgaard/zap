@@ -460,18 +460,19 @@ texture generator::render_texture(const render_task& req, generator::gen_method 
 }
 
 float generator::vnoise(float dx, int x) const {
-    return maths::lerp(dx, s.grad1(x), s.grad1(x+1));
+    return maths::lerp(s.grad1(x), s.grad1(x+1), dx);
 }
 
 float generator::vnoise(float dx, float dy, int x, int y) const {
     int x1 = x+1, y1 = y+1;
-    return maths::bilinear(dx, dy, s.grad1(x, y), s.grad1(x1, y), s.grad1(x, y1), s.grad1(x1, y1));
+    return maths::bilinear(s.grad1(x, y), s.grad1(x1, y), s.grad1(x, y1), s.grad1(x1, y1), dx, dy);
 }
 
 float generator::vnoise(float dx, float dy, float dz, int x, int y, int z) const {
     int x1 = x+1, y1 = y+1, z1 = z+1;
-    return maths::trilinear(dx, dy, dz, s.grad1(x,y,z),  s.grad1(x1,y,z),  s.grad1(x,y1,z),  s.grad1(x1,y1,z),
-                                        s.grad1(x,y,z1), s.grad1(x1,y,z1), s.grad1(x,y1,z1), s.grad1(x1,y1,z1));
+    return maths::trilinear(s.grad1(x,y,z),  s.grad1(x1,y,z),  s.grad1(x,y1,z),  s.grad1(x1,y1,z),
+                            s.grad1(x,y,z1), s.grad1(x1,y,z1), s.grad1(x,y1,z1), s.grad1(x1,y1,z1),
+                            dx, dy, dz);
 }
 
 float generator::pnoise(float dx, int x) const {
@@ -485,7 +486,7 @@ float generator::pnoise(float dx, int x) const {
     sx = easing_curve(rx0);
     u = rx0 * s.grad1(bx0);
     v = rx1 * s.grad1(bx1);
-    return lerp(sx, u, v);
+    return lerp(u, v, sx);
 }
 
 float generator::pnoise(float dx, float dy, int x, int y) const {
@@ -501,13 +502,13 @@ float generator::pnoise(float dx, float dy, int x, int y) const {
 
     u = dot(s.grad2(b0.x, b0.y), r0);
     v = dot(s.grad2(b1.x, b0.y), r1.x, r0.y);
-    a = lerp(sx, u, v);
+    a = lerp(u, v, sx);
 
     u = dot(s.grad2(b0.x, b1.y), r0.x, r1.y);
     v = dot(s.grad2(b1.x, b1.y), r1);
-    b = lerp(sx, u, v);
+    b = lerp(u, v, sx);
 
-    return lerp(sy, a, b);
+    return lerp(a, b, sy);
 }
 
 float generator::pnoise(float dx, float dy, float dz, int x, int y, int z) const {
@@ -524,24 +525,24 @@ float generator::pnoise(float dx, float dy, float dz, int x, int y, int z) const
 
     u = dot(s.grad3(b0.x, b0.y, b0.z), r0);
     v = dot(s.grad3(b1.x, b0.y, b0.z), r1.x, r0.y, r0.z);
-    a = lerp(sx, u, v);
+    a = lerp(u, v, sx);
 
     u = dot(s.grad3(b0.x, b1.y, b0.z), r0.x, r1.y, r0.z);
     v = dot(s.grad3(b1.x, b1.y, b0.z), r1.x, r1.y, r0.z);
-    b = lerp(sx, u, v);
+    b = lerp(u, v, sx);
 
-    c = lerp(sy, a, b);
+    c = lerp(a, b, sy);
 
     u = dot(s.grad3(b0.x, b0.y, b1.z), r0.x, r0.y, r1.z);
     v = dot(s.grad3(b1.x, b0.y, b1.z), r1.x, r0.y, r1.z);
-    a = lerp(sx, u, v);
+    a = lerp(u, v, sx);
 
     u = dot(s.grad3(b0.x, b1.y, b1.z), r0.x, r1.y, r1.z);
     v = dot(s.grad3(b1.x, b1.y, b1.z), r1);
-    b = lerp(sx, u, v);
+    b = lerp(u, v, sx);
 
-    d = lerp(sy, a, b);
-    return lerp(sz, c, d);
+    d = lerp(a, b, sy);
+    return lerp(c, d, sz);
 }
 
 // Adapted from "Simplex noise demystified (Stefan Gustavson)"

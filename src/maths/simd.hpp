@@ -131,14 +131,14 @@ namespace zap { namespace maths { namespace simd {
         return _mm_cvtps_epi32(v);
     }
 
-    inline vecm VCALL lerp_v(const vecm& u, const vecm& v0, const vecm& v1) {
+    inline vecm VCALL lerp_v(const vecm& v0, const vecm& v1, const vecm& u) {
         return _mm_add_ps(
                 _mm_mul_ps(_mm_sub_ps(vecm_one, u), v0),
                 _mm_mul_ps(u, v1));
     }
 
-    inline vecm VCALL bilinear_v(const vecm& u, const vecm& v, const vecm& P00, const vecm& P01, const vecm& P10, const vecm& P11) {
-        return lerp_v(v, lerp_v(u, P00, P01), lerp_v(u, P10, P11));
+    inline vecm VCALL bilinear_v(const vecm& P00, const vecm& P01, const vecm& P10, const vecm& P11, const vecm& u, const vecm& v) {
+        return lerp_v(lerp_v(P00, P01, u), lerp_v(P10, P11, u), v);
     }
 
     // From Intel Developer Zone (SSE2 signed 32bit integer multiplication)

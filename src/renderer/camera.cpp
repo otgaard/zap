@@ -128,8 +128,8 @@ void camera::update_frustum() {
 bool camera::pick_ray(int x, int y, vec3f& origin, vec3f& d) const {
     if(x < block_.viewport[0] || x > block_.viewport[2] || y < block_.viewport[1] || y > block_.viewport[3]) return false;
     auto r = float(x - block_.viewport[0])/block_.viewport[2]; auto u = float(y - block_.viewport[1])/block_.viewport[3];
-    float dr = maths::lerp(r, frustum_[FP_RMIN], frustum_[FP_RMAX]);
-    float du = maths::lerp(u, frustum_[FP_UMIN], frustum_[FP_UMAX]);
+    float dr = maths::lerp(frustum_[FP_RMIN], frustum_[FP_RMAX], r);
+    float du = maths::lerp(frustum_[FP_UMIN], frustum_[FP_UMAX], u);
     float dd = frustum_[FP_DMIN];
 
     origin = world_pos();

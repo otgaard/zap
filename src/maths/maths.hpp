@@ -89,26 +89,39 @@ namespace zap { namespace maths {
                        clamp<T>(v.w, min.w, max.w));
     }
 
-    template <typename T, typename S> T lerp(const S& u, const T& P0, const T& P1) {
+    template <typename T, typename S> T lerp(const T& P0, const T& P1, const S& u) {
         return T((S(1) - u)*P0 + u*P1);
     };
 
-    inline byte lerp(byte u, byte P0, byte P1) {
+    inline byte lerp(byte P0, byte P1, byte u) {
         return byte(((P0 * (255U - u)) >> 8) + ((u * P1) >> 8));
     }
 
-    template <typename T, typename S>
-    T bilinear(const S& u, const S& v, const T& P00, const T& P01, const T& P10, const T& P11) {
-        //const auto omu = S(1) - u; return (S(1)-v)*(P00*omu + P01*u) + v*(P10*omu + P11*u);
-        return lerp(v, lerp(u, P00, P01), lerp(u, P10, P11));
+    constexpr uint32_t make_ARGB(byte red, byte green, byte blue, byte alpha=255) {
+        return uint32_t(uint32_t(alpha) << 24 | uint32_t(red) << 16 | uint32_t(green) << 8 | uint32_t(blue));
+    }
+
+    inline uint32_t lerp_colour(uint32_t A, uint32_t B, float s) {
+        return make_ARGB(
+                byte(lerp<uint32_t,float>((A & 0x00FF0000) >> 16, (B & 0x00FF0000) >> 16, s)),
+                byte(lerp<uint32_t,float>((A & 0x0000FF00) >> 8,  (B & 0x0000FF00) >> 8,  s)),
+                byte(lerp<uint32_t,float>((A & 0x000000FF),       (B & 0x000000FF),       s)),
+                byte(lerp<uint32_t,float>((A & 0xFF000000) >> 24, (B & 0xFF000000) >> 24, s))
+        );
     }
 
     template <typename T, typename S>
-    T trilinear(const S& u, const S& v, const S& w,
-                const T& P000, const T& P010, const T& P100, const T& P110,
-                const T& P001, const T& P011, const T& P101, const T& P111) {
-        return lerp(w, lerp(v, lerp(u, P000, P010), lerp(u, P100, P110)),
-                       lerp(v, lerp(u, P001, P011), lerp(u, P101, P111)));
+    T bilinear(const T& P00, const T& P01, const T& P10, const T& P11, const S& u, const S& v) {
+        //const auto omu = S(1) - u; return (S(1)-v)*(P00*omu + P01*u) + v*(P10*omu + P11*u);
+        return lerp(lerp(P00, P01, u), lerp(P10, P11, u), v);
+    }
+
+    template <typename T, typename S>
+    T trilinear(const T& P000, const T& P010, const T& P100, const T& P110,
+                const T& P001, const T& P011, const T& P101, const T& P111,
+                const S& u, const S& v, const S& w) {
+        return lerp(lerp(lerp(P000, P010, u), lerp(P100, P110, u), v),
+                    lerp(lerp(P001, P011, u), lerp(P101, P111, u), v), w);
     }
 
     template <typename T> T constexpr log2_pow2(T po2) {
@@ -181,19 +194,14 @@ namespace zap { namespace maths {
         return std::make_tuple(min, max);
     }
 
+    // Assumes Container is monotonically increasing
     template <typename Container, typename T=typename Container::value_type>
-    size_t find_interval_idx(const Container& container, T value, bool loop=false) {
-        if(loop) {
-            for(size_t i = 0, end = container.size()-1; i != end; ++i) {
-                if(container[i] <= value && value < container[i+1]) return i;
-            }
-            return container.size()-1;
-        } else {
-            for(size_t i = 0, end = container.size()-1; i != end; ++i) {
-                if(container[i] <= value && value < container[i+1]) return i;
-            }
-            return container.size()-1;
+    size_t find_interval_idx(const Container& container, T value) {
+        if(container.empty() || value < container[0]) return 0;
+        for(size_t i = 0, end = container.size()-1; i != end; ++i) {
+            if(container[i] <= value && value < container[i+1]) return i;
         }
+        return container.size()-1;
     }
 }}
 

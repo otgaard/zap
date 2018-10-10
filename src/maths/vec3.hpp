@@ -229,11 +229,11 @@ namespace zap { namespace maths {
     using vec3f = vec3<float>;
     using vec3d = vec3<double>;
 
-    inline vec3b lerp(byte u, const vec3b& P0, const vec3b& P1) {
+    inline vec3b lerp(const vec3b& P0, const vec3b& P1, byte u) {
         return vec3b {
-                lerp(u, P0.r, P1.r),
-                lerp(u, P0.g, P1.g),
-                lerp(u, P0.b, P1.b) };
+                lerp(P0.r, P1.r, u),
+                lerp(P0.g, P1.g, u),
+                lerp(P0.b, P1.b, u) };
     }
 
 }}

@@ -150,7 +150,7 @@ float total(float* buffer_ptr, size_t count) {
 
 // Testing image generation
 
-float lerp_c(float value, float A, float B) {
+float lerp_c(float A, float B, float value) {
     return (1.f - value)*A + value*B;
 }
 
@@ -164,12 +164,12 @@ void render_cpu(int width, int height, float* buffer_ptr) {
     for(int r = 0; r != height; ++r) {
         const int offset = r*width;
         for(int c = 0; c != width; ++c) {
-            buffer_ptr[offset + c] = lerp_c(c*inv_w, A, B);
+            buffer_ptr[offset + c] = lerp_c(A, B, c*inv_w);
         }
     }
 }
 
-inline vecm32f lerp_v(const vecm32f& value, const vecm32f& A, const vecm32f& B) {
+inline vecm32f lerp_v(const vecm32f& A, const vecm32f& B, const vecm32f& value) {
     return _mm_add_ps(_mm_mul_ps(_mm_sub_ps(one_vf, value), A), _mm_mul_ps(value, B));
 }
 
@@ -184,7 +184,7 @@ void render_simd(int width, int height, float* buffer_ptr) {
     for(int r = 0; r != height; ++r) {
         const int offset = r*width;
         for(int c = 0; c < width; c += 4) {
-            _mm_store_ps(buffer_ptr+offset+c, lerp_v(_mm_add_ps(load(c * inv_w), steps), A, B));
+            _mm_store_ps(buffer_ptr+offset+c, lerp_v(A, B, _mm_add_ps(load(c * inv_w), steps)));
         }
     }
 }

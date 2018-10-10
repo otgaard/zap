@@ -15,21 +15,21 @@ using namespace renderer;
 
 const char* const vtx_shdr= GLSL(
     in vec2 position;
-    in int colour1;
+    in uint colour1;
 
     out vec4 colour;
 
     uniform mat4 mvp;
 
     vec4 decode(int colour) {
-        return vec4((colour1 & 0x00FF0000) >> 16,
-              (colour1 & 0x0000FF00) >> 8,
-              (colour1 & 0x000000FF),
-              (colour1 & 0xFF000000) >> 24)/255.;
+        return vec4((colour & 0x00FF0000) >> 16,
+              (colour & 0x0000FF00) >> 8,
+              (colour & 0x000000FF),
+              (colour & 0xFF000000) >> 24)/255.;
     }
 
     void main() {
-        colour = decode(colour1);
+        colour = decode(int(colour1));
         gl_Position = mvp * vec4(position, 0, 1);
     }
 );
@@ -54,12 +54,15 @@ public:
 
     void on_resize(int width, int height) final;
 
+    void generate_star(size_t steps, float inner=.55f, float outer=1.25f);
+
 private:
     mat4f mvp_;
     program prog_;
     rndr_batch_t rndr_batch_;
     rndr_batch_t::token tok_;
     state_stack stack_;
+    uint32_t counter_;
 };
 
 bool curve_app::initialise() {
@@ -70,31 +73,6 @@ bool curve_app::initialise() {
 
     rndr_batch_.bind();
     tok_ = rndr_batch_.allocate(primitive_type::PT_LINES, 10000);
-    rndr_batch_.map_write(tok_);
-
-    std::vector<vec2f> vertices;
-    const float inc = TWO_PI<float>/40;
-    vertices.emplace_back(vec2f{std::cos(-2.f), std::sin(-2.f)});
-    for(int i = 1; i != 40; ++i) {
-        vertices.emplace_back((i%2==0 ? 1.25f : .75f)*vec2f{std::cos(i*inc-2.f), std::sin(i*inc-2.f)});
-        rndr_batch_.set(tok_, 2*i, vtx_p2c1_t{vertices[i-1]-vec2f{0.f, .5f}, 0x00FF0000});
-        rndr_batch_.set(tok_, 2*i+1, vtx_p2c1_t{vertices[i]-vec2f{0.f, .5f}, 0x00FF0000});
-    }
-    curves::catmull_rom_spline<vec2f> curve{vertices, true};
-
-    float t = 0.f;
-    int counter = 80;
-    while(t < 1.f) {
-        rndr_batch_.set(tok_, counter++, vtx_p2c1_t{curve.pos(t), 0xFFFF00FF});
-        t += .001f;
-        if(t > 1.f) {
-            rndr_batch_.set(tok_, counter++, vtx_p2c1_t{curve.pos(1.f), 0xFFFF00FF});
-            break;
-        }
-        rndr_batch_.set(tok_, counter++, vtx_p2c1_t{curve.pos(t), 0xFFFF00FF});
-    }
-
-    rndr_batch_.unmap();
     rndr_batch_.release();
 
     if(!prog_.link(vtx_shdr, frg_shdr)) {
@@ -113,12 +91,56 @@ bool curve_app::initialise() {
 }
 
 void curve_app::update(double t, float dt) {
+    static float timer = std::numeric_limits<float>::max();
+    static size_t steps = 3;
+    static float inner =.75f, outer = 1.25f;
+
+    if(timer > 2.f) {
+        generate_star(steps, inner, outer);
+        steps = wrap<size_t>(steps+1, 2, 10);
+        timer = 0.f;
+    }
+
+    timer += dt;
+}
+
+void curve_app::generate_star(size_t steps, float inner, float outer) {
+    rndr_batch_.bind();
+    rndr_batch_.map_write(tok_);
+
+    size_t circular = 2*steps+1;
+    counter_ = 0;
+
+    std::vector<vec2f> vertices;
+    const float inc = TWO_PI<float>/(2*steps);
+    vertices.emplace_back(outer*vec2f{std::cos(0.f), std::sin(0.f)});
+    for(int i = 1; i != circular; ++i) {
+        if(i != circular-1) {
+            vertices.emplace_back((i%2 == 0 ? outer : inner)*vec2f{std::cos(i*inc), std::sin(i*inc)});
+            rndr_batch_.set(tok_, counter_++, vtx_p2c1_t{vertices[i-1], 0xFF0000FF});
+            rndr_batch_.set(tok_, counter_++, vtx_p2c1_t{vertices[i], 0xFF0000FF});
+        } else {
+            rndr_batch_.set(tok_, counter_++, vtx_p2c1_t{vertices[i-1], 0xFF0000FF});
+            rndr_batch_.set(tok_, counter_++, vtx_p2c1_t{vertices[0], 0xFF0000FF});
+        }
+    }
+    curves::catmull_rom_spline<vec2f> curve{vertices, true};
+
+    float t = 0.f;
+    while(t < 1.f) {
+        rndr_batch_.set(tok_, counter_++, vtx_p2c1_t{1.5f*curve.pos(t), 0xFFFFFFFF});
+        t += .001f;
+        rndr_batch_.set(tok_, counter_++, vtx_p2c1_t{1.5f*curve.pos(t), 0xFFFFFFFF});
+    }
+
+    rndr_batch_.unmap();
+    rndr_batch_.release();
 }
 
 void curve_app::draw() {
     stack_.clear(0.f, 0.f, 0.f, 1.f);
     rndr_batch_.bind();
-    rndr_batch_.draw(tok_);
+    rndr_batch_.draw(tok_, counter_);
     rndr_batch_.release();
 }
 
@@ -126,9 +148,15 @@ void curve_app::shutdown() {
 }
 
 void curve_app::on_resize(int width, int height) {
+    application::on_resize(width, height);
+    auto proj = make_perspective(45.f, width/float(height), .5f, 10.f);
+    auto look = look_at(vec3f{0.f, 0.f, -1.f}, vec3f{0.f, 0.f, 5.f});
+    prog_.bind_uniform("mvp", proj*look);
 }
 
 int main(int argc, char* argv[]) {
     curve_app app{};
-    return app.run();
+    app_config conf;
+    conf.resizeable_window = true;
+    return app.run(conf);
 }

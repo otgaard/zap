@@ -89,7 +89,7 @@ bool scene_graph_test::initialise() {
     textures_.emplace_back(gen_.render_spherical(req, [](float x, float y, float z, generator& gen) {
         int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
         float value = clamp(.707f + .5f*gen.pnoise(x - ix, y - iy, z - iz, ix, iy, iz));
-        vec3b colour = lerp(value, vec3b(255, 0, 0), vec3b(255, 255, 0));
+        vec3b colour = lerp(vec3b(255, 0, 0), vec3b(255, 255, 0), value);
         return rgb888_t{colour};
     }));
 
@@ -106,7 +106,7 @@ bool scene_graph_test::initialise() {
     textures_.emplace_back(gen_.render_cylindrical(req, [](float x, float y, float z, generator& gen) {
         int ix = maths::floor(x), iy = maths::floor(y), iz = maths::floor(z);
         float value = clamp(.707f + .5f*gen.vnoise(x - ix, y - iy, z - iz, ix, iy, iz));
-        vec3b colour = lerp(value, vec3b(0, 255, 0), vec3b(128, 128, 64));
+        vec3b colour = lerp(vec3b(0, 255, 0), vec3b(128, 128, 64), value);
         return rgb888_t{colour};
     }));
 
@@ -261,7 +261,7 @@ void scene_graph_test::on_resize(int width, int height) {
             vec3f vP = cam_.world_to_view().transform(vec3f{x, 3.f, z});
             lights_block_->lights_point[i].light_position.set(vP, 1.f);
             lights_block_->lights_point[i].light_attenuation.set(.4f, 0.1f, 0.f, 0.f);
-            lights_block_->lights_point[i].light_colour.set(lerp(i/10.f, colA, colB), 0.f);
+            lights_block_->lights_point[i].light_colour.set(lerp(colA, colB, i/10.f), 0.f);
             lights_block_->lights_point[i].light_ADS.set(1.f, 1.f, 1.f, 1.f);
             lights_block_->lights_point[i].light_intensity = .0f;
         }

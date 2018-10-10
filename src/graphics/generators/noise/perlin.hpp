@@ -36,7 +36,7 @@ namespace zap { namespace generators {
             sx = easing_curve(rx0);
             u = rx0 * noise::grad(bx0);
             v = rx1 * noise::grad(bx1);
-            return lerp(sx, u, v);
+            return lerp(u, v, sx);
         }
 
         static T noise(T x, T y) {
@@ -54,13 +54,13 @@ namespace zap { namespace generators {
 
             u = dot(noise::grad(b0.x, b0.y), r0);
             v = dot(noise::grad(b1.x, b0.y), r1.x, r0.y);
-            a = lerp(sx, u, v);
+            a = lerp(u, v, sx);
 
             u = dot(noise::grad(b0.x, b1.y), r0.x, r1.y);
             v = dot(noise::grad(b1.x, b1.y), r1);
-            b = lerp(sx, u, v);
+            b = lerp(u, v, sx);
 
-            return lerp(sy, a, b);
+            return lerp(a, b, sy);
         }
 
         static T noise(T x, T y, T z) {
@@ -79,24 +79,24 @@ namespace zap { namespace generators {
 
             u = dot(noise::grad(b0.x, b0.y, b0.z), r0);
             v = dot(noise::grad(b1.x, b0.y, b0.z), r1.x, r0.y, r0.z);
-            a = lerp(sx, u, v);
+            a = lerp(u, v, sx);
 
             u = dot(noise::grad(b0.x, b1.y, b0.z), r0.x, r1.y, r0.z);
             v = dot(noise::grad(b1.x, b1.y, b0.z), r1.x, r1.y, r0.z);
-            b = lerp(sx, u, v);
+            b = lerp(u, v, sx);
 
-            c = lerp(sy, a, b);
+            c = lerp(a, b, sy);
 
             u = dot(noise::grad(b0.x, b0.y, b1.z), r0.x, r0.y, r1.z);
             v = dot(noise::grad(b1.x, b0.y, b1.z), r1.x, r0.y, r1.z);
-            a = lerp(sx, u, v);
+            a = lerp(u, v, sx);
 
             u = dot(noise::grad(b0.x, b1.y, b1.z), r0.x, r1.y, r1.z);
             v = dot(noise::grad(b1.x, b1.y, b1.z), r1);
-            b = lerp(sx, u, v);
+            b = lerp(u, v, sx);
 
-            d = lerp(sy, a, b);
-            return lerp(sz, c, d);
+            d = lerp(a, b, sy);
+            return lerp(c, d, sz);
         }
 
         static inline T easing_curve(T value) { return value * value * (T(3) - T(2) * value); }

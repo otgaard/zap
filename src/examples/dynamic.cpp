@@ -45,7 +45,7 @@ pixmap<r8_t> make_sphere(size_t dim, float bias_factor) {
             const vec2f V = (vec2f{ float(c), float(r) } *inv_dims) - centre;
             float len = 2.f * V.length();
             len = len > 1.f ? 1.f : len;
-            img(c, r).set(byte(lerp(bias(bias_factor, len), 255, 0)));
+            img(c, r).set(byte(lerp(255, 0, bias(bias_factor, len))));
         }
     }
 
