@@ -17,8 +17,8 @@ if(DYNAMIC_LINKAGE)
         set_target_properties(zapTracer-shared PROPERTIES OUTPUT_NAME "zapTracer")
     endif()
 
-    add_dependencies(zapTracer-shared zapGraphics-shared zapEngine-shared zapMaths-shared core)
-    target_link_libraries(zapTracer-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
+    add_dependencies(zapTracer-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared core)
+    target_link_libraries(zapTracer-shared zapRenderer-shared zapGraphics-shared zapEngine-shared zapMaths-shared)
 
     install(TARGETS zapTracer-shared
             EXPORT zapTargets
@@ -50,10 +50,10 @@ if(STATIC_LINKAGE)
         set_target_properties(zapTracer-static PROPERTIES OUTPUT_NAME "zapTracer")
     endif()
 
-    add_dependencies(zapTracer-static zapGraphics-static zapEngine-static zapMaths-static core)
+    add_dependencies(zapTracer-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static core)
 
     set_target_properties(zapTracer-static PROPERTIES PREFIX "lib")
-    target_link_libraries(zapTracer-static zapGraphics-static zapEngine-static zapMaths-static)
+    target_link_libraries(zapTracer-static zapRenderer-static zapGraphics-static zapEngine-static zapMaths-static)
 
     install(TARGETS zapTracer-static
             EXPORT zapTargets

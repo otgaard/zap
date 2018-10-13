@@ -141,7 +141,7 @@ public:
         return initialise(target_count, width, height, pixel_type<PixelT>::format, pixel_type<PixelT>::datatype,
                           mipmaps, depthstencil);
     }
-    bool is_initialised() const { return attachments_.size() > 0; }
+    bool is_initialised() const { return !attachments_.empty(); }
 
 protected:
     // viewport = [x, y, width, height]

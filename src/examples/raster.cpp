@@ -9,6 +9,7 @@
 #include "host/GLFW/application.hpp"
 #include "graphics/graphics2/quad.hpp"
 #include "rasteriser/canvas.hpp"
+#include "rasteriser/rasteriser.hpp"
 
 using namespace zap;
 using namespace zap::maths;
@@ -19,19 +20,19 @@ using namespace zap::rasteriser;
 class raster : public application {
 public:
     raster() : application{"raster", 600, 1024} { }
-    virtual ~raster() { }
+    virtual ~raster() = default;
 
-    bool initialise() override final;
-    void update(double t, float dt) override final;
-    void draw() override final;
-    void shutdown() override final;
+    bool initialise() final;
+    void update(double t, float dt) final;
+    void draw() final;
+    void shutdown() final;
 
-    void on_mousedown(int button) override final;
-    void on_mouseup(int button) override final;
-    void on_mousemove(double x, double y) override final;
-    void on_mousewheel(double xoffset, double yoffset) override final;
+    void on_mousedown(int button) final;
+    void on_mouseup(int button) final;
+    void on_mousemove(double x, double y) final;
+    void on_mousewheel(double xoffset, double yoffset) final;
 
-    void on_resize(int width, int height) override final;
+    void on_resize(int width, int height) final;
 
 protected:
     quad img_;
@@ -51,7 +52,7 @@ void raster::update(double t, float dt) {
 std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
     std::vector<vec2f> points(5);
 
-    float dt = float(TWO_PI<float> /5.f);
+    auto dt = TWO_PI<float>/5.f;
     for(int i = 0; i != 5; ++i) {
         auto theta = dt*i;
         auto ct = std::cos(theta), st = std::sin(theta);
@@ -73,7 +74,7 @@ std::vector<vec2i> draw_pentagram(int sw, int sh, float angle) {
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
+        polygon.emplace_back(int32_t(nP.x), int32_t(nP.y));
     });
 
     return polygon;
@@ -89,7 +90,7 @@ std::vector<vec2i> draw_shape(int sw, int sh, float angle) {
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
+        polygon.emplace_back(int32_t(nP.x), int32_t(nP.y));
     });
 
     return polygon;
@@ -105,7 +106,7 @@ std::vector<vec2i> draw_diamond(int sw, int sh, float angle) {
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
+        polygon.emplace_back(int32_t(nP.x), int32_t(nP.y));
     });
 
     return polygon;
@@ -121,7 +122,7 @@ std::vector<vec2i> draw_tri(int sw, int sh, float angle) {
     std::vector<vec2i> polygon;
     std::for_each(poly.begin(), poly.end(), [&polygon, &transform](const vec2f& P) {
         auto nP = transform.ptransform(P);
-        polygon.push_back(vec2i(int32_t(nP.x), int32_t(nP.y)));
+        polygon.emplace_back(int32_t(nP.x), int32_t(nP.y));
     });
 
     return polygon;
@@ -148,7 +149,6 @@ void raster::draw() {
     //auto polygon = draw_shape(sc_width_, sc_height_, angle);
     //auto polygon = draw_pentagram(sc_width_, sc_height_, 0);
     //LOG(angle);
-
 
     canvas_.polygon(polygon);
     canvas_.polyloop(polygon);

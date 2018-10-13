@@ -25,8 +25,8 @@ public:
 
     virtual ~renderbuffer() { if(is_allocated()) deallocate(); }
 
-    bool allocate();
-    virtual bool deallocate();
+    bool allocate() override;
+    bool deallocate() override;
     bool initialise();
     bool initialise(pixel_format pf, pixel_datatype dt, int32_t width, int32_t height);
 

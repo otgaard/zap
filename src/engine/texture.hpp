@@ -45,8 +45,8 @@ public:
     tex_filter get_min_filter() const { return min_filter_; }
     tex_filter get_mag_filter() const { return mag_filter_; }
 
-    bool allocate();
-    bool deallocate();
+    bool allocate() override;
+    bool deallocate() override;
 
     resource_t resource() const { return id_; }
 

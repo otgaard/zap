@@ -171,6 +171,7 @@ namespace zap { namespace renderer {
                     return std::array<vec3f, 4>{{lbf, rbf, rtf, ltf}};
                 }
             }
+            return std::array<vec3f, 4>{};
         }
 
         plane3f get_frustum_plane(frustum_plane fp) {

@@ -13,7 +13,12 @@ set(PUBLIC_HEADERS
         scene_graph/spatial.hpp
         scene_graph/visual.hpp
         rndr.hpp
-        render_batch.hpp)
+        render_batch.hpp
+        engine/buffer.hpp
+        engine/engine.hpp
+        engine/index_buffer.hpp
+        engine/vertex_buffer.hpp
+        engine/mesh.hpp)
 
 set(SOURCE_FILES
         camera.cpp
