@@ -45,9 +45,10 @@ Build zap:
 Windows Build Instructions (x64)
 --------------------------------
 
-Requires Visual Studio 2015 or 2017.
+Requires Visual Studio 2015, 2017, or 2019
 
-Tested with the "Visual Studio 15 2017 Win64" and "Visual Studio 14 2015" generators.
+Tested with the "Visual Studio 15 2017 Win64", "Visual Studio 14 2015", and
+"Visual Studio 16 2019" generators.
 
 Checkout repository:
 
@@ -64,9 +65,11 @@ Compile GLFW and install in zap/third_party:
 * cd third_party/glfw
 * mkdir build
 * cd build
-* cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_THIRD_PARTY] -G "Visual Studio 15 2017 Win64"
+* cmake .. -DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_THIRD_PARTY] -G "Visual Studio 16 2019"
 * (example -DCMAKE_INSTALL_PREFIX=D:\zap\third_party)
 * cmake --build . --config Release --target Install
+
+Download Freetype2 for Windows and install in freetype2 folder in third_party.
 
 Compile GLEW (included in zap source code):
 
@@ -78,5 +81,5 @@ Build zap:
 * cd ../..
 * mkdir build
 * cd build
-* cmake .. -DCMAKE_BUILD_TYPE=[Release|Debug] [-DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL]] -G "Visual Studio 15 2017 Win64"
+* cmake .. -DCMAKE_BUILD_TYPE=[Release|Debug] [-DCMAKE_INSTALL_PREFIX=[PATH_TO_ZAP_INSTALL]] -G "Visual Studio 16 2019"
 * cmake --build . --config [Release|Debug] [--target Install]
