@@ -55,6 +55,10 @@ elseif(UNIX AND NOT APPLE)
     add_definitions(-Wall -Werror)
 endif()
 
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:mainCRTStartup")
+endif()
+
 # Find OpenGL
 find_package(OpenGL REQUIRED)
 

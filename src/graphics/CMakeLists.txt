@@ -54,14 +54,14 @@ if(APPLE OR UNIX)
     set(ASIO_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/include/asio)
 elseif(WIN32)
     set(ASIO_INCLUDE ${CMAKE_SOURCE_DIR}/third_party/asio/include)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/x64/freetype28MT.lib")
+    if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype2/win64/freetype.lib")
         set(FREETYPE_FOUND TRUE)
-        set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/freetype/include) # freetype2 doesn't support "installing" on windows
-        set(FREETYPE_LIBRARIES ${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/x64/freetype28MT.lib)
-    elseif(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/Win32/freetype28MT.lib")
+        set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/freetype2/include) # freetype2 doesn't support "installing" on windows
+        set(FREETYPE_LIBRARIES ${CMAKE_SOURCE_DIR}/third_party/freetype2/win64/freetype.lib)
+    elseif(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype2/win32/freetype.lib")
         set(FREETYPE_FOUND TRUE)
-        set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/freetype/include) # freetype2 doesn't support "installing" on windows
-        set(FREETYPE_LIBRARIES ${CMAKE_SOURCE_DIR}/third_party/freetype/objs/vc2010/Win32/freetype28MT.lib)
+        set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/freetype2/include) # freetype2 doesn't support "installing" on windows
+        set(FREETYPE_LIBRARIES ${CMAKE_SOURCE_DIR}/third_party/freetype2/win32/freetype.lib)
     else()
         find_package(Freetype)
     endif()

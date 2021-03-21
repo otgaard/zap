@@ -1,4 +1,5 @@
 /* Created by Darren Otgaar on 2018/04/22. http://www.github.com/otgaard/zap */
+#include <algorithm>
 #include "line_batch.hpp"
 
 namespace zap { namespace graphics {
